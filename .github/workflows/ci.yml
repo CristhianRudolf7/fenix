@@ -1,0 +1,27 @@
+name: Rust checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the pinned Rust toolchain
+        run: rustup show
+      - name: Check formatting
+        run: cargo fmt --all --check
+      - name: Check compiler lints
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Run unit and HTTP integration tests
+        run: cargo test --workspace --all-targets --locked
+      - name: Check documentation examples
+        run: cargo test --workspace --doc --locked

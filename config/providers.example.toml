@@ -1,0 +1,104 @@
+# API roots include their version; Fénix appends the inference operation.
+# Secrets are loaded only when their provider is used. Never paste keys here.
+# See docs/en/development.md and docs/es/development.md.
+
+[[providers]]
+provider = "bedrock"
+base_url = "https://bedrock-runtime.us-east-1.amazonaws.com"
+
+[[providers]]
+provider = "azure"
+base_url = "https://your-resource.openai.azure.com/openai/v1"
+
+[[credentials]]
+provider = "openai"
+api_key_env = "OPENAI_API_KEY"
+# provider_project = "proj_your_native_project"
+# organization = "org_your_native_organization"
+
+[[credentials]]
+provider = "anthropic"
+api_key_env = "ANTHROPIC_API_KEY"
+# provider_project = "your_native_workspace_id"
+
+[[credentials]]
+provider = "gemini"
+api_key_env = "GEMINI_API_KEY"
+
+[[credentials]]
+provider = "openrouter"
+api_key_env = "OPENROUTER_API_KEY"
+
+[[credentials]]
+provider = "deepseek"
+api_key_env = "DEEPSEEK_API_KEY"
+
+[[credentials]]
+provider = "xai"
+api_key_env = "XAI_API_KEY"
+
+[[credentials]]
+provider = "mistral"
+api_key_env = "MISTRAL_API_KEY"
+
+[[credentials]]
+provider = "alibaba"
+api_key_env = "DASHSCOPE_API_KEY"
+
+[[credentials]]
+provider = "moonshot"
+api_key_env = "MOONSHOT_API_KEY"
+
+[[credentials]]
+provider = "zai"
+api_key_env = "ZAI_API_KEY"
+
+[[credentials]]
+provider = "minimax"
+api_key_env = "MINIMAX_API_KEY"
+
+[[credentials]]
+provider = "groq"
+api_key_env = "GROQ_API_KEY"
+
+[[credentials]]
+provider = "together"
+api_key_env = "TOGETHER_API_KEY"
+
+[[credentials]]
+provider = "bedrock"
+api_key_env = "AWS_BEARER_TOKEN_BEDROCK"
+
+[[credentials]]
+provider = "azure"
+api_key_env = "AZURE_API_KEY"
+
+[[credentials]]
+provider = "vertex"
+api_key_env = "VERTEX_API_KEY"
+
+# Native local Ollama needs no key. Enable this only for an authenticated proxy.
+# [[credentials]]
+# provider = "ollama"
+# api_key_env = "OLLAMA_API_KEY"
+
+[[projects]]
+id = "demo-project"
+
+[[projects.credentials]]
+provider = "openai"
+api_key_env = "FENIX_DEMO_OPENAI_API_KEY"
+# provider_project = "proj_your_native_project"
+
+[[projects.credentials]]
+provider = "deepseek"
+api_key_env = "FENIX_DEMO_DEEPSEEK_API_KEY"
+
+# A project's credential can target its own cloud resource.
+[[projects.providers]]
+provider = "azure"
+base_url = "https://your-project-resource.openai.azure.com/openai/v1"
+
+[[projects.credentials]]
+provider = "azure"
+api_key_env = "FENIX_DEMO_AZURE_API_KEY"

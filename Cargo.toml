@@ -1,0 +1,30 @@
+[workspace]
+members = ["crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+publish = false
+repository = "https://github.com/CristhianRudolf7/fenix"
+
+[workspace.dependencies]
+fenix-core = { path = "crates/fenix-core" }
+fenix-credentials = { path = "crates/fenix-credentials" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+zeroize = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "net", "io-util", "sync"] }
+toml = "0.8"
+wiremock = "0.6"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"
