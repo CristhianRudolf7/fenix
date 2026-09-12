@@ -79,7 +79,18 @@ fn base_request() -> ChatRequest {
         }],
         max_output_tokens: 512,
         temperature: Some(0.2),
+        reasoning_effort: None,
     }
+}
+
+#[test]
+fn responses_sends_explicit_low_reasoning_without_temperature() {
+    let mut request = ChatRequest::new("gpt-5.6-luna", vec![Message::user("Hello")]);
+    request.reasoning_effort = Some(fenix_core::ReasoningEffort::Low);
+    let body = encode(Protocol::OpenAiResponses, &request).unwrap();
+    assert_eq!(body["reasoning"]["effort"], "low");
+    assert!(body.get("temperature").is_none());
+    assert_eq!(body["store"], false);
 }
 
 fn tool_result(id: &str, is_error: bool) -> Message {

@@ -1,0 +1,15 @@
+{
+  "name": "@fenix/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check app.js",
+    "format:check": "prettier --check app.js styles.css index.html playwright.config.js tests/*.js package.json",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "prettier": "3.9.6"
+  }
+}

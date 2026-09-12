@@ -11,6 +11,9 @@ pub struct ChatRequest {
     pub max_output_tokens: u32,
     #[serde(default)]
     pub temperature: Option<f64>,
+    /// Provider-specific opt-in. Responses models supporting reasoning accept this.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reasoning_effort: Option<ReasoningEffort>,
 }
 
 impl ChatRequest {
@@ -21,8 +24,18 @@ impl ChatRequest {
             tools: Vec::new(),
             max_output_tokens: 1024,
             temperature: None,
+            reasoning_effort: None,
         }
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ReasoningEffort {
+    None,
+    Low,
+    Medium,
+    High,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

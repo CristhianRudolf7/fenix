@@ -1,0 +1,15 @@
+[Unit]
+Description=Fenix local personal assistant
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/fenix --data-dir %h/.local/share/fenix/.fenix
+WorkingDirectory=%h/.local/share/fenix
+UMask=0077
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Fénix — your local personal assistant" />
+    <title>Fénix</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div class="boot" role="status">
+        <span class="brand-mark">F</span>
+        <p>Fénix</p>
+        <span>Conectando · Connecting…</span>
+      </div>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="detail-dialog">
+      <div class="dialog-heading">
+        <h2 id="detail-title"></h2>
+        <button id="close-dialog" type="button" aria-label="Close / Cerrar">
+          ×
+        </button>
+      </div>
+      <div id="detail-content"></div>
+    </dialog>
+  </body>
+</html>

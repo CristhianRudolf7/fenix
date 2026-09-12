@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers"]
+members = ["crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers", "crates/fenix-storage", "crates/fenix-agent", "apps/server"]
 resolver = "2"
 
 [workspace.package]
@@ -12,12 +12,25 @@ repository = "https://github.com/CristhianRudolf7/fenix"
 [workspace.dependencies]
 fenix-core = { path = "crates/fenix-core" }
 fenix-credentials = { path = "crates/fenix-credentials" }
+fenix-providers = { path = "crates/fenix-providers" }
+fenix-storage = { path = "crates/fenix-storage" }
+fenix-agent = { path = "crates/fenix-agent" }
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+chrono-tz = "0.10"
+cron = "0.15"
+uuid = { version = "1", features = ["v4", "serde"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
+tempfile = "3"
+axum = "0.8"
+regex = "1"
+tokio-util = "0.7"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 zeroize = "1"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
-tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "net", "io-util", "sync"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time", "net", "io-util", "sync", "process", "signal", "fs"] }
 toml = "0.8"
 wiremock = "0.6"
 

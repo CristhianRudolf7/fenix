@@ -57,6 +57,9 @@ pub(super) fn encode_responses(request: &ChatRequest) -> Result<Value, CodecErro
         );
     }
     temperature(&mut body, "temperature", request);
+    if let Some(effort) = request.reasoning_effort {
+        body["reasoning"] = json!({"effort": effort});
+    }
     Ok(body)
 }
 

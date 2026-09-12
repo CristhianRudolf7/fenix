@@ -1,4 +1,4 @@
-name: Rust checks
+name: Application checks
 
 on:
   push:
@@ -25,3 +25,19 @@ jobs:
         run: cargo test --workspace --all-targets --locked
       - name: Check documentation examples
         run: cargo test --workspace --doc --locked
+      - name: Build the local application
+        run: cargo build --locked -p fenix-server
+      - name: Install browser test dependencies
+        working-directory: apps/web
+        run: npm ci
+      - name: Check frontend source
+        working-directory: apps/web
+        run: |
+          npm run check
+          npm run format:check
+      - name: Install the test browser
+        working-directory: apps/web
+        run: npx playwright install --with-deps chromium
+      - name: Run browser integration tests
+        working-directory: apps/web
+        run: npm test

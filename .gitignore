@@ -5,3 +5,9 @@
 *.local.toml
 /credentials/
 /secrets/
+/apuntes.md
+/.fenix/
+node_modules/
+playwright-report/
+test-results/
+__pycache__/

@@ -364,6 +364,10 @@ La retención depende de la utilidad para la tarea, recuperación y auditoría, 
 
 ### 2.10. Autonomía prolongada, presupuestos y supervisión
 
+Application-level maximum token budgets are deferred. Initial onboarding must not request a token quota. Future work may add cumulative per-task, daily, or project quotas and their administration. Existing provider context/output constraints and usage reporting remain distinct.
+
+Los presupuestos máximos de tokens de la aplicación quedan aplazados. La bienvenida inicial no debe pedir una cuota de tokens. Más adelante se podrán añadir cuotas acumuladas por tarea, día o proyecto y su administración. Los límites técnicos de contexto/salida del proveedor y el registro de consumo son conceptos distintos.
+
 - Ejecutar tareas durante horas o días con progreso persistido, dependencias explícitas, supervisión y recuperación. La vida de la tarea debe ser independiente de la sesión de chat o llamada.
 - Ampliar el presupuesto básico por tarea a tiempo, tokens, costo, llamadas al modelo y herramientas, reintentos, tamaño de contexto y efectos externos. Reservar presupuestos para delegaciones, mantenimiento y validación, con límites globales y por proyecto.
 - Registrar consumo y progreso. Ante un límite, resumir el estado y detener, pausar o bloquear con una razón verificable; no reiniciar el presupuesto por compactar o reintentar.
@@ -495,6 +499,10 @@ Limitación registrada durante la revisión de OpenClaw: cancelar una ejecución
 
 ### 2.15. Varios proyectos desde una sola sesión
 
+**Continuous conversation constraint:** future project routing and internal contexts must remain behind one continuous user conversation; do not require separate chats or a new conversation for each project.
+
+**Restricción de conversación continua:** el enrutamiento entre proyectos y los contextos internos deben mantener una única conversación con el usuario. No requerir chats separados ni abrir una conversación nueva por proyecto. Esta restricción también se aplica a las futuras interfaces.
+
 > ¿Cómo debe gestionar Fénix varios proyectos o tareas que se ejecutan en paralelo cuando todos los mensajes entran por una única sesión de Telegram? ¿Cómo puede determinar a qué proyecto corresponde cada mensaje, redirigirlo al contexto correcto y evitar que las instrucciones, memorias, herramientas, presupuestos, archivos o respuestas de un proyecto se mezclen con los de otro?
 
 La solución debe estudiar, como mínimo, un registro de proyectos y tareas activas, identificadores cortos que el usuario pueda seleccionar, comandos explícitos para cambiar de contexto, clasificación automática con confirmación cuando la confianza sea baja, aislamiento del historial y de la memoria por proyecto, colas para mensajes recibidos mientras una tarea está ocupada, prioridades, concurrencia, delegación y reglas para resolver mensajes ambiguos como “continúa” o “corrige eso”. También debe definir cómo mostrar el proyecto activo, cómo recuperar una tarea después de un reinicio y cómo impedir que una herramienta opere en el directorio o repositorio equivocado.
@@ -592,3 +600,47 @@ Se conservan las referencias y descripciones anotadas anteriormente. Antes de us
 - Comparar, como mínimo: conversación multimodal, búsqueda y uso de información reciente, análisis de imágenes y documentos, generación o edición de imágenes, manejo de archivos, ejecución de código, automatizaciones, memoria y personalización, creación de asistentes o agentes, integración con herramientas, control de privacidad, límites de uso y disponibilidad por plan o región.
 - Para cada funcionalidad se debe indicar si es nativa de Grok, si depende de una integración externa, qué problema resuelve, qué riesgos introduce y qué componente de Fénix tendría que implementarla. No se debe copiar una función sin comprobar su comportamiento, licencia, costos y requisitos de seguridad.
 - El resultado debe convertirse en una matriz de priorización para decidir qué incorporar al roadmap de Fénix, qué dejar como experimento y qué descartar por complejidad, dependencia de una plataforma externa o falta de utilidad para el núcleo del asistente.
+
+### 2.22. Web search and browsing / Búsqueda web y navegación
+
+All internet search and browser functionality is deferred. This includes basic page fetching/extraction and generic HTTP tools, not just interactive browser automation. Telegram and model-provider transport are separate requirements and remain in the initial scope.
+
+- Keep search discovery, page fetching/text extraction, and interactive browsing separate.
+- Evaluate Brave Search API and Tavily as interchangeable backends; no search provider is selected or required initially.
+- Evaluate self-hosted SearXNG, recognizing that it aggregates external search services and retains upstream dependencies.
+- Consider lightweight Rust HTTP fetching/extraction before a full browser. Use headless browsing only when interaction or JavaScript is needed, with measured memory use and bounded concurrency. Do not make building a rendering engine a prerequisite.
+- Automating a search website still depends on that site and may encounter changed HTML, rate limits, or CAPTCHAs; do not assume it is a reliable substitute for every search integration.
+- A crawler and a local index such as Tantivy could serve a bounded collection of sites. A browser or indexing library does not supply an index of the entire web.
+- When this work is activated, decide providers, credentials, budgets, permissions, caching, and source attribution. Until then, these are not blockers for the initial assistant.
+
+Toda búsqueda en internet y funcionalidad de navegador se aplaza. Esto incluye lectura y extracción básica de páginas y herramientas HTTP genéricas, además de automatización interactiva. Las conexiones con Telegram y los modelos son requisitos distintos que siguen dentro del alcance inicial.
+
+- Separar descubrimiento de enlaces, descarga/extracción de texto y navegación interactiva.
+- Evaluar Brave Search API y Tavily como proveedores intercambiables. No se ha elegido ninguno ni se necesita uno para el alcance inicial.
+- Evaluar SearXNG autoalojado, teniendo en cuenta que agrega resultados de servicios externos y conserva esas dependencias.
+- Considerar un lector/extractor HTTP ligero en Rust antes de incorporar un navegador completo. Usar navegación sin interfaz gráfica cuando haga falta interacción o JavaScript, midiendo RAM y limitando concurrencia. No exigir crear un motor de navegador propio.
+- Automatizar la página de un buscador sigue dependiendo de él y puede fallar ante cambios de HTML, límites o CAPTCHA; no asumir que sustituye de forma fiable cualquier integración de búsqueda.
+- Un rastreador y un índice local como Tantivy podrían cubrir sitios seleccionados. Un navegador o una biblioteca de indexación no aportan un índice de toda la web.
+- Al activar este trabajo, decidir proveedores, credenciales, presupuestos, permisos, caché y referencias a fuentes. Estas decisiones no bloquean el asistente inicial.
+
+References / Referencias: [Brave Search](https://api-dashboard.search.brave.com/documentation/quickstart), [Tavily](https://docs.tavily.com/documentation/api-reference/endpoint/search), [SearXNG](https://docs.searxng.org/), [Chrome Headless](https://developer.chrome.com/docs/automation-and-testing/headless), [Tantivy](https://github.com/quickwit-oss/tantivy).
+
+### 2.23. Heartbeat — Future versions / Versiones futuras
+
+Heartbeat is explicitly excluded from the initial release. References to heartbeat elsewhere in this roadmap describe future capabilities, not a dependency of initial cron or reminders.
+
+- Periodically review an explicit checklist, for example `HEARTBEAT.md`, and known task states. Surface only items needing attention, such as relevant blocks or pending approvals.
+- Configure cadence, active hours, and budgets. Avoid overlapping reviews or interference with an active conversation task.
+- Suppress duplicate alerts and model calls when there is no configured work. Resolve simple state checks in code and use the model only when interpretation is useful.
+- Preserve this distinction: cron runs scheduled actions, assistant heartbeat reviews pending matters, and worker liveness checks detect whether a process is alive.
+- Do not treat heartbeat as authorization to execute arbitrary actions or resume interrupted work. Combine it with future recovery only under an explicit recovery policy.
+
+El heartbeat queda expresamente fuera de la entrega inicial. Sus referencias en otras secciones del roadmap describen capacidades futuras; cron y recordatorios iniciales no dependen de él.
+
+- Revisar periódicamente una lista explícita, por ejemplo `HEARTBEAT.md`, y los estados de tareas conocidas. Comunicar sólo asuntos que necesiten atención, como bloqueos o aprobaciones pendientes relevantes.
+- Configurar cadencia, horario activo y presupuesto. Evitar revisiones solapadas o interferencias con una tarea activa de la conversación.
+- Evitar avisos repetidos y llamadas al modelo sin trabajo configurado. Resolver comprobaciones simples con código y usar el modelo cuando haga falta interpretar información.
+- Distinguir cron para acciones programadas, heartbeat del asistente para revisar pendientes y latidos técnicos para comprobar si un proceso sigue vivo.
+- El heartbeat no autoriza acciones arbitrarias ni reanudar tareas interrumpidas. Integrarlo con recuperación futura sólo cuando exista una política explícita.
+
+Reference / Referencia: [OpenClaw heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
