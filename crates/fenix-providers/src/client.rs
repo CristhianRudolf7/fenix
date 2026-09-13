@@ -105,6 +105,31 @@ impl ProviderClient {
         project: Option<&str>,
         request: &ChatRequest,
     ) -> Result<ChatResponse, ProviderError> {
+        self.complete_inner(config, project, request, None).await
+    }
+
+    /// Preview visible text as it arrives. OpenAI Responses currently supports
+    /// streaming; other adapters retain their existing single-request behavior.
+    /// Callbacks are provisional: only the returned response may enter history
+    /// or supply executable tool calls. No automatic non-streaming retry occurs.
+    pub async fn complete_with_preview(
+        &self,
+        config: &ProviderConfig,
+        project: Option<&str>,
+        request: &ChatRequest,
+        preview: &mut (dyn FnMut(&str) + Send),
+    ) -> Result<ChatResponse, ProviderError> {
+        self.complete_inner(config, project, request, Some(preview))
+            .await
+    }
+
+    async fn complete_inner(
+        &self,
+        config: &ProviderConfig,
+        project: Option<&str>,
+        request: &ChatRequest,
+        mut preview: Option<&mut (dyn FnMut(&str) + Send)>,
+    ) -> Result<ChatResponse, ProviderError> {
         validate_request(request)?;
         let provider = descriptor(config.provider);
         let base_url = config
@@ -129,8 +154,13 @@ impl ProviderClient {
             }
             .into());
         }
-        let headers = auth_headers(config.provider, credential.as_ref())?;
+        let streaming = preview.is_some() && provider.protocol == Protocol::OpenAiResponses;
+        let mut headers = auth_headers(config.provider, credential.as_ref())?;
         let mut body = protocol::encode(provider.protocol, request)?;
+        if streaming {
+            body["stream"] = true.into();
+            headers.insert(ACCEPT, HeaderValue::from_static("text/event-stream"));
+        }
         if config.provider == ProviderId::Azure {
             // Azure v1 follows current OpenAI Chat Completions: reasoning models
             // reject the legacy max_tokens field used by other compatible APIs.
@@ -182,6 +212,24 @@ impl ProviderClient {
                 limit: self.options.max_response_bytes,
             });
         }
+        if streaming
+            && response
+                .headers()
+                .get(CONTENT_TYPE)
+                .and_then(|v| v.to_str().ok())
+                .is_some_and(|v| v.split(';').next().unwrap_or("").trim() == "text/event-stream")
+        {
+            return crate::streaming::read_responses(
+                response,
+                self.options.max_response_bytes,
+                preview
+                    .as_mut()
+                    .expect("streaming requires a preview callback"),
+            )
+            .await;
+        }
+        // Some compatible gateways return complete JSON even when streaming was
+        // requested. Decode that same response without making another request.
         let mut bytes = Vec::new();
         while let Some(chunk) = response.chunk().await.map_err(transport_error)? {
             if chunk.len() > self.options.max_response_bytes.saturating_sub(bytes.len()) {
@@ -196,7 +244,7 @@ impl ProviderClient {
     }
 }
 
-fn transport_error(error: reqwest::Error) -> ProviderError {
+pub(crate) fn transport_error(error: reqwest::Error) -> ProviderError {
     if error.is_timeout() {
         ProviderError::Timeout
     } else {

@@ -8,6 +8,53 @@ use serde_json::{Value, json};
 use tower::ServiceExt;
 
 #[tokio::test]
+async fn progress_sends_a_fresh_snapshot_and_keeps_the_local_origin_guard() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), None).await.unwrap();
+    runtime
+        .store
+        .put("credentials", "openai:default", &"private-not-for-events")
+        .unwrap();
+    let app = fenix_server::router(runtime.clone(), 4173);
+    for origin in ["https://foreign.example", "http://localhost:4173"] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/progress")
+                    .header("host", "localhost:4173")
+                    .header("origin", origin)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        if origin.starts_with("https") {
+            assert_eq!(response.status(), StatusCode::FORBIDDEN);
+            continue;
+        }
+        assert_eq!(response.headers()["content-type"], "text/event-stream");
+        let mut body = response.into_body();
+        let frame = tokio::time::timeout(std::time::Duration::from_secs(1), body.frame())
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        let text = std::str::from_utf8(frame.data_ref().unwrap()).unwrap();
+        assert!(text.contains("event: progress"));
+        assert!(text.contains("\"phase\":\"idle\""));
+        assert!(!text.contains("private-not-for-events"));
+        runtime.shutdown().await.unwrap();
+        assert!(
+            tokio::time::timeout(std::time::Duration::from_secs(1), body.frame())
+                .await
+                .unwrap()
+                .is_none()
+        );
+    }
+}
+
+#[tokio::test]
 async fn loopback_guard_blocks_foreign_hosts_origins_and_form_posts() {
     let dir = tempfile::tempdir().unwrap();
     let runtime = Runtime::open(dir.path(), None).await.unwrap();

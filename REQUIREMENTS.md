@@ -221,3 +221,12 @@ Volver a habilitar una programación pausada activa sus ejecuciones futuras; no 
 ### Criterio de cierre del alcance actual
 
 El asistente debe poder ejecutarse localmente en Linux para un propietario, ofrecer una web en localhost con bienvenida que requiera una clave API de proveedor y permita omitir Telegram, administrar la configuración y los recursos definidos, conservar una única conversación, encolar peticiones nuevas, solicitar aprobación y aclaraciones por texto, usar herramientas autorizadas y comprobar resultados. También debe recordar una preferencia explícita después de reiniciar, ejecutar una programación persistida, permitir inspeccionar lo ocurrido, corregir su memoria básica y detenerse ante cancelación, error o límites operativos. Al conectar Telegram debe mantener la misma conversación. El alcance actual puede cerrarse sin presupuesto máximo de tokens de la aplicación, heartbeat, búsqueda web, navegador, recepción de adjuntos, reanudación automática de tareas, componentes de memoria avanzada ni orquestación de subagentes.
+
+## Live chat updates / Actualizaciones del chat
+
+- Show provisional streamed text for OpenAI Responses and runtime-generated tool activity for every provider. Other model adapters and Telegram keep complete-message delivery initially.
+- Reconnect to the current preview without repeating inference, preserve FIFO and textual approvals, and clear provisional output after completion, failure or cancellation.
+- Keep progress bounded and redacted, outside model context and durable conversation history; do not ask the model to generate status messages.
+- Mostrar texto progresivo con OpenAI Responses y actividad de herramientas para todos los proveedores. Los demás adaptadores y Telegram mantienen mensajes completos inicialmente.
+- Reconectar sin repetir inferencias, mantener FIFO y aprobaciones textuales y retirar la vista provisional al completar, fallar o cancelar.
+- Mantener progreso acotado y redactado, fuera del contexto y del historial durable; los estados se generan en el motor.

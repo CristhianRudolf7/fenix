@@ -69,3 +69,33 @@ checks; the implementation session did not install or enable a user service.
 This is an initial functional application. It is not a benchmark score, a claim of
 days-long autonomous reliability, an exhaustive security audit, or proof that
 every model will make correct tool decisions.
+
+## Streaming update
+
+The final workspace run passed 83 Rust tests and documentation examples; the two
+opt-in live tests are excluded from that default count. Formatting and Clippy
+with warnings denied also passed.
+
+The update adds an SSE parser test for fragmented UTF-8, CRLF, comments and
+multiline events; HTTP tests preserve terminal tool arguments, usage and opaque
+reasoning while excluding those fields from previews. Missing terminal events,
+provider failure events, invalid JSON and size limits reject the inference.
+A runtime scenario confirms that an incomplete preview is discarded without
+retrying inference or adding it to conversation context.
+
+Six browser scenarios passed, including reload during an active stream without
+another inference or duplicate history, split-key redaction and textual
+cancellation that removes the preview. These use the real Rust server and a
+controlled local provider. An opt-in live OpenAI check with `gpt-5.6-luna` and
+low reasoning also passed: visible streamed text matched the terminal response.
+No live streaming checks were made against the other provider adapters; those
+retain complete-response transport. Telegram keeps complete-message delivery.
+
+The live streaming check is opt-in and billable:
+
+```sh
+cargo test -p fenix-providers --test streaming live_openai_preview_matches_the_completed_response --locked -- --ignored
+```
+
+It reads `OPENAI_API_KEY` from the environment, makes one inference request and
+does not modify the assistant's conversation or print the key.

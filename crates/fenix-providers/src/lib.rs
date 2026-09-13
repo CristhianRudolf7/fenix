@@ -10,6 +10,7 @@ mod client;
 mod config;
 mod error;
 pub mod protocol;
+mod streaming;
 
 pub use client::{ClientOptions, ProviderClient, ProviderConfig};
 pub use config::{ConfigurationError, CredentialConfig, ProjectConfig, ProvidersConfig};

@@ -100,3 +100,33 @@ fallidas permanecen registradas en la base de datos.
 
 Las referencias primarias de bibliotecas y APIs están enlazadas en la
 [documentación principal](../en/architecture.md).
+
+## Progreso y respuestas progresivas
+
+`GET /api/progress` entrega eventos SSE con las mismas restricciones de loopback.
+Un canal watch de Tokio conserva una única instantánea reemplazable con IDs,
+estado, herramienta y hasta 32 KB de texto provisional. Reconectar el navegador
+recupera esa instantánea sin enviar otra solicitud al modelo. El sondeo habitual
+sigue actualizando historial, aprobaciones y cola.
+
+El streaming del proveedor está implementado para OpenAI Responses. Se muestran
+fragmentos de texto visible; las herramientas, el consumo y los metadatos de
+razonamiento se obtienen de la respuesta terminal. Los otros cuatro protocolos
+conservan respuestas completas. Si un gateway devuelve JSON, se procesa la misma
+respuesta sin solicitar otra inferencia.
+
+Las vistas provisionales se publican como máximo cada 100 ms y retienen la última
+palabra incompleta y los prefijos de claves conocidas antes de redactar secretos.
+El texto provisional no se guarda en la base de datos, contexto ni Telegram.
+Las herramientas se ejecutan únicamente después de decodificar la respuesta
+terminal. Un corte sin evento terminal falla la tarea; no se reintenta la
+inferencia automáticamente tras recibir fragmentos de texto. Cancelar cierra la
+conexión local y retira la vista provisional; el proveedor puede haber facturado
+ya la solicitud.
+
+Los estados de herramientas provienen del motor y no añaden llamadas al modelo.
+La web indica preparación, generación, herramienta activa, espera de respuesta,
+reintento y reconexión. El mensaje definitivo reemplaza al provisional. Este
+cambio no incorpora la propuesta de contratos de verificación de tareas.
+
+Referencia: [Streaming de OpenAI](https://developers.openai.com/api/docs/guides/streaming-responses).

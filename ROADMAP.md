@@ -644,3 +644,10 @@ El heartbeat queda expresamente fuera de la entrega inicial. Sus referencias en 
 - El heartbeat no autoriza acciones arbitrarias ni reanudar tareas interrumpidas. Integrarlo con recuperación futura sólo cuando exista una política explícita.
 
 Reference / Referencia: [OpenClaw heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
+
+### Streaming across providers / Streaming entre proveedores
+
+- Extend the implemented OpenAI Responses preview path to Chat Completions, Anthropic, Gemini/Vertex and Bedrock, preserving each protocol's tool arguments, terminal events, usage and signed reasoning metadata.
+- Ampliar el streaming implementado de OpenAI Responses a Chat Completions, Anthropic, Gemini/Vertex y Bedrock, conservando argumentos, eventos terminales, consumo y metadatos firmados de cada protocolo.
+- Additional model-generated task verification contracts remain deferred; ordinary tool error handling stays in the runtime.
+- Los contratos adicionales de verificación generados por el modelo quedan aplazados; el manejo normal de errores permanece en el motor.

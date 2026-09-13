@@ -1,4 +1,5 @@
 //! Loopback-only HTTP adapter. No separate chat state; Runtime owns the conversation.
+use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::{
     Json, Router,
     extract::{DefaultBodyLimit, Path, Query, Request, State},
@@ -11,9 +12,11 @@ use fenix_agent::{
     Runtime,
     config::{Settings, provider_catalog},
 };
+use futures_util::StreamExt;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::sync::Arc;
+use tokio_stream::wrappers::WatchStream;
 
 type ApiResult<T> = Result<Json<T>, ApiError>;
 pub struct ApiError(anyhow::Error);
@@ -57,6 +60,7 @@ pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
             }),
         )
         .route("/api/status", get(status))
+        .route("/api/progress", get(progress))
         .route("/api/providers", get(|| async { Json(provider_catalog()) }))
         .route("/api/settings", post(settings))
         .route("/api/telegram", post(telegram))
@@ -126,6 +130,19 @@ async fn local_guard(request: Request, next: Next, port: u16) -> Response {
 }
 async fn status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
     Ok(Json(runtime.status().await?))
+}
+
+async fn progress(State(runtime): State<Arc<Runtime>>) -> impl IntoResponse {
+    // Watch keeps only the latest bounded snapshot for slow/disconnected clients.
+    // Reconnection receives a fresh snapshot; it never replays model requests.
+    let stream = WatchStream::new(runtime.subscribe_progress())
+        .take_until(runtime.stop.clone().cancelled_owned())
+        .map(|snapshot| {
+            Ok::<_, std::convert::Infallible>(Event::default().event("progress").data(
+                serde_json::to_string(&snapshot).expect("progress contains serializable fields"),
+            ))
+        });
+    Sse::new(stream).keep_alive(KeepAlive::default())
 }
 #[derive(Deserialize)]
 struct Setup {

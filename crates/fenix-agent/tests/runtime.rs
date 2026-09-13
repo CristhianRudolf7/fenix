@@ -88,6 +88,41 @@ async fn stop(runtime: &Runtime, workers: Vec<tokio::task::JoinHandle<()>>) {
 }
 
 #[tokio::test]
+async fn incomplete_stream_discards_preview_without_retries_or_tool_execution() {
+    let (_dir, runtime, server) = fixture(vec![]).await;
+    server.reset().await;
+    let body = format!(
+        "data: {}\n\ndata: {}\n\n",
+        json!({"type":"response.output_text.delta","delta":"Unfinished preview "}),
+        json!({"type":"response.function_call_arguments.delta","delta":"{}"})
+    );
+    Mock::given(method("POST"))
+        .and(path("/responses"))
+        .respond_with(ResponseTemplate::new(200).set_body_raw(body, "text/event-stream"))
+        .expect(1)
+        .mount(&server)
+        .await;
+    let workers = runtime.start();
+    let submitted = runtime
+        .submit("Handle an interrupted stream", "web")
+        .await
+        .unwrap();
+    let id = submitted["task_id"].as_str().unwrap();
+    wait_for(&runtime, id, "failed").await;
+    stop(&runtime, workers).await;
+    let preview = runtime.subscribe_progress().borrow().clone();
+    assert!(preview.preview.is_empty());
+    assert!(preview.task_id.is_none());
+    let history = runtime.store.context(0).unwrap();
+    assert!(
+        !history
+            .iter()
+            .any(|m| m.text.contains("Unfinished preview"))
+    );
+    server.verify().await;
+}
+
+#[tokio::test]
 async fn mandatory_approval_unblocks_active_task_while_new_messages_stay_fifo() {
     let (dir, runtime, server) = fixture(vec![
         call(

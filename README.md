@@ -1,89 +1,83 @@
 # Fénix
 
-[Español](README.es.md)
+[English](README.en.md)
 
-A local personal AI assistant for Linux. A Rust service provides a web interface
-and optional Telegram with **one continuous conversation**, local tools, explicit
-memory, manual skills, reminders and scheduled work. No Node server is needed at
-runtime.
+**Versión actual: 0.1.1**
 
-## Run locally
+Asistente personal local para Linux. Un servicio Rust ofrece una web y Telegram
+opcional con **una sola conversación continua**, herramientas locales, memoria
+explícita, skills manuales, recordatorios y tareas programadas. No necesita un
+servidor Node durante el uso habitual.
 
-Install Rust using [rustup](https://rust-lang.org/tools/install/), then run from
-this repository:
+## Iniciar
+
+Instala Rust mediante [rustup](https://rust-lang.org/tools/install/) y ejecuta desde
+el repositorio:
 
 ```sh
 cargo run --locked -p fenix-server --bin fenix
 ```
 
-Open **http://127.0.0.1:4173**. The welcome screen requires a provider API key and
-verifies a real inference before enabling chat. Telegram is optional. The current
-default is **OpenAI `gpt-5.6-luna`, low reasoning**. Any of the 17 integrated
-providers can be configured; choose a model supporting tool calls.
+Abre **http://127.0.0.1:4173**. La bienvenida pide una API key y comprueba una llamada
+real antes de habilitar el chat. El valor actual es **OpenAI `gpt-5.6-luna`,
+pensamiento bajo**. Puedes elegir cualquiera de los 17 proveedores con un modelo
+compatible con herramientas. Telegram es opcional y se puede configurar después.
 
-For a desktop launcher and a background user service on Linux with systemd:
+Para instalar un acceso en el menú de aplicaciones y un servicio de usuario en
+Linux con systemd:
 
 ```sh
 bash scripts/install-local.sh
 ```
 
-This installs under your home directory without `sudo`. Open **Fénix** from your
-application menu afterward. Closing a browser tab does not stop the agent. Your
-computer and service must stay on for Telegram and scheduled work.
+Se instala en tu carpeta personal, sin `sudo`. Después abre **Fénix** desde el menú.
+Cerrar la pestaña no detiene el servicio. La computadora y el servicio deben estar
+encendidos para atender Telegram y ejecutar programaciones.
 
-## Available features
+## Funcionalidades disponibles
 
-- Bilingual web with chat, provider setup, Telegram, memory, skills, schedules and
-  task traces. White light mode is the default; an explicit dark-mode choice persists.
-- One active task and a FIFO queue. Textual approvals and clarification replies
-  unblock their waiting task; other requests remain queued.
-- **17 tools** for files, managed commands, memory, history, skills, schedules,
-  inspection, clarification and approval. Commands may use any OS-accessible
-  directory; dedicated file tools stay within the configured workspace.
-- Backend-enforced, single-action textual approvals for commands and file changes
-  by default. Local settings can explicitly allow those actions.
-- SQLite history, task/event IDs, source references, token usage, bounded outputs
-  and recoverable output pages. Basic context summaries preserve original history
-  and complete tool-call/result groups.
-- Explicit memory CRUD, exact duplicate checks and Unicode lexical search with
-  FTS5. No automatic extraction or embeddings.
-- Four versioned manual skills: `memory-and-reminders`, `local-file-work`,
-  `conversation-recap`, `local-troubleshooting`.
-- One-time, interval and cron schedules in `America/Lima`. Reminders deliver text;
-  scheduled agent tasks join the same queue. Identical active schedules and
-  overlapping executions of one schedule are checked.
-- Optional Telegram pairing for one owner, private text messages only.
-- Static and project-scoped credentials for 17 providers and five protocols.
+- Web en español e inglés con bienvenida, chat, proveedores, Telegram, memoria,
+  skills, programaciones, actividad y trazas. Fondo blanco por defecto y modo
+  oscuro activado manualmente.
+- Una tarea activa y una cola FIFO. Las respuestas a preguntas y aprobaciones
+  pendientes desbloquean su tarea; los otros mensajes esperan su turno.
+- **17 herramientas** para archivos, comandos, memoria, historial, skills,
+  programaciones, inspección, aclaraciones y aprobaciones.
+- Comandos desde cualquier directorio accesible al usuario de Linux. Las
+  herramientas específicas de archivos conservan la carpeta configurada.
+- Aprobaciones por texto para acciones concretas, comprobadas por el ejecutor.
+  La configuración permite autorizar comandos o cambios en archivos.
+- Historial y tareas en SQLite, IDs, procedencia, consumo de tokens, resultados
+  acotados y salidas recuperables por páginas. Compactación básica con resumen,
+  historial original conservado y parejas de llamadas/resultados completas.
+- Memoria explícita con CRUD, detección exacta de duplicados y búsqueda léxica
+  Unicode mediante FTS5. Sin extracción automática ni embeddings.
+- Cuatro skills manuales: `memory-and-reminders`, `local-file-work`,
+  `conversation-recap` y `local-troubleshooting`.
+- Recordatorios únicos, intervalos y cron en `America/Lima`. Los recordatorios
+  entregan texto; las tareas programadas ingresan a la misma cola. Se comprueban
+  programaciones activas idénticas y ejecuciones solapadas de una programación.
+- Telegram opcional: vinculación de un propietario y mensajes privados de texto.
+- Integración de 17 proveedores con claves estáticas y credenciales por proyecto.
 
-Runtime data lives in ignored `.fenix/` by default. Credentials are stored in a
-private local SQLite database, without a separate encryption master key. Known
-keys are redacted from agent output and never returned by settings endpoints.
-The service binds to loopback and rejects foreign browser origins and hosts.
+Los datos están en `.fenix/`, excluido de Git. Las claves se guardan en una base de
+datos local con permisos privados, sin una clave maestra de cifrado independiente.
+La configuración nunca las devuelve a la web y las claves conocidas se redactan
+en las salidas del agente. El servidor sólo escucha en loopback y rechaza otros
+orígenes y hosts del navegador.
 
-Web search, browsers, heartbeat, voice, subagents, advanced memory, action
-restoration and automatic task recovery remain in [ROADMAP.md](ROADMAP.md).
-Interrupted tasks are recorded, not replayed. The UI refreshes messages and states;
-individual model tokens are not streamed yet.
+Las tareas interrumpidas quedan registradas y no se reanudan automáticamente.
+La web muestra texto progresivo con OpenAI Responses y la actividad de las
+herramientas. Los demás adaptadores y Telegram conservan respuestas completas.
+Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Búsqueda web, navegador, heartbeat, voz, subagentes, memoria avanzada y
+restauración de acciones permanecen en [ROADMAP.md](ROADMAP.md).
 
-## Repository layout
+## Organización y comprobaciones
 
-```text
-apps/server/             Rust executable and loopback HTTP API
-apps/web/                Browser UI embedded in the Rust executable
-crates/fenix-core/       Provider-independent conversation contracts
-crates/fenix-credentials/ Secret handling and exact project credential resolution
-crates/fenix-providers/  Provider catalog, HTTP clients and protocol codecs
-crates/fenix-storage/    SQLite migrations, conversation, journal and lexical memory
-crates/fenix-agent/      Agent loop, context, permissions, tools and channel adapters
-resources/              Runtime instructions and default skill templates
-packaging/linux/        Desktop launcher and systemd user unit
-scripts/                Local installer and opt-in live verification
-docs/en/                Primary documentation
-docs/es/                Spanish documentation
-config/                 Provider-library configuration examples
-```
-
-## Verification
+`apps/server` contiene el ejecutable y la API; `apps/web`, la interfaz. Los crates
+separan contratos, credenciales, proveedores, persistencia y motor del agente. Las
+plantillas están en `resources/skills/`; cada instalación usa sus copias personales.
+La documentación principal se mantiene en inglés con versión en español.
 
 ```sh
 cargo fmt --all --check
@@ -96,18 +90,18 @@ npx playwright install chromium
 npm test
 ```
 
-Default tests use local HTTP endpoints and fake credentials. Browser tests start
-the real Rust service with isolated data. Node and Playwright are development
-dependencies only. For an opt-in billable Luna check, with `OPENAI_API_KEY` already
-set in the environment, run `python3 scripts/smoke-live.py` from the repository
-root. It uses temporary data and writes a secret-free report under ignored
-`target/`. Mock coverage of all 17 providers does not establish live access to all
-17 accounts; see the verification record.
+Las pruebas habituales usan claves ficticias y servidores HTTP locales. Las del
+navegador levantan el servidor Rust real en un directorio temporal. Node y
+Playwright sólo se necesitan para desarrollo. La prueba real opcional se ejecuta
+con `python3 scripts/smoke-live.py`, desde la raíz y con `OPENAI_API_KEY` definido
+en el entorno. Realiza llamadas facturables a Luna, elimina sus datos temporales y
+guarda un informe sin secretos en `target/`. Las pruebas simuladas de 17 proveedores
+no demuestran acceso real a las 17 cuentas.
 
-- [Architecture](docs/en/architecture.md)
-- [Local installation and operation](docs/en/local-operation.md)
-- [Verification record](docs/en/verification.md)
-- [Provider library usage](docs/en/development.md)
-- [Provider endpoints and authentication](docs/en/provider-reference.md)
-- [Current requirements](REQUIREMENTS.md)
-- [Future work](ROADMAP.md)
+- [Arquitectura](docs/es/architecture.md)
+- [Instalación y uso local](docs/es/local-operation.md)
+- [Registro de verificación](docs/es/verification.md)
+- [Uso de las bibliotecas](docs/es/development.md)
+- [Proveedores y autenticación](docs/es/provider-reference.md)
+- [Requisitos actuales](REQUIREMENTS.md)
+- [Trabajo futuro](ROADMAP.md)

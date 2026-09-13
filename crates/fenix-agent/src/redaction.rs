@@ -39,7 +39,32 @@ impl Redactor {
             _ => {}
         }
     }
+
+    /// Withhold the last token and any unfinished known secret before exposing
+    /// a preview. Redacting each individual delta could leak a split API key.
+    pub fn preview(&self, text: &str) -> String {
+        let mut end = text
+            .char_indices()
+            .rev()
+            .find(|(_, c)| c.is_whitespace())
+            .map(|(i, c)| i + c.len_utf8())
+            .unwrap_or(0);
+        for secret in self.secrets.read().expect("secret lock").iter() {
+            for (start, _) in text.match_indices(secret.as_str()) {
+                if start < end && end < start + secret.len() {
+                    end = start;
+                }
+            }
+            for (length, _) in secret.char_indices().skip(1) {
+                if text.ends_with(&secret[..length]) {
+                    end = end.min(text.len() - length);
+                }
+            }
+        }
+        self.text(&text[..end])
+    }
 }
+
 pub fn truncate(text: &str, max: usize) -> String {
     if text.len() <= max {
         return text.into();
@@ -52,4 +77,21 @@ pub fn truncate(text: &str, max: usize) -> String {
         "{}\n[truncated; use a narrower query or inspect the saved tool event]",
         &text[..end]
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn streaming_never_reveals_split_known_secrets_or_key_patterns() {
+        let redactor = Redactor::default();
+        redactor.add("private token with spaces");
+        let text = "Answer private token with spaces then sk-abcdefghijklmnop end";
+        for (end, _) in text.char_indices() {
+            let preview = redactor.preview(&text[..end]);
+            assert!(!preview.contains("private"));
+            assert!(!preview.contains("sk-"));
+        }
+        assert_eq!(redactor.preview("Fénix está listo "), "Fénix está listo ");
+    }
 }

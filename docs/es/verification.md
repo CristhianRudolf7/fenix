@@ -61,3 +61,30 @@ activó un servicio de usuario durante esta implementación.
 Es una aplicación inicial funcional: no demuestra puntuaciones en benchmarks,
 autonomía durante días, seguridad exhaustiva ni decisiones correctas de cualquier
 modelo en todas las tareas.
+
+## Actualización de streaming
+
+La ejecución final del workspace aprobó 83 pruebas y ejemplos de Rust; las dos
+pruebas remotas opcionales no forman parte de ese recuento. También pasaron el
+formato y Clippy con advertencias tratadas como errores.
+
+Se añadieron pruebas de SSE fragmentado, UTF-8, CRLF, comentarios y datos en varias
+líneas; conservación de herramientas, consumo y metadatos de razonamiento en la
+respuesta terminal; y rechazo de cortes, errores, JSON inválido y exceso de tamaño.
+Un escenario del motor comprueba que un stream incompleto se descarta sin repetir
+la inferencia ni incorporar el texto provisional al contexto.
+
+Pasaron seis escenarios de navegador, incluidos recargar durante la generación
+sin otra inferencia ni historial duplicado, ocultar una clave dividida entre
+fragmentos y cancelar por texto retirando la vista provisional. Utilizan el
+servidor Rust real y un proveedor local controlado. También pasó una comprobación
+real con OpenAI `gpt-5.6-luna` y pensamiento bajo: el texto progresivo coincidió
+con la respuesta terminal. Los demás adaptadores y Telegram mantienen respuestas
+completas; no se realizaron pruebas de streaming remoto con ellos.
+
+La prueba real es opcional, consume una inferencia y utiliza `OPENAI_API_KEY`
+desde el entorno, sin imprimirla ni modificar la conversación del asistente:
+
+```sh
+cargo test -p fenix-providers --test streaming live_openai_preview_matches_the_completed_response --locked -- --ignored
+```

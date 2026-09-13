@@ -7,6 +7,8 @@ const state = {
   language: localStorage.getItem("fenix.language") || "es",
   theme: localStorage.getItem("fenix.theme") || "light",
   polling: false,
+  progress: null,
+  progressConnected: false,
 };
 const $ = (selector, root = document) => root.querySelector(selector);
 const t = (english, spanish) => (state.language === "es" ? spanish : english);
@@ -189,7 +191,7 @@ async function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-label"><span class="dot"></span>${t("Local installation", "Instalación local")}<br>America/Lima · Linux</div><div class="row">${preferences()}<small class="grow">v0.1.0</small></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb"><span>Fénix</span><span>/</span>${labels[state.page]}</div><span class="badge" id="connection-state">${escape(state.status.settings.model)}</span></header><div id="page"></div></main></div>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-label"><span class="dot"></span>${t("Local installation", "Instalación local")}<br>America/Lima · Linux</div><div class="row">${preferences()}<small class="grow">v0.1.1</small></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb"><span>Fénix</span><span>/</span>${labels[state.page]}</div><span class="badge" id="connection-state">${escape(state.status.settings.model)}</span></header><div id="page"></div></main></div>`;
   const views = {
     chat: renderChat,
     memory: renderMemory,
@@ -206,9 +208,10 @@ async function render() {
 }
 function renderChat() {
   $("#page").innerHTML =
-    `<section class="chat-layout"><div class="chat-scroll" id="chat-scroll"><div class="chat-inner"><button class="subtle load-older" data-action="older">${t("Earlier messages", "Mensajes anteriores")}</button><div id="message-list" role="log" aria-live="polite" aria-relevant="additions"></div></div></div><div class="composer-area"><div class="composer-wrap"><div class="activity-strip" id="activity-strip" role="status"></div><form id="chat-form" class="composer"><label class="muted" for="chat-input" hidden>${t("Message Fénix", "Escribe a Fénix")}</label><textarea id="chat-input" placeholder="${t("What can I help you with?", "¿En qué te ayudo?")}" maxlength="32000" rows="2" required></textarea><div class="composer-footer"><small>${escape(state.status.settings.model)} · ${t("Text only", "Sólo texto")}</small><button class="primary send" type="submit" aria-label="${t("Send message", "Enviar mensaje")}">↑</button></div></form><p class="composer-hint">${t("One conversation, always. New requests wait their turn. Enter to send · Shift + Enter for a new line.", "Una sola conversación, siempre. Los nuevos mensajes esperan su turno. Enter para enviar · Shift + Enter para nueva línea.")}</p></div></div></section>`;
+    `<section class="chat-layout"><div class="chat-scroll" id="chat-scroll"><div class="chat-inner"><button class="subtle load-older" data-action="older">${t("Earlier messages", "Mensajes anteriores")}</button><div id="message-list" role="log" aria-live="polite" aria-relevant="additions"></div><div id="live-message" aria-busy="true"></div></div></div><div class="composer-area"><div class="composer-wrap"><div class="activity-strip" id="activity-strip" role="status"></div><form id="chat-form" class="composer"><label class="muted" for="chat-input" hidden>${t("Message Fénix", "Escribe a Fénix")}</label><textarea id="chat-input" placeholder="${t("What can I help you with?", "¿En qué te ayudo?")}" maxlength="32000" rows="2" required></textarea><div class="composer-footer"><small>${escape(state.status.settings.model)} · ${t("Text only", "Sólo texto")}</small><button class="primary send" type="submit" aria-label="${t("Send message", "Enviar mensaje")}">↑</button></div></form><p class="composer-hint">${t("One conversation, always. New requests wait their turn. Enter to send · Shift + Enter for a new line.", "Una sola conversación, siempre. Los nuevos mensajes esperan su turno. Enter para enviar · Shift + Enter para nueva línea.")}</p></div></div></section>`;
   refreshMessages(true);
   updateActivityStrip();
+  drawLiveMessage();
 }
 async function refreshMessages(force = false) {
   const messages = await api("/messages");
@@ -219,6 +222,7 @@ async function refreshMessages(force = false) {
   const nearBottom =
     scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 100;
   drawMessages();
+  drawLiveMessage();
   if (nearBottom || force) scroll.scrollTop = scroll.scrollHeight;
 }
 function drawMessages() {
@@ -260,21 +264,131 @@ function drawMessages() {
         )
         .join("")}</div></div>`;
 }
+function progressLabel() {
+  const progress = state.progress;
+  if (!progress?.task_id) return "";
+  if (!state.progressConnected)
+    return t("Reconnecting to live progress…", "Reconectando con el progreso…");
+  if (progress.phase === "waiting")
+    return t(
+      "Waiting for your textual answer",
+      "Esperando tu respuesta por texto",
+    );
+  if (progress.phase === "retrying")
+    return t(
+      "Retrying the model connection",
+      "Reintentando la conexión con el modelo",
+    );
+  if (progress.phase === "preparing")
+    return t("Preparing the context", "Preparando el contexto");
+  if (progress.phase === "generating")
+    return t("Generating a response", "Generando una respuesta");
+  const labels = {
+    files_list: ["Listing files", "Listando archivos"],
+    file_read: ["Reading a file", "Leyendo un archivo"],
+    files_search: ["Searching files", "Buscando en archivos"],
+    file_write: ["Creating a file", "Creando un archivo"],
+    file_edit: ["Editing a file", "Editando un archivo"],
+    command_run: ["Starting a command", "Iniciando un comando"],
+    command_status: ["Checking a command", "Consultando un comando"],
+    command_cancel: ["Cancelling a command", "Cancelando un comando"],
+    memory_search: ["Searching memory", "Buscando en la memoria"],
+    memory_manage: ["Managing memory", "Gestionando la memoria"],
+    history_search: [
+      "Searching the conversation",
+      "Buscando en la conversación",
+    ],
+    history_read: ["Reading the history", "Leyendo el historial"],
+    skill_load: ["Loading a skill", "Cargando un skill"],
+    schedule_manage: ["Managing schedules", "Gestionando tareas programadas"],
+    task_inspect: ["Inspecting a task", "Consultando una tarea"],
+    ask_user: ["Preparing a question", "Preparando una pregunta"],
+    request_approval: [
+      "Preparing an approval request",
+      "Preparando una solicitud de aprobación",
+    ],
+  };
+  const label = labels[progress.tool];
+  return label ? t(...label) : "";
+}
 function updateActivityStrip() {
   const node = $("#activity-strip");
   if (!node) return;
   const queued = state.tasks.filter((task) => task.status === "queued").length;
-  node.textContent = state.status.pending
-    ? t(
-        "Waiting for your textual answer. Follow the instructions in the conversation.",
-        "Espera tu respuesta por texto. Sigue las instrucciones de la conversación.",
-      )
-    : state.status.active_task
-      ? `${t("Working on your request", "Trabajando en tu solicitud")}…${queued ? ` · ${queued} ${t("queued", "en cola")}` : ""}`
-      : queued
-        ? `${queued} ${t("queued", "en cola")}`
-        : "";
+  const live = progressLabel();
+  const activity =
+    live ||
+    (state.status.pending
+      ? t(
+          "Waiting for your textual answer. Follow the instructions in the conversation.",
+          "Espera tu respuesta por texto. Sigue las instrucciones de la conversación.",
+        )
+      : state.status.active_task
+        ? t("Working on your request", "Trabajando en tu solicitud")
+        : "");
+  node.textContent = [
+    activity,
+    queued ? `${queued} ${t("queued", "en cola")}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 }
+function drawLiveMessage() {
+  const node = $("#live-message");
+  if (!node) return;
+  const progress = state.progress;
+  const text = progress?.preview;
+  if (
+    !text ||
+    progress.phase !== "generating" ||
+    (progress.message_id && state.messages.has(progress.message_id))
+  ) {
+    node.replaceChildren();
+    return;
+  }
+  const scroll = $("#chat-scroll");
+  const nearBottom =
+    scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 100;
+  if (!node.firstChild) {
+    node.innerHTML =
+      '<article class="message assistant"><span class="avatar" aria-hidden="true">F</span><div class="message-body"><div class="message-head">Fénix <small class="live-label"></small></div><div class="message-text"></div></div></article>';
+  }
+  node.querySelector(".live-label").textContent = state.progressConnected
+    ? t("Writing…", "Escribiendo…")
+    : t("Reconnecting…", "Reconectando…");
+  node.querySelector(".message-text").textContent = text;
+  if (nearBottom) scroll.scrollTop = scroll.scrollHeight;
+}
+let progressSource;
+function connectProgress() {
+  progressSource?.close();
+  progressSource = new EventSource("/api/progress");
+  progressSource.addEventListener("progress", (event) => {
+    const previous = state.progress;
+    state.progress = JSON.parse(event.data);
+    state.progressConnected = true;
+    updateActivityStrip();
+    drawLiveMessage();
+    if (
+      state.page === "chat" &&
+      state.status?.ready &&
+      (!previous ||
+        previous.response_id !== state.progress.response_id ||
+        previous.phase !== state.progress.phase)
+    ) {
+      refreshMessages().catch(() => {});
+    }
+  });
+  progressSource.onerror = () => {
+    state.progressConnected = false;
+    updateActivityStrip();
+    drawLiveMessage();
+  };
+}
+window.addEventListener("pagehide", () => progressSource?.close());
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) connectProgress();
+});
 
 async function renderMemory() {
   $("#page").innerHTML =
@@ -644,6 +758,7 @@ async function boot() {
       api("/providers"),
     ]);
     await render();
+    connectProgress();
     setInterval(poll, 1800);
   } catch (error) {
     $("#app").innerHTML =

@@ -132,3 +132,34 @@ Relevant primary references: [Axum](https://docs.rs/axum/0.8.9/axum/),
 [cron](https://docs.rs/cron/0.15.0/cron/),
 [Telegram Bot API](https://core.telegram.org/bots/api), and
 [GPT-5.6 Luna](https://developers.openai.com/api/docs/models/gpt-5.6-luna).
+
+## Live progress and response previews
+
+`GET /api/progress` is a loopback-protected Server-Sent Events endpoint. A Tokio
+watch channel retains one replaceable snapshot, containing task/response IDs,
+a phase, a known tool name and at most 32 KB of provisional text. Slow clients
+receive the current snapshot, without an unbounded per-client token queue.
+The browser reconnects independently of the worker; reconnecting never submits
+or repeats a model request. Normal polling still refreshes durable history,
+approvals and queued tasks.
+
+`ProviderClient::complete_with_preview` enables SSE for OpenAI Responses. It
+accepts visible text deltas but obtains tool calls, usage and opaque reasoning
+replay data from the terminal response. Other adapters retain their buffered
+transport, and a gateway returning JSON is decoded without a second request.
+Adding streaming to the other four protocols is future work.
+
+The runtime publishes previews at most once per 100 ms, holding the unfinished
+last token and known-secret prefixes before redaction. Raw previews never enter
+the database, model context or Telegram outbox. Only a terminal response is persisted; incomplete terminal responses still
+fail the task and never authorize tools. Tools execute after decoding that response, never from partial JSON.
+EOF without a terminal event fails the task. Transport failures after text deltas
+do not trigger automatic inference retries; cancellation closes local I/O and
+clears the preview. Provider-side billing may already have occurred.
+
+Tool progress comes from runtime events and uses no additional model calls.
+The UI distinguishes preparing context, generating, using a tool, waiting for a
+textual answer, retrying and reconnecting. The provisional bubble is replaced by
+the durable message. No verification-contract feature is introduced by this work.
+
+Protocol reference: [OpenAI streaming responses](https://developers.openai.com/api/docs/guides/streaming-responses).

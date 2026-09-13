@@ -6,6 +6,8 @@ import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 
 let directory, service, modelServer, modelURL;
+let releasePreview;
+let streamRequests = 0;
 const completion = (text) => ({
   id: "browser-response",
   status: "completed",
@@ -37,6 +39,28 @@ test.beforeAll(async () => {
       return;
     }
     const last = body.input.at(-1);
+    if (last?.role === "user" && last.content.includes("stream-preview")) {
+      streamRequests++;
+      expect(body.stream).toBe(true);
+      response.setHeader("content-type", "text/event-stream");
+      const send = (event) =>
+        response.write(`data: ${JSON.stringify(event)}\n\n`);
+      const waiting = new Promise((resolve) => {
+        releasePreview = resolve;
+        response.once("close", resolve);
+      });
+      send({ type: "response.output_text.delta", delta: "Respuesta parcial " });
+      send({ type: "response.output_text.delta", delta: "fake-brow" });
+      await waiting;
+      if (response.destroyed) return;
+      send({ type: "response.output_text.delta", delta: "ser-key final." });
+      send({
+        type: "response.completed",
+        response: completion("Respuesta parcial fake-browser-key final."),
+      });
+      response.end();
+      return;
+    }
     if (last?.role === "user" && last.content.includes("browser-check.txt")) {
       response.end(
         JSON.stringify({
@@ -259,4 +283,68 @@ test("theme is an explicit persistent choice and the interface fits a phone", as
   await expect(page.locator("#api_key")).toHaveValue("");
   await page.locator('.mobile-brand [data-action="language"]').click();
   await expect(page.locator("#telegram-form")).toContainText("Optional");
+});
+
+test("streaming previews survive reload without repeating inference or duplicating history", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const before = streamRequests;
+  await page.locator("#chat-input").fill("stream-preview reload");
+  await page.locator("#chat-input").press("Enter");
+  try {
+    await expect(page.locator("#live-message")).toContainText(
+      "Respuesta parcial",
+    );
+    await expect(page.locator("#live-message")).not.toContainText("fake-brow");
+    await expect(page.locator("#activity-strip")).toContainText(
+      "Generando una respuesta",
+    );
+    await expect(page.locator("#message-list")).not.toContainText(
+      "Respuesta parcial",
+    );
+    await page.reload();
+    await expect(page.locator("#live-message")).toContainText(
+      "Respuesta parcial",
+    );
+    expect(streamRequests - before).toBe(1);
+  } finally {
+    releasePreview?.();
+  }
+  await expect(page.locator("#live-message")).toBeEmpty();
+  await expect(page.locator("#message-list")).toContainText(
+    "Respuesta parcial [REDACTED] final.",
+  );
+  await expect(
+    page
+      .locator("#message-list .message-text")
+      .filter({ hasText: "Respuesta parcial [REDACTED] final." }),
+  ).toHaveCount(1);
+  const history = await (await page.request.get("/api/messages")).json();
+  expect(JSON.stringify(history)).not.toContain("fake-browser-key");
+});
+
+test("cancelling an in-flight stream clears the preview and does not retry inference", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const before = streamRequests;
+  await page.locator("#chat-input").fill("stream-preview cancel");
+  await page.locator("#chat-input").press("Enter");
+  await expect(page.locator("#live-message")).toContainText(
+    "Respuesta parcial",
+  );
+  const status = await (await page.request.get("/api/status")).json();
+  await page.locator("#chat-input").fill(`cancelar ${status.active_task}`);
+  await page.locator("#chat-input").press("Enter");
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get("/api/tasks")).json()).find(
+          (task) => task.id === status.active_task,
+        ).status,
+    )
+    .toBe("cancelled");
+  await expect(page.locator("#live-message")).toBeEmpty();
+  expect(streamRequests - before).toBe(1);
 });

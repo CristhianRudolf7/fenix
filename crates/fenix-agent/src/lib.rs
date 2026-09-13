@@ -6,6 +6,7 @@ mod engine;
 mod files;
 mod permissions;
 mod processes;
+pub mod progress;
 pub mod redaction;
 pub mod schedules;
 pub mod skills;
@@ -46,6 +47,7 @@ pub struct Runtime {
     pub(crate) telegram_lock: Mutex<()>,
     pub(crate) wake: Notify,
     pub(crate) processes: Processes,
+    pub(crate) progress: tokio::sync::watch::Sender<progress::Progress>,
     _lock: File,
 }
 
@@ -86,6 +88,7 @@ impl Runtime {
             telegram_lock: Mutex::new(()),
             wake: Notify::new(),
             processes: Processes::default(),
+            progress: tokio::sync::watch::channel(progress::Progress::default()).0,
             _lock: lock,
         });
         runtime.install_resources()?;

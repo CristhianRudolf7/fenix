@@ -2,6 +2,7 @@ use crate::{
     Runtime,
     config::{ActionPolicy, ModelConnection},
     permissions::ActiveTask,
+    progress::{Phase, Progress},
     redaction::truncate,
     tools,
 };
@@ -77,6 +78,7 @@ impl Runtime {
                     &json!({"status":status,"error":error}),
                 );
                 *self.active.lock().await = None;
+                self.progress.send_replace(Progress::default());
             } else {
                 tokio::select! {_=self.stop.cancelled()=>break,_=self.wake.notified()=>{},_=tokio::time::sleep(Duration::from_secs(1))=>{}}
             }
@@ -84,6 +86,7 @@ impl Runtime {
     }
 
     async fn run_task(self: &Arc<Self>, task: &Task, cancel: &CancellationToken) -> Result<()> {
+        self.report_progress(&task.id, Phase::Preparing, None);
         let model = self
             .model
             .read()
@@ -133,8 +136,14 @@ impl Runtime {
                     _ => None,
                 })
                 .collect::<Vec<_>>();
-            self.store
-                .append(Some(&task.id), &message, !text.is_empty(), true, "agent")?;
+            let message_id =
+                self.store
+                    .append(Some(&task.id), &message, !text.is_empty(), true, "agent")?;
+            self.progress.send_modify(|progress| {
+                progress.phase = Phase::Saved;
+                progress.message_id = Some(message_id);
+                progress.preview.clear();
+            });
             if !text.is_empty()
                 && self
                     .telegram_settings()?
@@ -166,6 +175,7 @@ impl Runtime {
                 bail!("Too many tool calls in one response");
             }
             for (call_id, name, args) in calls {
+                self.report_progress(&task.id, Phase::Tool, Some(&name));
                 let action = json!({"tool":name,"arguments":args});
                 self.store.event(
                     &task.id,
@@ -189,6 +199,7 @@ impl Runtime {
                         if let Some(index)=grants.iter().position(|g|g==&action) {grants.remove(index);}
                         else if !self.approve(&task.id,action.clone(),cancel).await? {denials.push(action.clone());return Ok(json!({"denied":true,"executed":false,"instruction":"Owner denied this exact action. Do not retry or bypass it."}));}
                     }
+                    self.report_progress(&task.id, Phase::Tool, Some(&name));
                     self.execute_tool(&task.id,&source,&model.settings,&name,&args,cancel).await
                 }.await;
                 let (mut output, is_error) = match result {
@@ -247,17 +258,43 @@ impl Runtime {
         cancel: &CancellationToken,
     ) -> Result<fenix_core::ChatResponse> {
         for attempt in 0..3 {
-            match model
-                .client
-                .complete(
-                    &model.settings.provider_config(),
-                    model.settings.project.as_deref(),
-                    request,
-                )
-                .await
-            {
+            let response_id = fenix_storage::id();
+            self.progress.send_replace(Progress {
+                task_id: Some(task.id.clone()),
+                response_id: Some(response_id),
+                phase: Phase::Generating,
+                ..Progress::default()
+            });
+            let mut raw_preview = String::new();
+            let mut saw_delta = false;
+            let mut published = std::time::Instant::now() - Duration::from_secs(1);
+            let mut preview = |delta: &str| {
+                saw_delta = true;
+                // Keep previews bounded; the provider client bounds the entire response.
+                let available = 32_000usize.saturating_sub(raw_preview.len());
+                let mut end = delta.len().min(available);
+                while !delta.is_char_boundary(end) {
+                    end -= 1;
+                }
+                raw_preview.push_str(&delta[..end]);
+                if published.elapsed() >= Duration::from_millis(100) {
+                    let text = self.redactor.preview(&raw_preview);
+                    self.progress
+                        .send_modify(|progress| progress.preview = text);
+                    published = std::time::Instant::now();
+                }
+            };
+            let config = model.settings.provider_config();
+            let result = tokio::select! {
+                _ = cancel.cancelled() => bail!("Task cancelled"),
+                result = model.client.complete_with_preview(
+                    &config, model.settings.project.as_deref(), request, &mut preview,
+                ) => result,
+            };
+            match result {
                 Ok(response) => return Ok(response),
-                Err(error) if error.is_retryable() && attempt < 2 => {
+                Err(error) if error.is_retryable() && attempt < 2 && !saw_delta => {
+                    self.report_progress(&task.id, Phase::Retrying, None);
                     self.store.event(
                         &task.id,
                         "model_retry",

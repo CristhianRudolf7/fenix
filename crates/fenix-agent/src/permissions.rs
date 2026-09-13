@@ -43,6 +43,7 @@ impl Runtime {
             action,
         };
         let (send, receive) = oneshot::channel();
+        self.report_progress(task, crate::progress::Phase::Waiting, None);
         *self.pending.lock().await = Some(Pending {
             view: view.clone(),
             reply: send,
