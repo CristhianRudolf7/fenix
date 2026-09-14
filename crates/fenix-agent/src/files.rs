@@ -204,9 +204,12 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let workspace = dir.path().join("workspace");
         std::fs::create_dir(&workspace).unwrap();
-        let runtime = Runtime::open(&dir.path().join("private"), None)
-            .await
-            .unwrap();
+        let runtime = Runtime::open(
+            &dir.path().join("private"),
+            Some(&dir.path().join("skills")),
+        )
+        .await
+        .unwrap();
         std::os::unix::fs::symlink(dir.path(), workspace.join("escape")).unwrap();
         for path in [
             "../outside",

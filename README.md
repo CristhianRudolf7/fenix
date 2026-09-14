@@ -2,7 +2,7 @@
 
 [English](README.en.md)
 
-**Versión actual: 0.1.1**
+**Versión actual: 0.2.0**
 
 Asistente personal local para Linux. Un servicio Rust ofrece una web y Telegram
 opcional con **una sola conversación continua**, herramientas locales, memoria
@@ -36,13 +36,15 @@ encendidos para atender Telegram y ejecutar programaciones.
 
 ## Funcionalidades disponibles
 
-- Web en español e inglés con bienvenida, chat, proveedores, Telegram, memoria,
+- Web en español e inglés con bienvenida, chat, proyectos, proveedores, Telegram, memoria,
   skills, programaciones, actividad y trazas. Fondo blanco por defecto y modo
   oscuro activado manualmente.
-- Una tarea activa y una cola FIFO. Las respuestas a preguntas y aprobaciones
-  pendientes desbloquean su tarea; los otros mensajes esperan su turno.
-- **17 herramientas** para archivos, comandos, memoria, historial, skills,
-  programaciones, inspección, aclaraciones y aprobaciones.
+- Una tarea principal activa y una cola FIFO, con hasta cuatro subagentes en
+  segundo plano. El principal puede atender otras solicitudes mientras los hijos
+  trabajan o esperan aprobación; cada hijo devuelve un informe propio.
+- Herramientas del principal para trabajo local, memoria, proyectos y delegación.
+  Los hijos tienen un catálogo restringido, sin historial de la conversación ni
+  delegación, con informe de cierre obligatorio e inspección de su propia tarea.
 - Comandos desde cualquier directorio accesible al usuario de Linux. Las
   herramientas específicas de archivos conservan la carpeta configurada.
 - Aprobaciones por texto para acciones concretas, comprobadas por el ejecutor.
@@ -50,8 +52,12 @@ encendidos para atender Telegram y ejecutar programaciones.
 - Historial y tareas en SQLite, IDs, procedencia, consumo de tokens, resultados
   acotados y salidas recuperables por páginas. Compactación básica con resumen,
   historial original conservado y parejas de llamadas/resultados completas.
-- Memoria explícita con CRUD, detección exacta de duplicados y búsqueda léxica
-  Unicode mediante FTS5. Sin extracción automática ni embeddings.
+- Proyectos con nombres, alias, contexto y carpeta opcional, sin abrir nuevos
+  chats. Enrutamiento antes de recuperar memoria, conversación general separada
+  y contexto fijo por ejecución; los informes tardíos no cambian el proyecto activo.
+- Memoria explícita general y por proyecto con CRUD, detección exacta de
+  duplicados dentro de su ámbito y búsqueda léxica Unicode mediante FTS5.
+  Sin extracción automática ni embeddings.
 - Cuatro skills manuales: `memory-and-reminders`, `local-file-work`,
   `conversation-recap` y `local-troubleshooting`.
 - Recordatorios únicos, intervalos y cron en `America/Lima`. Los recordatorios
@@ -69,8 +75,42 @@ orígenes y hosts del navegador.
 Las tareas interrumpidas quedan registradas y no se reanudan automáticamente.
 La web muestra texto progresivo con OpenAI Responses y la actividad de las
 herramientas. Los demás adaptadores y Telegram conservan respuestas completas.
-Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Búsqueda web, navegador, heartbeat, voz, subagentes, memoria avanzada y
+Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Búsqueda web, navegador, heartbeat, voz, memoria avanzada y
 restauración de acciones permanecen en [ROADMAP.md](ROADMAP.md).
+
+## Trabajo en segundo plano y skills compartidas
+
+Cada subagente recibe propósito preciso y resultado esperado, con contexto y
+restricciones opcionales; no existe un campo obligatorio de “información
+necesaria”. El motor limita la delegación a un nivel, cuatro hijos simultáneos,
+tres intentos totales ante fallos reintentables y 32 pasos / diez minutos por
+intento. Los reintentos conservan el contexto del hijo y los resultados previos,
+sin volver a ejecutar acciones ya completadas. Los bloqueos, cancelaciones y
+fallos no reintentables pueden detenerse antes. Un reinicio interrumpe las tareas
+inconclusas; no las reanuda automáticamente.
+
+**Tareas** muestra propósito, entrega esperada, estado, IDs, intentos y resultados.
+Responde en la conversación con `aprobar <request_id>`, `rechazar <request_id>` o
+`responder <request_id> <respuesta>`; cancela con `cancelar <task_id>`. Cada pendiente
+tiene su ID y la espera de un hijo no bloquea al principal. No se puede cambiar el
+modelo ni los permisos mientras haya tareas activas. El historial del hijo queda
+fuera de la conversación principal; la memoria explícita sigue accesible mediante
+herramientas. El programa serializa cambios de archivos, memoria y programaciones,
+y la duración completa de sus comandos, dentro del mismo proceso. Los comandos
+conservan los permisos del usuario de Linux; no están aislados en un sandbox.
+
+Las skills se guardan en **`~/.fenix/skills/<skill-name>/SKILL.md`**, compartidas
+entre directorios de ejecución. `--skills-dir PATH` permite elegir otra ruta;
+`--data-dir` sólo cambia los datos de ejecución. Principal e hijos ven el catálogo
+completo de metadatos breves y el estado de habilitación; las instrucciones sólo
+se cargan mediante `skill_load`. Las deshabilitadas siguen visibles pero no se
+pueden cargar. Las cuatro predeterminadas son plantillas, no un máximo de skills.
+
+Al iniciar, se copian los recursos de `<data-dir>/skills` a la biblioteca elegida
+antes de instalar los defaults. No se sustituyen destinos existentes, se omiten
+enlaces simbólicos y se conservan los originales. La migración automática admite
+32 MiB por archivo, 512 MiB en total, 10.000 entradas y 16 niveles; si excede esos
+límites, selecciona la carpeta anterior con `--skills-dir` o copia manualmente.
 
 ## Organización y comprobaciones
 
@@ -98,6 +138,7 @@ en el entorno. Realiza llamadas facturables a Luna, elimina sus datos temporales
 guarda un informe sin secretos en `target/`. Las pruebas simuladas de 17 proveedores
 no demuestran acceso real a las 17 cuentas.
 
+- [Proyectos en una conversación](docs/es/projects.md)
 - [Arquitectura](docs/es/architecture.md)
 - [Instalación y uso local](docs/es/local-operation.md)
 - [Registro de verificación](docs/es/verification.md)

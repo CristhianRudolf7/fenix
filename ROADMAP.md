@@ -485,6 +485,23 @@ Limitación registrada durante la revisión de OpenClaw: cancelar una ejecución
 
 ### 2.14. Subagentes con contexto específico
 
+**Current baseline (0.2.0):** asynchronous delegation, one engine-enforced level,
+up to four concurrent children, isolated persisted transcripts, optional scoped
+context, three total attempts for retryable failures, complete shared skill metadata
+and on-demand instruction loading are in the current requirements. The Tasks view
+shows results and textual request IDs; restart recovery remains manual. The points
+below describe extensions such as richer contracts, project isolation, checkpoints,
+configurable budgets and durable recovery, rather than requirements to add fields
+to every current handoff. See `REQUIREMENTS.md`, section 1.15.
+
+**Base actual (0.2.0):** la delegación asíncrona de un nivel, cuatro hijos simultáneos,
+contextos persistidos independientes, contexto opcional, tres intentos totales ante
+fallos reintentables, catálogo global completo y carga de instrucciones bajo demanda
+pasan a los requisitos actuales. Tareas muestra informes y pendientes por ID; los
+reinicios no reanudan el trabajo. Las propuestas siguientes amplían contratos,
+aislación de proyectos, checkpoints, presupuestos y recuperación; no exigen más
+campos en cada delegación actual. Ver `REQUIREMENTS.md`, sección 1.15.
+
 - Fénix debe poder crear subagentes para tareas concretas sin entregarles automáticamente toda la conversación principal. Cada subagente debe recibir un `task_id` propio, `parent_task_id`, `parent_run_id`, objetivo preciso, criterios de aceptación, restricciones, archivos o recursos autorizados y el contexto mínimo necesario para trabajar.
 - El contexto debe construirse mediante una lista explícita de *context packages*: objetivo, hechos relevantes, decisiones aplicables, entradas, salidas esperadas, instrucciones del proyecto, dependencias y límites. El subagente no debe inferir que puede modificar otros proyectos, consultar toda la memoria del usuario o ejecutar herramientas fuera de su alcance.
 - El subagente debe tener un presupuesto independiente de iteraciones, tiempo, tokens, costo, herramientas y reintentos. El agente padre debe definir si puede crear otros subagentes, qué herramientas puede utilizar, si puede modificar archivos y qué operaciones requieren aprobación. Una tarea secundaria no debe consumir indefinidamente el presupuesto de la tarea principal.
@@ -497,19 +514,19 @@ Limitación registrada durante la revisión de OpenClaw: cancelar una ejecución
 - La comunicación entre padre e hijo debe tratarse como eventos auditables. Cada mensaje debe incluir remitente, destinatario, `task_id`, finalidad, datos enviados y fecha. No se deben copiar secretos ni contexto de otras tareas en una delegación; el filtrado debe ocurrir antes de crear el prompt del subagente.
 - Fénix debe elegir entre ejecución síncrona y asíncrona: la síncrona devuelve el control sólo al finalizar o bloquearse; la asíncrona devuelve un identificador de seguimiento y permite que el padre continúe. En ambos casos debe existir una cola de finalización durable, un heartbeat, timeout, cancelación y una política clara para procesos que sobrevivan al reinicio.
 
-### 2.15. Varios proyectos desde una sola sesión
+### 2.15. Evolución de proyectos desde una sola conversación
 
-**Continuous conversation constraint:** future project routing and internal contexts must remain behind one continuous user conversation; do not require separate chats or a new conversation for each project.
+**Implemented baseline / Base incorporada al alcance actual:** the project registry, general/project/task context separation, explicit aliases and reply references, routing before retrieval, scoped lexical memory/history, fixed execution workspaces and one-level delegation now belong to [REQUIREMENTS.md, section 1.16](REQUIREMENTS.md#116-projects-and-general-conversation--proyectos-y-conversación-general). See [the project guide](docs/en/projects.md).
 
-**Restricción de conversación continua:** el enrutamiento entre proyectos y los contextos internos deben mantener una única conversación con el usuario. No requerir chats separados ni abrir una conversación nueva por proyecto. Esta restricción también se aplica a las futuras interfaces.
+El registro de proyectos, la conversación general, el contexto por proyecto/tarea, los alias y referencias de respuesta, el enrutamiento previo a recuperar información, la memoria e historial léxicos por ámbito, la carpeta fija por ejecución y la delegación de un nivel forman parte del alcance actual. La [guía de proyectos](docs/es/projects.md) explica sus límites. Se conserva una sola conversación; no se exigen chats separados.
 
-> ¿Cómo debe gestionar Fénix varios proyectos o tareas que se ejecutan en paralelo cuando todos los mensajes entran por una única sesión de Telegram? ¿Cómo puede determinar a qué proyecto corresponde cada mensaje, redirigirlo al contexto correcto y evitar que las instrucciones, memorias, herramientas, presupuestos, archivos o respuestas de un proyecto se mezclen con los de otro?
+La pregunta original se mantiene para evaluar la evolución: ¿cómo gestionar trabajos paralelos desde un solo canal sin mezclar instrucciones, memoria, herramientas, archivos, presupuestos o resultados? La base actual no resuelve por sí sola todas las variantes de lenguaje ni demuestra aislamiento del sistema operativo.
 
-La solución debe estudiar, como mínimo, un registro de proyectos y tareas activas, identificadores cortos que el usuario pueda seleccionar, comandos explícitos para cambiar de contexto, clasificación automática con confirmación cuando la confianza sea baja, aislamiento del historial y de la memoria por proyecto, colas para mensajes recibidos mientras una tarea está ocupada, prioridades, concurrencia, delegación y reglas para resolver mensajes ambiguos como “continúa” o “corrige eso”. También debe definir cómo mostrar el proyecto activo, cómo recuperar una tarea después de un reinicio y cómo impedir que una herramienta opere en el directorio o repositorio equivocado.
-
-- Evaluar, siguiendo el modelo `brain → source` de GBrain, un **contexto específico por proyecto**. Cada proyecto podría tener un `source_id` propio con sus páginas, hechos, decisiones, tareas, skills, archivos, índices y permisos. El contexto global sólo aportaría identidad y preferencias autorizadas; el `context_pack`, la memoria recuperada, el presupuesto y las herramientas se resolverían primero dentro del proyecto activo.
-- El enrutador debe seleccionar el `source_id` antes de buscar, escribir o ejecutar una herramienta. Si el mensaje es ambiguo, debe mostrar el proyecto activo y pedir confirmación, en lugar de combinar silenciosamente fuentes. Un cambio de proyecto debe generar un nuevo contexto de turno y quedar registrado con `session_id`, `task_id`, `source_id` y la evidencia que justificó la selección.
-- Investigar si este aislamiento mejora precisión, evita contaminación entre proyectos y reduce tokens frente a un contexto global. Comparar un contexto único con contextos por proyecto y una capa global mínima, midiendo recuperación, errores de enrutamiento, filtraciones entre proyectos, latencia, costo, continuidad de tareas y calidad de las respuestas.
+- Evaluar la arquitectura `brain → source` de GBrain para páginas, entidades, índices relacionales y permisos avanzados propios de cada proyecto. Conservar `project_id` como ámbito explícito; cualquier `source_id` adicional deberá mantener esa relación.
+- Comparar recuperación léxica con embeddings, grafos y contextos por episodios; medir errores de enrutamiento, cruces entre ámbitos, continuidad, preguntas innecesarias, tareas completadas, tokens, latencia y RAM con conversaciones reales y proyectos similares.
+- Añadir prioridades, dependencias durables, presupuestos por proyecto/tarea, permisos por recurso, skills específicas de proyecto y coordinación entre instalaciones cuando exista una política definida. No convertir un enlace entre proyectos en autorización implícita de lectura o escritura.
+- Investigar recuperación tras reinicios y migración asistida de historiales previos a proyectos, con procedencia y revisión. La migración actual conserva el historial antiguo como general y no reanuda tareas interrumpidas.
+- Ampliar los cambios de contexto y las referencias ambiguas según los fallos medidos. Mantener el contexto general y una sola conversación también en futuras interfaces de voz.
 
 ### 2.16. Aprendizaje y ciclo de vida de skills
 

@@ -94,7 +94,14 @@ test.beforeAll(async () => {
   modelURL = `http://127.0.0.1:${modelServer.address().port}`;
   service = spawn(
     resolve("../../target/debug/fenix"),
-    ["--port", "4189", "--data-dir", join(directory, "data")],
+    [
+      "--port",
+      "4189",
+      "--data-dir",
+      join(directory, "data"),
+      "--skills-dir",
+      join(directory, "skills"),
+    ],
     { stdio: "pipe" },
   );
   let logs = "";
@@ -347,4 +354,251 @@ test("cancelling an in-flight stream clears the preview and does not retry infer
     .toBe("cancelled");
   await expect(page.locator("#live-message")).toBeEmpty();
   expect(streamRequests - before).toBe(1);
+});
+
+test("background tasks and simultaneous textual requests update without leaving the Tasks view", async ({
+  page,
+}, testInfo) => {
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  let finished = false;
+  await page.route("**/api/status", async (route) => {
+    const response = await route.fetch();
+    const status = await response.json();
+    status.subagents = [
+      {
+        id: "child-task-1234567890",
+        parent_task_id: "parent-task-1234567890",
+        spec: {
+          objective: "Check the local project",
+          expected_output: "A verified report with file references",
+          context: "",
+          constraints: "",
+        },
+        status: finished ? "completed" : "waiting",
+        attempts: finished ? 2 : 1,
+        result: finished
+          ? {
+              status: "completed",
+              summary: "Verified <report>",
+              evidence: "file.txt:2",
+            }
+          : null,
+        created_at: "2026-09-14T09:00:00Z",
+        updated_at: "2026-09-14T09:02:00Z",
+      },
+    ];
+    status.pending_requests = finished
+      ? []
+      : [
+          {
+            id: "approval-child-123",
+            task_id: "child-task-1234567890",
+            kind: "approval",
+            question: "Write the report?",
+            action: null,
+          },
+          {
+            id: "question-child-456",
+            task_id: "another-child",
+            kind: "question",
+            question: "Which file?",
+            action: null,
+          },
+        ];
+    await route.fulfill({ response, json: status });
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/");
+  await page.locator('[data-page="activity"]').click();
+  const panel = page.locator("#background-subagents");
+  await expect(panel).toContainText("Check the local project");
+  await expect(panel).toContainText("A verified report with file references");
+  await expect(panel).toContainText("1 / 3");
+  await expect(panel).toContainText("parent-task-1234567890");
+  await expect(page.locator("#task-pending")).toContainText(
+    "aprobar approval-child-123",
+  );
+  await expect(page.locator("#task-pending")).toContainText(
+    "responder question-child-456",
+  );
+  await expect(
+    page.getByRole("button", { name: /aprobar|rechazar/i }),
+  ).toHaveCount(0);
+  await page.screenshot({
+    path: testInfo.outputPath("background-tasks-desktop-light.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('.mobile-brand [data-action="theme"]').click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath("background-tasks-mobile-dark.png"),
+    fullPage: true,
+  });
+  finished = true;
+  await expect(panel).toContainText("Completada");
+  await expect(panel).toContainText("2 / 3");
+  await expect(page.locator("#task-pending")).toBeHidden();
+  await panel.locator("summary").click();
+  await expect(panel.locator("pre")).toContainText("file.txt:2");
+  await expect(panel.locator("report")).toHaveCount(0);
+  await page.locator('.mobile-brand [data-action="language"]').click();
+  await expect(page.locator("#background-title")).toHaveText(
+    "Background tasks",
+  );
+  await expect(panel).toContainText("Completed");
+  expect(errors).toEqual([]);
+});
+
+test("projects keep separate memories and referenced replies in one conversation", async ({
+  page,
+}, testInfo) => {
+  const errors = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  await page.locator('[data-page="projects"]').click();
+  await page.locator("#project-name").fill("Project Atlas");
+  await page.locator("#project-aliases").fill("atlas, office launch");
+  await page.locator("#project-description").fill("Prepare the office launch");
+  await page.locator("#project-workspace").fill(directory);
+  await page
+    .locator("#project-brief")
+    .fill("Objective: launch the office\nConstraints: use SQLite");
+  await page
+    .getByRole("button", { name: "Guardar proyecto", exact: true })
+    .click();
+  await expect(page.locator("#project-list")).toContainText("Project Atlas");
+  await page.locator("#project-name").fill("Project Beacon");
+  await page.locator("#project-aliases").fill("beacon");
+  await page.locator("#project-brief").fill("Constraints: use PostgreSQL");
+  await page
+    .getByRole("button", { name: "Guardar proyecto", exact: true })
+    .click();
+  await expect(page.locator("#project-list .record")).toHaveCount(2);
+  const projects = await (await page.request.get("/api/projects")).json();
+  const atlas = projects.find((project) => project.name === "Project Atlas");
+  const beacon = projects.find((project) => project.name === "Project Beacon");
+  await page
+    .locator("#project-list .record")
+    .filter({ hasText: "Project Atlas" })
+    .getByRole("button", { name: "Editar", exact: true })
+    .click();
+  await expect(page.locator("#project-brief")).toHaveValue(
+    "Objective: launch the office\nConstraints: use SQLite",
+  );
+  await page.locator("#project-description").fill("Updated office launch");
+  await page.waitForResponse((response) =>
+    response.url().endsWith("/api/status"),
+  );
+  await expect(page.locator("#project-description")).toHaveValue(
+    "Updated office launch",
+  );
+  await page.screenshot({
+    path: testInfo.outputPath("projects-desktop-light.png"),
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Guardar proyecto", exact: true })
+    .click();
+  await expect(page.locator("#project-list")).toContainText(
+    "Updated office launch",
+  );
+  await page
+    .locator("#project-list .record")
+    .filter({ hasText: "Project Atlas" })
+    .getByRole("button", { name: "Ver progreso" })
+    .click();
+  await expect(page.locator("#detail-content")).toContainText(
+    "Constraints: use SQLite",
+  );
+  await page.locator("#close-dialog").click();
+
+  await page.locator('[data-page="memory"]').click();
+  for (const [scope, text] of [
+    ["", "General: concise answers"],
+    [atlas.id, "Atlas: SQLite only"],
+    [beacon.id, "Beacon: PostgreSQL only"],
+  ]) {
+    await page.locator("#memory-filter").selectOption(scope);
+    await page.locator("#memory-title").fill("Project preference");
+    await page.locator("#memory-content").fill(text);
+    await page
+      .getByRole("button", { name: "Guardar recuerdo", exact: true })
+      .click();
+    await expect(page.locator("#memory-list")).toContainText(text);
+    await expect(page.locator("#memory-list .record")).toHaveCount(1);
+  }
+  await page.locator("#memory-filter").selectOption(atlas.id);
+  await expect(page.locator("#memory-list")).toContainText(
+    "Atlas: SQLite only",
+  );
+  await expect(page.locator("#memory-list")).not.toContainText("PostgreSQL");
+  await page
+    .locator("#memory-list")
+    .getByRole("button", { name: "Editar", exact: true })
+    .click();
+  await expect(page.locator("#memory-project")).toBeDisabled();
+  await page.locator('[data-action="clear-memory"]').click();
+  await expect(page.locator("#memory-project")).toBeEnabled();
+  await page.locator("#memory-filter").selectOption("");
+  await expect(page.locator("#memory-list")).toContainText(
+    "General: concise answers",
+  );
+  await expect(page.locator("#memory-list")).not.toContainText("SQLite");
+
+  await page.locator('[data-page="chat"]').click();
+  await expect(page.locator("#chat-form select")).toHaveCount(0);
+  await expect(page.locator("#message-list")).toContainText(
+    "Archivo creado y verificado.",
+  );
+  await page.locator("#chat-input").fill("Dime cómo va Project Atlas");
+  const submitted = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/messages") &&
+      response.request().method() === "POST",
+  );
+  await page.locator("#chat-input").press("Enter");
+  const { task_id: taskId } = await (await submitted).json();
+  await expect
+    .poll(
+      async () =>
+        (await (await page.request.get(`/api/tasks/${taskId}`)).json()).binding
+          .project_id,
+    )
+    .toBe(atlas.id);
+  const reply = page.locator(`[data-reply-task="${taskId}"]`).first();
+  await expect(reply).toBeVisible();
+  await expect(reply.locator("..")).toContainText("Project Atlas");
+  await reply.click();
+  await expect(page.locator("#reply-reference")).toContainText(
+    taskId.slice(0, 8),
+  );
+  await page.locator("#chat-input").fill("Dame un resumen breve");
+  const referenced = page.waitForRequest(
+    (request) =>
+      request.url().endsWith("/api/messages") && request.method() === "POST",
+  );
+  await page.locator("#chat-input").press("Enter");
+  expect((await referenced).postDataJSON()).toEqual({
+    text: "Dame un resumen breve",
+    reply_to_task_id: taskId,
+  });
+  await expect(page.locator("#reply-reference")).toBeHidden();
+  await expect(page.locator("#message-list")).toContainText(
+    "Create a file called browser-check.txt",
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('[data-page="projects"]').click();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  expect(errors).toEqual([]);
 });

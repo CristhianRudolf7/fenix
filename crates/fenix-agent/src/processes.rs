@@ -39,6 +39,7 @@ impl Processes {
         cwd: &Path,
         timeout: u64,
         task_cancel: &CancellationToken,
+        effect_lease: Option<tokio::sync::OwnedMutexGuard<()>>,
     ) -> Result<Value> {
         if command.is_empty() || command.len() > 16_000 {
             bail!("Command must contain 1–16000 bytes");
@@ -95,14 +96,16 @@ impl Processes {
         items.insert(id.clone(), process.clone());
         drop(items);
         let out = process.clone();
-        let stdout = tokio::spawn(async move {
+        let mut stdout = tokio::spawn(async move {
             capture(stdout, out).await;
         });
         let out = process.clone();
-        let stderr = tokio::spawn(async move {
+        let mut stderr = tokio::spawn(async move {
             capture(stderr, out).await;
         });
         tokio::spawn(async move {
+            // Shell commands can affect arbitrary paths. Serialize effects until
+            // the process group is gone, even if the calling future is dropped.
             let (status, exit) = tokio::select! {
                 result=child.wait()=> ("completed",result.ok().and_then(|s|s.code())),
                 _=process.cancel.cancelled()=> ("cancelled",None),
@@ -111,8 +114,23 @@ impl Processes {
             // Also close descendant processes that inherited stdout/stderr after shell exit.
             let _ = killpg(Pid::from_raw(pid as i32), Signal::SIGKILL);
             let _ = child.wait().await;
-            let _ = tokio::time::timeout(Duration::from_secs(2), stdout).await;
-            let _ = tokio::time::timeout(Duration::from_secs(2), stderr).await;
+            if tokio::time::timeout(Duration::from_secs(2), &mut stdout)
+                .await
+                .is_err()
+            {
+                stdout.abort();
+                let _ = stdout.await;
+            }
+            if tokio::time::timeout(Duration::from_secs(2), &mut stderr)
+                .await
+                .is_err()
+            {
+                stderr.abort();
+                let _ = stderr.await;
+            }
+            // Observing a terminal status must also mean the process group has
+            // been reaped, output capture has stopped and effects can proceed.
+            drop(effect_lease);
             let mut state = process.state.lock().await;
             state.status = status.into();
             state.exit_code = exit;
@@ -161,11 +179,23 @@ impl Processes {
             bail!("This process belongs to another task");
         }
         process.cancel.cancel();
+        wait_finished(&process).await;
         Ok(json!({"process_id":id,"cancellation_requested":true}))
     }
     pub async fn cancel_task(&self, task: &str) {
-        for process in self.items.lock().await.values().filter(|p| p.owner == task) {
+        let processes = self
+            .items
+            .lock()
+            .await
+            .values()
+            .filter(|process| process.owner == task)
+            .cloned()
+            .collect::<Vec<_>>();
+        for process in &processes {
             process.cancel.cancel();
+        }
+        for process in processes {
+            wait_finished(&process).await;
         }
     }
     pub async fn has_running(&self, task: &str) -> bool {
@@ -177,9 +207,33 @@ impl Processes {
         false
     }
     pub async fn cancel_all(&self) {
-        for process in self.items.lock().await.values() {
+        let processes = self
+            .items
+            .lock()
+            .await
+            .values()
+            .cloned()
+            .collect::<Vec<_>>();
+        for process in &processes {
             process.cancel.cancel();
         }
+        for process in processes {
+            wait_finished(&process).await;
+        }
+    }
+}
+
+async fn wait_finished(process: &Process) {
+    loop {
+        // Register before inspecting status so completion cannot fall between
+        // the status check and waiting for its notification.
+        let notified = process.done.notified();
+        tokio::pin!(notified);
+        notified.as_mut().enable();
+        if process.state.lock().await.status != "running" {
+            return;
+        }
+        notified.await;
     }
 }
 async fn capture(mut reader: impl AsyncRead + Unpin, process: Arc<Process>) {
@@ -214,6 +268,7 @@ mod tests {
                 dir.path(),
                 5,
                 &cancel,
+                None,
             )
             .await
             .unwrap();
@@ -239,6 +294,7 @@ mod tests {
                 dir.path(),
                 1,
                 &cancel,
+                None,
             )
             .await
             .unwrap();
@@ -254,5 +310,45 @@ mod tests {
         assert_eq!(status["status"], "timed_out");
         assert_eq!(status["truncated"], true);
         assert!(status["output"].as_str().unwrap().len() <= OUTPUT_LIMIT);
+    }
+
+    #[tokio::test]
+    async fn cancellation_waits_for_process_cleanup_and_releases_effects() {
+        let dir = tempfile::tempdir().unwrap();
+        let processes = Processes::default();
+        let redactor = Redactor::default();
+        let effects = Arc::new(Mutex::new(()));
+        for cancel_all in [false, true] {
+            let task_cancel = CancellationToken::new();
+            let result = processes
+                .run(
+                    "task",
+                    "sleep 60 & wait",
+                    dir.path(),
+                    60,
+                    &task_cancel,
+                    Some(effects.clone().lock_owned().await),
+                )
+                .await
+                .unwrap();
+            assert!(processes.has_running("task").await);
+            assert!(effects.try_lock().is_err());
+            tokio::time::timeout(Duration::from_secs(5), async {
+                if cancel_all {
+                    processes.cancel_all().await;
+                } else {
+                    processes.cancel_task("task").await;
+                }
+            })
+            .await
+            .expect("Cancellation must finish managed process cleanup");
+            assert!(!processes.has_running("task").await);
+            assert!(effects.try_lock().is_ok());
+            let status = processes
+                .status("task", result["process_id"].as_str().unwrap(), 0, &redactor)
+                .await
+                .unwrap();
+            assert_eq!(status["status"], "cancelled");
+        }
     }
 }

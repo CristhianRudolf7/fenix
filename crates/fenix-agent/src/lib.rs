@@ -2,14 +2,18 @@
 
 pub mod config;
 mod context;
+mod effects;
 mod engine;
 mod files;
 mod permissions;
 mod processes;
 pub mod progress;
+mod project_tools;
+mod projects;
 pub mod redaction;
 pub mod schedules;
 pub mod skills;
+mod subagents;
 pub mod telegram;
 pub mod tools;
 
@@ -24,6 +28,7 @@ use processes::Processes;
 use redaction::Redactor;
 use serde_json::{Value, json};
 use std::{
+    collections::BTreeMap,
     fs::{File, OpenOptions},
     io::Write,
     os::unix::fs::{OpenOptionsExt, PermissionsExt},
@@ -41,7 +46,10 @@ pub struct Runtime {
     pub stop: CancellationToken,
     pub(crate) model: RwLock<Option<Arc<ModelConnection>>>,
     pub(crate) active: Mutex<Option<ActiveTask>>,
-    pub(crate) pending: Mutex<Option<Pending>>,
+    pub(crate) pending: Mutex<BTreeMap<String, Pending>>,
+    pub(crate) subagents: subagents::SubagentManager,
+    pub(crate) effects: Arc<Mutex<()>>,
+    pub(crate) file_effects: Arc<effects::FileEffects>,
     pub(crate) configure_lock: Mutex<()>,
     pub(crate) schedule_lock: Mutex<()>,
     pub(crate) telegram_lock: Mutex<()>,
@@ -69,9 +77,10 @@ impl Runtime {
         let database = data_dir.join("fenix.sqlite3");
         let store = Arc::new(Store::open(&database)?);
         std::fs::set_permissions(&database, std::fs::Permissions::from_mode(0o600))?;
-        let skills_dir = skills_dir
-            .map(Path::to_owned)
-            .unwrap_or_else(|| data_dir.join("skills"));
+        let skills_dir = match skills_dir {
+            Some(path) => path.to_owned(),
+            None => skills::default_directory()?,
+        };
         std::fs::create_dir_all(&skills_dir)?;
         let skills_dir = std::fs::canonicalize(skills_dir)?;
         let runtime = Arc::new(Self {
@@ -82,7 +91,10 @@ impl Runtime {
             stop: CancellationToken::new(),
             model: RwLock::new(None),
             active: Mutex::new(None),
-            pending: Mutex::new(None),
+            pending: Mutex::new(BTreeMap::new()),
+            subagents: subagents::SubagentManager::default(),
+            effects: Arc::new(Mutex::new(())),
+            file_effects: Arc::new(effects::FileEffects::default()),
             configure_lock: Mutex::new(()),
             schedule_lock: Mutex::new(()),
             telegram_lock: Mutex::new(()),
@@ -128,23 +140,39 @@ impl Runtime {
         let telegram = tokio::spawn(async move {
             runtime.telegram_loop().await;
         });
-        vec![worker, scheduler, telegram]
+        let runtime = self.clone();
+        let subagents = tokio::spawn(async move { runtime.subagent_worker().await });
+        vec![worker, scheduler, telegram, subagents]
     }
 
     pub async fn submit(&self, text: &str, origin: &str) -> Result<Value> {
+        self.submit_referenced(text, origin, None).await
+    }
+
+    pub async fn submit_referenced(
+        &self,
+        text: &str,
+        origin: &str,
+        reply_to_task_id: Option<&str>,
+    ) -> Result<Value> {
         let text = text.trim();
         if text.is_empty() || text.len() > 32_000 {
             bail!("Send 1–32000 bytes of text");
         }
         let text = self.redactor.text(text);
-        if let Some(result) = self.handle_control(&text, origin).await? {
+        if let Some(result) = self
+            .handle_referenced_control(&text, origin, reply_to_task_id)
+            .await?
+        {
             return Ok(result);
         }
         let _config = self.configure_lock.lock().await;
         if self.model.read().await.is_none() {
             bail!("Complete model setup first");
         }
-        let task = self.store.enqueue(&text, origin, None)?;
+        let task = self
+            .store
+            .enqueue_referenced(&text, origin, None, reply_to_task_id)?;
         self.wake.notify_one();
         Ok(json!({"queued":true,"task_id":task.id}))
     }
@@ -163,17 +191,24 @@ impl Runtime {
             .telegram_settings()?
             .is_some_and(|s| s.enabled && s.owner_id.is_some())
         {
-            self.store.queue_delivery(&text)?;
+            self.store.queue_delivery_for_task(&text, task)?;
         }
         Ok(())
     }
 
     pub async fn status(&self) -> Result<Value> {
         let settings = self.settings()?;
-        let pending = self.pending.lock().await.as_ref().map(|p| p.view.clone());
+        let pending_requests = self
+            .pending
+            .lock()
+            .await
+            .values()
+            .map(|p| p.view.clone())
+            .collect::<Vec<_>>();
+        let pending = pending_requests.first();
         let active = self.active.lock().await.as_ref().map(|a| a.task_id.clone());
         Ok(
-            json!({"ready":self.model.read().await.is_some(),"session_id":self.store.session_id(),"settings":settings,"default_settings":config::Settings::initial(std::env::current_dir()?),"active_task":active,"pending":pending,"timezone":"America/Lima","tool_count":tools::catalog().len(),"telegram":self.telegram_settings()?,"skills_directory":self.skills_dir}),
+            json!({"ready":self.model.read().await.is_some(),"session_id":self.store.session_id(),"settings":settings,"default_settings":config::Settings::initial(std::env::current_dir()?),"active_task":active,"pending":pending,"pending_requests":pending_requests,"subagents":self.subagent_views()?,"projects":self.project_catalog()?,"focus_project_id":self.store.conversation_focus()?,"timezone":"America/Lima","tool_count":tools::catalog().len(),"telegram":self.telegram_settings()?,"skills_directory":self.skills_dir}),
         )
     }
 
@@ -183,7 +218,9 @@ impl Runtime {
             active.cancel.cancel();
         }
         self.processes.cancel_all().await;
+        self.file_effects.wait(None).await;
         self.wake.notify_waiters();
+        self.subagents.wake.notify_waiters();
         Ok(())
     }
 }

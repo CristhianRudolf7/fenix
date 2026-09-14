@@ -272,7 +272,7 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 
 [[package]]
 name = "fenix-agent"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -297,7 +297,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-core"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -305,7 +305,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-credentials"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "fenix-core",
  "thiserror",
@@ -314,7 +314,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-providers"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "fenix-core",
  "fenix-credentials",
@@ -329,7 +329,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-server"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -348,7 +348,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-storage"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "chrono",

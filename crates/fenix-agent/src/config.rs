@@ -107,7 +107,12 @@ impl Runtime {
     pub async fn configure(&self, mut settings: Settings, key: Option<String>) -> Result<Value> {
         let _guard = self.configure_lock.lock().await;
         if self.active.lock().await.is_some()
-            || self.store.tasks(200)?.iter().any(|t| t.status == "queued")
+            || self
+                .store
+                .tasks(200)?
+                .iter()
+                .any(|t| matches!(t.status.as_str(), "queued" | "running" | "waiting"))
+            || !self.subagents.active.lock().await.is_empty()
         {
             bail!("Wait for queued or active tasks before changing model configuration");
         }

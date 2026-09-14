@@ -10,7 +10,9 @@ use tower::ServiceExt;
 #[tokio::test]
 async fn progress_sends_a_fresh_snapshot_and_keeps_the_local_origin_guard() {
     let dir = tempfile::tempdir().unwrap();
-    let runtime = Runtime::open(dir.path(), None).await.unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
     runtime
         .store
         .put("credentials", "openai:default", &"private-not-for-events")
@@ -57,7 +59,9 @@ async fn progress_sends_a_fresh_snapshot_and_keeps_the_local_origin_guard() {
 #[tokio::test]
 async fn loopback_guard_blocks_foreign_hosts_origins_and_form_posts() {
     let dir = tempfile::tempdir().unwrap();
-    let runtime = Runtime::open(dir.path(), None).await.unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
     let app = fenix_server::router(runtime, 4173);
     for (host, origin, method, content_type, expected) in [
         (
@@ -111,7 +115,9 @@ async fn loopback_guard_blocks_foreign_hosts_origins_and_form_posts() {
 #[tokio::test]
 async fn api_exposes_catalog_and_memory_but_never_private_credentials() {
     let dir = tempfile::tempdir().unwrap();
-    let runtime = Runtime::open(dir.path(), None).await.unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
     runtime
         .store
         .put("credentials", "openai:default", &"secret-should-not-appear")
@@ -152,4 +158,194 @@ async fn api_exposes_catalog_and_memory_but_never_private_credentials() {
             .len(),
         1
     );
+}
+
+async fn request_json(
+    app: axum::Router,
+    method: &str,
+    uri: &str,
+    body: Value,
+) -> (StatusCode, Value) {
+    let response = app
+        .oneshot(
+            Request::builder()
+                .method(method)
+                .uri(uri)
+                .header("host", "localhost:4173")
+                .header("content-type", "application/json")
+                .body(Body::from(body.to_string()))
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    let status = response.status();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    (status, serde_json::from_slice(&bytes).unwrap())
+}
+
+#[tokio::test]
+async fn project_endpoints_preserve_scopes_and_expose_task_bindings() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
+    let app = fenix_server::router(runtime.clone(), 4173);
+    let (status, project) = request_json(
+        app.clone(),
+        "POST",
+        "/api/projects",
+        json!({
+            "name": "Project A", "aliases": ["alpha"], "description": "Office planning",
+            "brief": "Objective: prepare the launch"
+        }),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    let project_id = project["id"].as_str().unwrap();
+    let (status, _) = request_json(
+        app.clone(),
+        "POST",
+        "/api/projects",
+        json!({"name":"Second", "aliases":["alpha"]}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let task = runtime
+        .store
+        .enqueue("Review Project A", "web", None)
+        .unwrap();
+    runtime
+        .store
+        .bind_task(
+            &task.id,
+            &fenix_storage::TaskBinding {
+                project_id: Some(project_id.into()),
+                mode: "project".into(),
+                bound: true,
+                context_version: project["context_version"].as_u64().unwrap(),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    let general = runtime.store.enqueue("Good morning", "web", None).unwrap();
+    let (_, detail) = request_json(
+        app.clone(),
+        "GET",
+        &format!("/api/projects/{project_id}"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(detail["tasks"].as_array().unwrap().len(), 1);
+    assert_eq!(detail["tasks"][0]["id"], task.id);
+    let (_, history) = request_json(app.clone(), "GET", "/api/messages", Value::Null).await;
+    assert_eq!(history.as_array().unwrap().len(), 2);
+    assert!(
+        history
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["task_id"] == task.id && item["binding"]["project_id"] == project_id)
+    );
+    assert!(
+        history
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item["task_id"] == general.id && item["binding"]["project_id"].is_null())
+    );
+    let (_, details) = request_json(
+        app.clone(),
+        "GET",
+        &format!("/api/tasks/{}", task.id),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(details["binding"]["project_id"], project_id);
+    let (status, updated) = request_json(
+        app.clone(),
+        "PUT",
+        &format!("/api/projects/{project_id}"),
+        json!({
+            "name":"Project A", "aliases":["alpha"], "brief":"Objective: launch completed"
+        }),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(
+        updated["context_version"].as_u64().unwrap(),
+        project["context_version"].as_u64().unwrap() + 1
+    );
+    let (status, _) = request_json(
+        app,
+        "POST",
+        "/api/projects",
+        json!({"name":"Bad path", "workspace": "/path-that-does-not-exist/fenix"}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+}
+
+#[tokio::test]
+async fn memory_endpoints_filter_before_search_and_reject_scope_changes() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
+    let app = fenix_server::router(runtime, 4173);
+    let (_, project) = request_json(
+        app.clone(),
+        "POST",
+        "/api/projects",
+        json!({"name":"Project A"}),
+    )
+    .await;
+    let project_id = project["id"].as_str().unwrap();
+    for scope in [Value::Null, json!(project_id)] {
+        let (status, _) = request_json(
+            app.clone(),
+            "POST",
+            "/api/memory",
+            json!({"title":"Database", "content":"Use SQLite", "project_id":scope}),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+    }
+    let (_, global) =
+        request_json(app.clone(), "GET", "/api/memory?query=SQLite", Value::Null).await;
+    let (_, scoped) = request_json(
+        app.clone(),
+        "GET",
+        &format!("/api/memory?query=SQLite&project_id={project_id}"),
+        Value::Null,
+    )
+    .await;
+    assert_eq!(global.as_array().unwrap().len(), 1);
+    assert_eq!(scoped.as_array().unwrap().len(), 1);
+    assert!(global[0]["project_id"].is_null());
+    assert_eq!(scoped[0]["project_id"], project_id);
+    let memory_id = scoped[0]["id"].as_str().unwrap();
+    let (status, _) = request_json(
+        app.clone(),
+        "POST",
+        "/api/memory",
+        json!({"id":memory_id,"title":"Database","content":"Changed without scope"}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let (status, _) = request_json(
+        app.clone(),
+        "DELETE",
+        &format!("/api/memory/{memory_id}"),
+        json!({}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let (status, _) = request_json(
+        app,
+        "DELETE",
+        &format!("/api/memory/{memory_id}?project_id={project_id}"),
+        json!({}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
 }

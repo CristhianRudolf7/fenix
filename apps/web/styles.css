@@ -591,6 +591,34 @@ input[type="checkbox"] {
   color: var(--muted);
   margin-top: 8px;
 }
+.project-badge {
+  margin: 4px 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.reply-button {
+  padding: 2px 6px;
+  font-size: 11px;
+}
+.reply-reference {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--fg);
+  background: var(--soft);
+  font-size: 12px;
+}
+.reply-reference[hidden] {
+  display: none;
+}
+.reply-reference p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
 .composer-area {
   padding: 12px 32px 20px;
   background: var(--bg);
@@ -993,4 +1021,59 @@ dialog::backdrop {
     bottom: 16px;
     max-width: none;
   }
+}
+
+.task-content > .card + .card {
+  margin-top: 20px;
+}
+.background-task {
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+.background-task h3 {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.background-task .row {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.task-output {
+  margin: 10px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.background-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.background-meta span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.background-meta code,
+.textual-control code {
+  overflow-wrap: anywhere;
+}
+.subagent-result {
+  margin-top: 12px;
+}
+.subagent-result summary {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.subagent-result pre {
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.textual-control {
+  font-size: 12px;
+  line-height: 1.8;
 }

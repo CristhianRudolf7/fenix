@@ -1,7 +1,11 @@
 //! Durable conversation, task journal and lexical memory. No model or channel dependencies.
 
 mod memory;
+mod projects;
+mod subagents;
 pub use memory::Memory;
+pub use projects::{Project, ProjectInput, TaskBinding};
+pub use subagents::{Subagent, SubagentSpec};
 
 use anyhow::{Context, Result, bail};
 use fenix_core::{Message, Role};
@@ -53,14 +57,25 @@ pub struct StoredMessage {
 
 impl Store {
     pub fn open(path: &Path) -> Result<Self> {
-        let connection = Connection::open(path)?;
+        let mut connection = Connection::open(path)?;
         connection.busy_timeout(Duration::from_secs(5))?;
         connection.pragma_update(None, "journal_mode", "WAL")?;
+        connection.pragma_update(None, "foreign_keys", "ON")?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if version > 1 {
+        if version > 3 {
             bail!("Database was created by a newer Fenix version");
         }
-        connection.execute_batch(include_str!("../migrations/001_initial.sql"))?;
+        let migration = connection.transaction()?;
+        if version < 1 {
+            migration.execute_batch(include_str!("../migrations/001_initial.sql"))?;
+        }
+        if version < 2 {
+            migration.execute_batch(include_str!("../migrations/002_subagents.sql"))?;
+        }
+        if version < 3 {
+            migration.execute_batch(include_str!("../migrations/003_projects.sql"))?;
+        }
+        migration.commit()?;
         connection.execute(
             "INSERT OR IGNORE INTO metadata VALUES ('session_id', ?1)",
             [id()],
@@ -87,16 +102,74 @@ impl Store {
 
     /// Do not resume queued, running or waiting work from a previous process.
     pub fn interrupt_unfinished(&self) -> Result<usize> {
-        let db = self.db()?;
-        let count = db.execute("UPDATE tasks SET status='interrupted', error='Service stopped before completion; actions were not resumed.', updated_at=?1 WHERE status IN ('queued','running','waiting')", [now()])?;
+        let mut db = self.db()?;
+        let tx = db.transaction()?;
+        tx.execute("UPDATE subagents SET result=?1 WHERE id IN (SELECT id FROM tasks WHERE status IN ('queued','running','waiting'))", [json!({"status":"interrupted","error":"Service stopped before completion; actions were not resumed.","pending":"Inspect saved task events before repeating actions."}).to_string()])?;
+        let count = tx.execute("UPDATE tasks SET status='interrupted', error='Service stopped before completion; actions were not resumed.', updated_at=?1 WHERE status IN ('queued','running','waiting')", [now()])?;
         // Conversation history remains recoverable, but incomplete tool sequences never enter model context.
-        db.execute("UPDATE messages SET in_context=0 WHERE task_id IN (SELECT id FROM tasks WHERE status='interrupted')", [])?;
+        tx.execute("UPDATE messages SET in_context=0 WHERE task_id IN (SELECT id FROM tasks WHERE status='interrupted')", [])?;
+        tx.commit()?;
         Ok(count)
     }
 
     pub fn enqueue(&self, text: &str, origin: &str, schedule_id: Option<&str>) -> Result<Task> {
+        self.enqueue_referenced(text, origin, schedule_id, None)
+    }
+
+    pub fn enqueue_referenced(
+        &self,
+        text: &str,
+        origin: &str,
+        schedule_id: Option<&str>,
+        reply_to_task_id: Option<&str>,
+    ) -> Result<Task> {
+        self.enqueue_with_binding(text, origin, schedule_id, reply_to_task_id, None)
+    }
+
+    /// Scheduled work becomes visible to workers only after its scope is pinned.
+    pub fn enqueue_bound(
+        &self,
+        text: &str,
+        origin: &str,
+        schedule_id: Option<&str>,
+        binding: &TaskBinding,
+    ) -> Result<Task> {
+        self.enqueue_with_binding(
+            text,
+            origin,
+            schedule_id,
+            binding.reply_to_task_id.as_deref(),
+            Some(binding),
+        )
+    }
+
+    fn enqueue_with_binding(
+        &self,
+        text: &str,
+        origin: &str,
+        schedule_id: Option<&str>,
+        reply_to_task_id: Option<&str>,
+        binding: Option<&TaskBinding>,
+    ) -> Result<Task> {
         let mut db = self.db()?;
         let tx = db.transaction()?;
+        if let Some(reference) = reply_to_task_id {
+            let exists: bool = tx.query_row(
+                "SELECT EXISTS(SELECT 1 FROM tasks WHERE id=?1)",
+                [reference],
+                |row| row.get(0),
+            )?;
+            if !exists {
+                bail!("Referenced task not found");
+            }
+        }
+        let focus: Option<String> = tx
+            .query_row(
+                "SELECT value FROM metadata WHERE key='conversation_focus'",
+                [],
+                |row| row.get(0),
+            )
+            .optional()?;
         if let Some(schedule) = schedule_id {
             let busy: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM tasks WHERE schedule_id=?1 AND status IN ('queued','running','waiting'))", [schedule], |r| r.get(0))?;
             if busy {
@@ -115,6 +188,18 @@ impl Store {
             error: None,
         };
         tx.execute("INSERT INTO tasks(id,session_id,request,origin,status,schedule_id,created_at,updated_at) VALUES (?1,?2,?3,?4,?5,?6,?7,?8)", params![task.id,task.session_id,task.request,task.origin,task.status,task.schedule_id,task.created_at,task.updated_at])?;
+        projects::write_binding(
+            &tx,
+            &task.id,
+            &TaskBinding {
+                reply_to_task_id: reply_to_task_id.map(str::to_owned),
+                focus_project_id: focus,
+                ..TaskBinding::default()
+            },
+        )?;
+        if let Some(binding) = binding {
+            projects::bind_task_in_database(&tx, &task.id, binding)?;
+        }
         let message_id = id();
         tx.execute("INSERT INTO messages(id,task_id,role,text,body,visible,in_context,origin,created_at) VALUES (?1,?2,'user',?3,?4,1,0,?5,?6)", params![message_id,task.id,text,serde_json::to_string(&Message::user(text))?,origin,now()])?;
         tx.execute(
@@ -128,7 +213,7 @@ impl Store {
     pub fn claim_next(&self) -> Result<Option<Task>> {
         let mut db = self.db()?;
         let tx = db.transaction()?;
-        let task = tx.query_row("SELECT id,session_id,request,origin,status,schedule_id,created_at,updated_at,error FROM tasks WHERE status='queued' ORDER BY seq LIMIT 1", [], task_row).optional()?;
+        let task = tx.query_row("SELECT id,session_id,request,origin,status,schedule_id,created_at,updated_at,error FROM tasks WHERE status='queued' AND origin!='subagent' ORDER BY CASE WHEN origin='subagent_report' THEN 1 ELSE 0 END,seq LIMIT 1", [], task_row).optional()?;
         if let Some(mut task) = task {
             task.status = "running".into();
             task.updated_at = now();
@@ -146,7 +231,7 @@ impl Store {
 
     pub fn set_task_status(&self, task: &str, status: &str, error: Option<&str>) -> Result<()> {
         self.db()?.execute(
-            "UPDATE tasks SET status=?2,error=?3,updated_at=?4 WHERE id=?1",
+            "UPDATE tasks SET status=?2,error=?3,updated_at=?4 WHERE id=?1 AND (origin!='subagent' OR status NOT IN ('completed','blocked','failed','cancelled','interrupted'))",
             params![task, status, error, now()],
         )?;
         Ok(())
@@ -287,11 +372,23 @@ impl Store {
     }
 
     pub fn queue_delivery(&self, text: &str) -> Result<()> {
+        self.queue_delivery_for_task(text, None)
+    }
+    pub fn queue_delivery_for_task(&self, text: &str, task_id: Option<&str>) -> Result<()> {
         self.db()?.execute(
-            "INSERT INTO outbox(text,created_at) VALUES (?1,?2)",
-            params![text, now()],
+            "INSERT INTO outbox(text,created_at,task_id) VALUES (?1,?2,?3)",
+            params![text, now(), task_id],
         )?;
         Ok(())
+    }
+    pub fn delivery_task(&self, seq: i64) -> Result<Option<String>> {
+        Ok(self
+            .db()?
+            .query_row("SELECT task_id FROM outbox WHERE seq=?1", [seq], |row| {
+                row.get(0)
+            })
+            .optional()?
+            .flatten())
     }
     pub fn deliveries(&self) -> Result<Vec<(i64, String)>> {
         Ok(self.db()?.prepare("SELECT seq,text FROM outbox WHERE status='pending' AND attempts<3 ORDER BY seq LIMIT 10")?.query_map([],|r|Ok((r.get(0)?,r.get(1)?)))?.collect::<rusqlite::Result<_>>()?)

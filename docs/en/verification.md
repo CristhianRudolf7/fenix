@@ -99,3 +99,71 @@ cargo test -p fenix-providers --test streaming live_openai_preview_matches_the_c
 
 It reads `OPENAI_API_KEY` from the environment, makes one inference request and
 does not modify the assistant's conversation or print the key.
+
+## Background subagents — 0.2.0
+
+Verified on 2026-09-14: **102 Rust unit/integration tests and two documentation
+examples passed**. Formatting, workspace Clippy with warnings denied, and the
+server build passed. This update used local provider fixtures; it did not make
+billable model requests or exercise live Telegram delivery.
+
+All seven Chromium scenarios passed, including background status updates,
+simultaneous textual requests, escaped report content and mobile layout.
+Desktop light and mobile dark screenshots were visually reviewed. Frontend
+syntax and formatting checks passed.
+
+The new coverage checks that a master answers another request while a child is
+still running or awaiting approval; isolated child context exposes skill metadata
+and loads bodies on demand. Engine and storage checks reject recursive delegation,
+preserve completed effects across inference retries, stop after three total
+attempts, and prevent report turns from resetting that limit. Further cases cover
+four-worker concurrency, queued/running cancellation, independent approval IDs,
+hidden reports, migration from the existing database and restart interruption.
+
+Cancellation tests verify process cleanup and effect-lock release, and wait for
+filesystem work that outlives a cancelled async caller. Skill migration tests cover
+personal-file preservation, symlink avoidance, resource limits and an explicitly
+configured destination nested inside the legacy directory.
+
+A separate temporary runtime started and shut down successfully with the default
+global skill directory, installing the four templates in `~/.fenix/skills`.
+Its temporary database was removed; existing installation data was not migrated
+as part of this check. These checks validate orchestration behavior, not general
+model task accuracy or long-duration autonomous performance.
+
+## Projects and general conversation
+
+Verified on 2026-09-14: **137 Rust unit/integration tests, two documentation
+examples, and eight Chromium scenarios passed**. Workspace Clippy passed with
+warnings denied; JavaScript syntax, web formatting and diff whitespace checks
+passed. The two opt-in live-provider tests remained ignored.
+
+The project update adds coverage for deterministic routing, model-routed compound
+requests and fixed execution scopes. Storage cases exercise unique aliases,
+arrival-time reply/focus hints, immutable bindings, version conflicts, scoped exact
+IDs and lexical search, memory provenance, and isolation of neighboring history
+messages. Migration tests retain existing records as general without guessing
+historical project ownership.
+
+The runtime scenarios use a controlled provider to ask for A's state and then work
+on B, continue general conversation while a child runs, and resolve a late approval
+without changing that child's project. Additional cases cover project schedules,
+reports that preserve focus, deduplication by destination, and workspace fallback
+captured from the parent. They verify orchestration and tool boundaries rather than
+assuming the model will interpret every real request correctly.
+
+A native Telegram reply fixture resolves the original approval by its bot/chat/
+message reference and verifies that replying to an unrelated task does not approve
+the only other pending action. Scoped reminder records retain the same references
+without creating runnable work or appearing in another project's lexical history.
+
+HTTP coverage checks project creation/update, duplicate aliases, workspace
+validation, task bindings in the single visible history, and memory search/edit/
+delete operations with matching scopes. Chromium exercises project administration,
+separate general/Atlas/Beacon memories, project badges, reply references sent with
+the next chat message, retained earlier conversation and mobile layout.
+
+These additions use temporary databases, fake credentials and local model fixtures.
+They introduce no live-model benchmark or live Telegram delivery claim. A separate
+evaluation with real models is needed to measure routing accuracy, unnecessary
+clarifications, wrong-scope reads/effects, task success, total tokens and latency.

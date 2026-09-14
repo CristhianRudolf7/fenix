@@ -72,14 +72,23 @@ impl TelegramClient {
         Ok(result["result"].clone())
     }
     pub async fn send(&self, owner: i64, text: &str) -> Result<()> {
+        self.send_tracked(owner, text).await.map(|_| ())
+    }
+
+    async fn send_tracked(&self, owner: i64, text: &str) -> Result<Vec<i64>> {
+        let mut sent_ids = Vec::new();
         // Keep comfortably below Telegram's UTF-16 length limit, no Markdown parsing.
         let mut part = String::new();
         let mut length = 0;
         for ch in text.chars() {
             let units = ch.len_utf16();
             if length + units > 3500 {
-                self.call("sendMessage", json!({"chat_id":owner,"text":part}))
+                let sent = self
+                    .call("sendMessage", json!({"chat_id":owner,"text":part}))
                     .await?;
+                if let Some(id) = sent["message_id"].as_i64() {
+                    sent_ids.push(id);
+                }
                 part.clear();
                 length = 0;
             }
@@ -87,10 +96,14 @@ impl TelegramClient {
             length += units;
         }
         if !part.is_empty() {
-            self.call("sendMessage", json!({"chat_id":owner,"text":part}))
+            let sent = self
+                .call("sendMessage", json!({"chat_id":owner,"text":part}))
                 .await?;
+            if let Some(id) = sent["message_id"].as_i64() {
+                sent_ids.push(id);
+            }
         }
-        Ok(())
+        Ok(sent_ids)
     }
 }
 
@@ -172,7 +185,28 @@ impl Runtime {
             if text == "/start" {
                 self.notify(None,"Fénix está conectado a tu conversación continua. Puedes escribir aquí o desde la web.")?;
             } else {
-                self.submit(text, "telegram").await?;
+                let reference = message["reply_to_message"]["message_id"]
+                    .as_i64()
+                    .map(|id| {
+                        self.store.get::<String>(
+                            "telegram_messages",
+                            &format!("{}:{sender}:{id}", settings.username),
+                        )
+                    })
+                    .transpose()?
+                    .flatten();
+                let result = self
+                    .submit_referenced(text, "telegram", reference.as_deref())
+                    .await?;
+                if let (Some(task), Some(id)) =
+                    (result["task_id"].as_str(), message["message_id"].as_i64())
+                {
+                    self.store.put(
+                        "telegram_messages",
+                        &format!("{}:{sender}:{id}", settings.username),
+                        &task,
+                    )?;
+                }
             }
         } else {
             self.notify(None,"Por ahora sólo recibo texto. Los archivos, imágenes y audios quedan para una versión posterior.")?;
@@ -244,7 +278,18 @@ impl Runtime {
         self.store.put("telegram", "settings", &settings)?;
         if let Some(owner) = settings.owner_id {
             for (id, text) in self.store.deliveries()? {
-                let sent = client.send(owner, &text).await;
+                let sent = client.send_tracked(owner, &text).await;
+                if let Ok(ids) = &sent
+                    && let Some(task) = self.store.delivery_task(id)?
+                {
+                    for message_id in ids {
+                        self.store.put(
+                            "telegram_messages",
+                            &format!("{}:{owner}:{message_id}", settings.username),
+                            &task,
+                        )?;
+                    }
+                }
                 self.store.delivery_result(id, sent.is_ok())?;
                 sent?;
             }

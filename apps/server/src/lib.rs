@@ -12,6 +12,7 @@ use fenix_agent::{
     Runtime,
     config::{Settings, provider_catalog},
 };
+use fenix_storage::ProjectInput;
 use futures_util::StreamExt;
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -65,6 +66,9 @@ pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
         .route("/api/settings", post(settings))
         .route("/api/telegram", post(telegram))
         .route("/api/messages", get(messages).post(message))
+        .route("/api/chat", post(message))
+        .route("/api/projects", get(projects).post(create_project))
+        .route("/api/projects/{id}", get(project).put(update_project))
         .route("/api/memory", get(memories).post(save_memory))
         .route("/api/memory/{id}", axum::routing::delete(delete_memory))
         .route("/api/skills", get(skills))
@@ -183,31 +187,76 @@ struct Page {
     call_id: Option<String>,
     offset: Option<usize>,
     length: Option<usize>,
+    project_id: Option<String>,
 }
 async fn messages(
     State(runtime): State<Arc<Runtime>>,
     Query(page): Query<Page>,
 ) -> ApiResult<Value> {
     // Provider replay metadata is internal, never needed by a browser.
-    Ok(Json(json!(runtime.store.conversation(page.before,page.limit.unwrap_or(100))?.into_iter().map(|m|json!({"seq":m.seq,"id":m.id,"task_id":m.task_id,"role":m.role,"text":m.text,"origin":m.origin,"created_at":m.created_at})).collect::<Vec<_>>())))
+    let messages = runtime
+        .store
+        .conversation(page.before, page.limit.unwrap_or(100))?;
+    let mut items = Vec::with_capacity(messages.len());
+    for message in messages {
+        let binding = match message.task_id.as_deref() {
+            Some(id) => serde_json::to_value(runtime.store.task_binding(id)?)?,
+            None => Value::Null,
+        };
+        items.push(json!({"seq":message.seq,"id":message.id,"task_id":message.task_id,"role":message.role,"text":message.text,"origin":message.origin,"created_at":message.created_at,"binding":binding}));
+    }
+    Ok(Json(json!(items)))
 }
 #[derive(Deserialize)]
 struct TextInput {
     text: String,
 }
+#[derive(Deserialize)]
+struct ChatInput {
+    text: String,
+    #[serde(default)]
+    reply_to_task_id: Option<String>,
+}
 async fn message(
     State(runtime): State<Arc<Runtime>>,
-    Json(input): Json<TextInput>,
+    Json(input): Json<ChatInput>,
 ) -> ApiResult<Value> {
-    Ok(Json(runtime.submit(&input.text, "web").await?))
+    Ok(Json(
+        runtime
+            .submit_referenced(&input.text, "web", input.reply_to_task_id.as_deref())
+            .await?,
+    ))
+}
+async fn projects(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
+    Ok(Json(json!(runtime.store.projects()?)))
+}
+async fn project(State(runtime): State<Arc<Runtime>>, Path(id): Path<String>) -> ApiResult<Value> {
+    Ok(Json(
+        json!({"project": runtime.store.project(&id)?, "tasks": runtime.store.tasks_for_project(&id, 100)?}),
+    ))
+}
+async fn create_project(
+    State(runtime): State<Arc<Runtime>>,
+    Json(input): Json<ProjectInput>,
+) -> ApiResult<Value> {
+    Ok(Json(json!(runtime.save_project(None, input)?)))
+}
+async fn update_project(
+    State(runtime): State<Arc<Runtime>>,
+    Path(id): Path<String>,
+    Json(input): Json<ProjectInput>,
+) -> ApiResult<Value> {
+    Ok(Json(json!(runtime.save_project(Some(&id), input)?)))
 }
 async fn memories(
     State(runtime): State<Arc<Runtime>>,
     Query(page): Query<Page>,
 ) -> ApiResult<Value> {
-    Ok(Json(json!(runtime.store.memories(
+    Ok(Json(json!(runtime.store.memories_scoped(
         page.query.as_deref().unwrap_or(""),
-        page.limit.unwrap_or(100)
+        page.limit.unwrap_or(100),
+        page.project_id.as_deref(),
+        false,
     )?)))
 }
 #[derive(Deserialize)]
@@ -215,16 +264,20 @@ struct MemoryInput {
     id: Option<String>,
     title: String,
     content: String,
+    #[serde(default)]
+    project_id: Option<String>,
 }
 async fn save_memory(
     State(runtime): State<Arc<Runtime>>,
     Json(input): Json<MemoryInput>,
 ) -> ApiResult<Value> {
-    let memory = runtime.store.save_memory(
+    let memory = runtime.store.save_memory_scoped(
         input.id.as_deref(),
         &runtime.redactor.text(&input.title),
         &runtime.redactor.text(&input.content),
         "web:explicit-owner-edit",
+        input.project_id.as_deref(),
+        None,
     )?;
     runtime.export_memory()?;
     Ok(Json(json!(memory)))
@@ -232,8 +285,11 @@ async fn save_memory(
 async fn delete_memory(
     State(runtime): State<Arc<Runtime>>,
     Path(id): Path<String>,
+    Query(page): Query<Page>,
 ) -> ApiResult<Value> {
-    runtime.store.delete_memory(&id)?;
+    runtime
+        .store
+        .delete_memory_scoped(&id, page.project_id.as_deref())?;
     runtime.export_memory()?;
     Ok(Json(json!({"deleted":id})))
 }
@@ -269,7 +325,15 @@ async fn schedule(
     Ok(Json(runtime.schedule_manage(input).await?))
 }
 async fn tasks(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
-    Ok(Json(json!(runtime.store.tasks(100)?)))
+    let tasks = runtime.store.tasks(100)?;
+    let mut items = Vec::with_capacity(tasks.len());
+    for task in tasks {
+        let binding = runtime.store.task_binding(&task.id)?;
+        let mut item = serde_json::to_value(task)?;
+        item["binding"] = serde_json::to_value(binding)?;
+        items.push(item);
+    }
+    Ok(Json(json!(items)))
 }
 async fn task(
     State(runtime): State<Arc<Runtime>>,
@@ -285,7 +349,7 @@ async fn task(
         )?));
     }
     Ok(Json(
-        json!({"task":runtime.store.task(&id)?,"events":runtime.store.events(&id,page.after.unwrap_or(0),page.limit.unwrap_or(50))?}),
+        json!({"task":runtime.store.task(&id)?,"binding":runtime.store.task_binding(&id)?,"subagent":runtime.store.subagent(&id).ok(),"events":runtime.store.events(&id,page.after.unwrap_or(0),page.limit.unwrap_or(50))?}),
     ))
 }
 fn instruction_path(runtime: &Runtime, name: &str) -> Result<std::path::PathBuf, ApiError> {

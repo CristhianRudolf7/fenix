@@ -18,7 +18,9 @@ fn call(id: &str, name: &str, args: Value) -> Value {
 }
 async fn fixture(script: Vec<Value>) -> (tempfile::TempDir, Arc<Runtime>, MockServer) {
     let dir = tempfile::tempdir().unwrap();
-    let runtime = Runtime::open(&dir.path().join("data"), None).await.unwrap();
+    let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
     let server = MockServer::start().await;
     let mut steps = VecDeque::from([answer("OK")]);
     steps.extend(script);
@@ -341,7 +343,9 @@ async fn repeated_identical_tools_stop_without_erasing_the_audit_trail() {
 #[tokio::test]
 async fn invalid_credentials_never_complete_setup() {
     let dir = tempfile::tempdir().unwrap();
-    let runtime = Runtime::open(&dir.path().join("data"), None).await.unwrap();
+    let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
     let server = MockServer::start().await;
     Mock::given(method("POST"))
         .respond_with(ResponseTemplate::new(401).set_body_string("sensitive remote error body"))
@@ -363,7 +367,9 @@ async fn invalid_credentials_never_complete_setup() {
 async fn reminders_fire_once_and_persist_without_catch_up() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("data");
-    let runtime = Runtime::open(&path, None).await.unwrap();
+    let runtime = Runtime::open(&path, Some(&path.join("skills")))
+        .await
+        .unwrap();
     let future = (chrono::Utc::now() + chrono::Duration::hours(1)).to_rfc3339();
     let created=runtime.schedule_manage(json!({"action":"create","name":"Break","content":"Take a break","mode":"reminder","kind":"once","at":future})).await.unwrap();
     let id = created["id"].as_str().unwrap();
@@ -389,7 +395,9 @@ async fn reminders_fire_once_and_persist_without_catch_up() {
     schedule.status = "active".into();
     runtime.store.put("schedules", id, &schedule).unwrap();
     drop(runtime);
-    let runtime = Runtime::open(&path, None).await.unwrap();
+    let runtime = Runtime::open(&path, Some(&path.join("skills")))
+        .await
+        .unwrap();
     assert_eq!(
         runtime
             .store
@@ -410,7 +418,9 @@ async fn reminders_fire_once_and_persist_without_catch_up() {
     schedule.next_run = Some(chrono::Utc::now() - chrono::Duration::hours(1));
     runtime.store.put("schedules", id, &schedule).unwrap();
     drop(runtime);
-    let runtime = Runtime::open(&path, None).await.unwrap();
+    let runtime = Runtime::open(&path, Some(&path.join("skills")))
+        .await
+        .unwrap();
     assert_eq!(
         runtime
             .store
@@ -426,7 +436,9 @@ async fn reminders_fire_once_and_persist_without_catch_up() {
 #[tokio::test]
 async fn cron_uses_peru_and_duplicate_schedules_are_rejected() {
     let dir = tempfile::tempdir().unwrap();
-    let runtime = Runtime::open(&dir.path().join("data"), None).await.unwrap();
+    let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
     let args = json!({"action":"create","name":"Morning","content":"Review","mode":"reminder","kind":"cron","cron":"0 9 * * *"});
     let value = runtime.schedule_manage(args.clone()).await.unwrap();
     let schedule: Schedule = serde_json::from_value(value).unwrap();
@@ -498,7 +510,9 @@ async fn telegram_pairs_only_with_local_code_and_accepts_only_owner_text() {
 async fn skill_installation_preserves_personal_edits_and_enabled_state() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("data");
-    let runtime = Runtime::open(&path, None).await.unwrap();
+    let runtime = Runtime::open(&path, Some(&path.join("skills")))
+        .await
+        .unwrap();
     assert_eq!(runtime.skills().unwrap().len(), 4);
     let skill = runtime.skills_dir.join("conversation-recap/SKILL.md");
     std::fs::write(
@@ -511,7 +525,9 @@ async fn skill_installation_preserves_personal_edits_and_enabled_state() {
         .unwrap();
     assert!(runtime.skill_load("conversation-recap").is_err());
     drop(runtime);
-    let runtime = Runtime::open(&path, None).await.unwrap();
+    let runtime = Runtime::open(&path, Some(&path.join("skills")))
+        .await
+        .unwrap();
     assert!(
         std::fs::read_to_string(skill)
             .unwrap()
@@ -534,7 +550,12 @@ async fn compaction_keeps_original_history_and_complete_tool_pairs() {
     for i in 0..7 {
         let task = runtime
             .store
-            .enqueue(&format!("Previous task {i}"), "web", None)
+            .enqueue_bound(
+                &format!("Previous task {i}"),
+                "web",
+                None,
+                &fenix_storage::TaskBinding::default(),
+            )
             .unwrap();
         runtime.store.claim_next().unwrap();
         let call_id = format!("older-call-{i}");
@@ -602,7 +623,7 @@ async fn compaction_keeps_original_history_and_complete_tool_pairs() {
     wait_for(&runtime, &id, "completed").await;
     let summary = runtime
         .store
-        .get::<Value>("context", "summary")
+        .get::<Value>("scoped_context", "general")
         .unwrap()
         .unwrap();
     assert!(

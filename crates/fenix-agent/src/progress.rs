@@ -31,6 +31,13 @@ impl Runtime {
     }
 
     pub(crate) fn report_progress(&self, task_id: &str, phase: Phase, tool: Option<&str>) {
+        if self
+            .store
+            .task(task_id)
+            .is_ok_and(|task| task.origin == "subagent")
+        {
+            return;
+        }
         self.progress.send_replace(Progress {
             task_id: Some(task_id.into()),
             phase,

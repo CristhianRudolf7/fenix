@@ -7,7 +7,8 @@
 From the clone, run `cargo run --locked -p fenix-server --bin fenix` and open
 http://127.0.0.1:4173. The default data directory is `.fenix/` relative to the
 working directory. `--data-dir`, `--skills-dir` and `--port` provide explicit
-overrides; `--help` lists them. Listening is always on IPv4 loopback.
+overrides; `--help` lists them. Skills default to `~/.fenix/skills`, independently
+of `--data-dir`. Listening is always on IPv4 loopback.
 
 The welcome screen selects a provider, model, reasoning effort where supported
 and an API key. Advanced options contain the endpoint, account/project headers,
@@ -20,7 +21,8 @@ Setup sends a small real inference, which the provider can charge for. An invali
 key/model/endpoint does not complete setup. Selecting another provider or model
 does not erase the conversation. Configuration changes wait until active and
 queued tasks finish. Blank key fields retain the saved key for that exact provider
-and project scope. A project literally named `default` is distinct from the
+and project scope. This includes background children: model or permission changes
+are rejected while work is active. A project literally named `default` is distinct from the
 unscoped default key. Endpoints must support text and function calling for agent work.
 
 ## Normal use
@@ -30,19 +32,71 @@ approval use `aprobar <request_id>` / `rechazar <request_id>` or `approve` / `re
 A clear yes/no works for the sole pending approval. Clarifications use
 `responder <request_id> <answer>` or `reply ...`. Use `cancelar` or
 `cancelar <task_id>` to stop active or queued work. These controls are textual;
-cancellation does not reverse completed effects.
+cancellation does not reverse completed effects. Several subagents may request
+approval or clarification simultaneously; use the exact request ID. A waiting
+child leaves the master available for other requests.
 
-Memory, skills, schedules, activity and instructions have web panels. Memory only
+Projects, memory, skills, schedules, tasks and instructions have web panels. Memory only
 stores explicitly requested facts. To add a manual skill, create
-`.fenix/skills/<name>/SKILL.md`, with `description:` and `version:` metadata in its
+`~/.fenix/skills/<name>/SKILL.md`, with `description:` and `version:` metadata in its
 opening Markdown frontmatter. Refresh the Skills panel to discover it. Default
-templates are never copied over existing files.
+templates are never copied over existing files. The complete compact catalog is
+visible to master and children, including disabled entries, but only enabled skill
+instructions can be loaded on demand. Four default skills are included; they are
+not a catalog-size limit. To keep an installation-specific library, supply an
+explicit `--skills-dir`.
+
+Existing `<data-dir>/skills` resources are copied to the selected global directory
+on startup without overwriting destinations, following symbolic links or deleting
+originals. Migration limits are 32 MiB per file, 512 MiB total, 10,000 entries and
+16 levels. A limit failure leaves originals intact; use `--skills-dir` for the old
+library or copy the remaining resources manually.
+
+Tool catalogs vary by role and scope. The master delegates with a precise purpose
+and expected output; context and constraints are optional. Children cannot read
+the main conversation or delegate again, and inspect only their own task. Their transcripts
+remain separate; final reports return automatically to the master. The **Tasks**
+panel shows purpose, expected output, IDs, state, attempts, results and pending
+textual requests, refreshed while the view is open.
+
+The engine enforces one delegation level and four concurrent children. Each child
+has at most three total attempts for retryable failures, with 32 steps and ten
+minutes per attempt. Retries preserve context and completed tool results, without
+replaying actions. Blockage, cancellation and non-retryable failure can end earlier.
+File, memory and schedule changes and managed command lifetimes are serialized
+inside the runtime; external processes and other Fénix instances are not covered.
+Commands can use the Linux user's accessible directories and are not sandboxed.
 
 Schedule dates without an offset are Peru local time. Cron accepts five fields
 (minute, hour, day, month, weekday) or six/seven fields including seconds and an
 optional year. For example, `0 9 * * 1-5` means weekdays at 09:00 in Peru. A reminder
 posts text; a scheduled task invokes the agent. A paused schedule resumes only
 future executions. Ask in chat to cancel a schedule by name or ID.
+
+## Projects without separate chats
+
+Open **Projects** to create or edit a name, unique aliases, description, working
+brief and optional existing folder. Mention the name or alias in the same chat.
+General discussion remains available; “general conversation” explicitly returns
+to that scope. Reply to an earlier message with the web **Reply** action or Telegram's
+reply feature to provide a task reference. That reference is not an approval.
+
+Fénix resolves the destination before loading project memories or using execution
+tools. Clear references can use rules; other requests may need a routing call to
+the configured model and can require a textual clarification. A compound request
+can ask the master to consult A and delegate substantial work in B. Running work
+retains its original project and workspace when you change subjects.
+
+The **Memory** scope field selects general or one project's records. Existing
+memories cannot change scope through an ordinary edit. Projects' progress dialogs
+show recorded task state; this is not a fresh check of outside resources.
+
+Project form saves are explicit owner replacements and increment the version;
+they do not use optimistic locking. Reload a project's form before saving if other
+work has changed its brief. Agent brief updates require an expected version and
+reject stale writes. Polling updates the project list without replacing form edits.
+Legacy history/memory is preserved as general; migration does not assign old text
+to projects automatically. See [the project guide](projects.md) for details.
 
 ## Telegram
 
@@ -68,9 +122,11 @@ the release binary and installs:
 | User service | `~/.config/systemd/user/fenix.service` |
 | Application launcher | `~/.local/share/applications/fenix.desktop` |
 | Installation / data | `~/.local/share/fenix/.fenix/` |
+| Shared manual skills | `~/.fenix/skills/` |
 
 This is a separate data directory from a development clone's `.fenix/`; it does not
-copy keys automatically. The installer enables the user service. The launcher
+copy keys automatically. The default skill library is shared with development
+instances; skill enablement remains local to each runtime database. The installer enables the user service. The launcher
 starts it and opens the web. No administrator privileges are needed. The service
 follows the user's login session and is not configured to run while logged out.
 Updating through the installer stops an existing Fénix user service before replacing
@@ -85,7 +141,8 @@ remove it separately only if you intend to erase the installation's history and 
 ## Data and shutdown
 
 The data directory is private (`0700`) and SQLite/secret files are `0600` on Linux.
-Keys are stored locally without master-key encryption. Back up the whole data
+Keys are stored locally without master-key encryption. Back up the shared skills
+directory separately when it is outside the data directory. Back up the whole data
 directory while Fénix is stopped; do not copy only a live SQLite main file while
 WAL writes are pending. Runtime data, personal skills and `apuntes.md` are ignored
 by Git. No credential is included in the binary or desktop package.

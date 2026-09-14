@@ -19,6 +19,8 @@ pub struct ScheduleInput {
     pub interval_seconds: Option<u64>,
     #[serde(default)]
     pub cron: Option<String>,
+    #[serde(default)]
+    pub project_id: Option<String>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Schedule {
@@ -104,8 +106,31 @@ impl Runtime {
         let _lock = self.schedule_lock.lock().await;
         let action = args["action"].as_str().unwrap_or("list").to_owned();
         let id = args["id"].as_str().map(str::to_owned);
+        let scoped = args.get("project_id").is_some();
+        let project_id = args["project_id"].as_str().map(str::to_owned);
+        if let Some(project) = &project_id {
+            self.store.project(project)?;
+        }
         if action == "list" {
-            return Ok(json!(self.store.records::<Schedule>("schedules")?));
+            return Ok(json!(
+                self.store
+                    .records::<Schedule>("schedules")?
+                    .into_iter()
+                    .filter(|s| !scoped || s.spec.project_id == project_id)
+                    .collect::<Vec<_>>()
+            ));
+        }
+        if action != "create" {
+            let previous = self
+                .store
+                .get::<Schedule>("schedules", id.as_deref().context("Schedule ID required")?)?
+                .context("Schedule not found")?;
+            if scoped && previous.spec.project_id != project_id {
+                bail!("Schedule not found in this scope");
+            }
+            if action == "update" && !scoped {
+                args["project_id"] = json!(previous.spec.project_id);
+            }
         }
         if action == "get" {
             return Ok(json!(
@@ -226,10 +251,36 @@ impl Runtime {
             schedule.last_result = Some("Dispatching".into());
             self.store.put("schedules", &schedule.id, &schedule)?;
             let result = if schedule.spec.mode == "reminder" {
+                let project = schedule
+                    .spec
+                    .project_id
+                    .as_deref()
+                    .map(|id| self.store.project(id))
+                    .transpose()?;
+                let label = project
+                    .as_ref()
+                    .map(|p| format!("Proyecto {} · ", p.name))
+                    .unwrap_or_default();
+                let notification = self.store.record_notification_task(
+                    &schedule.spec.content,
+                    &fenix_storage::TaskBinding {
+                        project_id: schedule.spec.project_id.clone(),
+                        read_project_ids: schedule.spec.project_id.iter().cloned().collect(),
+                        mode: if project.is_some() {
+                            "project"
+                        } else {
+                            "general"
+                        }
+                        .into(),
+                        workspace: project.as_ref().and_then(|p| p.workspace.clone()),
+                        context_version: project.as_ref().map_or(0, |p| p.context_version),
+                        ..Default::default()
+                    },
+                )?;
                 self.notify(
-                    None,
+                    Some(&notification.id),
                     &format!(
-                        "Recordatorio · {}\n\n{}",
+                        "{label}Recordatorio · {}\n\n{}",
                         schedule.spec.name, schedule.spec.content
                     ),
                 )
@@ -237,12 +288,42 @@ impl Runtime {
             } else if self.model.read().await.is_none() {
                 Err(anyhow::anyhow!("Model is not configured"))
             } else {
-                self.store
-                    .enqueue(&schedule.spec.content, "schedule", Some(&schedule.id))
-                    .map(|task| {
-                        self.wake.notify_one();
-                        format!("Queued task {}", task.id)
-                    })
+                (|| -> Result<String> {
+                    let project = schedule
+                        .spec
+                        .project_id
+                        .as_deref()
+                        .map(|id| self.store.project(id))
+                        .transpose()?;
+                    let binding = fenix_storage::TaskBinding {
+                        project_id: schedule.spec.project_id.clone(),
+                        read_project_ids: schedule.spec.project_id.iter().cloned().collect(),
+                        mode: if project.is_some() {
+                            "project"
+                        } else {
+                            "general"
+                        }
+                        .into(),
+                        workspace: project.as_ref().and_then(|p| p.workspace.clone()).or_else(
+                            || {
+                                self.settings()
+                                    .ok()
+                                    .flatten()
+                                    .map(|s| s.workspace.to_string_lossy().into_owned())
+                            },
+                        ),
+                        context_version: project.as_ref().map_or(0, |p| p.context_version),
+                        ..Default::default()
+                    };
+                    let task = self.store.enqueue_bound(
+                        &schedule.spec.content,
+                        "schedule",
+                        Some(&schedule.id),
+                        &binding,
+                    )?;
+                    self.wake.notify_one();
+                    Ok(format!("Queued task {}", task.id))
+                })()
             };
             schedule.last_result = Some(match result {
                 Ok(message) => message,

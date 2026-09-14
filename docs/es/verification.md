@@ -88,3 +88,68 @@ desde el entorno, sin imprimirla ni modificar la conversación del asistente:
 ```sh
 cargo test -p fenix-providers --test streaming live_openai_preview_matches_the_completed_response --locked -- --ignored
 ```
+## Actualización de subagentes — 0.2.0
+
+Verificado el 14 de septiembre de 2026: **102 pruebas de Rust y dos ejemplos de
+documentación aprobados**. También pasaron el formato, Clippy sin advertencias y
+la compilación del servidor. Esta actualización utilizó proveedores simulados
+locales; no hizo llamadas facturables a modelos ni comprobó Telegram en vivo.
+
+Pasaron los siete recorridos de Chromium, incluidos los estados de subagentes,
+las solicitudes simultáneas por texto, el escape del contenido de informes y la
+vista móvil. Se revisaron las capturas de escritorio claro y móvil oscuro; también
+pasaron las comprobaciones de sintaxis y formato del frontend.
+
+Las pruebas comprueban que el maestro responde mientras un hijo trabaja o espera
+aprobación, que cada hijo usa contexto aislado y carga skills bajo demanda, y que
+el motor rechaza la delegación anidada. Verifican tres intentos como máximo, la
+conservación de efectos completados al reintentar inferencia, la deduplicación, el
+límite de cuatro hijos, las aprobaciones por ID y los informes internos. También
+cubren cancelaciones, migración de la base existente e interrupción tras reiniciar.
+
+La cancelación espera la limpieza de procesos y las operaciones de archivos que
+continúan después de cancelar su llamada asíncrona. La migración de skills se
+prueba con archivos personales existentes, enlaces simbólicos, límites de tamaño
+y un destino configurado dentro de la carpeta antigua.
+
+Una ejecución con base temporal comprobó el arranque, cierre y creación de las
+cuatro plantillas en `~/.fenix/skills`. Se eliminó su base temporal y se conservó
+la información de las instalaciones existentes. Estas pruebas validan el motor;
+no miden la precisión general del modelo ni su autonomía durante días.
+
+## Proyectos y conversación general
+
+Verificado el 14 de septiembre de 2026: **137 pruebas de Rust, dos ejemplos de
+documentación y ocho escenarios de Chromium aprobados**. Clippy pasó sin
+advertencias; también pasaron la revisión de sintaxis de JavaScript, el formato web
+y la comprobación de espacios del diff. Las dos pruebas opcionales con proveedores
+reales permanecieron omitidas.
+
+La actualización agrega pruebas de enrutamiento con reglas, peticiones compuestas
+interpretadas por un proveedor controlado y ámbitos fijos por ejecución. En
+almacenamiento se comprueban alias únicos, referencias y foco capturados al recibir
+el mensaje, asignaciones inmutables, conflictos de versiones, búsqueda léxica e IDs
+por ámbito, procedencia de recuerdos y separación de mensajes vecinos. Las
+migraciones conservan registros previos como generales sin adivinar su proyecto.
+
+Los escenarios del motor consultan A y después trabajan en B, mantienen la
+conversación general mientras un hijo trabaja y resuelven una aprobación tardía
+sin cambiar su proyecto. También cubren programaciones, informes que conservan el
+foco, deduplicación por destino y carpeta predeterminada heredada del padre. Son
+pruebas del motor y sus límites, no de toda interpretación posible del lenguaje.
+
+Una prueba de respuesta nativa de Telegram resuelve la aprobación original mediante
+su referencia de bot/chat/mensaje y verifica que responder a otra tarea no apruebe
+la única acción pendiente. Los recordatorios conservan su ámbito y referencias
+sin crear trabajo ejecutable ni aparecer en el historial léxico de otro proyecto.
+
+La API se prueba con creación/edición de proyectos, alias duplicados, validación de
+carpetas, asignaciones visibles en el historial único y operaciones de memoria
+limitadas a su ámbito. Chromium cubre administración, memorias generales y de
+Atlas/Beacon separadas, etiquetas de proyecto, referencia al responder, conservación
+de la conversación anterior y distribución móvil.
+
+Se utilizan bases temporales, claves ficticias y proveedores locales simulados.
+Estas pruebas no son un benchmark de modelos reales ni una comprobación remota de
+Telegram. Esa evaluación debe medir precisión de destino, preguntas innecesarias,
+lecturas/efectos cruzados, tareas completadas, tokens totales y latencia.

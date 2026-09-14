@@ -48,8 +48,8 @@ impl Runtime {
                     _=cancel.cancelled()=>Err(anyhow::anyhow!("Task cancelled")),
                     _=tokio::time::sleep(Duration::from_secs(3600))=>Err(anyhow::anyhow!("Task exceeded the one-hour execution limit")),
                 };
-                self.processes.cancel_task(&task.id).await;
-                *self.pending.lock().await = None;
+                self.settle_task(&task.id).await;
+                self.clear_pending(&task.id).await;
                 let (status, error) = match result {
                     Ok(()) => ("completed", None),
                     Err(error) => {
@@ -93,32 +93,71 @@ impl Runtime {
             .await
             .clone()
             .ok_or_else(|| anyhow::anyhow!("Model is not configured"))?;
-        self.store.event(&task.id,"task_started",&json!({"session_id":task.session_id,"objective":task.request,"provider":model.settings.provider,"model":model.settings.model,"reasoning_effort":model.settings.reasoning_effort,"workspace":model.settings.workspace}))?;
+        self.route_task(task, &model, cancel).await?;
+        let binding = self.store.task_binding(&task.id)?;
+        self.store.event(&task.id,"task_started",&json!({"session_id":task.session_id,"objective":task.request,"provider":model.settings.provider,"model":model.settings.model,"reasoning_effort":model.settings.reasoning_effort,"workspace":self.task_workspace(&task.id,&model.settings.workspace)?,"binding":binding}))?;
         let mut messages = self.build_context(task, &model).await?;
-        let source = self
-            .store
-            .context(0)?
-            .into_iter()
-            .find(|m| m.task_id.as_deref() == Some(&task.id) && m.role == "user")
-            .map(|m| m.id)
-            .unwrap_or_else(|| task.id.clone());
+        self.run_loop(task, &model, &mut messages, cancel).await?;
+        Ok(())
+    }
+
+    pub(crate) async fn run_subagent_attempt(
+        self: &Arc<Self>,
+        job: &fenix_storage::Subagent,
+        model: &ModelConnection,
+        messages: &mut Vec<Message>,
+        cancel: &CancellationToken,
+    ) -> Result<Value> {
+        let task = self.store.task(&job.id)?;
+        self.run_loop(&task, model, messages, cancel).await
+    }
+
+    async fn run_loop(
+        self: &Arc<Self>,
+        task: &Task,
+        model: &ModelConnection,
+        messages: &mut Vec<Message>,
+        cancel: &CancellationToken,
+    ) -> Result<Value> {
+        let delegated = task.origin == "subagent";
+        let source = if delegated {
+            task.id.clone()
+        } else {
+            self.store
+                .task_user_message(&task.id)?
+                .map(|m| m.id)
+                .unwrap_or_else(|| task.id.clone())
+        };
         let mut repetition = HashMap::<String, usize>::new();
-        let mut grants = Vec::<Value>::new();
-        let mut denials = Vec::<Value>::new();
+        let mut grants = self
+            .store
+            .get::<Vec<Value>>("task_grants", &task.id)?
+            .unwrap_or_default();
+        let mut denials = self
+            .store
+            .get::<Vec<Value>>("task_denials", &task.id)?
+            .unwrap_or_default();
         for step in 0..MAX_MODEL_STEPS {
             if cancel.is_cancelled() {
                 bail!("Task cancelled");
             }
             let mut request = model.settings.request(messages.clone());
-            request.tools = tools::catalog();
+            request.tools = self.task_tool_catalog(&task.id)?;
             if serde_json::to_vec(&request)?.len() > 512_000 {
                 bail!(
                     "This task's active context is too large. Original history and tool evidence remain available; split the next request into smaller steps"
                 );
             }
-            let response = self
-                .infer_with_retry(task, &model, &request, cancel)
-                .await?;
+            let response = if delegated {
+                // Task attempts own the retry budget; never multiply it by HTTP retries.
+                let config = model.settings.provider_config();
+                tokio::select! {
+                    _ = cancel.cancelled() => bail!("Task cancelled"),
+                    response = model.client.complete(&config, model.settings.project.as_deref(), &request) => response?,
+                }
+            } else {
+                self.infer_with_retry(task, model, &request, cancel).await?
+            };
             self.store.event(&task.id,"model_response",&json!({"turn_id":fenix_storage::id(),"step":step+1,"usage":response.usage,"finish_reason":response.finish_reason,"response_id":response.id}))?;
             let mut encoded = serde_json::to_value(response.message)?;
             self.redactor.value(&mut encoded);
@@ -136,20 +175,25 @@ impl Runtime {
                     _ => None,
                 })
                 .collect::<Vec<_>>();
-            let message_id =
+            if delegated {
                 self.store
-                    .append(Some(&task.id), &message, !text.is_empty(), true, "agent")?;
-            self.progress.send_modify(|progress| {
-                progress.phase = Phase::Saved;
-                progress.message_id = Some(message_id);
-                progress.preview.clear();
-            });
-            if !text.is_empty()
-                && self
-                    .telegram_settings()?
-                    .is_some_and(|s| s.enabled && s.owner_id.is_some())
-            {
-                self.store.queue_delivery(&text)?;
+                    .event(&task.id, "subagent_message", &json!({"message":message}))?;
+            } else {
+                let message_id =
+                    self.store
+                        .append(Some(&task.id), &message, !text.is_empty(), true, "agent")?;
+                self.progress.send_modify(|progress| {
+                    progress.phase = Phase::Saved;
+                    progress.message_id = Some(message_id);
+                    progress.preview.clear();
+                });
+                if !text.is_empty()
+                    && self
+                        .telegram_settings()?
+                        .is_some_and(|s| s.enabled && s.owner_id.is_some())
+                {
+                    self.store.queue_delivery_for_task(&text, Some(&task.id))?;
+                }
             }
             messages.push(message);
             if matches!(
@@ -169,11 +213,18 @@ impl Runtime {
                         "The model ended before verifying a running command; remaining managed processes were cancelled"
                     );
                 }
-                return Ok(());
+                if delegated {
+                    return Ok(
+                        json!({"status":"blocked","summary":text,"blockers":"The subagent ended without an explicit subagent_finish outcome.","artifacts":"","evidence":format!("task_inspect task_id={}",task.id)}),
+                    );
+                }
+                return Ok(json!({"status":"completed"}));
             }
             if calls.len() > 16 {
                 bail!("Too many tool calls in one response");
             }
+            let call_count = calls.len();
+            let mut finished = None;
             for (call_id, name, args) in calls {
                 self.report_progress(&task.id, Phase::Tool, Some(&name));
                 let action = json!({"tool":name,"arguments":args});
@@ -183,21 +234,32 @@ impl Runtime {
                     &json!({"call_id":call_id,"tool":name,"arguments":args}),
                 )?;
                 let result:Result<Value>=async {
-                    tools::validate(&name,&args)?;
+                    tools::validate_for(delegated, &name,&args)?;
+                    self.authorize_project_tool(&task.id, &name, &args)?;
+                    if name == "subagent_finish" {
+                        if call_count != 1 { bail!("Finish must be the only tool call in its response"); }
+                        if self.processes.has_running(&task.id).await { bail!("Inspect or cancel running commands before reporting an outcome"); }
+                        if args["summary"].as_str().is_none_or(|s| s.trim().is_empty()) { bail!("A concrete outcome summary is required"); }
+                        finished = Some(args.clone());
+                        return Ok(json!({"recorded":true}));
+                    }
                     if name=="request_approval" {
                         let target=args["tool"].as_str().ok_or_else(||anyhow::anyhow!("Target tool required"))?;
                         tools::validate(target,&args["arguments"])?;
+                        self.authorize_project_tool(&task.id, target, &args["arguments"])?;
                         let requested=json!({"tool":target,"arguments":args["arguments"]});
                         if denials.contains(&requested) {return Ok(json!({"approved":false,"previously_denied":true}));}
                         let approved=self.approve(&task.id,requested.clone(),cancel).await?;
                         if approved {grants.push(requested);} else {denials.push(requested);}
+                        self.store.put("task_grants", &task.id, &grants)?;
+                        self.store.put("task_denials", &task.id, &denials)?;
                         return Ok(json!({"approved":approved,"single_use":true}));
                     }
                     if denials.contains(&action) {return Ok(json!({"denied":true,"executed":false,"previously_denied":true}));}
                     let requires=(name=="command_run" && model.settings.command_policy==ActionPolicy::Ask) || (matches!(name.as_str(),"file_write"|"file_edit") && model.settings.file_write_policy==ActionPolicy::Ask);
                     if requires {
-                        if let Some(index)=grants.iter().position(|g|g==&action) {grants.remove(index);}
-                        else if !self.approve(&task.id,action.clone(),cancel).await? {denials.push(action.clone());return Ok(json!({"denied":true,"executed":false,"instruction":"Owner denied this exact action. Do not retry or bypass it."}));}
+                        if let Some(index)=grants.iter().position(|g|g==&action) {grants.remove(index);self.store.put("task_grants", &task.id, &grants)?;}
+                        else if !self.approve(&task.id,action.clone(),cancel).await? {denials.push(action.clone());self.store.put("task_denials", &task.id, &denials)?;return Ok(json!({"denied":true,"executed":false,"instruction":"Owner denied this exact action. Do not retry or bypass it."}));}
                     }
                     self.report_progress(&task.id, Phase::Tool, Some(&name));
                     self.execute_tool(&task.id,&source,&model.settings,&name,&args,cancel).await
@@ -236,15 +298,30 @@ impl Runtime {
                     role: Role::Tool,
                     content: vec![ContentBlock::ToolResult {
                         tool_call_id: call_id,
-                        name: Some(name),
+                        name: Some(name.clone()),
                         content,
                         is_error,
                     }],
                     provider_data: None,
                 };
-                self.store
-                    .append(Some(&task.id), &tool_message, false, true, "tool")?;
+                if !delegated {
+                    self.store
+                        .append(Some(&task.id), &tool_message, false, true, "tool")?;
+                }
                 messages.push(tool_message);
+                if delegated
+                    && matches!(
+                        name.as_str(),
+                        "subagent_spawn" | "subagent_status" | "subagent_cancel"
+                    )
+                {
+                    return Ok(
+                        json!({"status":"blocked","summary":"Delegation request rejected by the engine.","blockers":"Only the master may manage subagents. Ask the master for assistance.","artifacts":"","evidence":format!("task_inspect task_id={}",task.id)}),
+                    );
+                }
+            }
+            if let Some(result) = finished {
+                return Ok(result);
             }
         }
         bail!("Task reached the bounded model-call limit; review the trace before continuing")

@@ -13,24 +13,26 @@ channel owns a separate conversation or agent loop.
 | `fenix-core` | Serializable conversation contracts, tool calls/results, reasoning effort and provider IDs. |
 | `fenix-credentials` | Redacted API-key values and exact default/project resolution. A missing project key never falls back. |
 | `fenix-providers` | Reusable HTTP clients, five protocol codecs, native authentication headers and bounded inference transport. |
-| `fenix-storage` | Versioned SQLite schema, stable session ID, task queue, messages, events, FTS5 memory/history and delivery outbox. |
-| `fenix-agent` | Model configuration, agent loop, context construction, permissions, tools, managed processes, schedules and optional Telegram adapter. |
+| `fenix-storage` | Versioned SQLite schema, projects, fixed task bindings, scoped history/memory, conversation queue, child jobs/reports, events, FTS5 and delivery outbox. |
+| `fenix-agent` | Master and background child loops, context, permissions, effect coordination, tools, processes, schedules and Telegram. |
 | `apps/server` | Linux process entry point, loopback API, origin/host checks and embedded static assets. |
 | `apps/web` | Framework-free browser ES modules, forms, chat and administration. No build server or per-agent browser is required. |
 
 The server uses two Tokio worker threads. File-tool I/O runs on the blocking pool;
-model calls, Telegram and managed commands use asynchronous I/O. There is one
-active agent task in this version. More agents should reuse shared services and
-HTTP pools, rather than require a process for every agent.
+model calls, Telegram and managed commands use asynchronous I/O. One master serves
+the continuous conversation while up to four children run as Tokio tasks in the
+same process, reusing the configured provider client and HTTP connections. No
+additional process, browser or model configuration is created per child.
 
 ## Task lifecycle
 
 1. Normalize and redact inbound text. Resolve an explicit textual control if it
    targets a pending request; otherwise persist a new task and user message.
 2. Claim the oldest queued task and activate its message for model context.
-3. Build instructions, relevant explicit memory, a prior summary and recent
-   history. Record the request as the task objective. Instructions require the
-   model to identify material assumptions visibly and verify its outcome.
+3. Resolve the destination before project context or execution tools are available.
+   Bind readable scopes, workspace and context version to the task. Build instructions,
+   applicable memory, a scope-specific summary and history. Record the request as
+   the task objective and preserve material assumptions and outcome evidence.
 4. Call the selected provider/model. Persist response IDs, usage and replay data.
 5. Validate tool names, argument types, required fields and allowed values. Record
    each call before dispatch. Enforce any required approval in the runtime.
@@ -49,6 +51,64 @@ The request, visible assumptions, responses and validation evidence form the bas
 task record. This is not a formal proof that every natural-language requirement
 has been satisfied; the stronger contract/evaluation harness remains future work.
 
+## Projects and general conversation
+
+One visible chat can contain general discussion and work on several projects.
+`projects.rs` resolves intent before admitting project context. Clear references
+use rules; ambiguous or compound requests use a bounded JSON routing request to
+the configured model. Model routing consumes tokens and can fail; unresolved
+selection requires a textual clarification before execution tools are used.
+
+`project_tools.rs` enforces the resolved destination and read scopes, independently
+of tool descriptions. Project history and memories are filtered before retrieval.
+Dedicated file tools use the task's captured workspace. Coordination can consult
+explicitly requested project records but delegates execution to children with a
+specific destination. Report turns can inspect evidence and notify the owner,
+without starting replacement work or new effects.
+
+General conversation has its own history and summary. Project master turns also
+receive a bounded copy of recent general user/assistant text, not tool transcripts
+or other projects' detailed history. Project briefs and relevant task state supply
+project continuity; related task references preserve their source IDs. Global
+preferences remain explicit and project facts cannot be promoted by a scoped write.
+
+Bindings survive topic switches and identify late reports and pending approvals.
+Reply references are captured when the message arrives; the current foreground
+project is a hint, not a mutable workspace for running tasks. A background report
+does not change foreground focus. All original messages remain in the same visible
+chat. Legacy records stay general during migration; no historical project ownership
+is guessed. See [Projects in one conversation](projects.md) for API and UI details.
+
+## Background delegation
+
+`subagent_spawn` persists a precise objective and expected output, with optional
+context and constraints, then returns a child ID immediately. The master can
+continue and serve subsequent conversation requests while the child runs or waits
+for approval. One delegation level is enforced in both tool dispatch and storage:
+children cannot create children. Tool catalogs vary by role and scope: children
+exclude conversation-history and delegation controls and require `subagent_finish`.
+Coordination and report turns have further restrictions. Child task inspection is
+limited to its own ID; master inspection must respect its resolved read scopes.
+
+A separate worker claims child jobs independently of the master FIFO. SQLite stores
+parent links, attempt counts, isolated transcripts and completion reports. A child
+starts with its scoped handoff, project brief, stable instructions, applicable
+project/general explicit memories and complete skill metadata. It does not receive
+the main conversation transcript. Memory tools retain the same scope checks. Finished reports are
+persisted and queued back to the master for integration; detailed tool evidence
+remains in the child's task journal.
+
+Retryable failures allow at most three total child attempts, preserving the
+transcript and completed tool results without replaying actions. Each attempt is
+limited to 32 steps and ten minutes. A structured `subagent_finish` is required;
+blockage, cancellation or non-retryable failure can stop earlier. Restarting marks
+unfinished children interrupted instead of automatically restoring execution.
+
+`GET /api/status` exposes child state and a `pending_requests` collection alongside
+the legacy `pending` field. The Tasks panel refreshes IDs, purpose, expected output,
+attempts and results through the existing polling loop. Only master previews use
+the single SSE progress snapshot, so children cannot replace its live response.
+
 ## Approvals and commands
 
 `command_policy` and `file_write_policy` default to `ask`. The runtime asks before
@@ -59,8 +119,10 @@ another approval. A denial is returned as an unexecuted action.
 The owner replies with `aprobar <request_id>` / `rechazar <request_id>` or their
 English equivalents. A clear yes/no also resolves the sole pending approval.
 Clarifications use `responder <request_id> <answer>` or `reply ...`; unrelated text
-queues. No silence, timeout or ambiguous text grants permission. `cancelar` stops
-the active task; `cancelar <task_id>` can also cancel a queued task.
+queues. Multiple requests may be pending across children; each has its own ID and
+resolves independently. No silence, timeout or ambiguous text grants permission.
+`cancelar` stops the active master task; `cancelar <task_id>` can also cancel queued
+work or a child. A waiting child does not pause the master worker.
 
 Dedicated file tools check canonical paths, reject escape paths and protect private
 runtime data, environment files and Git internals. New files never overwrite
@@ -69,27 +131,46 @@ explicit OS-accessible directory, including paths outside the file workspace.
 They run as the service's Linux user, with bounded output, timeouts and process
 group cleanup. **The file workspace is not a command sandbox.**
 
+A runtime effect coordinator serializes file, memory and schedule changes and holds
+an exclusive lease for the full lifetime of each managed command. Read operations
+and model calls can proceed in parallel. This protects cooperating tasks in this
+process; it is not a sandbox or a lock shared with external processes or separate
+Fénix installations. Configuration cannot change model or permission policies
+while master or child work remains active.
+
 ## Storage, memory and compaction
 
-The private data directory contains `fenix.sqlite3`, a process lock, `instructions/`
-and personal `skills/`. Database migrations are versioned under `fenix-storage`.
+The private data directory contains `fenix.sqlite3`, a process lock and `instructions/`.
+Manual skill packages default to `~/.fenix/skills`, shared independently of data
+directories; `--skills-dir` overrides this. Enablement stays in each runtime database.
+Database migrations are versioned under `fenix-storage`.
 SQLite uses WAL, short mutex-protected operations and transactional queue/memory
 writes. A process lock prevents two runtimes from dispatching the same installation.
 
 Messages preserve provider-specific replay metadata. Browsers only receive visible
 message text and references, never signed replay data or saved keys. The separate
-memory table contains title, content, source and timestamps. Normalized exact
-content prevents duplicate facts. FTS5 performs Unicode lexical retrieval with
+memory table contains title, content, source, project/task references and timestamps.
+Normalized exact content prevents duplicate facts within the same scope. FTS5 performs Unicode lexical retrieval with
 escaped query tokens and ranked OR matches; no embeddings or knowledge graph.
 
 `instructions/MEMORY.md` is a readable reference export. The database is authoritative;
 edit memory through the web or tools. `AGENTS.md`, `SOUL.md`, `IDENTITY.md` and
 `USER.md` are editable through settings and loaded with bounded size for new tasks.
 Default skills are copied without overwriting existing personal instructions.
+Startup first copies legacy `<data-dir>/skills` resources into the selected library,
+skipping symlinks and existing destinations and retaining originals. Migration has
+file, total-byte, entry and depth limits; see [local operation](local-operation.md).
 
-At a task boundary, history above approximately 64 KB triggers an attempt to
-summarize older complete tasks while retaining recent tasks. A valid completed
-summary advances a context cursor; original messages are never replaced. The
+Master and children receive the complete valid metadata catalog, including disabled
+skills. Descriptions are bounded to 512 bytes and versions to 80, with truncation
+marked; no entries are removed to enforce an arbitrary catalog count. Full enabled
+instructions are loaded only through `skill_load`, with a 32 KB body limit.
+
+At a task boundary, history for the current scope above approximately 64 KB
+triggers an attempt to summarize older complete tasks while retaining recent tasks.
+General and each project use distinct summary records/cursors; coordination uses
+its own task context. A valid summary advances only that scope's cursor; original
+messages are never replaced. The
 summary uses Objective; Constraints and preferences; Progress (Completed, In
 progress, Blocked); Key decisions; Relevant files; Next steps; Critical context.
 Incomplete summaries do not advance the cursor. A very large active task still
@@ -115,15 +196,16 @@ an outgoing message. Failed deliveries remain in the database for inspection.
 
 | Resource | Bound |
 | --- | --- |
-| Active agent tasks | 1; FIFO backlog remains durable during normal operation |
+| Active agent tasks | 1 master with FIFO backlog, plus up to 4 asynchronous children |
 | Model steps | 32 per task, at most 16 tool calls per response |
-| Inference retries | Up to 2 additional attempts for classified transient errors; no automatic tool-effect replay |
-| Agent execution | 1 hour maximum; pending owner question times out after 30 minutes |
+| Master inference retries | Up to 2 additional attempts for classified transient errors; no automatic tool-effect replay |
+| Child attempts | At most 3 total for retryable failure, preserving transcript; 32 steps / 10 minutes each |
+| Master execution | 1 hour maximum; pending owner question times out after 30 minutes; child attempt timeout also bounds child waits |
 | Provider request | 120-second default HTTP timeout; 4,096 output tokens per agent call, 1,024 for setup |
 | Active agent request | 512 KB serialized; no cumulative token-budget setting |
 | Tool arguments / context result | 128 KB arguments; results above 16 KB become references with previews |
 | Regular UTF-8 file | Up to 1 MiB; file search and listing also bound traversal/results |
-| Managed processes | At most 8 running; 1–600 seconds per command, default 120 |
+| Managed processes | One command lifetime at a time in a runtime, registry cap 8; 1–600 seconds per command, default 120 |
 | Process output | Up to 128 KiB combined stdout/stderr; truncation reported |
 | Skills / instructions | 32 KB per skill; 8 KB per stable instruction file |
 

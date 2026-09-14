@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "Fenix local assistant\n\nfenix [--port 4173] [--data-dir .fenix] [--skills-dir PATH]\n\nOpen http://127.0.0.1:4173 to configure the model and optional Telegram."
+                    "Fenix local assistant\n\nfenix [--port 4173] [--data-dir .fenix] [--skills-dir PATH]\n\nSkills default to ~/.fenix/skills, shared across data directories. --skills-dir overrides it.\n\nOpen http://127.0.0.1:4173 to configure the model and optional Telegram."
                 );
                 return Ok(());
             }
@@ -46,8 +46,9 @@ async fn main() -> Result<()> {
     let port = listener.local_addr()?.port();
     let workers = runtime.start();
     println!(
-        "Fénix is ready at http://127.0.0.1:{port}\nRuntime data: {}",
-        runtime.data_dir.display()
+        "Fénix is ready at http://127.0.0.1:{port}\nRuntime data: {}\nShared skills: {}",
+        runtime.data_dir.display(),
+        runtime.skills_dir.display()
     );
     let app = fenix_server::router(runtime.clone(), port);
     let shutdown = runtime.clone();

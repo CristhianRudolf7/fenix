@@ -4,6 +4,8 @@ const state = {
   providers: [],
   messages: new Map(),
   tasks: [],
+  projects: [],
+  replyTo: null,
   language: localStorage.getItem("fenix.language") || "es",
   theme: localStorage.getItem("fenix.theme") || "light",
   polling: false,
@@ -49,14 +51,16 @@ const providerNames = {
 };
 const names = () => ({
   chat: t("Conversation", "Conversación"),
+  projects: t("Projects", "Proyectos"),
   memory: t("Memory", "Memoria"),
   skills: "Skills",
   schedules: t("Schedules", "Programaciones"),
-  activity: t("Activity", "Actividad"),
+  activity: t("Tasks", "Tareas"),
   settings: t("Settings", "Configuración"),
 });
 const icons = {
   chat: "◻",
+  projects: "▱",
   memory: "▤",
   skills: "◇",
   schedules: "◷",
@@ -68,6 +72,7 @@ const statusName = (value) =>
     queued: t("Queued", "En cola"),
     running: t("Running", "En curso"),
     waiting: t("Waiting for you", "Espera tu respuesta"),
+    blocked: t("Blocked", "Bloqueada"),
     completed: t("Completed", "Completada"),
     failed: t("Failed", "Fallida"),
     cancelled: t("Cancelled", "Cancelada"),
@@ -191,9 +196,10 @@ async function render() {
       )
       .join(
         "",
-      )}</nav><div class="sidebar-bottom"><div class="local-label"><span class="dot"></span>${t("Local installation", "Instalación local")}<br>America/Lima · Linux</div><div class="row">${preferences()}<small class="grow">v0.1.1</small></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb"><span>Fénix</span><span>/</span>${labels[state.page]}</div><span class="badge" id="connection-state">${escape(state.status.settings.model)}</span></header><div id="page"></div></main></div>`;
+      )}</nav><div class="sidebar-bottom"><div class="local-label"><span class="dot"></span>${t("Local installation", "Instalación local")}<br>America/Lima · Linux</div><div class="row">${preferences()}<small class="grow">v0.2.0</small></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb"><span>Fénix</span><span>/</span>${labels[state.page]}</div><span class="badge" id="connection-state">${escape(state.status.settings.model)}</span></header><div id="page"></div></main></div>`;
   const views = {
     chat: renderChat,
+    projects: renderProjects,
     memory: renderMemory,
     skills: renderSkills,
     schedules: renderSchedules,
@@ -210,12 +216,52 @@ function renderChat() {
   $("#page").innerHTML =
     `<section class="chat-layout"><div class="chat-scroll" id="chat-scroll"><div class="chat-inner"><button class="subtle load-older" data-action="older">${t("Earlier messages", "Mensajes anteriores")}</button><div id="message-list" role="log" aria-live="polite" aria-relevant="additions"></div><div id="live-message" aria-busy="true"></div></div></div><div class="composer-area"><div class="composer-wrap"><div class="activity-strip" id="activity-strip" role="status"></div><form id="chat-form" class="composer"><label class="muted" for="chat-input" hidden>${t("Message Fénix", "Escribe a Fénix")}</label><textarea id="chat-input" placeholder="${t("What can I help you with?", "¿En qué te ayudo?")}" maxlength="32000" rows="2" required></textarea><div class="composer-footer"><small>${escape(state.status.settings.model)} · ${t("Text only", "Sólo texto")}</small><button class="primary send" type="submit" aria-label="${t("Send message", "Enviar mensaje")}">↑</button></div></form><p class="composer-hint">${t("One conversation, always. New requests wait their turn. Enter to send · Shift + Enter for a new line.", "Una sola conversación, siempre. Los nuevos mensajes esperan su turno. Enter para enviar · Shift + Enter para nueva línea.")}</p></div></div></section>`;
   refreshMessages(true);
+  drawReplyReference();
   updateActivityStrip();
   drawLiveMessage();
 }
+function projectName(id) {
+  return state.projects.find((project) => project.id === id)?.name || id;
+}
+function projectBadge(item) {
+  const binding = item.binding;
+  const ids = binding?.read_project_ids?.length
+    ? [
+        ...new Set(
+          [binding.project_id, ...binding.read_project_ids].filter(Boolean),
+        ),
+      ]
+    : [item.project_id || binding?.project_id].filter(Boolean);
+  return ids
+    .map(
+      (id) =>
+        `<span class="badge project-badge">${escape(projectName(id))}</span>`,
+    )
+    .join(" ");
+}
+function drawReplyReference() {
+  let node = $("#reply-reference");
+  if (!$("#chat-form")) return;
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "reply-reference";
+    node.className = "reply-reference";
+    $("#chat-form").before(node);
+  }
+  node.hidden = !state.replyTo;
+  if (!state.replyTo) {
+    node.replaceChildren();
+    return;
+  }
+  node.innerHTML = `<div><strong>${t("Replying to", "Respondiendo a")} ${t("task", "la tarea")} ${escape(state.replyTo.taskId.slice(0, 8))}</strong><p>${escape(state.replyTo.text)}</p></div><button type="button" class="subtle" data-action="clear-reply" aria-label="${t("Remove reply reference", "Quitar referencia de respuesta")}">×</button>`;
+}
 async function refreshMessages(force = false) {
   const messages = await api("/messages");
-  const changed = messages.some((message) => !state.messages.has(message.id));
+  const changed = messages.some(
+    (message) =>
+      JSON.stringify(state.messages.get(message.id)) !==
+      JSON.stringify(message),
+  );
   for (const message of messages) state.messages.set(message.id, message);
   if (!$("#message-list") || (!changed && !force)) return;
   const scroll = $("#chat-scroll");
@@ -232,7 +278,7 @@ function drawMessages() {
     ? messages
         .map(
           (message) =>
-            `<article class="message ${message.role}"><span class="avatar" aria-hidden="true">${message.role === "user" ? t("Y", "T") : "F"}</span><div class="message-body"><div class="message-head">${message.role === "user" ? t("You", "Tú") : "Fénix"}<time datetime="${escape(message.created_at)}">${date(message.created_at)}</time>${message.origin === "telegram" ? "<small>Telegram</small>" : ""}</div><div class="message-text">${escape(message.text)}</div>${message.task_id ? `<div class="message-meta">${t("Task", "Tarea")} ${escape(message.task_id.slice(0, 8))}</div>` : ""}</div></article>`,
+            `<article class="message ${message.role}"><span class="avatar" aria-hidden="true">${message.role === "user" ? t("Y", "T") : "F"}</span><div class="message-body"><div class="message-head">${message.role === "user" ? t("You", "Tú") : "Fénix"}<time datetime="${escape(message.created_at)}">${date(message.created_at)}</time>${message.origin === "telegram" ? "<small>Telegram</small>" : ""}</div><div class="message-text">${escape(message.text)}</div>${message.task_id ? `<div class="message-meta">${projectBadge(message)} ${t("Task", "Tarea")} ${escape(message.task_id.slice(0, 8))} <button class="subtle reply-button" data-reply-task="${escape(message.task_id)}" data-reply-message="${escape(message.id)}">${t("Reply", "Responder")}</button></div>` : ""}</div></article>`,
         )
         .join("")
     : `<div class="chat-welcome"><span class="brand-mark">F</span><h1>${t("A good place to begin.", "Empecemos por lo que necesitas.")}</h1><p>${t("Tell me what you would like to get done. I can work with local files, remember important details and keep track of your reminders.", "Dime qué te gustaría resolver. Puedo trabajar con tus archivos, recordar detalles importantes y gestionar tus recordatorios.")}</p><div class="suggestions">${[
@@ -294,6 +340,10 @@ function progressLabel() {
     command_cancel: ["Cancelling a command", "Cancelando un comando"],
     memory_search: ["Searching memory", "Buscando en la memoria"],
     memory_manage: ["Managing memory", "Gestionando la memoria"],
+    project_manage: [
+      "Consulting project context",
+      "Consultando el contexto del proyecto",
+    ],
     history_search: [
       "Searching the conversation",
       "Buscando en la conversación",
@@ -302,6 +352,15 @@ function progressLabel() {
     skill_load: ["Loading a skill", "Cargando un skill"],
     schedule_manage: ["Managing schedules", "Gestionando tareas programadas"],
     task_inspect: ["Inspecting a task", "Consultando una tarea"],
+    subagent_spawn: ["Delegating work", "Delegando trabajo"],
+    subagent_status: [
+      "Checking background work",
+      "Consultando trabajo en segundo plano",
+    ],
+    subagent_cancel: [
+      "Cancelling background work",
+      "Cancelando trabajo en segundo plano",
+    ],
     ask_user: ["Preparing a question", "Preparando una pregunta"],
     request_approval: [
       "Preparing an approval request",
@@ -311,23 +370,40 @@ function progressLabel() {
   const label = labels[progress.tool];
   return label ? t(...label) : "";
 }
+function pendingRequests() {
+  return (
+    state.status.pending_requests ||
+    (state.status.pending ? [state.status.pending] : [])
+  );
+}
 function updateActivityStrip() {
   const node = $("#activity-strip");
   if (!node) return;
-  const queued = state.tasks.filter((task) => task.status === "queued").length;
-  const live = progressLabel();
+  const queued = state.tasks.filter(
+    (task) => task.status === "queued" && task.origin !== "subagent",
+  ).length;
+  const background = (state.status.subagents || []).filter((task) =>
+    ["queued", "running", "waiting"].includes(task.status),
+  ).length;
+  const pending = pendingRequests();
+  const masterWaiting = pending.some(
+    (request) => request.task_id === state.status.active_task,
+  );
   const activity =
-    live ||
-    (state.status.pending
-      ? t(
-          "Waiting for your textual answer. Follow the instructions in the conversation.",
-          "Espera tu respuesta por texto. Sigue las instrucciones de la conversación.",
-        )
+    progressLabel() ||
+    (masterWaiting
+      ? t("Waiting for your textual answer", "Espera tu respuesta por texto")
       : state.status.active_task
         ? t("Working on your request", "Trabajando en tu solicitud")
         : "");
   node.textContent = [
     activity,
+    background
+      ? `${background} ${t("background tasks", "tareas en segundo plano")}`
+      : "",
+    pending.length
+      ? `${pending.length} ${t("pending replies · use request IDs in the conversation", "respuestas pendientes · usa los IDs en la conversación")}`
+      : "",
     queued ? `${queued} ${t("queued", "en cola")}` : "",
   ]
     .filter(Boolean)
@@ -390,20 +466,51 @@ window.addEventListener("pageshow", (event) => {
   if (event.persisted) connectProgress();
 });
 
-async function renderMemory() {
+async function renderProjects() {
+  state.projects = await api("/projects");
   $("#page").innerHTML =
-    `<div class="content">${heading(t("A memory you can trust.", "Lo importante, a mano."), t("Only the facts you ask to keep. Search, correct or remove them at any time.", "Sólo los datos que pides conservar. Búscalos, corrígelos o elimínalos cuando quieras."))}<div class="grid"><section class="card"><h2>${t("Saved memories", "Recuerdos guardados")}</h2><form class="search-form" id="memory-search"><input id="memory-query" aria-label="${t("Search memory", "Buscar recuerdos")}" placeholder="${t("Search by words, title or ID…", "Buscar por palabras, título o ID…")}"><button type="submit">${t("Search", "Buscar")}</button></form><div id="memory-list"></div></section><form class="card" id="memory-form"><h2>${t("Keep a detail", "Guardar un detalle")}</h2><input type="hidden" id="memory-id">${input("memory-title", t("Title", "Título"), "", "required maxlength=200")}${field(`<label for="memory-content">${t("What should I remember?", "¿Qué debo recordar?")}</label>`, '<textarea id="memory-content" required maxlength="16000" rows="5"></textarea>')}<button class="primary" type="submit">${t("Save memory", "Guardar recuerdo")}</button><button class="subtle" data-action="clear-memory" type="button">${t("Clear form", "Limpiar formulario")}</button><p class="form-status" id="memory-status"></p></form></div></div>`;
+    `<div class="content">${heading(t("Each project, in context.", "Cada proyecto, con su contexto."), t("Keep objectives and decisions separate while talking in the same conversation. Mention a project by its name or alias when you need it.", "Mantén separados los objetivos y decisiones, conversando siempre en el mismo chat. Menciona el nombre o alias de un proyecto cuando lo necesites."))}<div class="grid"><section class="card"><div class="row spread"><h2>${t("Your projects", "Tus proyectos")}</h2><button data-action="refresh-projects">${t("Refresh", "Actualizar")}</button></div><div id="project-list"></div></section><form class="card" id="project-form"><h2 id="project-form-title">${t("Create a project", "Crear un proyecto")}</h2><input type="hidden" id="project-id">${input("project-name", t("Name", "Nombre"), "", "required maxlength=200")}${input("project-aliases", t("Aliases, separated by commas", "Alias, separados por comas"), "", "maxlength=2000")}${field(`<label for="project-description">${t("Description", "Descripción")}</label>`, '<textarea id="project-description" rows="3" maxlength="4000"></textarea>')}${input("project-workspace", t("Project folder (optional)", "Carpeta del proyecto (opcional)"), "", 'placeholder="/home/user/projects/example"')}${field(`<label for="project-brief">${t("Project context", "Contexto del proyecto")}</label>`, `<textarea id="project-brief" rows="12" maxlength="16000" placeholder="${escape(t("Objective\nConstraints and preferences\nProgress\nKey decisions\nRelevant files\nNext steps\nCritical context", "Objetivo\nRestricciones y preferencias\nProgreso\nDecisiones clave\nArchivos relevantes\nPróximos pasos\nContexto crítico"))}"></textarea>`, t("Keep the decisions and constraints that apply to this project. An optional folder supports projects with local files.", "Conserva las decisiones y restricciones de este proyecto. La carpeta es opcional y sirve para proyectos con archivos locales."))}<button class="primary" type="submit">${t("Save project", "Guardar proyecto")}</button><button class="subtle" type="button" data-action="clear-project">${t("New project", "Nuevo proyecto")}</button><p class="form-status" id="project-status"></p></form></div></div>`;
+  drawProjects();
+}
+function drawProjects() {
+  const node = $("#project-list");
+  if (!node) return;
+  node.innerHTML = state.projects.length
+    ? state.projects
+        .map(
+          (project) =>
+            `<article class="record"><h3>${escape(project.name)}</h3><p>${escape(project.description)}</p>${project.aliases?.length ? `<p class="muted">${t("Aliases", "Alias")}: ${escape(project.aliases.join(", "))}</p>` : ""}<small>${t("Updated", "Actualizado")}: ${date(project.updated_at)}${project.workspace ? `<br>${escape(project.workspace)}` : ""}</small><div class="actions"><button data-edit-project="${escape(project.id)}">${t("Edit", "Editar")}</button><button data-project-details="${escape(project.id)}">${t("View progress", "Ver progreso")}</button></div></article>`,
+        )
+        .join("")
+    : empty(
+        t("Your first project", "Tu primer proyecto"),
+        t(
+          "Create a project to give its work a name and its own context. General conversation remains available.",
+          "Crea un proyecto para darle un nombre y contexto propio a su trabajo. La conversación general sigue disponible.",
+        ),
+      );
+}
+function projectOptions(selected = "") {
+  return `<option value="">${t("General memory", "Memoria general")}</option>${state.projects.map((project) => `<option value="${escape(project.id)}" ${project.id === selected ? "selected" : ""}>${escape(project.name)}</option>`).join("")}`;
+}
+async function renderMemory() {
+  state.projects = await api("/projects");
+  $("#page").innerHTML =
+    `<div class="content">${heading(t("A memory you can trust.", "Lo importante, a mano."), t("Only the facts you ask to keep. Search, correct or remove them at any time.", "Sólo los datos que pides conservar. Búscalos, corrígelos o elimínalos cuando quieras."))}<div class="grid"><section class="card"><h2>${t("Saved memories", "Recuerdos guardados")}</h2>${field(`<label for="memory-filter">${t("Memory scope", "Ámbito de memoria")}</label>`, `<select id="memory-filter">${projectOptions()}</select>`)}<form class="search-form" id="memory-search"><input id="memory-query" aria-label="${t("Search memory", "Buscar recuerdos")}" placeholder="${t("Search by words, title or ID…", "Buscar por palabras, título o ID…")}"><button type="submit">${t("Search", "Buscar")}</button></form><div id="memory-list"></div></section><form class="card" id="memory-form"><h2>${t("Keep a detail", "Guardar un detalle")}</h2><input type="hidden" id="memory-id">${field(`<label for="memory-project">${t("Save in", "Guardar en")}</label>`, `<select id="memory-project">${projectOptions()}</select>`)}${input("memory-title", t("Title", "Título"), "", "required maxlength=200")}${field(`<label for="memory-content">${t("What should I remember?", "¿Qué debo recordar?")}</label>`, '<textarea id="memory-content" required maxlength="16000" rows="5"></textarea>')}<button class="primary" type="submit">${t("Save memory", "Guardar recuerdo")}</button><button class="subtle" data-action="clear-memory" type="button">${t("Clear form", "Limpiar formulario")}</button><p class="form-status" id="memory-status"></p></form></div></div>`;
   await loadMemories();
 }
 let memories = [];
 async function loadMemories(query = "") {
-  memories = await api(`/memory?query=${encodeURIComponent(query)}`);
+  const projectId = $("#memory-filter")?.value;
+  memories = await api(
+    `/memory?query=${encodeURIComponent(query)}${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`,
+  );
   if (!$("#memory-list")) return;
   $("#memory-list").innerHTML = memories.length
     ? memories
         .map(
           (memory) =>
-            `<article class="record"><h3>${escape(memory.title)}</h3><p>${escape(memory.content)}</p><small>${date(memory.updated_at)}<br>${escape(memory.source)}<br>${escape(memory.id)}</small><div class="actions"><button data-edit-memory="${memory.id}">${t("Edit", "Editar")}</button><button data-delete-memory="${memory.id}">${t("Remove memory", "Eliminar recuerdo")}</button></div></article>`,
+            `<article class="record"><h3>${escape(memory.title)}</h3><span class="badge">${escape(memory.project_id ? projectName(memory.project_id) : t("General memory", "Memoria general"))}</span><p>${escape(memory.content)}</p><small>${date(memory.updated_at)}<br>${escape(memory.source)}<br>${escape(memory.id)}</small><div class="actions"><button data-edit-memory="${memory.id}">${t("Edit", "Editar")}</button><button data-delete-memory="${memory.id}">${t("Remove memory", "Eliminar recuerdo")}</button></div></article>`,
         )
         .join("")
     : empty(
@@ -428,9 +535,57 @@ async function renderSchedules() {
 }
 
 async function renderActivity() {
-  state.tasks = await api("/tasks");
+  [state.tasks, state.status] = await Promise.all([
+    api("/tasks"),
+    api("/status"),
+  ]);
   $("#page").innerHTML =
-    `<div class="content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Inspect task states, model usage and tool evidence. To cancel, type cancelar followed by the task ID in the conversation.", "Consulta estados, uso del modelo y evidencia de herramientas. Para cancelar, escribe cancelar seguido del ID de la tarea en la conversación."))}<section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div>${state.tasks.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>${t("Request", "Solicitud")}</th><th>${t("State", "Estado")}</th><th>${t("Created", "Creada")}</th><th>${t("Details", "Detalles")}</th></tr></thead><tbody>${state.tasks.map((task) => `<tr><td><div class="task-request">${escape(task.request)}</div><small><code>${task.id}</code></small></td><td><span class="badge">${statusName(task.status)}</span></td><td>${date(task.created_at)}<br><small>${escape(task.origin)}</small></td><td><button data-task="${task.id}">${t("Inspect", "Inspeccionar")}</button></td></tr>`).join("")}</tbody></table></div>` : empty(t("Ready for the first task", "Todo listo para la primera tarea"), t("Send a message to see its progress here.", "Envía un mensaje para ver su progreso aquí."))}</section></div>`;
+    `<div class="content task-content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Follow tasks while Fénix keeps the conversation available. To cancel, type cancelar and the task ID in the conversation.", "Sigue las tareas mientras Fénix mantiene disponible la conversación. Para cancelar, escribe cancelar y el ID de la tarea en la conversación."))}<section class="card background-panel" aria-labelledby="background-title"><div class="row spread"><h2 id="background-title">${t("Background tasks", "Tareas en segundo plano")}</h2><span class="badge" id="background-count"></span></div><p class="muted">${t("Delegated work reports back here and in the conversation.", "El trabajo delegado devuelve su resultado aquí y en la conversación.")}</p><div id="background-subagents"></div></section><section class="card pending-panel" id="task-pending" hidden></section><section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div><div id="task-history"></div></section></div>`;
+  drawTaskActivity();
+}
+function drawTaskActivity() {
+  const node = $("#background-subagents");
+  if (!node) return;
+  const jobs = state.status.subagents || [];
+  const pending = pendingRequests();
+  const signature = JSON.stringify([
+    state.language,
+    jobs,
+    pending,
+    state.tasks,
+  ]);
+  if (node.dataset.snapshot === signature) return;
+  const open = new Set(
+    [...node.querySelectorAll("details[open]")].map(
+      (detail) => detail.dataset.result,
+    ),
+  );
+  node.dataset.snapshot = signature;
+  const activeCount = jobs.filter((job) =>
+    ["queued", "running", "waiting"].includes(job.status),
+  ).length;
+  $("#background-count").textContent =
+    `${activeCount} ${t("active", activeCount === 1 ? "activa" : "activas")}`;
+  node.innerHTML = jobs.length
+    ? jobs
+        .map(
+          (job) =>
+            `<article class="background-task" data-subagent="${escape(job.id)}"><div class="row spread"><h3>${escape(job.spec.objective)} ${projectBadge(job)}</h3><span class="badge">${escape(statusName(job.status))}</span></div><p class="task-output"><span class="muted">${t("Expected output", "Resultado esperado")}:</span> ${escape(job.spec.expected_output)}</p><div class="background-meta"><span>${t("Task ID", "ID de tarea")}: <code>${escape(job.id)}</code></span><span>${t("Parent", "Principal")}: <code>${escape(job.parent_task_id)}</code></span><span>${t("Attempts", "Intentos")}: ${escape(job.attempts)} / 3</span><span>${t("Updated", "Actualizada")}: ${date(job.updated_at)}</span></div>${job.result ? `<details class="subagent-result" data-result="${escape(job.id)}" ${open.has(job.id) ? "open" : ""}><summary>${t("Result", "Resultado")}${job.result.summary ? ` · ${escape(job.result.summary)}` : ""}</summary><pre>${escape(typeof job.result === "string" ? job.result : JSON.stringify(job.result, null, 2))}</pre></details>` : ""}</article>`,
+        )
+        .join("")
+    : `<p class="muted">${t("No delegated tasks yet.", "Todavía no hay tareas delegadas.")}</p>`;
+  const requests = $("#task-pending");
+  requests.hidden = !pending.length;
+  requests.innerHTML = `<h2>${t("Waiting for your reply", "Esperan tu respuesta")}</h2><p class="muted">${t("Reply in the conversation using the request ID. Other background work can continue.", "Responde en la conversación usando el ID de la solicitud. El resto del trabajo en segundo plano puede continuar.")}</p>${pending.map((request) => `<article class="background-task"><p>${escape(request.question)}</p><div class="background-meta"><span>${t("Task ID", "ID de tarea")}: <code>${escape(request.task_id)}</code></span></div><p class="textual-control">${request.kind === "approval" ? `<code>aprobar ${escape(request.id)}</code> ${t("or", "o")} <code>rechazar ${escape(request.id)}</code>` : `<code>responder ${escape(request.id)} &lt;${t("answer", "respuesta")}&gt;</code>`}</p></article>`).join("")}`;
+  $("#task-history").innerHTML = state.tasks.length
+    ? `<div class="table-wrap"><table class="table"><thead><tr><th>${t("Request", "Solicitud")}</th><th>${t("State", "Estado")}</th><th>${t("Created", "Creada")}</th><th>${t("Details", "Detalles")}</th></tr></thead><tbody>${state.tasks.map((task) => `<tr><td><div class="task-request">${escape(task.request)}</div>${projectBadge(task)}<small><code>${escape(task.id)}</code></small></td><td><span class="badge">${escape(statusName(task.status))}</span></td><td>${date(task.created_at)}<br><small>${escape(task.origin)}</small></td><td><button data-task="${escape(task.id)}">${t("Inspect", "Inspeccionar")}</button></td></tr>`).join("")}</tbody></table></div>`
+    : empty(
+        t("Ready for the first task", "Todo listo para la primera tarea"),
+        t(
+          "Send a message to see its progress here.",
+          "Envía un mensaje para ver su progreso aquí.",
+        ),
+      );
 }
 function renderSettings() {
   const telegram = state.status.telegram;
@@ -476,7 +631,7 @@ async function showTask(id, after = 0) {
   const value = await api(`/tasks/${id}?after=${after}`);
   showDetail(
     `${t("Task", "Tarea")} ${id.slice(0, 8)}`,
-    `<p>${escape(value.task.request)}</p><p><span class="badge">${statusName(value.task.status)}</span></p><code>${escape(id)}</code>${value.task.error ? `<p class="note">${escape(value.task.error)}</p>` : ""}${value.events.map((event) => `<details class="record"><summary>${escape(event.kind)} · ${date(event.created_at)}</summary><pre>${escape(JSON.stringify(event.data, null, 2))}</pre></details>`).join("")}${value.events.length === 50 ? `<button data-task="${id}" data-after="${value.events.at(-1).seq}">${t("More events", "Más eventos")}</button>` : ""}`,
+    `<p>${escape(value.task.request)}</p><p><span class="badge">${statusName(value.task.status)}</span> ${projectBadge(value)}</p>${value.binding?.workspace ? `<p class="muted">${escape(value.binding.workspace)}</p>` : ""}<code>${escape(id)}</code>${value.task.error ? `<p class="note">${escape(value.task.error)}</p>` : ""}${value.events.map((event) => `<details class="record"><summary>${escape(event.kind)} · ${date(event.created_at)}</summary><pre>${escape(JSON.stringify(event.data, null, 2))}</pre></details>`).join("")}${value.events.length === 50 ? `<button data-task="${id}" data-after="${value.events.at(-1).seq}">${t("More events", "Más eventos")}</button>` : ""}`,
   );
 }
 function showDetail(title, html) {
@@ -512,6 +667,55 @@ document.addEventListener("click", async (event) => {
       $("#chat-input").value = button.dataset.prompt;
       $("#chat-input").focus();
     }
+    if (button.dataset.replyTask) {
+      const message = state.messages.get(button.dataset.replyMessage);
+      state.replyTo = {
+        taskId: button.dataset.replyTask,
+        text: (message?.text || "").slice(0, 180),
+      };
+      drawReplyReference();
+      $("#chat-input").focus();
+    }
+    if (button.dataset.action === "clear-reply") {
+      state.replyTo = null;
+      drawReplyReference();
+    }
+    if (button.dataset.action === "refresh-projects") {
+      state.projects = await api("/projects");
+      drawProjects();
+    }
+    if (button.dataset.action === "clear-project") {
+      $("#project-form").reset();
+      $("#project-id").value = "";
+      $("#project-form-title").textContent = t(
+        "Create a project",
+        "Crear un proyecto",
+      );
+      $("#project-status").textContent = "";
+    }
+    if (button.dataset.editProject) {
+      const { project } = await api(`/projects/${button.dataset.editProject}`);
+      $("#project-id").value = project.id;
+      $("#project-name").value = project.name;
+      $("#project-aliases").value = project.aliases.join(", ");
+      $("#project-description").value = project.description;
+      $("#project-workspace").value = project.workspace || "";
+      $("#project-brief").value = project.brief;
+      $("#project-form-title").textContent = t(
+        "Edit project",
+        "Editar proyecto",
+      );
+      $("#project-name").focus();
+    }
+    if (button.dataset.projectDetails) {
+      const { project, tasks } = await api(
+        `/projects/${button.dataset.projectDetails}`,
+      );
+      showDetail(
+        project.name,
+        `${project.brief ? `<pre>${escape(project.brief)}</pre>` : ""}<h3>${t("Recent tasks", "Tareas recientes")}</h3>${tasks.length ? tasks.map((task) => `<article class="record"><div class="row spread"><h3>${escape(task.request)}</h3><span class="badge">${escape(statusName(task.status))}</span></div><small>${date(task.updated_at)}</small><div class="actions"><button data-task="${escape(task.id)}">${t("Inspect", "Inspeccionar")}</button></div></article>`).join("") : `<p class="muted">${t("No tasks yet. Mention this project in the conversation to start.", "Aún no hay tareas. Menciona este proyecto en la conversación para comenzar.")}</p>`}`,
+      );
+    }
     if (button.dataset.action === "older") {
       const oldest = Math.min(
         ...[...state.messages.values()].map((m) => m.seq),
@@ -532,17 +736,30 @@ document.addEventListener("click", async (event) => {
       $("#memory-id").value = memory.id;
       $("#memory-title").value = memory.title;
       $("#memory-content").value = memory.content;
+      $("#memory-project").value = memory.project_id || "";
+      $("#memory-project").disabled = true;
       $("#memory-title").focus();
     }
     if (button.dataset.deleteMemory) {
-      await api(`/memory/${button.dataset.deleteMemory}`, {
-        method: "DELETE",
-        body: {},
-      });
+      const memory = memories.find(
+        (item) => item.id === button.dataset.deleteMemory,
+      );
+      await api(
+        `/memory/${button.dataset.deleteMemory}${memory?.project_id ? `?project_id=${encodeURIComponent(memory.project_id)}` : ""}`,
+        {
+          method: "DELETE",
+          body: {},
+        },
+      );
       await loadMemories();
       toast(t("Memory removed.", "Recuerdo eliminado."));
     }
-    if (button.dataset.action === "clear-memory") $("#memory-form").reset();
+    if (button.dataset.action === "clear-memory") {
+      $("#memory-form").reset();
+      $("#memory-id").value = "";
+      $("#memory-project").disabled = false;
+      $("#memory-project").value = $("#memory-filter").value;
+    }
     if (button.dataset.readSkill) {
       const result = await api(`/skills/${button.dataset.readSkill}`);
       showDetail(
@@ -587,6 +804,13 @@ document.addEventListener("change", async (event) => {
   try {
     if (event.target.id === "provider") updateProviderFields(true);
     if (event.target.id === "schedule-kind") scheduleKind();
+    if (event.target.id === "memory-filter") {
+      $("#memory-form").reset();
+      $("#memory-id").value = "";
+      $("#memory-project").disabled = false;
+      $("#memory-project").value = event.target.value;
+      await loadMemories($("#memory-query").value);
+    }
     if (event.target.id === "instruction-name") await loadInstruction();
     if (event.target.dataset.skill) {
       await api(`/skills/${event.target.dataset.skill}`, {
@@ -646,9 +870,37 @@ document.addEventListener("submit", async (event) => {
     if (form.id === "chat-form") {
       const text = $("#chat-input").value.trim();
       if (!text) return;
-      await api("/messages", { method: "POST", body: { text } });
+      await api("/messages", {
+        method: "POST",
+        body: { text, reply_to_task_id: state.replyTo?.taskId || null },
+      });
       $("#chat-input").value = "";
+      state.replyTo = null;
+      drawReplyReference();
       await refreshMessages(true);
+    }
+    if (form.id === "project-form") {
+      const id = $("#project-id").value;
+      await api(id ? `/projects/${id}` : "/projects", {
+        method: id ? "PUT" : "POST",
+        body: {
+          name: $("#project-name").value,
+          aliases: $("#project-aliases")
+            .value.split(",")
+            .map((alias) => alias.trim())
+            .filter(Boolean),
+          description: $("#project-description").value,
+          workspace: $("#project-workspace").value.trim() || null,
+          brief: $("#project-brief").value,
+        },
+      });
+      await renderProjects();
+      toast(
+        t(
+          "Project saved. Continue in the same conversation.",
+          "Proyecto guardado. Continúa en la misma conversación.",
+        ),
+      );
     }
     if (form.id === "memory-search")
       await loadMemories($("#memory-query").value);
@@ -659,9 +911,15 @@ document.addEventListener("submit", async (event) => {
           id: $("#memory-id").value || null,
           title: $("#memory-title").value,
           content: $("#memory-content").value,
+          project_id: $("#memory-project").value || null,
         },
       });
+      const savedProject = $("#memory-project").value;
       form.reset();
+      $("#memory-id").value = "";
+      $("#memory-project").disabled = false;
+      $("#memory-project").value = savedProject;
+      $("#memory-filter").value = savedProject;
       $("#memory-status").textContent = t(
         "Memory saved and verified.",
         "Recuerdo guardado y verificado.",
@@ -734,10 +992,33 @@ async function poll() {
     const [status, tasks] = await Promise.all([api("/status"), api("/tasks")]);
     state.status = status;
     state.tasks = tasks;
+    const projectsChanged =
+      status.projects &&
+      (status.projects.length !== state.projects.length ||
+        status.projects.some(
+          (project) =>
+            !state.projects.some(
+              (existing) =>
+                existing.id === project.id &&
+                existing.context_version === project.context_version,
+            ),
+        ));
+    if (status.projects)
+      state.projects = status.projects.map((project) => {
+        const existing = state.projects.find((item) => item.id === project.id);
+        return existing?.context_version === project.context_version
+          ? existing
+          : { ...existing, ...project };
+      });
     if (status.ready !== before) await render();
     if (state.page === "chat" && status.ready) {
-      await refreshMessages();
+      await refreshMessages(projectsChanged);
       updateActivityStrip();
+    }
+    if (state.page === "activity" && status.ready) drawTaskActivity();
+    if (state.page === "projects" && status.ready) {
+      if (projectsChanged) state.projects = await api("/projects");
+      drawProjects();
     }
     if ($("#connection-state"))
       $("#connection-state").textContent = status.settings?.model || "Fénix";
@@ -757,6 +1038,7 @@ async function boot() {
       api("/status"),
       api("/providers"),
     ]);
+    state.projects = state.status.projects || [];
     await render();
     connectProgress();
     setInterval(poll, 1800);
