@@ -2,6 +2,7 @@ use crate::Runtime;
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::{BTreeSet, HashMap},
     fs::{self, OpenOptions},
     io::{Read, Write},
     os::unix::fs::{OpenOptionsExt, PermissionsExt},
@@ -120,7 +121,11 @@ pub struct Skill {
     pub required_tools: Vec<String>,
 }
 
-const DEFAULTS: [(&str, &str); 13] = [
+const DEFAULTS: [(&str, &str); 14] = [
+    (
+        "software-implementation",
+        include_str!("../../../resources/skills/software-implementation/SKILL.md"),
+    ),
     (
         "repository-navigation",
         include_str!("../../../resources/skills/repository-navigation/SKILL.md"),
@@ -182,14 +187,21 @@ impl Runtime {
             let path = self.skills_dir.join(name);
             std::fs::create_dir_all(&path)?;
             let file = path.join("SKILL.md");
-            if name == "memory-and-reminders"
-                && std::fs::read_to_string(&file).is_ok_and(|current| {
-                    current
-                        == include_str!(
-                            "../../../resources/skills/memory-and-reminders/SKILL.v1.md"
-                        )
-                })
-            {
+            let previous = match name {
+                "memory-and-reminders" => Some(include_str!(
+                    "../../../resources/skills/memory-and-reminders/SKILL.v1.md"
+                )),
+                "test-driven-repair" => Some(include_str!(
+                    "../../../resources/skills/test-driven-repair/SKILL.v1.md"
+                )),
+                "git-recovery-and-change-management" => Some(include_str!(
+                    "../../../resources/skills/git-recovery-and-change-management/SKILL.v1.md"
+                )),
+                _ => None,
+            };
+            if previous.is_some_and(|old| {
+                std::fs::read_to_string(&file).is_ok_and(|current| current == old)
+            }) {
                 crate::write_private(&file, content)?;
             } else {
                 crate::write_new(&file, content)?;
@@ -289,13 +301,14 @@ impl Runtime {
         if query.len() > 1000 {
             bail!("Skill query exceeds 1000 bytes");
         }
-        let terms: Vec<_> = query
+        let terms: BTreeSet<_> = query
             .to_lowercase()
             .split(|c: char| !c.is_alphanumeric())
             .filter(|s| !s.is_empty())
             .map(str::to_owned)
             .collect();
-        let mut ranked = Vec::new();
+        let mut documents = Vec::new();
+        let mut frequency: HashMap<String, usize> = HashMap::new();
         for skill in self.skills()?.into_iter().filter(|s| s.enabled) {
             let body = self.read_skill(&skill.name)?;
             let fields = [
@@ -303,22 +316,40 @@ impl Runtime {
                 (skill.description.as_str(), 3.0),
                 (body.as_str(), 1.0),
             ];
-            let score: f64 = fields
+            let mut counts: HashMap<String, f64> = HashMap::new();
+            let mut length = 0;
+            for (text, weight) in fields {
+                for word in text
+                    .to_lowercase()
+                    .split(|c: char| !c.is_alphanumeric())
+                    .filter(|s| !s.is_empty())
+                {
+                    *counts.entry(word.to_owned()).or_default() += weight;
+                    length += 1;
+                }
+            }
+            for word in counts.keys() {
+                *frequency.entry(word.clone()).or_default() += 1;
+            }
+            documents.push((skill, counts, length));
+        }
+        let count = documents.len() as f64;
+        let average = documents
+            .iter()
+            .map(|(_, _, length)| *length as f64)
+            .sum::<f64>()
+            / count.max(1.0);
+        let mut ranked = Vec::new();
+        for (skill, counts, length) in documents {
+            // Saturate weighted frequency together so a generic description word
+            // cannot overwhelm a distinctive term present only in a skill body.
+            let score: f64 = terms
                 .iter()
-                .map(|(text, weight)| {
-                    let tokens: Vec<_> = text
-                        .to_lowercase()
-                        .split(|c: char| !c.is_alphanumeric())
-                        .filter(|s| !s.is_empty())
-                        .map(str::to_owned)
-                        .collect();
-                    terms
-                        .iter()
-                        .map(|term| {
-                            let count = tokens.iter().filter(|t| *t == term).count() as f64;
-                            weight * count / (count + 1.0)
-                        })
-                        .sum::<f64>()
+                .map(|term| {
+                    let tf = *counts.get(term).unwrap_or(&0.0);
+                    let df = *frequency.get(term).unwrap_or(&0) as f64;
+                    let idf = (1.0 + (count - df + 0.5) / (df + 0.5)).ln();
+                    idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * length as f64 / average.max(1.0)))
                 })
                 .sum();
             if score > 0.0 || terms.is_empty() {
@@ -329,6 +360,85 @@ impl Runtime {
         Ok(
             serde_json::json!({"skills":ranked.into_iter().take(limit.clamp(1, 8)).map(|(score, skill)| serde_json::json!({"score":score,"skill":skill})).collect::<Vec<_>>(),"instruction":"Load selected bodies with skill_load; search again if needed. Scores are lexical relevance, not correctness probabilities."}),
         )
+    }
+    /// Task-local metadata hints, not automatic skill execution or new authority.
+    pub(crate) fn task_skill_guidance(&self, query: &str) -> Result<String> {
+        let mut terms = BTreeSet::new();
+        for word in query.to_lowercase().split(|c: char| !c.is_alphanumeric()) {
+            if word.len() < 3
+                || matches!(
+                    word,
+                    "the"
+                        | "and"
+                        | "with"
+                        | "for"
+                        | "from"
+                        | "this"
+                        | "that"
+                        | "you"
+                        | "your"
+                        | "are"
+                        | "was"
+                        | "will"
+                        | "can"
+                        | "should"
+                        | "must"
+                        | "have"
+                        | "has"
+                        | "not"
+                        | "use"
+                        | "using"
+                        | "only"
+                        | "all"
+                        | "into"
+                        | "then"
+                        | "please"
+                        | "need"
+                        | "want"
+                        | "task"
+                        | "work"
+                        | "para"
+                        | "por"
+                        | "con"
+                        | "una"
+                        | "uno"
+                        | "los"
+                        | "las"
+                        | "que"
+                        | "del"
+                        | "como"
+                        | "debe"
+                        | "quiero"
+                        | "hacer"
+                        | "tarea"
+                )
+            {
+                continue;
+            }
+            terms.insert(word.to_owned());
+            if terms.len() == 64 {
+                break;
+            }
+        }
+        if terms.is_empty() {
+            return Ok(String::new());
+        }
+        let query = terms.into_iter().collect::<Vec<_>>().join(" ");
+        let mut end = query.len().min(900);
+        while !query.is_char_boundary(end) {
+            end -= 1;
+        }
+        let matches = self.search_skills(&query[..end], 2)?;
+        let candidates = matches["skills"].as_array().into_iter().flatten()
+            .map(|entry| serde_json::json!({"name":entry["skill"]["name"],"description":entry["skill"]["description"]}))
+            .collect::<Vec<_>>();
+        if candidates.is_empty() {
+            return Ok(String::new());
+        }
+        Ok(format!(
+            "\nTask-local skill candidates (lexical suggestions, not requirements): {}\nFor multi-step work, load a candidate with skill_load if its purpose fits before implementing or retrying an unfamiliar procedure. If neither fits, use the full catalog or skill_search. Do not load unrelated skills. Bodies remain on demand; these suggestions grant no tools or permissions.\n",
+            serde_json::to_string(&candidates)?
+        ))
     }
     pub fn set_skill_enabled(&self, name: &str, enabled: bool) -> Result<()> {
         if !self.skills()?.iter().any(|s| s.name == name) {
@@ -392,16 +502,60 @@ mod tests {
         let results = rt.search_skills("quasarflange", 3)?;
         assert_eq!(results["skills"][0]["skill"]["name"], "custom-procedure");
         assert!(results.to_string().find("Use quasarflange").is_none());
+        let hints = rt.task_skill_guidance("Please diagnose quasarflange")?;
+        assert!(hints.contains("custom-procedure"));
+        assert!(!hints.contains("Use quasarflange"));
+        assert_eq!(rt.task_skill_guidance("please and the para con")?, "");
+        assert!(
+            rt.task_skill_guidance(&format!("quasarflange {}", "星".repeat(400)))?
+                .contains("custom-procedure")
+        );
         rt.set_skill_enabled("custom-procedure", false)?;
         assert_eq!(
             rt.search_skills("quasarflange", 3)?["skills"],
             serde_json::json!([])
         );
         assert!(rt.skill_load("custom-procedure").is_err());
+        assert_eq!(rt.task_skill_guidance("quasarflange")?, "");
         assert_eq!(
             fs::read_to_string(custom.join("SKILL.md"))?,
             "description: General workflow\n\nUse quasarflange to diagnose this uncommon condition."
         );
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn builtin_revisions_preserve_customizations_and_disabled_state() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let data = dir.path().join("data");
+        let skills = dir.path().join("skills");
+        let rt = Runtime::open(&data, Some(&skills)).await?;
+        let repair = skills.join("test-driven-repair/SKILL.md");
+        fs::write(
+            &repair,
+            include_str!("../../../resources/skills/test-driven-repair/SKILL.v1.md"),
+        )?;
+        let git = skills.join("git-recovery-and-change-management/SKILL.md");
+        let custom =
+            "description: Owner customized Git workflow\n\nPreserve these local instructions.\n";
+        fs::write(&git, custom)?;
+        rt.set_skill_enabled("test-driven-repair", false)?;
+        rt.shutdown().await?;
+        drop(rt);
+        let rt = Runtime::open(&data, Some(&skills)).await?;
+        assert_eq!(
+            fs::read_to_string(&repair)?,
+            include_str!("../../../resources/skills/test-driven-repair/SKILL.md")
+        );
+        assert_eq!(fs::read_to_string(&git)?, custom);
+        assert!(
+            !rt.skills()?
+                .iter()
+                .find(|s| s.name == "test-driven-repair")
+                .unwrap()
+                .enabled
+        );
+        rt.shutdown().await?;
         Ok(())
     }
 

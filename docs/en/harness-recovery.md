@@ -2,9 +2,9 @@
 
 [Español](../es/harness-recovery.md)
 
-The runtime includes thirteen manually curated skills: the original five plus repository navigation, test-driven repair, environments/dependencies, process/service management, package build/install, SQL analysis, text parsing, and Git recovery. These are general procedures, not benchmark answers or automatically learned skills. Installation preserves user-modified files.
+The runtime includes fourteen manually curated skills: the original five plus repository navigation, test-driven repair, environments/dependencies, process/service management, package build/install, SQL analysis, text parsing, Git recovery, and software implementation. These are general procedures, not benchmark answers or automatically learned skills. Installation preserves user-modified files.
 
-`skill_search(query, limit=3)` searches enabled names, descriptions and complete bodies lexically, with higher weights for names and descriptions. Results contain metadata, not bodies. `skill_load(name)` returns the procedure and loads up to eight authorized tools declared in optional comma-separated `required_tools` metadata. Older skills need no migration. Skills do not grant permissions. The master and workers can search the entire catalog and load bodies selectively.
+`skill_search(query, limit=3)` searches enabled names, descriptions and complete bodies lexically, with higher weights for names and descriptions. Results contain metadata, not bodies. `skill_load(name)` returns the procedure and loads up to eight authorized tools declared in optional comma-separated `required_tools` metadata. Existing custom skills need no new metadata. Skills do not grant permissions. The master and workers can search the entire catalog and load bodies selectively.
 
 A guessed, authorized tool that is not exposed returns `tool_schema_loaded`, its schema and `executed=false`. Only a subsequent valid call may execute. Invalid arguments return required/received fields, the schema and a placeholder example. Examples explain shape; they are not executable task answers.
 
@@ -31,3 +31,5 @@ Compare fixed main and candidate binaries on the same tasks and settings. Previo
 Background workers snapshot model availability/connections before asynchronous work. They never hold a model read lock while waiting for configuration, which prevents an idle worker from deadlocking a model change. Web view loads similarly discard stale responses after navigation.
 
 Validation on September 15, 2026: 239 Rust tests passed, four environment-dependent tests remained ignored; all 13 browser tests passed, as did Clippy, formatting and documentation tests. Browser validation used an alternate `TMPDIR` because the host `/tmp` volume was full. These are regression checks, not evidence of a Terminal-Bench score improvement.
+
+Task context highlights up to two lexical skill candidates without loading their bodies. Suggestions are optional and may be irrelevant; the complete catalog remains available. Shipped repair and Git procedures update only when their prior content matches exactly, preserving owner edits and disabled state.

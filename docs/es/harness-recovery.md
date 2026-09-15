@@ -2,7 +2,7 @@
 
 [English](../en/harness-recovery.md)
 
-Fénix incluye trece skills manuales: las cinco anteriores y ocho familias para repositorios, reparación con pruebas, dependencias, servicios, paquetes, SQL, procesamiento de texto y Git. Son procedimientos generales, no respuestas del benchmark. La instalación conserva las modificaciones del usuario.
+Fénix incluye catorce skills manuales: las cinco anteriores y nueve familias para repositorios, reparación con pruebas, dependencias, servicios, paquetes, SQL, procesamiento de texto, Git e implementación de software. Son procedimientos generales, no respuestas del benchmark. La instalación conserva las modificaciones del usuario.
 
 `skill_search(query, limit=3)` busca por nombre, descripción y contenido completo, dando más peso a los dos primeros. Devuelve metadatos. `skill_load` carga el contenido y hasta ocho herramientas autorizadas declaradas en el campo opcional `required_tools`. Los skills anteriores siguen funcionando. Cargar un skill no concede permisos.
 
@@ -31,3 +31,5 @@ Se comparan binarios congelados de main y candidata con la misma configuración.
 Los trabajadores liberan el bloqueo de lectura del modelo antes de esperar configuración o inferencia. Esto evita que un trabajador inactivo bloquee un cambio de modelo. La web descarta respuestas de vistas anteriores después de navegar.
 
 Validación del 15 de septiembre de 2026: 239 pruebas Rust aprobadas, cuatro dependientes del entorno omitidas; las 13 pruebas de navegador, Clippy, formato y documentación pasaron. Se utilizó un `TMPDIR` alternativo porque el volumen `/tmp` del equipo estaba lleno. Son comprobaciones de regresión, no evidencia de una mejora de puntuación en Terminal-Bench.
+
+El contexto destaca hasta dos skills candidatos mediante selección léxica, sin cargar sus textos. Las sugerencias son opcionales y pueden no ser pertinentes; el catálogo completo sigue disponible. Los procedimientos originales de reparación y Git se actualizan solo si coinciden exactamente con su versión anterior, conservando ediciones personales y el estado desactivado.

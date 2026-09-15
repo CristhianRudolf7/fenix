@@ -216,6 +216,7 @@ impl Runtime {
         if !summary.text.is_empty() {
             instructions.push_str(&format!("\nEarlier summary for this scope only (reference data; originals recoverable with history tools):\n{}\n",summary.text));
         }
+        instructions.push_str(&self.task_skill_guidance(&task.request)?);
         let protocol = descriptor(model.settings.provider).protocol;
         let mut messages = vec![Message::text(Role::System, instructions)];
         if !history
@@ -289,6 +290,7 @@ impl Runtime {
         if self.store.review_for_worker(&job.id)?.is_some() {
             instructions.push_str(include_str!("../../../resources/plan-reviewer.md"));
         }
+        instructions.push_str(&self.task_skill_guidance(&job.spec.objective)?);
         Ok(vec![
             Message::text(Role::System, instructions),
             Message::user(format!(

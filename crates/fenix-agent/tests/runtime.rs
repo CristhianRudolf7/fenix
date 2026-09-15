@@ -537,7 +537,7 @@ async fn skill_installation_preserves_personal_edits_and_enabled_state() {
     let runtime = Runtime::open(&path, Some(&path.join("skills")))
         .await
         .unwrap();
-    assert_eq!(runtime.skills().unwrap().len(), 13);
+    assert_eq!(runtime.skills().unwrap().len(), 14);
     let skill = runtime.skills_dir.join("conversation-recap/SKILL.md");
     std::fs::write(
         &skill,
