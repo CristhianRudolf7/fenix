@@ -24,8 +24,14 @@ def run(args):
             raise ValueError('Unknown task: ' + task)
     args.root.mkdir(parents=True, exist_ok=True)
     trial = args.root / (args.job + '.protocol.json')
+    provenance_path = args.bundle / 'source.json'
+    provenance = json.loads(provenance_path.read_text()) if provenance_path.exists() else {}
+    binary_hash = digest(args.bundle / 'fenix')
+    if provenance and provenance.get('binary_sha256') != binary_hash:
+        raise ValueError('Frozen binary does not match its source manifest')
     manifest = {'job': args.job, 'tasks': tasks, 'attempts': args.attempts,
-                'binary_sha256': digest(args.bundle / 'fenix'),
+                'binary_sha256': binary_hash,
+                'binary_source': provenance,
                 'configuration_sha256': digest(args.config),
                 'git_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip()),
@@ -109,7 +115,9 @@ def summarize(root):
                      'missing_usage': len(calls)-len(usages),
                      'http_errors': sum(c.get('http_status') != 200 for c in calls),
                      'agent_execution': result.get('agent_execution'),
-                     'verifier_execution': result.get('verifier_execution')})
+                     'verifier_execution': result.get('verifier'),
+                     'environment_setup': result.get('environment_setup'),
+                     'agent_setup': result.get('agent_setup')})
     (root / 'results.json').write_text(json.dumps(rows, indent=2))
     print(json.dumps(rows, indent=2), flush=True)
 

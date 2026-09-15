@@ -22,7 +22,7 @@ La referencia pasó 239 pruebas Rust y 13 de navegador; cuatro pruebas Rust depe
 
 ## Resultados
 
-Referencia: **0/5**. Totales del proveedor: 78 llamadas, 626.763 tokens de entrada, 188.884 de salida, **US$0,05044451**. Tres fallos de compactación sin cola y dos agotamientos de recuperación por falta de progreso. Los segundos nativos no incluyen descarga ni preparación. Falta evaluar la variante.
+Referencia: **0/5**. Totales del proveedor: 78 llamadas, 626.763 tokens de entrada, 188.884 de salida, **US$0,05044451**. Tres fallos de compactación sin cola y dos agotamientos de recuperación por falta de progreso. Los segundos nativos no incluyen descarga ni preparación. La evaluación de desarrollo aparece abajo; falta la confirmación con tareas nuevas.
 | Task | Main pass | Native seconds | Input tokens | Output tokens | USD |
 |---|---:|---:|---:|---:|---:|
 | custom-memory-heap-crash | 0 | 64.1 | 95111 | 24587 | 0.007225 |
@@ -37,3 +37,19 @@ Referencia: **0/5**. Totales del proveedor: 78 llamadas, 626.763 tokens de entra
 Antes de evaluar la variante: las dos primeras tareas de referencia fallaron (0/2). La extracción terminó con `No completed batch to compact`; la reparación C++ repitió lecturas después de compactar y agotó la recuperación. La variante reserva hasta 8.192 tokens para salida al decidir cuándo compactar; mantiene el máximo configurado y limita cada solicitud a la capacidad disponible. También admite un corte completo si no cabe una cola reciente y pide un resumen conciso. Predicción: menos compactaciones y lecturas repetidas, sin fallo de cola vacía. Riesgo: puede aumentar el truncamiento si queda menos espacio para salida. No se cambia proveedor, modelo, capacidad configurada ni máximo de salida.
 
 Contraste bibliográfico: [ARC](https://arxiv.org/abs/2607.25066) separa observaciones archivadas del contexto activo, pero evalúa preguntas de contexto largo, no este benchmark de programación. [Context Compaction Theory](https://arxiv.org/abs/2608.01326) formaliza selección y resumen; no prescribe reservar 8.192 tokens. Ese valor es una hipótesis de ingeniería que se prueba aquí. El antecedente de 2025 [The Complexity Trap](https://arxiv.org/abs/2508.21433) motiva comparar el enmascarado con resúmenes costosos sin asumir que resumir es mejor.
+
+## Resultados de desarrollo del ciclo 1
+
+La variante resolvió **2/5**, frente a **0/5** de main. Totales: 306 llamadas al proveedor, 3.871.562 tokens de entrada, 621.873 de salida y **US$0,20582481**. El tiempo nativo acumulado fue 1.689,5 segundos frente a 535,0. Los intentos más largos cuestan más que fallos tempranos del arnés; no es una mejora global de velocidad.
+
+| Task | Candidate pass | Native seconds | Input tokens | Output tokens | USD |
+|---|---:|---:|---:|---:|---:|
+| custom-memory-heap-crash | 0 | 576.1 | 1250914 | 187942 | 0.062188 |
+| extract-elf | 1 | 454.2 | 903475 | 163516 | 0.052119 |
+| modernize-scientific-stack | 1 | 14.8 | 80982 | 2585 | 0.002783 |
+| sanitize-git-repo | 0 | 588.1 | 1400213 | 251774 | 0.079315 |
+| schemelike-metacircular-eval | 0 | 56.3 | 235978 | 16056 | 0.009420 |
+
+Fallos restantes: C++ compiló, pero falló en ejecución release y memoria; la tarea del intérprete terminó pidiendo una aclaración equivocada sin crear el archivo solicitado; la limpieza Git agotó la recuperación por falta de progreso. La revisión de código también encontró que `command_run` cuenta como efecto aunque su código de salida sea distinto de cero; esta limitación no se cambió en la variante congelada. No se incorporó contenido oculto del verificador a prompts ni skills.
+
+El límite nativo configurado es de 900 segundos por tarea en ambas variantes, incluso cuando la tarea oficial permite más tiempo. Las puntuaciones corresponden a esta configuración y subconjunto, no a un resultado oficial con todo el presupuesto. El equipo es compartido, por lo que los tiempos son descriptivos. Los archivos congelados `source.json` vinculan cada hash de binario con el commit real de su código, separado del checkout del ejecutor.
