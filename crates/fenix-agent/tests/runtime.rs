@@ -1145,3 +1145,50 @@ async fn length_recovery_has_a_durable_finite_budget() {
     );
     stop(&runtime, workers).await;
 }
+
+#[tokio::test]
+async fn large_receipts_keep_tail_evidence_and_full_redacted_journal() {
+    let (dir, runtime, server) = fixture(vec![
+        call("read-large", "file_read", json!({"path":"receipt.txt"})),
+        answer("Read the final diagnostic."),
+    ])
+    .await;
+    let body = format!(
+        "START {} MIDDLE_WITNESS {} fake-private-test-key FINAL_DIAGNOSTIC",
+        "x".repeat(10_000),
+        "y".repeat(10_000)
+    );
+    std::fs::write(dir.path().join("receipt.txt"), body).unwrap();
+    let workers = runtime.start();
+    let submitted = runtime.submit("Read receipt.txt", "web").await.unwrap();
+    let id = submitted["task_id"].as_str().unwrap();
+    wait_for(&runtime, id, "completed").await;
+    let requests = server.received_requests().await.unwrap();
+    let last: Value = serde_json::from_slice(&requests.last().unwrap().body).unwrap();
+    let receipt: Value = serde_json::from_str(
+        last["input"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|item| item["type"] == "function_call_output" && item["call_id"] == "read-large")
+            .unwrap()["output"]
+            .as_str()
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(receipt["truncated"], true);
+    let preview = receipt["preview"].as_str().unwrap();
+    assert!(preview.contains("FINAL_DIAGNOSTIC"));
+    assert!(!preview.contains("MIDDLE_WITNESS"));
+    assert!(!preview.contains("fake-private-test-key"));
+    let events = runtime.store.events(id, 0, 1000).unwrap();
+    let journal = events
+        .iter()
+        .find(|event| event["kind"] == "tool_result" && event["data"]["call_id"] == "read-large")
+        .unwrap()
+        .to_string();
+    assert!(journal.contains("MIDDLE_WITNESS"));
+    assert!(journal.contains("FINAL_DIAGNOSTIC"));
+    assert!(!journal.contains("fake-private-test-key"));
+    stop(&runtime, workers).await;
+}

@@ -10,11 +10,24 @@ use std::{collections::HashSet, time::Duration};
 use tokio_util::sync::CancellationToken;
 
 pub(crate) fn estimated_tokens(messages: &[Message], tools: &[ToolDefinition]) -> usize {
-    // Includes tool schemas and opaque replay data; deliberately conservative for code.
-    // This is an estimate, not provider billing or a model-specific tokenizer.
-    (serde_json::to_vec(messages).map_or(0, |v| v.len())
-        + serde_json::to_vec(tools).map_or(0, |v| v.len()))
-    .div_ceil(3)
+    // Provider codecs replay opaque data INSTEAD OF normalized content, not both.
+    // Count the larger representation so signed/hidden reasoning still occupies
+    // space, without charging a second copy of visible text and tool arguments.
+    // The byte heuristic remains conservative for code, not a tokenizer/bill.
+    let message_bytes: usize = messages
+        .iter()
+        .map(|message| {
+            let normalized =
+                serde_json::to_vec(&(&message.role, &message.content)).map_or(0, |v| v.len());
+            let replay = message
+                .provider_data
+                .as_ref()
+                .and_then(|data| serde_json::to_vec(&data.data).ok())
+                .map_or(0, |v| v.len());
+            normalized.max(replay) + 64 // role and wire-format envelope allowance
+        })
+        .sum();
+    (message_bytes + serde_json::to_vec(tools).map_or(0, |v| v.len())).div_ceil(3)
 }
 fn boundaries(messages: &[Message]) -> Result<Vec<usize>> {
     let mut pending = HashSet::new();
@@ -268,6 +281,25 @@ impl Runtime {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn replay_is_counted_once_without_discarding_hidden_reasoning() {
+        let text = "code and arguments ".repeat(1000);
+        let mut message = Message::text(Role::Assistant, text.clone());
+        let normalized = estimated_tokens(&[message.clone()], &[]);
+        message.provider_data = Some(fenix_core::ProviderData {
+            protocol: fenix_core::Protocol::OpenAiChat,
+            data: json!({"role":"assistant","content":text}),
+        });
+        let replayed = estimated_tokens(&[message.clone()], &[]);
+        assert!(replayed >= normalized);
+        assert!(replayed < normalized + 100);
+        message.provider_data.as_mut().unwrap().data["reasoning_content"] =
+            json!("r".repeat(30_000));
+        let before = message.clone();
+        assert!(estimated_tokens(&[message.clone()], &[]) >= replayed + 9900);
+        assert_eq!(message, before); // Estimation cannot strip signed replay data.
+    }
     #[test]
     fn boundaries_never_split_parallel_tool_pairs() {
         let call = Message {

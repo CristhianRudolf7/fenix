@@ -3,7 +3,6 @@ use crate::{
     config::{ActionPolicy, ModelConnection},
     permissions::ActiveTask,
     progress::{Phase, Progress},
-    redaction::truncate,
     tools,
 };
 use anyhow::{Context, Result, bail};
@@ -604,12 +603,8 @@ impl Runtime {
                     );
                 let looping = name != "command_status"
                     && repetition.observe(format!("{action}:{output}"), progress, effect_completed);
-                let serialized = output.to_string();
-                let content = if serialized.len() > tool_byte_budget {
-                    json!({"truncated":true,"repository_instructions":output.get("repository_instructions"),"preview":truncate(&serialized,tool_byte_budget),"task_id":task.id,"call_id":call_id,"retrieve":"Use task_inspect with task_id, call_id, offset and length to read the saved output in pages."})
-                } else {
-                    output
-                };
+                let content =
+                    crate::tool_receipt::bounded(output, tool_byte_budget, &task.id, &call_id);
                 let tool_message = Message {
                     role: Role::Tool,
                     content: vec![ContentBlock::ToolResult {

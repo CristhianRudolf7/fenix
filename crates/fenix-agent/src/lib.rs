@@ -25,6 +25,7 @@ pub mod skills;
 mod subagents;
 pub mod telegram;
 mod tool_discovery;
+mod tool_receipt;
 pub mod tools;
 
 use anyhow::{Result, bail};

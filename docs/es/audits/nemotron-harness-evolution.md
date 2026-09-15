@@ -106,3 +106,13 @@ Todas las llamadas registradas tienen costo numérico. Los segundos nativos se s
 | Verificador oficial aprobado | 0 | 2 |
 
 El intento que necesita respuesta cuenta como fallo aunque no tenga recompensa numérica del verificador; no se excluye como infraestructura. Eliminar interrupciones prematuras permitió trabajar más, pero no hizo correctos la mayoría de los resultados y elevó tiempo y costo totales. La evaluación del candidato de skills ya está en marcha sobre las cinco tareas originales de desarrollo.
+
+## Candidato del ciclo 3: conservar evidencia y contar una vez la repetición del proveedor
+
+La capa de procesos conserva el inicio y el final de una salida, pero el motor volvía a recortar ese resultado por el principio. Así podía ocultar errores finales del compilador o de las pruebas. El candidato conserva ambos extremos, metadatos de ejecución/salida/cursor, las instrucciones completas del repositorio y un enlace al registro íntegro redactado. Las pruebas cubren diagnósticos finales, recuperación del centro omitido, secretos y límites UTF-8.
+
+La estimación del contexto también serializaba el contenido normalizado del asistente junto con los datos opacos del proveedor, aunque los adaptadores envían estos últimos en lugar de ambas representaciones. El candidato cuenta la representación mayor más un margen. Sigue contando y conservando el razonamiento oculto o firmado; sigue siendo una estimación por bytes, no la facturación. Predicción: menos compactaciones innecesarias y menos diagnósticos perdidos. No cambia modelo, tamaño configurado del contexto, límite de salida, permisos ni tiempo máximo. Es una intervención mecánica combinada aún no confirmada.
+
+La iteración basada en trazas sigue [AHE](https://arxiv.org/abs/2604.25850); [Context Compaction Theory](https://arxiv.org/abs/2608.01326) motiva comprobar la conservación de información, no una heurística concreta. Ninguna fuente demuestra que este candidato mejore Nemotron. Primero se evaluará en desarrollo y solo después, si procede, en nuevas tareas reservadas.
+
+Validación del ciclo 3: pasaron 64 pruebas unitarias del agente (una dependiente del entorno omitida), las 23 pruebas de integración y Clippy de todo el workspace sin advertencias. La nueva prueba confirma que el modelo recibe el diagnóstico final mientras el centro completo redactado permanece recuperable en el registro.

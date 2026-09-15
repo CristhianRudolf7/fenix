@@ -106,3 +106,13 @@ All recorded calls have numeric billing. Native seconds are summed across attemp
 | Official verifier passed | 0 | 2 |
 
 The unresolved interactive attempt counts as a failure despite having no numeric verifier reward; it is not an infrastructure exclusion. Removing premature harness failures allowed more work, but did not make most results correct and increased total cost/time. Candidate 2 skill evaluation is underway on the original five development tasks.
+
+## Cycle 3 candidate: preserve tool evidence and count replay once
+
+The process layer preserves a head/tail preview, but the engine previously cut that serialized receipt a second time using only its prefix. This could hide final compiler/test errors. The candidate preserves both ends, explicit execution/exit/cursor metadata, complete repository guidance, and a link to the full redacted journal. Regression tests cover a final diagnostic, omitted middle recovery, secrets and UTF-8 boundaries.
+
+Context estimation also serialized normalized assistant content plus its opaque provider replay, although provider codecs send the replay instead of both representations. The candidate counts the larger representation plus a wrapper allowance. Hidden/signed reasoning is still counted and retained; this remains a conservative byte estimate, not token billing. Prediction: fewer unnecessary compactions and fewer lost diagnostics. No model, configured context size, output limit, permissions or timeout changes. This is a combined mechanical intervention and remains unconfirmed.
+
+The trace-driven iteration follows [AHE](https://arxiv.org/abs/2604.25850); [Context Compaction Theory](https://arxiv.org/abs/2608.01326) motivates testing information retention, not a specific byte heuristic. Neither source proves this candidate improves Nemotron. Development evaluation must precede any new held-out confirmation.
+
+Cycle 3 validation: 64 agent unit tests passed (one environment-dependent test ignored), all 23 runtime integration tests passed, and workspace Clippy passed without warnings. The new integration test confirms that the model sees the final diagnostic while the complete redacted middle remains retrievable from the journal.
