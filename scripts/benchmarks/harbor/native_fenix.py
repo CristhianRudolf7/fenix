@@ -17,6 +17,22 @@ async def environment_workspace(environment):
     return workspace
 
 
+async def wait_for_report(environment):
+    while True:
+        result = await environment.exec("test -f /logs/agent/native/ready.json")
+        if result.return_code == 0:
+            return
+        alive = await environment.exec('kill -0 "$(cat /opt/fenix-eval/pid)"')
+        if alive.return_code != 0:
+            # The evaluator may atomically finish between the first check and
+            # the process probe. A final ready marker wins over process exit.
+            result = await environment.exec("test -f /logs/agent/native/ready.json")
+            if result.return_code == 0:
+                return
+            raise RuntimeError("Native evaluator exited before reporting; inspect native-server.log")
+        await asyncio.sleep(0.5)
+
+
 class NativeFenixAgent(BaseAgent):
     @staticmethod
     def name():
@@ -60,15 +76,8 @@ class NativeFenixAgent(BaseAgent):
             raise RuntimeError("Cannot launch native Fenix evaluator")
         ready = False
         try:
-            while True:
-                result = await environment.exec("test -f /logs/agent/native/ready.json")
-                if result.return_code == 0:
-                    ready = True
-                    break
-                alive = await environment.exec('kill -0 "$(cat /opt/fenix-eval/pid)"')
-                if alive.return_code != 0:
-                    raise RuntimeError("Native evaluator exited before reporting; inspect native-server.log")
-                await asyncio.sleep(0.5)
+            await wait_for_report(environment)
+            ready = True
             result = await environment.exec("cat /logs/agent/native/report.json")
             report = json.loads(result.stdout)
             usage = report["metrics"]
