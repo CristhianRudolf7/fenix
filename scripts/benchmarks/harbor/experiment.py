@@ -30,7 +30,7 @@ def run(args):
                 'git_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                 'dirty': bool(subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip()),
                 'reward_source': 'official unmodified verifier',
-                'model': 'nemotron-3-5-lightning-30b'}
+                'model': 'nemotron-3-5-lightning-30b', 'keep_images': args.keep_images}
     with trial.open('x') as stream:
         json.dump(manifest, stream, indent=2)
     config = {'job_name': args.job, 'jobs_dir': str(args.root / 'jobs'),
@@ -65,7 +65,7 @@ def run(args):
                 if finished.count(task) < args.attempts or task in cleaned: continue
                 task_config = tomllib.loads((args.dataset/task/'task.toml').read_text())
                 image = task_config.get('environment',{}).get('docker_image')
-                if image and image not in protected:
+                if image and image not in protected and not args.keep_images:
                     # Never force removal: Docker refuses an image used by a container.
                     subprocess.run(['docker','image','rm',image],stdout=log,stderr=subprocess.STDOUT,check=False)
                 cleaned.add(task)
@@ -98,6 +98,9 @@ def summarize(root):
                      'exception': (result.get('exception_info') or {}).get('exception_type'),
                      'native_seconds': native.get('elapsed_seconds'),
                      'native_metrics': native.get('metrics'), 'stop_reason': native.get('stop_reason'),
+                     'task_outcomes': [{'status': t.get('task', {}).get('status'),
+                                        'error': t.get('task', {}).get('error')}
+                                       for t in native.get('traces', [])],
                      'events':dict(Counter(e['kind'] for e in events)),
                      'cached_input_tokens':sum((u.get('prompt_tokens_details') or {}).get('cached_tokens',0) for u in usages),
                      'calls': len(calls), 'input_tokens': total('prompt_tokens'),
@@ -115,6 +118,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', type=lambda p: Path(p).resolve(), required=True)
     parser.add_argument('--summarize', action='store_true')
+    parser.add_argument('--keep-images', action='store_true', help='Retain task images for paired reruns when disk capacity permits')
     parser.add_argument('--job')
     parser.add_argument('--tasks')
     parser.add_argument('--attempts', type=int, choices=[1,2], default=1)
