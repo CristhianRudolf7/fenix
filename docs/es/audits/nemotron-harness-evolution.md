@@ -57,3 +57,9 @@ El límite nativo configurado es de 900 segundos por tarea en ambas variantes, i
 ## Corrección de transporte durante la confirmación
 
 `prove-plus-comm` usa `/workspace`, no `/app`. El adaptador inicial falló antes de realizar ninguna solicitud al proveedor. Ahora obtiene el directorio oficial del contenedor mediante `pwd`, sin crear ni modificar archivos de la tarea. Pasaron dos pruebas del adaptador. Esos fallos de preparación sin inferencia requieren intentos de reemplazo y no deben contarse como fallos del modelo ni como evidencia de mejora. Se mantienen los hashes de binarios y los parámetros de inferencia.
+
+## Auditoría de skills
+
+El usuario incluyó explícitamente la mejora de skills en el alcance experimental. En las diez ejecuciones de desarrollo (cinco por versión), los registros nativos no contienen llamadas a `skill_search` ni `skill_load`. Las solicitudes de inferencia confirman que estaban disponibles ambos esquemas y el catálogo manual. Esto demuestra falta de uso en esta muestra, no que el contenido de los skills sea ineficaz. Ampliar el catálogo por sí solo no demuestra una mejora si no se carga ninguno.
+
+Una versión posterior podrá probar criterios de selección más claros, recomendaciones relevantes y breves, o revisiones de procedimientos justificadas por la ejecución. Deberá preservar los skills editados por el usuario, la carga bajo demanda y datos nuevos para la confirmación. Los binarios y skills de la confirmación actual siguen congelados. [SkillRevise](https://arxiv.org/html/2606.01139v3) propone diagnosticar si un fallo es atribuible al skill antes de modificarlo y validar la revisión ejecutándolo. [Group of Skills](https://arxiv.org/html/2605.06978v1) motiva explicitar el procedimiento de entrada y sus comprobaciones de apoyo. Ninguno demuestra una mejora para Fénix o Nemotron; no se incorporarán soluciones específicas del benchmark a los skills.

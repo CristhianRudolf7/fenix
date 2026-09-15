@@ -57,3 +57,9 @@ The configured native task timeout is 900 seconds in both arms, even where the o
 ## Confirmation transport correction
 
 `prove-plus-comm` uses `/workspace`, not `/app`. The original adapter failed before any provider request. The adapter now discovers the official container working directory with `pwd`; it does not create or modify task files. Two transport unit tests passed. These zero-inference setup failures require replacement attempts and must not be counted as model failures or as evidence of improvement. Binary hashes and inference settings remain fixed.
+
+## Skill audit
+
+The user explicitly included skill improvements in the experimental scope. Across the ten development executions (five per arm), the native journals contain no `skill_search` or `skill_load` calls. Recorded inference requests confirm that both schemas and the manual catalog were available. This shows non-use in this sample, not that the skill bodies are ineffective. Adding more skills alone cannot establish a benefit when none are loaded.
+
+A subsequent candidate may test clearer selection triggers, compact relevant recommendations, or procedural revisions supported by execution evidence. It must preserve owner-edited skills, on-demand loading, and fresh confirmation data. The current confirmation binaries and skills remain frozen. [SkillRevise](https://arxiv.org/html/2606.01139v3) motivates diagnosing whether a failure is attributable to a skill before editing it and validating the revision through execution. [Group of Skills](https://arxiv.org/html/2605.06978v1) motivates making the entry procedure and supporting checks explicit. Neither paper establishes a gain for Fénix or Nemotron; no benchmark-specific solutions will be embedded in skills.
