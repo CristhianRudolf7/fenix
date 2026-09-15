@@ -22,7 +22,7 @@ Reference validation: 239 Rust tests and 13 browser tests passed; four environme
 
 ## Results
 
-Reference: **0/5**. Provider totals: 78 calls, 626,763 input tokens, 188,884 output tokens, **$0.05044451**. Three empty-tail compaction failures; two no-progress recovery failures. Setup/download time is not included in native seconds. Candidate development results are below; unseen-task confirmation is pending.
+Reference: **0/5**. Provider totals: 78 calls, 626,763 input tokens, 188,884 output tokens, **$0.05044451**. Three empty-tail compaction failures; two no-progress recovery failures. Setup/download time is not included in native seconds. Candidate development and completed cycle 1 confirmation results are below.
 | Task | Main pass | Native seconds | Input tokens | Output tokens | USD |
 |---|---:|---:|---:|---:|---:|
 | custom-memory-heap-crash | 0 | 64.1 | 95111 | 24587 | 0.007225 |
@@ -56,7 +56,7 @@ The configured native task timeout is 900 seconds in both arms, even where the o
 
 ## Confirmation transport correction
 
-`prove-plus-comm` uses `/workspace`, not `/app`. The original adapter failed before any provider request. The adapter now discovers the official container working directory with `pwd`; it does not create or modify task files. Two transport unit tests passed. These zero-inference setup failures require replacement attempts and must not be counted as model failures or as evidence of improvement. Binary hashes and inference settings remain fixed.
+`prove-plus-comm` uses `/workspace`, not `/app`. The original adapter failed before any provider request. The adapter now discovers the official container working directory with `pwd`; it does not create or modify task files. Two transport unit tests passed. The two zero-inference setup failures were excluded and replaced after the paired cohorts; both replacements failed. The original setup failures are not counted as model failures or evidence of improvement. Binary hashes and inference settings remain fixed.
 
 ## Skill audit
 
@@ -73,3 +73,36 @@ Unmodified shipped repair/Git skills migrate by exact-content comparison; user e
 The skill retrieval test exposed generic description words outranking a distinctive body term. The candidate now saturates weighted term frequency jointly and applies inverse document frequency and document-length normalization. This is deterministic lexical retrieval, with no embeddings or extra inference. Concurrent local builds on the shared host are an additional latency confound; timing is descriptive, not a throughput claim.
 
 Candidate validation: 60 agent unit tests passed (one environment-dependent test ignored), 22 runtime integration tests passed, and workspace Clippy passed without warnings. The final five skill tests, including bounded Unicode queries and disabled/customized skills, passed after the last selector edit. Browser code is unchanged; browser tests were not repeated for this candidate.
+
+## Clarification audit
+
+Some cycle 1 confirmation runs ended with plain-text clarification questions instead of the requested artifact; the runtime marked those turns completed, while the verifier rejected the result. A tool-based question instead produced `requires_user_input`, also unresolved in this unattended benchmark. These are distinct from setup failures. Some questions concern facts available in task files or ordinary implementation choices; genuine unresolved owner requirements must still be surfaced.
+
+[Ask or Assume?](https://arxiv.org/html/2603.26233v1) evaluates missing requirements using a simulated user supplied with withheld original information. It supports appropriate clarification, not suppressing all questions, and does not validate a Nemotron-specific remedy. [SWE-RPG](https://arxiv.org/html/2608.09072v1) motivates diagnosing requirements, planning and artifact submission separately from final pass/fail. A future intervention should improve evidence gathering and distinguish user intent from technical investigation without inventing requirements or supplying verifier answers.
+
+## Cycle 1 confirmation result
+
+All 40 valid attempts are complete: ten tasks, two repetitions per version. Main resolved **0/20 (0%)**; cycle 1 resolved **2/20 (10%)**, both repetitions of `prove-plus-comm`. Each repetition improved from 0/10 to 1/10. This is a narrow repeated gain, but it **fails the predeclared target of two additional passes per ten tasks on average**. The experiment continues; the development gain of 2/5 must not be presented as general performance.
+
+| Metric, 20 valid attempts per version | Main | Cycle 1 |
+|---|---:|---:|
+| Passes | 0 | 2 |
+| Provider calls | 707 | 1,334 |
+| Input tokens | 6,037,494 | 16,999,044 |
+| Output tokens | 1,533,464 | 1,954,413 |
+| Recorded provider cost, USD | 0.42910006 | 0.76266231 |
+| Accumulated native seconds | 3,979.4 | 6,603.2 |
+
+All recorded calls have numeric billing. Native seconds are summed across attempts, not elapsed wall time for the concurrent study; environment setup and verifier time are separate. Binary hashes were rechecked.
+
+| Outcome category | Main | Cycle 1 |
+|---|---:|---:|
+| Empty-tail compaction failure | 9 | 0 |
+| No-progress recovery exhausted | 8 | 2 |
+| Model-step limit | 0 | 4 |
+| Timeout | 1 | 1 |
+| Requires user input | 0 | 1 |
+| Turn completed, verification failed | 2 | 10 |
+| Official verifier passed | 0 | 2 |
+
+The unresolved interactive attempt counts as a failure despite having no numeric verifier reward; it is not an infrastructure exclusion. Removing premature harness failures allowed more work, but did not make most results correct and increased total cost/time. Candidate 2 skill evaluation is underway on the original five development tasks.

@@ -73,3 +73,36 @@ Los skills originales de reparación y Git se actualizan solo si su contenido co
 Una prueba de recuperación detectó que palabras genéricas de la descripción desplazaban un término específico del contenido. El candidato ahora satura conjuntamente la frecuencia ponderada y aplica frecuencia inversa de documento y normalización por longitud. La recuperación es léxica y determinista, sin embeddings ni inferencia adicional. Las compilaciones locales concurrentes en el servidor compartido también pueden afectar la latencia; los tiempos son descriptivos, no una demostración de mayor velocidad.
 
 Validación del candidato: 60 pruebas unitarias del agente aprobadas (una dependiente del entorno omitida), 22 pruebas de integración del motor aprobadas y Clippy del workspace sin advertencias. Las cinco pruebas finales de skills, incluidas consultas Unicode acotadas y skills desactivados o personalizados, pasaron tras el último ajuste. La interfaz no cambió y sus pruebas no se repitieron para este candidato.
+
+## Auditoría de aclaraciones
+
+Algunas ejecuciones de confirmación del ciclo 1 terminaron con preguntas en texto, sin el entregable solicitado; el motor marcó esos turnos como completados, pero el verificador rechazó el resultado. Una pregunta mediante herramienta produjo `requires_user_input`, también sin resolver en este benchmark desatendido. Son casos distintos de los fallos de preparación. Algunas preguntas se refieren a hechos disponibles en los archivos o a decisiones internas de implementación; las dudas reales pendientes sobre requisitos del usuario deben seguir comunicándose.
+
+[Ask or Assume?](https://arxiv.org/html/2603.26233v1) evalúa requisitos ausentes con un usuario simulado que dispone de la información original omitida. Respalda las aclaraciones pertinentes, no la supresión de todas las preguntas, y no valida una solución específica para Nemotron. [SWE-RPG](https://arxiv.org/html/2608.09072v1) motiva diagnosticar requisitos, planificación y entrega de artefactos por separado del acierto final. Una intervención posterior deberá mejorar la investigación y distinguir intención del usuario de dudas técnicas, sin inventar requisitos ni proporcionar respuestas del verificador.
+
+## Resultado de confirmación del ciclo 1
+
+Terminaron los 40 intentos válidos: diez tareas, dos repeticiones por versión. La base resolvió **0/20 (0%)**; el ciclo 1 resolvió **2/20 (10%)**, las dos repeticiones de `prove-plus-comm`. Cada repetición pasó de 0/10 a 1/10. Es una mejora limitada que se repite, pero **no alcanza la meta predefinida de dos aciertos adicionales por cada diez tareas en promedio**. La investigación continúa; el avance de desarrollo de 2/5 no representa rendimiento general. Los dos fallos originales de preparación sin inferencia fueron excluidos y reemplazados; ambos reemplazos fallaron.
+
+| Métrica, 20 intentos válidos por versión | Base | Ciclo 1 |
+|---|---:|---:|
+| Aciertos | 0 | 2 |
+| Llamadas al proveedor | 707 | 1.334 |
+| Tokens de entrada | 6.037.494 | 16.999.044 |
+| Tokens de salida | 1.533.464 | 1.954.413 |
+| Costo registrado del proveedor, USD | 0,42910006 | 0,76266231 |
+| Segundos nativos acumulados | 3.979,4 | 6.603,2 |
+
+Todas las llamadas registradas tienen costo numérico. Los segundos nativos se suman entre intentos; no son el tiempo de reloj del estudio concurrente. Preparación y verificación se miden aparte. Se comprobaron nuevamente los hashes de los binarios.
+
+| Categoría de resultado | Base | Ciclo 1 |
+|---|---:|---:|
+| Fallo de compactación sin tramo reciente | 9 | 0 |
+| Recuperación agotada por falta de avance | 8 | 2 |
+| Límite de llamadas del agente | 0 | 4 |
+| Tiempo agotado | 1 | 1 |
+| Requiere respuesta del usuario | 0 | 1 |
+| Turno completado, verificación fallida | 2 | 10 |
+| Verificador oficial aprobado | 0 | 2 |
+
+El intento que necesita respuesta cuenta como fallo aunque no tenga recompensa numérica del verificador; no se excluye como infraestructura. Eliminar interrupciones prematuras permitió trabajar más, pero no hizo correctos la mayoría de los resultados y elevó tiempo y costo totales. La evaluación del candidato de skills ya está en marcha sobre las cinco tareas originales de desarrollo.
