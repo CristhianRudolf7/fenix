@@ -53,3 +53,7 @@ La variante resolvió **2/5**, frente a **0/5** de main. Totales: 306 llamadas a
 Fallos restantes: C++ compiló, pero falló en ejecución release y memoria; la tarea del intérprete terminó pidiendo una aclaración equivocada sin crear el archivo solicitado; la limpieza Git agotó la recuperación por falta de progreso. La revisión de código también encontró que `command_run` cuenta como efecto aunque su código de salida sea distinto de cero; esta limitación no se cambió en la variante congelada. No se incorporó contenido oculto del verificador a prompts ni skills.
 
 El límite nativo configurado es de 900 segundos por tarea en ambas variantes, incluso cuando la tarea oficial permite más tiempo. Las puntuaciones corresponden a esta configuración y subconjunto, no a un resultado oficial con todo el presupuesto. El equipo es compartido, por lo que los tiempos son descriptivos. Los archivos congelados `source.json` vinculan cada hash de binario con el commit real de su código, separado del checkout del ejecutor.
+
+## Corrección de transporte durante la confirmación
+
+`prove-plus-comm` usa `/workspace`, no `/app`. El adaptador inicial falló antes de realizar ninguna solicitud al proveedor. Ahora obtiene el directorio oficial del contenedor mediante `pwd`, sin crear ni modificar archivos de la tarea. Pasaron dos pruebas del adaptador. Esos fallos de preparación sin inferencia requieren intentos de reemplazo y no deben contarse como fallos del modelo ni como evidencia de mejora. Se mantienen los hashes de binarios y los parámetros de inferencia.

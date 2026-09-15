@@ -53,3 +53,7 @@ The candidate resolved **2/5**, against **0/5** for main. Totals: 306 provider c
 Remaining failures: C++ compiled but still failed release execution and memory checks; the evaluator task ended in a mistaken clarification without creating the requested file; Git cleanup exhausted no-progress recovery. Inspecting code also found that `command_run` is counted as an effect even if its exit code is nonzero; this limitation remains unchanged in the frozen candidate. No hidden verifier content was added to prompts or skills.
 
 The configured native task timeout is 900 seconds in both arms, even where the official outer task allowance is longer. Scores describe this controlled subset/configuration, not an official full-budget leaderboard result. The shared host was not reserved exclusively; wall time is descriptive. Frozen `source.json` files associate binary hashes with their actual source commits, independently of the runner checkout.
+
+## Confirmation transport correction
+
+`prove-plus-comm` uses `/workspace`, not `/app`. The original adapter failed before any provider request. The adapter now discovers the official container working directory with `pwd`; it does not create or modify task files. Two transport unit tests passed. These zero-inference setup failures require replacement attempts and must not be counted as model failures or as evidence of improvement. Binary hashes and inference settings remain fixed.

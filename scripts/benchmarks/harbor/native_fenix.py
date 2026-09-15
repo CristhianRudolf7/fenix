@@ -9,6 +9,14 @@ from harbor.agents.base import BaseAgent
 from harbor.models.agent.context import AgentContext
 
 
+async def environment_workspace(environment):
+    result = await environment.exec("pwd")
+    workspace = result.stdout.strip()
+    if result.return_code != 0 or not workspace.startswith("/") or "\n" in workspace:
+        raise RuntimeError("Cannot determine the official task working directory")
+    return workspace
+
+
 class NativeFenixAgent(BaseAgent):
     @staticmethod
     def name():
@@ -20,6 +28,7 @@ class NativeFenixAgent(BaseAgent):
     async def setup(self, environment):
         self.bundle = Path(os.environ["FENIX_EVAL_BUNDLE"])
         self.config = json.loads(Path(os.environ["FENIX_EVAL_CONFIG"]).read_text())
+        self.workspace = await environment_workspace(environment)
         await environment.upload_dir(self.bundle, "/opt/fenix-eval")
         # Use a recording proxy with a disposable credential. Do not put the
         # provider's real key in an image where the evaluated agent runs shell.
@@ -31,6 +40,7 @@ class NativeFenixAgent(BaseAgent):
 
     async def run(self, instruction, environment, context: AgentContext):
         config = json.loads(json.dumps(self.config))
+        config["settings"]["workspace"] = self.workspace
         endpoint = config["settings"].get("base_url")
         if endpoint:
             config["settings"]["base_url"] = endpoint.replace("{trial}", "native-" + self.logs_dir.parent.name)
