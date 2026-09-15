@@ -118,7 +118,11 @@ pub struct Skill {
     pub enabled: bool,
 }
 
-const DEFAULTS: [(&str, &str); 4] = [
+const DEFAULTS: [(&str, &str); 5] = [
+    (
+        "browser-navigation",
+        include_str!("../../../resources/skills/browser-navigation/SKILL.md"),
+    ),
     (
         "memory-and-reminders",
         include_str!("../../../resources/skills/memory-and-reminders/SKILL.md"),

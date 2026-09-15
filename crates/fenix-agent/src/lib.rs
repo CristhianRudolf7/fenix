@@ -1,11 +1,15 @@
 //! Personal assistant runtime. The web and Telegram are adapters to this same service.
 
+mod active_context;
+mod coding;
 pub mod config;
 mod context;
 mod effects;
 mod engine;
 mod files;
 mod permissions;
+mod plan_reviews;
+mod planning;
 mod processes;
 pub mod progress;
 mod project_tools;
@@ -15,6 +19,7 @@ pub mod schedules;
 pub mod skills;
 mod subagents;
 pub mod telegram;
+mod tool_discovery;
 pub mod tools;
 
 use anyhow::{Result, bail};
@@ -40,12 +45,17 @@ use tokio_util::sync::CancellationToken;
 
 pub struct Runtime {
     pub store: Arc<Store>,
+    pub web: Arc<fenix_web::Web>,
+    pub browser: Arc<fenix_browser::Browser>,
     pub data_dir: PathBuf,
     pub skills_dir: PathBuf,
     pub redactor: Arc<Redactor>,
     pub stop: CancellationToken,
     pub(crate) model: RwLock<Option<Arc<ModelConnection>>>,
-    pub(crate) active: Mutex<Option<ActiveTask>>,
+    pub(crate) active: Mutex<BTreeMap<String, ActiveTask>>,
+    pub(crate) plan_lock: Mutex<()>,
+    pub(crate) context_lock: Mutex<()>,
+    pub(crate) bus_wake: Notify,
     pub(crate) pending: Mutex<BTreeMap<String, Pending>>,
     pub(crate) subagents: subagents::SubagentManager,
     pub(crate) effects: Arc<Mutex<()>>,
@@ -55,6 +65,7 @@ pub struct Runtime {
     pub(crate) telegram_lock: Mutex<()>,
     pub(crate) wake: Notify,
     pub(crate) processes: Processes,
+    pub(crate) language_servers: coding::lsp::LanguageServers,
     pub(crate) progress: tokio::sync::watch::Sender<progress::Progress>,
     _lock: File,
 }
@@ -83,14 +94,22 @@ impl Runtime {
         };
         std::fs::create_dir_all(&skills_dir)?;
         let skills_dir = std::fs::canonicalize(skills_dir)?;
+        let redactor = Arc::new(Redactor::default());
+        let stop = CancellationToken::new();
+        let processes = Processes::new(data_dir.join("processes"), redactor.clone(), stop.clone())?;
         let runtime = Arc::new(Self {
             store,
+            web: fenix_web::Web::open(&data_dir).await?,
+            browser: fenix_browser::Browser::open(&data_dir)?,
             data_dir,
             skills_dir,
-            redactor: Arc::new(Redactor::default()),
-            stop: CancellationToken::new(),
+            redactor,
+            stop,
             model: RwLock::new(None),
-            active: Mutex::new(None),
+            active: Mutex::new(BTreeMap::new()),
+            plan_lock: Mutex::new(()),
+            context_lock: Mutex::new(()),
+            bus_wake: Notify::new(),
             pending: Mutex::new(BTreeMap::new()),
             subagents: subagents::SubagentManager::default(),
             effects: Arc::new(Mutex::new(())),
@@ -99,7 +118,8 @@ impl Runtime {
             schedule_lock: Mutex::new(()),
             telegram_lock: Mutex::new(()),
             wake: Notify::new(),
-            processes: Processes::default(),
+            processes,
+            language_servers: coding::lsp::LanguageServers::default(),
             progress: tokio::sync::watch::channel(progress::Progress::default()).0,
             _lock: lock,
         });
@@ -142,7 +162,24 @@ impl Runtime {
         });
         let runtime = self.clone();
         let subagents = tokio::spawn(async move { runtime.subagent_worker().await });
-        vec![worker, scheduler, telegram, subagents]
+        let runtime = self.clone();
+        let planner = tokio::spawn(async move { runtime.planning_worker().await });
+        let runtime = self.clone();
+        let events = tokio::spawn(async move { runtime.event_worker().await });
+        let browser = self.browser.clone();
+        let stop = self.stop.clone();
+        let browser = tokio::spawn(async move { browser.maintain(stop).await });
+        vec![
+            worker, scheduler, telegram, subagents, planner, events, browser,
+        ]
+    }
+
+    /// Start public background crawling explicitly. Library callers and offline
+    /// fixtures can start the conversation workers without contacting websites.
+    pub fn start_web_search(self: &Arc<Self>) -> tokio::task::JoinHandle<()> {
+        let web = self.web.clone();
+        let stop = self.stop.clone();
+        tokio::spawn(async move { web.run(stop).await })
     }
 
     pub async fn submit(&self, text: &str, origin: &str) -> Result<Value> {
@@ -161,6 +198,12 @@ impl Runtime {
         }
         let text = self.redactor.text(text);
         if let Some(result) = self
+            .handle_plan_control(&text, origin, reply_to_task_id)
+            .await?
+        {
+            return Ok(result);
+        }
+        if let Some(result) = self
             .handle_referenced_control(&text, origin, reply_to_task_id)
             .await?
         {
@@ -173,6 +216,7 @@ impl Runtime {
         let task = self
             .store
             .enqueue_referenced(&text, origin, None, reply_to_task_id)?;
+        self.pin_destination(&task.id, origin)?;
         self.wake.notify_one();
         Ok(json!({"queued":true,"task_id":task.id}))
     }
@@ -180,20 +224,36 @@ impl Runtime {
     /// Human-facing notices are history, but not unpaired tool messages in model context.
     pub fn notify(&self, task: Option<&str>, text: &str) -> Result<()> {
         let text = self.redactor.text(text);
-        self.store.append(
+        self.store
+            .publish_message(task, &Message::text(Role::Assistant, &text), false, "agent")?;
+        self.bus_wake.notify_waiters();
+        Ok(())
+    }
+
+    fn publish_once(&self, event_id: &str, task: Option<&str>, text: &str) -> Result<()> {
+        self.store.publish_message_once(
+            &format!("notice:{event_id}"),
             task,
-            &Message::text(Role::Assistant, &text),
-            true,
+            &Message::text(Role::Assistant, self.redactor.text(text)),
             false,
             "agent",
         )?;
-        if self
-            .telegram_settings()?
-            .is_some_and(|s| s.enabled && s.owner_id.is_some())
-        {
-            self.store.queue_delivery_for_task(&text, task)?;
-        }
+        self.bus_wake.notify_waiters();
         Ok(())
+    }
+
+    pub(crate) fn pin_destination(&self, task: &str, origin: &str) -> Result<()> {
+        if origin == "telegram"
+            && let Some(settings) = self.telegram_settings()?
+            && let Some(owner) = settings.owner_id
+        {
+            return self.store.set_task_destination(
+                task,
+                "telegram",
+                Some(&format!("{}:{owner}", settings.username)),
+            );
+        }
+        self.store.set_task_destination(task, "web", None)
     }
 
     pub async fn status(&self) -> Result<Value> {
@@ -206,18 +266,21 @@ impl Runtime {
             .map(|p| p.view.clone())
             .collect::<Vec<_>>();
         let pending = pending_requests.first();
-        let active = self.active.lock().await.as_ref().map(|a| a.task_id.clone());
+        let active_tasks = self.active.lock().await.keys().cloned().collect::<Vec<_>>();
+        let active = active_tasks.first();
         Ok(
-            json!({"ready":self.model.read().await.is_some(),"session_id":self.store.session_id(),"settings":settings,"default_settings":config::Settings::initial(std::env::current_dir()?),"active_task":active,"pending":pending,"pending_requests":pending_requests,"subagents":self.subagent_views()?,"projects":self.project_catalog()?,"focus_project_id":self.store.conversation_focus()?,"timezone":"America/Lima","tool_count":tools::catalog().len(),"telegram":self.telegram_settings()?,"skills_directory":self.skills_dir}),
+            json!({"ready":self.model.read().await.is_some(),"session_id":self.store.session_id(),"settings":settings,"default_settings":config::Settings::initial(std::env::current_dir()?),"active_task":active,"active_tasks":active_tasks,"plans":self.plan_views()?,"pending":pending,"pending_requests":pending_requests,"subagents":self.subagent_views()?,"projects":self.project_catalog()?,"focus_project_id":self.store.conversation_focus()?,"timezone":"America/Lima","tool_count":tools::catalog().len(),"telegram":self.telegram_settings()?,"skills_directory":self.skills_dir}),
         )
     }
 
     pub async fn shutdown(&self) -> Result<()> {
         self.stop.cancel();
-        if let Some(active) = self.active.lock().await.as_ref() {
+        for active in self.active.lock().await.values() {
             active.cancel.cancel();
         }
         self.processes.cancel_all().await;
+        self.language_servers.shutdown().await;
+        self.browser.shutdown().await;
         self.file_effects.wait(None).await;
         self.wake.notify_waiters();
         self.subagents.wake.notify_waiters();

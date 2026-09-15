@@ -463,9 +463,9 @@ Limitación registrada durante la revisión de OpenClaw: cancelar una ejecución
 ### 2.13. Contrato versionado, supuestos y validación de cumplimiento
 
 - Cada tarea debe tener un contrato explícito que describa qué resultado final pidió el usuario y qué significa cumplirlo. El contrato debe conservar el texto original, una interpretación estructurada, el alcance, las restricciones, los entregables esperados, los criterios de aceptación, las condiciones de no cumplimiento y los límites que el agente no puede cruzar.
-- El contrato debe separar requisitos obligatorios, preferencias, supuestos y preguntas abiertas. Los requisitos explícitos del usuario tienen prioridad; los supuestos inferidos deben identificarse como tales y confirmarse cuando puedan cambiar el resultado, el costo, la seguridad o el alcance de la tarea.
+- El contrato debe separar requisitos obligatorios, preferencias, supuestos y preguntas abiertas. Los requisitos explícitos del usuario tienen prioridad; los supuestos inferidos deben identificarse como tales. Comunicar todas las dudas detectadas, incluso pequeñas, según la política confirmada de la sección 2.24; no ocultarlas por considerarlas de bajo impacto.
 - Fénix debe guardar todos los supuestos que el agente haya inferido, aunque parezcan pequeños o provisionales. Cada supuesto debe tener `assumption_id`, texto, evidencia o señales de origen, `source_event_ids`, confianza, alcance (`session`, `task`, `project` o `user`), impacto potencial, fecha de creación, versión del contrato, estado (`inferred`, `pending_confirmation`, `confirmed`, `rejected`, `superseded` o `expired`) y, cuando corresponda, fecha de revisión. Los supuestos no deben presentarse como hechos ni mezclarse con requisitos explícitos.
-- Antes de ejecutar una acción cuyo resultado, costo, seguridad o alcance dependa de un supuesto de alto impacto, Fénix debe pedir confirmación o detenerse. Los supuestos de bajo riesgo pueden usarse provisionalmente, pero deben viajar con el contexto, aparecer en la matriz de validación y poder corregirse, invalidarse o sustituirse sin borrar su historial.
+- Antes de ejecutar una acción que necesite resolver una duda, Fénix debe preguntar y dejar pendiente esa parte hasta recibir respuesta. Puede continuar el trabajo independiente; el bajo riesgo no autoriza a resolver silenciosamente una duda mediante un supuesto. Los supuestos deben viajar con el contexto y poder corregirse, invalidarse o sustituirse sin borrar su historial.
 - Al comenzar una tarea, Fénix debe transformar el pedido en una lista de condiciones comprobables. Cada condición debe tener un identificador, una descripción, un método de validación, el resultado esperado, la evidencia requerida y un estado (`pending`, `passed`, `failed`, `waived` o `blocked`). Si el pedido es ambiguo y no existe una interpretación segura, el agente debe preguntar antes de ejecutar efectos importantes.
 - El contrato debe acompañar a todos los turnos, delegaciones, reintentos y compactaciones mediante `task_id`, `run_id` y una versión del contrato. Si el usuario cambia el objetivo, se debe crear una nueva versión enlazada a la anterior; no se debe sobrescribir el contrato original ni mezclar criterios de aceptación de versiones distintas.
 
@@ -512,7 +512,7 @@ campos en cada delegación actual. Ver `REQUIREMENTS.md`, sección 1.15.
 - Las tareas paralelas deben aislar directorios de trabajo, ramas, sesiones o locks cuando puedan editar los mismos recursos. Si dos subagentes necesitan el mismo archivo, se debe imponer una barrera de coordinación, serializar la edición o crear un conflicto explícito para revisión humana.
 - Un subagente que se bloquee debe informar qué necesita y detenerse. El padre puede aportar contexto adicional, ajustar el presupuesto, reasignar la tarea o marcarla como bloqueada, pero no debe ocultar el bloqueo con una respuesta genérica. Si el proceso se interrumpe, su estado debe poder recuperarse mediante la auditoría, los checkpoints y los artefactos persistidos.
 - La comunicación entre padre e hijo debe tratarse como eventos auditables. Cada mensaje debe incluir remitente, destinatario, `task_id`, finalidad, datos enviados y fecha. No se deben copiar secretos ni contexto de otras tareas en una delegación; el filtrado debe ocurrir antes de crear el prompt del subagente.
-- Fénix debe elegir entre ejecución síncrona y asíncrona: la síncrona devuelve el control sólo al finalizar o bloquearse; la asíncrona devuelve un identificador de seguimiento y permite que el padre continúe. En ambos casos debe existir una cola de finalización durable, un heartbeat, timeout, cancelación y una política clara para procesos que sobrevivan al reinicio.
+- La planificación y delegación largas deben ser asíncronas y mantener disponible al maestro según la sección 2.24. Una espera interna por una dependencia no debe bloquear el receptor del chat. Debe existir una cola de finalización durable, comprobación técnica de actividad, timeout, cancelación y una política clara para procesos que sobrevivan al reinicio; esto no exige activar el heartbeat conversacional aplazado.
 
 ### 2.15. Evolución de proyectos desde una sola conversación
 
@@ -620,27 +620,38 @@ Se conservan las referencias y descripciones anotadas anteriormente. Antes de us
 
 ### 2.22. Web search and browsing / Búsqueda web y navegación
 
-All internet search and browser functionality is deferred. This includes basic page fetching/extraction and generic HTTP tools, not just interactive browser automation. Telegram and model-provider transport are separate requirements and remain in the initial scope.
+Independent search and public HTTP reading are implemented in `fenix-web`: a
+background crawler, SQLite FTS5 corpus and `web_search`/`web_read` tools. The user
+selected an independent index without external search providers. Configurable
+seeds start discovery across domains; coverage is bounded and starts empty.
+See [the English guide](docs/en/web-search.md) and [requirements section 1.18](REQUIREMENTS.md#118-independent-web-search--búsqueda-web-propia).
 
-- Keep search discovery, page fetching/text extraction, and interactive browsing separate.
-- Evaluate Brave Search API and Tavily as interchangeable backends; no search provider is selected or required initially.
-- Evaluate self-hosted SearXNG, recognizing that it aggregates external search services and retains upstream dependencies.
-- Consider lightweight Rust HTTP fetching/extraction before a full browser. Use headless browsing only when interaction or JavaScript is needed, with measured memory use and bounded concurrency. Do not make building a rendering engine a prerequisite.
-- Automating a search website still depends on that site and may encounter changed HTML, rate limits, or CAPTCHAs; do not assume it is a reliable substitute for every search integration.
-- A crawler and a local index such as Tantivy could serve a bounded collection of sites. A browser or indexing library does not supply an index of the entire web.
-- When this work is activated, decide providers, credentials, budgets, permissions, caching, and source attribution. Until then, these are not blockers for the initial assistant.
+- Measure crawl coverage, relevance, freshness and RSS on representative corpora;
+  improve frontier rotation and source diversity beyond the initial fixed caps.
+- Keep search discovery, HTTP reading and interactive browsing separate. Browser
+  rendering does not supply a worldwide search index.
+- Add browser interaction when tasks require JavaScript, authenticated sessions,
+  forms or purchases, with controlled state and verification before commitment.
+- Add rendered-site testing, screenshots and viewport/device-size controls for
+  responsive design. Measure browser memory and bound browser concurrency.
+- Do not introduce paid search APIs or metasearch upstreams as an implicit fallback;
+  that would change the selected independence requirement.
 
-Toda búsqueda en internet y funcionalidad de navegador se aplaza. Esto incluye lectura y extracción básica de páginas y herramientas HTTP genéricas, además de automatización interactiva. Las conexiones con Telegram y los modelos son requisitos distintos que siguen dentro del alcance inicial.
+La búsqueda propia y la lectura HTTP pública ya están incorporadas en
+`fenix-web`, con rastreador en segundo plano, SQLite FTS5 y herramientas para el
+agente. Se eligió un índice independiente sin proveedores externos de búsqueda.
+Las semillas inician el descubrimiento entre dominios; la cobertura es acotada y
+parte de cero. Véase [la guía en español](docs/es/web-search.md).
 
-- Separar descubrimiento de enlaces, descarga/extracción de texto y navegación interactiva.
-- Evaluar Brave Search API y Tavily como proveedores intercambiables. No se ha elegido ninguno ni se necesita uno para el alcance inicial.
-- Evaluar SearXNG autoalojado, teniendo en cuenta que agrega resultados de servicios externos y conserva esas dependencias.
-- Considerar un lector/extractor HTTP ligero en Rust antes de incorporar un navegador completo. Usar navegación sin interfaz gráfica cuando haga falta interacción o JavaScript, midiendo RAM y limitando concurrencia. No exigir crear un motor de navegador propio.
-- Automatizar la página de un buscador sigue dependiendo de él y puede fallar ante cambios de HTML, límites o CAPTCHA; no asumir que sustituye de forma fiable cualquier integración de búsqueda.
-- Un rastreador y un índice local como Tantivy podrían cubrir sitios seleccionados. Un navegador o una biblioteca de indexación no aportan un índice de toda la web.
-- Al activar este trabajo, decidir proveedores, credenciales, presupuestos, permisos, caché y referencias a fuentes. Estas decisiones no bloquean el asistente inicial.
-
-References / Referencias: [Brave Search](https://api-dashboard.search.brave.com/documentation/quickstart), [Tavily](https://docs.tavily.com/documentation/api-reference/endpoint/search), [SearXNG](https://docs.searxng.org/), [Chrome Headless](https://developer.chrome.com/docs/automation-and-testing/headless), [Tantivy](https://github.com/quickwit-oss/tantivy).
+- Medir cobertura, relevancia, frescura y RAM con corpus representativos; mejorar
+  la rotación de URLs y la diversidad de fuentes al alcanzar los límites iniciales.
+- Mantener separadas búsqueda, lectura HTTP y navegación interactiva.
+- Incorporar interacción con JavaScript, sesiones y formularios cuando se active
+  esa fase, con comprobaciones antes de acciones como confirmar una reserva.
+- Añadir pruebas de sitios renderizados, capturas y cambios de tamaño de pantalla
+  para diseño responsivo, midiendo consumo y limitando concurrencia.
+- No introducir APIs de búsqueda ni metabuscadores como alternativa automática;
+  cambiarían el requisito de independencia elegido.
 
 ### 2.23. Heartbeat — Future versions / Versiones futuras
 
@@ -662,9 +673,76 @@ El heartbeat queda expresamente fuera de la entrega inicial. Sus referencias en 
 
 Reference / Referencia: [OpenClaw heartbeat](https://docs.openclaw.ai/gateway/heartbeat).
 
+### 2.24. Editable asynchronous planning and pub/sub / Planificación asíncrona editable y pub/sub
+
+Implemented in the current runtime; retained here as the design rationale and acceptance criteria. See [English implementation details](docs/en/planning.md) and `REQUIREMENTS.md` section 1.17.
+
+- **Surface every detected doubt.** Ask the owner textually as soon as a doubt is identified, even if it seems minor. Do not suppress questions based on impact or silently choose an interpretation. Consult existing explicit answers to avoid asking resolved questions again. Track each open question by ID and task; it is neither an approval nor resolved merely because time passes. Hold work that depends on its answer while continuing independent work and conversation.
+- **Use pub/sub for asynchronous communication.** Decouple message intake, planning, workers and channel delivery. The master must remain able to handle messages while a planner is running, a worker is executing or a question is awaiting an answer. Publishing an event must not hold the chat open until its subscriber finishes. Maintain serialized or version-checked updates to shared task state despite concurrent processing.
+- **Deliver to the correct channel.** Record `event_id`, `session_id`, optional `project_id`, `task_id`, `plan_id`, `plan_version`, correlation/reply IDs and the delivery destination. Preserve originating web/Telegram channel and conversation references; changing foreground project must not redirect a pending question or completion. A reply from another linked channel can resolve the same request without creating a separate conversation. Change delivery destination only on explicit instruction; publish confirmed questions, progress and completion through channel subscribers.
+- **Accept edits at any time.** While drafting or executing a plan, the owner can add, remove, reorder or change pending work, or request replanning, using normal text. Route these as control messages without waiting for the ordinary task queue. Associate the edit with the correct task; ask immediately if that association or the requested change is unclear. Acknowledge receipt promptly, and distinguish a received change from one already applied.
+- **Version and reconcile plan changes.** Store the instruction, previous/new plan version, affected nodes and reason for the revision. Recompute dependencies and notify affected workers while preserving still-valid progress. Check the active version before dispatching new work or applying worker results; reconcile late reports instead of letting them overwrite a newer plan. Superseded work must not silently resume after an old clarification is answered.
+- **Handle actions already in flight.** Stop dispatching superseded work and request cooperative cancellation of affected actions where supported. Report any action that cannot stop immediately. Editing the plan does not undo completed effects: preserve their evidence and separately handle any needed correction or compensation. Never claim a change is effective before the execution state supports it.
+- **Proposed delivery mechanism.** Persist events and outbound messages before dispatch, track acknowledgements per subscriber/destination, and retry only unacknowledged deliveries with idempotent consumption and bounded backoff. Reconnect using a cursor and retain undelivered questions/results. Do not equate an in-memory broadcast with durable delivery or promise exactly-once external messages when transport acknowledgement is uncertain. The implementation uses SQLite events/outbox, cursor-based subscribers and Tokio wakeups.
+- **Acceptance scenarios.** Receive a question while planning; answer it while independent work continues; edit a plan halfway through execution; revise it while an earlier model call is still running; reconcile simultaneous edits and late results; reconnect without losing pending messages; preserve the channel and project after topic changes; surface minor doubts without repeatedly asking questions already answered. Retain one visible conversation, one delegation level and on-demand skill loading.
+
+Implementado en el runtime actual; se conserva aquí como criterio de diseño. Véanse [los detalles en español](docs/es/planning.md) y `REQUIREMENTS.md` 1.17. Sustituye la regla anterior que hacía esperar las correcciones de tareas activas detrás del trabajo ordinario.
+
+- **Comunicar toda duda detectada.** Preguntar por texto al identificarla, aunque sea pequeña; no ocultarla por su impacto ni escoger una interpretación silenciosamente. Consultar respuestas explícitas previas para no repetir preguntas resueltas. Vincular cada duda a un ID y tarea; no equivale a aprobación ni se resuelve por esperar. Dejar pendiente el trabajo que necesite esa respuesta y continuar el independiente y la conversación.
+- **Mensajería pub/sub asíncrona.** Desacoplar recepción, planificación, trabajadores y entrega al canal. El maestro debe atender mensajes mientras se planifica, ejecuta o espera una respuesta. Publicar un evento no debe bloquear el chat hasta que termine el suscriptor. Serializar o comprobar versiones al actualizar el estado compartido.
+- **Canal de entrega correcto.** Conservar IDs de evento, sesión, proyecto cuando aplique, tarea, plan, versión, correlación y respuesta, además del destino web/Telegram y sus referencias. Cambiar de tema no redirige preguntas ni resultados pendientes. Una respuesta desde otro canal vinculado puede resolver la misma solicitud sin abrir otra conversación. Cambiar el destino de entrega sólo por instrucción explícita; los suscriptores entregan dudas, progreso y finalización.
+- **Editar en cualquier momento.** Permitir añadir, eliminar, reordenar o cambiar trabajo pendiente y pedir replanificación por texto, incluso mientras se genera el plan o a mitad de ejecución. Estos mensajes de control no esperan la cola ordinaria. Preguntar si no está claro a qué tarea se refieren o qué cambio solicitan. Acusar recibo y distinguirlo de la aplicación efectiva.
+- **Versionar y conciliar.** Registrar instrucción, versiones anterior/nueva, nodos afectados y motivo. Recalcular dependencias, avisar a los trabajadores y conservar avances vigentes. Comprobar versión antes de despachar trabajo o incorporar resultados; conciliar informes tardíos sin sobrescribir el plan nuevo. Responder a una duda antigua no debe reactivar trabajo sustituido.
+- **Acciones en curso.** No despachar pasos sustituidos; solicitar cancelación cooperativa cuando exista y comunicar lo que no pueda detenerse inmediatamente. Editar el plan no deshace efectos ya realizados: conservar evidencia y gestionar correcciones o compensaciones aparte. No declarar un cambio aplicado antes de que el estado de ejecución lo permita.
+- **Propuesta de entrega durable.** Guardar eventos y mensajes salientes antes de enviarlos, registrar acuses por suscriptor/destino y reintentar entregas pendientes con consumo idempotente y espera acotada. Usar cursor al reconectar y conservar dudas/resultados sin entregar. Un broadcast en memoria no garantiza durabilidad; no prometer entrega externa exactamente una vez ante acuses inciertos. La implementación utiliza eventos y outbox de SQLite, suscriptores con cursor y avisos de Tokio.
+- **Casos de aceptación.** Preguntar durante la planificación; responder mientras sigue trabajo independiente; editar a mitad de ejecución o con una llamada al modelo pendiente; conciliar cambios simultáneos e informes tardíos; reconectar sin perder pendientes; preservar canal/proyecto al cambiar de tema; comunicar dudas pequeñas sin repetir las ya resueltas. Conservar una conversación visible, un nivel de delegación y skills bajo demanda.
+
+### Evaluation of adaptive plan review / Evaluación de revisión adaptativa
+
+- The initial review workflow is implemented in [plan reviews](docs/en/plan-reviews.md).
+  Evaluate it against no additional review, periodic review and specialist panels on
+  coding, office and everyday tasks. Measure successful outcomes, invented requirements,
+  harmful corrections, total tokens/time, reviewer overhead and user question burden.
+  Calibrate the current deterministic triggers before adding learned routing.
+- El flujo inicial está implementado en [revisión de planes](docs/es/plan-reviews.md).
+  Compararlo con ausencia de revisión adicional, revisión periódica y paneles de
+  especialistas en tareas de programación, oficina y cotidianas. Medir resultados,
+  requisitos inventados, correcciones perjudiciales, tokens, tiempo y preguntas al usuario.
+  Calibrar los disparadores actuales antes de añadir selección aprendida.
+
 ### Streaming across providers / Streaming entre proveedores
 
 - Extend the implemented OpenAI Responses preview path to Chat Completions, Anthropic, Gemini/Vertex and Bedrock, preserving each protocol's tool arguments, terminal events, usage and signed reasoning metadata.
 - Ampliar el streaming implementado de OpenAI Responses a Chat Completions, Anthropic, Gemini/Vertex y Bedrock, conservando argumentos, eventos terminales, consumo y metadatos firmados de cada protocolo.
 - Additional model-generated task verification contracts remain deferred; ordinary tool error handling stays in the runtime.
 - Los contratos adicionales de verificación generados por el modelo quedan aplazados; el manejo normal de errores permanece en el motor.
+
+
+## Coding harness status / Estado del arnés de programación
+
+Regex/glob search, exact-context multi-file patches, repository AGENTS.md discovery,
+configurable LSP diagnostics and active-task context compaction are now implemented;
+see [the current coding contract](docs/en/coding-harness.md). Future work remains:
+repository graphs, automatic server installation, filesystem rollback, crash resume,
+model-specific tokenizers and measured context-budget tuning. Context checkpoints
+preserve originals but do not restore filesystem effects.
+
+Ya están implementados búsqueda regex/glob, parches de contexto exacto, carga de
+AGENTS.md, LSP configurable y compactación activa. Grafos, instalación automática
+de servidores, restauración de archivos y reanudación tras reinicios siguen como
+trabajo futuro. Ver [el contrato actual](docs/es/coding-harness.md).
+
+## Execution harness update / Actualización del motor de ejecución
+
+Implemented: interactive PTY/stdin, explicitly persistent services, cursor-based redacted logs, configurable execution limits, same-context subagent follow-ups and deterministic on-demand tool discovery. See [English](docs/en/execution-harness.md).
+
+Implementado: PTY/entrada interactiva, servicios persistentes explícitos, registros redactados con cursor, límites configurables, seguimientos de subagentes con el mismo contexto y descubrimiento determinista de herramientas bajo demanda. Ver [Español](docs/es/execution-harness.md).
+
+Automatic crash recovery, isolated parallel worktrees, MCP and programmatic tool composition remain separate future work. La recuperación automática tras reinicios, worktrees paralelos aislados, MCP y composición programática de herramientas siguen siendo trabajo futuro separado.
+
+
+### Local browser implementation update / Actualización del navegador local
+
+The baseline local Chromium controller is implemented in Rust, with nine agent tools, an owner browser panel, persistent profiles, a separate encrypted password vault, responsive viewports and a soft RSS budget. See [English](docs/en/browser.md) / [Español](docs/es/browser.md). Future browser work includes model vision, comprehensive cross-process frame support, cross-engine/physical-device testing, hard OS memory ceilings and broader site compatibility.
+
+La base de navegación local ya está implementada. Quedan como ampliaciones la visión del modelo, la cobertura completa de frames entre procesos, pruebas en otros motores y dispositivos, límites estrictos de memoria del sistema operativo y compatibilidad ampliada con sitios.

@@ -1,0 +1,74 @@
+# Navegador local
+
+[English — full technical reference](../en/browser.md)
+
+Fénix controla Chromium instalado en esta máquina mediante un controlador CDP propio
+en Rust. No necesita proveedores de navegadores, Playwright ni Selenium en producción.
+Chromium proporciona HTML, CSS y JavaScript: no se ha creado un motor de renderizado
+nuevo. Su sandbox permanece habilitado; actualízalo con el sistema operativo.
+
+## Uso y sesiones
+
+En **Navegador**, crea un perfil como `personal`, introduce una URL y pulsa Abrir.
+Puedes hacer clic en la pantalla, escribir, pegar y desplazarte. Completa allí las
+contraseñas, QR, MFA o CAPTCHA. Activa **Permitir acceso al agente** cuando quieras
+que Fénix use ese perfil. **Tomar control** impide nuevas acciones del agente; una
+acción que ya se ejecutaba puede finalizar. La interacción manual también lo desactiva.
+
+Cerrar el perfil libera sus procesos y conserva cookies, localStorage, IndexedDB y
+otros datos bajo `<data-dir>/browser/profiles/<nombre>`. Reabrirlo reutiliza esos
+datos. Cada sitio puede caducar o revocar el acceso; las cookies solo de sesión
+pueden perderse al cerrar. No se garantiza una sesión eterna. No se ha iniciado sesión
+ni comprobado ninguna cuenta real de WhatsApp o de una universidad.
+
+El panel de contraseñas guarda un almacén cifrado con AES-256-GCM y Argon2id. Necesita
+una clave maestra de al menos 12 caracteres para guardar, completar o eliminar el
+acceso del perfil y sitio actuales. Completar no envía el formulario. Las contraseñas
+no pasan al chat ni al registro de herramientas; la clave maestra no se guarda.
+El gestor nativo de contraseñas de Chromium queda deshabilitado. El cifrado del almacén
+**no cifra todo el perfil de Chromium**; los directorios tienen permisos 0700 y el
+almacén 0600. El puerto de depuración local no tiene autenticación: otros procesos de esta máquina y los administradores del sistema quedan fuera de esa protección.
+
+## Agente y pruebas
+
+El skill `browser-navigation` guía al agente para descubrir nueve herramientas reales:
+abrir, observar, actuar, redimensionar, inspeccionar, esperar, manejar pestañas,
+comprobar y cerrar. Las acciones incluyen clic, escritura, teclas, scroll, selección,
+casillas, arrastre, diálogos y carga de archivos autorizados del espacio de trabajo.
+La observación devuelve texto y geometría, con referencias al DOM y soporte de shadow
+roots abiertos. Los frames inaccesibles requieren intervención o una nueva observación.
+
+Sin perfil explícito, cada tarea usa uno temporal separado, eliminado al cerrar el
+perfil. Las acciones individuales se serializan; los flujos simultáneos de varios
+pasos deben usar perfiles separados para no compartir la página activa. Prueba tamaños como 390×844, 768×1024 y 1280×800, verifica estados visibles y
+el desbordamiento horizontal, inspecciona fallos y guarda capturas. El tamaño se aplica
+a las pestañas del perfil. La comparación de capturas es exacta y necesita una imagen
+de referencia solicitada; contenido dinámico o animaciones pueden producir diferencias.
+El modelo recibe texto y geometría, no las capturas como visión. La emulación no prueba
+otros motores ni dispositivos físicos. No todos los sitios, controles de canvas,
+frames complejos o sistemas antibots pueden automatizarse sin ayuda.
+
+## Memoria
+
+Configura `<data-dir>/browser.json` y reinicia Fénix. Por defecto: Chromium en
+`/usr/bin/chromium`, dos perfiles abiertos, cuatro pestañas por perfil, cierre tras
+600 segundos sin actividad y presupuesto de 2048 MiB. El monitor revisa cada cinco
+segundos la suma de RSS de los procesos; las acciones en curso pueden retrasarlo.
+Es un presupuesto flexible, no un límite estricto del sistema operativo, y la suma
+puede contar memoria compartida más de una vez. Mirar la pantalla mantiene el perfil
+activo. Cerrar por inactividad o presupuesto conserva el perfil personal pero pierde
+formularios sin guardar. No se consume RAM de Chromium hasta abrirlo.
+
+Consulta los detalles y comandos de prueba en la documentación en inglés. Las pruebas
+reales usan un sitio local, sin cuentas personales ni proveedores externos.
+
+
+## Verificación local (2026-09-15)
+
+Pasaron 211 pruebas del workspace y 12 de la interfaz. La prueba optativa con
+Chromium 152 real y sandbox habilitado también pasó: formularios, iframe del mismo
+origen, tres tamaños, capturas, almacén de contraseñas y persistencia tras cerrar y
+reabrir el proceso. La página de reapertura no vuelve a crear los datos de sesión.
+En una observación con dos pestañas se sumaron 1165 MiB de RSS; no es el pico ni la
+memoria exclusiva, ni una medición de WhatsApp o de una universidad. No se usaron
+cuentas reales.

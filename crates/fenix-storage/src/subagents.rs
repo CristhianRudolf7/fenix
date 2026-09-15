@@ -34,6 +34,160 @@ pub struct Subagent {
 const SELECT_SUBAGENT: &str = "SELECT s.id,s.parent_task_id,s.spec,t.status,s.attempts,s.result,t.created_at,t.updated_at,s.project_id FROM subagents s JOIN tasks t ON t.id=s.id";
 
 impl Store {
+    /// Enqueue follow-ups durably and idempotently; retry budgets are never reset.
+    pub fn send_subagent_input(&self, sender: &str, target: &str, content: &str) -> Result<Value> {
+        if content.trim().is_empty() || content.len() > 8000 {
+            bail!("Follow-up must contain 1–8000 bytes");
+        }
+        let mut db = self.db()?;
+        let tx = db.transaction()?;
+        let job = query_subagent(&tx, target)?;
+        let (origin, status): (String, String) = tx.query_row(
+            "SELECT origin,status FROM tasks WHERE id=?1",
+            [sender],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )?;
+        if matches!(origin.as_str(), "subagent" | "subagent_report") || status != "running" {
+            bail!("Only a running master may send follow-ups");
+        }
+        let binding = projects::read_binding(&tx, sender)?;
+        if job.project_id.as_deref() != binding.project_id.as_deref()
+            && !job
+                .project_id
+                .as_ref()
+                .is_some_and(|p| binding.read_project_ids.contains(p))
+        {
+            bail!("Subagent is outside the sender's project scope");
+        }
+        let reviewer: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM plan_review_workers WHERE task_id=?1)",
+            [target],
+            |r| r.get(0),
+        )?;
+        if reviewer {
+            bail!(
+                "Independent reviewers cannot receive side-channel instructions; revise their plan instead"
+            );
+        }
+        if let Some(id) = tx.query_row("SELECT id FROM subagent_inputs WHERE subagent_id=?1 AND sender_task_id=?2 AND content=?3",params![target,sender,content],|r|r.get::<_,String>(0)).optional()? {
+            return Ok(json!({"message_id":id,"subagent_id":target,"duplicate":true}));
+        }
+        let count: u32 = tx.query_row(
+            "SELECT count(*) FROM subagent_inputs WHERE subagent_id=?1",
+            [target],
+            |r| r.get(0),
+        )?;
+        if count >= 100 {
+            bail!("Subagent has reached its 100 follow-up limit");
+        }
+        if is_terminal(&job.status) {
+            let managed: bool = tx.query_row(
+                "SELECT EXISTS(SELECT 1 FROM plan_workers WHERE task_id=?1)",
+                [target],
+                |r| r.get(0),
+            )?;
+            if managed {
+                bail!("Revise the plan to continue a completed milestone");
+            }
+            if matches!(job.status.as_str(), "cancelled" | "interrupted") || job.attempts >= 3 {
+                bail!(
+                    "Subagent cannot be reopened after cancellation, restart, or exhausted attempts"
+                );
+            }
+            let checkpoint: bool = tx.query_row(
+                "SELECT EXISTS(SELECT 1 FROM records WHERE kind='subagent_context' AND id=?1)",
+                [target],
+                |r| r.get(0),
+            )?;
+            if !checkpoint {
+                bail!("No reusable context checkpoint is available");
+            }
+            // Keep existing report tasks as historical evidence; next completion gets a new report.
+            tx.execute(
+                "UPDATE subagents SET report_task_id=NULL,result=NULL WHERE id=?1",
+                [target],
+            )?;
+            tx.execute(
+                "UPDATE tasks SET status='queued',error=NULL,updated_at=?2 WHERE id=?1",
+                params![target, now()],
+            )?;
+        }
+        let message_id = id();
+        tx.execute("INSERT INTO subagent_inputs(id,subagent_id,sender_task_id,content,created_at) VALUES (?1,?2,?3,?4,?5)",params![message_id,target,sender,content,now()])?;
+        tx.commit()?;
+        Ok(
+            json!({"message_id":message_id,"subagent_id":target,"queued":true,"reopened":is_terminal(&job.status),"instruction":"The worker consumes this at a safe boundary. Its scope, purpose and retry budget are unchanged."}),
+        )
+    }
+
+    pub fn pending_subagent_inputs(
+        &self,
+        target: &str,
+    ) -> Result<Vec<(i64, String, String, String)>> {
+        Ok(self.db()?.prepare("SELECT seq,id,sender_task_id,content FROM subagent_inputs WHERE subagent_id=?1 AND delivered=0 ORDER BY seq LIMIT 100")?.query_map([target],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?)))?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Checkpoint and acknowledgement are one transaction, never a lost mailbox message.
+    pub fn save_subagent_context(
+        &self,
+        target: &str,
+        messages: &[Message],
+        through: i64,
+    ) -> Result<()> {
+        let encoded = serde_json::to_string(messages)?;
+        let mut db = self.db()?;
+        let tx = db.transaction()?;
+        tx.execute("INSERT INTO records(kind,id,data,updated_at) VALUES ('subagent_context',?1,?2,?3) ON CONFLICT(kind,id) DO UPDATE SET data=excluded.data,updated_at=excluded.updated_at",params![target,encoded,now()])?;
+        if through > 0 {
+            tx.execute(
+                "UPDATE subagent_inputs SET delivered=1 WHERE subagent_id=?1 AND seq<=?2",
+                params![target, through],
+            )?;
+        }
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// Finalization races with incoming messages: new work wins over a stale success.
+    pub fn finish_subagent_unless_input(
+        &self,
+        target: &str,
+        status: &str,
+        result: &Value,
+    ) -> Result<bool> {
+        let mut db = self.db()?;
+        let tx = db.transaction()?;
+        if !is_terminal(status) {
+            bail!("Invalid outcome");
+        }
+        let pending: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM subagent_inputs WHERE subagent_id=?1 AND delivered=0)",
+            [target],
+            |r| r.get(0),
+        )?;
+        let job = query_subagent(&tx, target)?;
+        if pending && matches!(status, "completed" | "blocked") && !is_terminal(&job.status) {
+            return Ok(false);
+        }
+        if !is_terminal(&job.status) {
+            tx.execute(
+                "UPDATE subagents SET result=?2 WHERE id=?1",
+                params![target, result.to_string()],
+            )?;
+            tx.execute(
+                "UPDATE tasks SET status=?2,error=?3,updated_at=?4 WHERE id=?1",
+                params![
+                    target,
+                    status,
+                    result.get("error").and_then(Value::as_str),
+                    now()
+                ],
+            )?;
+        }
+        tx.commit()?;
+        Ok(true)
+    }
+
     pub fn create_subagent(&self, parent_task_id: &str, spec: &SubagentSpec) -> Result<Subagent> {
         let binding = self.task_binding(parent_task_id)?;
         self.create_subagent_in_project(parent_task_id, spec, binding.project_id.as_deref())
@@ -129,6 +283,7 @@ impl Store {
             params![task_id, parent_task_id, encoded, project_id],
         )?;
         projects::write_binding(&tx, &task_id, &binding)?;
+        tx.execute("INSERT INTO task_destinations(task_id,channel,address) SELECT ?1,channel,address FROM task_destinations WHERE task_id=?2",params![task_id,parent_task_id])?;
         let subagent = query_subagent(&tx, &task_id)?;
         tx.commit()?;
         Ok(subagent)
@@ -150,19 +305,23 @@ impl Store {
     pub fn unreported_subagents(&self, limit: usize) -> Result<Vec<Subagent>> {
         Ok(self
             .db()?
-            .prepare(&format!("{SELECT_SUBAGENT} WHERE s.report_task_id IS NULL AND t.status IN ('completed','blocked','failed','cancelled','interrupted') ORDER BY t.seq LIMIT ?1"))?
+            .prepare(&format!("{SELECT_SUBAGENT} WHERE s.report_task_id IS NULL AND NOT EXISTS (SELECT 1 FROM plan_review_workers rw WHERE rw.task_id=t.id) AND NOT EXISTS (SELECT 1 FROM plan_workers pw WHERE pw.task_id=t.id AND pw.reconciled=1) AND t.status IN ('completed','blocked','failed','cancelled','interrupted') ORDER BY t.seq LIMIT ?1"))?
             .query_map([limit.min(200)], subagent_row)?
             .collect::<rusqlite::Result<_>>()?)
     }
 
     /// Claim child work independently of the master's conversation queue.
     pub fn claim_subagent(&self) -> Result<Option<Subagent>> {
+        self.claim_subagent_excluding(&[])
+    }
+
+    pub fn claim_subagent_excluding(&self, active: &[String]) -> Result<Option<Subagent>> {
         let mut db = self.db()?;
         let tx = db.transaction()?;
         let next = tx
             .query_row(
-                &format!("{SELECT_SUBAGENT} WHERE t.status='queued' ORDER BY t.seq LIMIT 1"),
-                [],
+                &format!("{SELECT_SUBAGENT} WHERE t.status='queued' AND t.id NOT IN (SELECT value FROM json_each(?1)) ORDER BY t.seq LIMIT 1"),
+                [serde_json::to_string(active)?],
                 subagent_row,
             )
             .optional()?;
@@ -233,7 +392,7 @@ impl Store {
         let tx = db.transaction()?;
         let subagent = query_subagent(&tx, id)?;
         if !is_terminal(&subagent.status) {
-            bail!("Only terminal subagents can report a result");
+            return Ok(None);
         }
         let existing_report: Option<String> = tx.query_row(
             "SELECT report_task_id FROM subagents WHERE id=?1",
@@ -271,6 +430,7 @@ impl Store {
         tx.execute("INSERT INTO tasks(id,session_id,request,origin,status,created_at,updated_at) VALUES (?1,?2,?3,?4,?5,?6,?7)", params![task.id,task.session_id,task.request,task.origin,task.status,task.created_at,task.updated_at])?;
         let binding = projects::read_binding(&tx, &subagent.id)?;
         projects::write_binding(&tx, &task.id, &binding)?;
+        tx.execute("INSERT INTO task_destinations(task_id,channel,address) SELECT ?1,channel,address FROM task_destinations WHERE task_id=?2",params![task.id,subagent.id])?;
         tx.execute("INSERT INTO messages(id,task_id,role,text,body,visible,in_context,origin,created_at) VALUES (?1,?2,'user',?3,?4,0,0,'subagent_report',?5)", params![crate::id(),task.id,task.request,serde_json::to_string(&Message::user(&task.request))?,now()])?;
         tx.execute(
             "UPDATE subagents SET report_task_id=?2 WHERE id=?1",

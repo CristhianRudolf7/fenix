@@ -167,3 +167,125 @@ These additions use temporary databases, fake credentials and local model fixtur
 They introduce no live-model benchmark or live Telegram delivery claim. A separate
 evaluation with real models is needed to measure routing accuracy, unnecessary
 clarifications, wrong-scope reads/effects, task success, total tokens and latency.
+
+
+## Editable planning and pub/sub — 2026-09-14
+
+The planning implementation passed 153 Rust tests (including two documentation
+tests), `cargo clippy --workspace --all-targets -- -D warnings`, JavaScript syntax
+and formatting checks, and 10 Playwright browser tests. Providers were mocked;
+these are functional checks, not live-model benchmarks.
+
+Coverage includes chat during initial inference, natural-language steering using
+scoped active-task references, persisted minor questions, plan revisions while a
+worker is active, superseding an older editing question, dependency/generation
+fences, retained effects, scoped predecessor evidence, pinned delivery destinations,
+subscriber replay, SSE cursor reconnection, concurrent context ordering and the
+mobile plan/revision view.
+
+The final Rust run used an isolated snapshot of the planning changes because a
+separate `fenix-web` crate was being introduced concurrently and its workspace
+manifest temporarily had no target. It does not validate that independent change.
+Browser tests used the real local HTTP service with a mocked provider; the plan
+display test supplies a controlled plan fixture.
+
+## Independent web search integration — 2026-09-14
+
+The combined workspace with planning and `fenix-web` passed 168 Rust unit/HTTP
+integration tests and two documentation tests. The web addition accounts for 14
+module tests, two agent integration tests and one localhost status-route test.
+All 10 Playwright scenarios passed with the real local Rust service and mocked
+model transport. Browser fixtures disable background crawling explicitly.
+
+The new tests cover the actual background worker discovering other domains and
+sitemaps, lexical retrieval, second-phase HTTP reading, persistent cache and FTS
+updates, robots/opt-out rules, public-address validation, redirected access,
+decompressed byte limits, daily budgets, cancellation and honest empty results.
+They also check that both agent roles receive the tools and a query-only call
+returns coverage through the normal model/tool round trip. Formatting, JavaScript
+syntax and Clippy with warnings denied passed.
+
+An explicit live run of `fenix-web`'s `read_search` example fetched
+`https://doc.rust-lang.org/book/ch01-01-installation.html`, indexed one article,
+discovered 11 URLs, found `installation` and read its cached source. It made two
+HTTP requests (robots and article), took about 2.19 seconds and reported a peak
+RSS of 16,292 KiB (about 15.9 MiB) via Linux child-process resource usage. This was
+an isolated unoptimized example on Rust 1.98.1, with one page and no model calls;
+it is not a measurement of full Fénix, a populated corpus or sustained crawling.
+These checks establish the local pipeline and one public HTTP connection, not
+worldwide search coverage or general retrieval quality.
+
+The initial debug link encountered a full filesystem. Only generated development
+build artifacts were cleaned; verification then used `CARGO_PROFILE_DEV_DEBUG=0`,
+`CARGO_PROFILE_TEST_DEBUG=0` and `CARGO_INCREMENTAL=0`. Runtime data was preserved.
+Configuration and known limits are documented in [the web search guide](web-search.md).
+
+## Ten simultaneous web searches — 2026-09-14
+
+After adding bounded concurrent downloads and web-only model tool batches, the
+workspace passed **178 Rust unit/HTTP integration tests**, **two documentation
+tests** and **all 10 Playwright scenarios**. Formatting, frontend syntax, Clippy
+with warnings denied and the local server build passed. This includes 22 web
+module tests, four agent web integration tests and one web status-route test.
+
+The added checks cover ten overlapping downloads, an eleventh operation waiting,
+active/queued cancellation, per-origin spacing without blocking unrelated sites,
+shared refreshes with caching disabled, cancellation takeover, smaller configured
+caps, foreground priority and compatibility with older configurations. Agent
+batches preserve output order, journal each result once, validate arguments and
+honor prior denials while allowing independent calls to complete.
+
+A second live run repeated 110 search calls across ten topics. The ten concurrent
+queries with HTTP took 17.87 seconds together with no failed source reads, using
+12 HTTP attempts for 15 reads through in-flight sharing. Peak benchmark process
+RSS was 36.74 MiB. The corpus remained small and manually enriched; these numbers
+exclude the model and full service. See [method, full data and comparison](web-search-concurrency.md).
+
+## Interactive execution and on-demand tools
+
+Verified on 2026-09-15: **122 tests in `fenix-agent` and `fenix-storage` passed**;
+the opt-in external language-server check remained ignored. Clippy passed with
+warnings denied for these two crates, with dependency linting excluded. Rust
+formatting, JavaScript syntax, formatting of the changed web files and diff
+whitespace checks passed. **All 11 existing Playwright scenarios passed**, including
+persistence of execution limits through the real local server. Browser-module
+development proceeding concurrently is outside this verification claim.
+
+New checks cover real PTY/pipe input, EOF, terminal resize, process timeout and
+cleanup, persistent sessions across turns, split-secret redaction, large-output
+head/tail previews, cursor replay, saved log recovery and access from later
+authorized master turns. A 41-response local provider fixture completes beyond
+the previous 32-step limit. SQLite and runtime scenarios verify durable deduplicated
+follow-ups, correction of stale actions, reuse of completed worker context and
+preservation of retry counters. Discovery tests verify smaller initial schemas,
+bounded cache refresh, Spanish queries and rejection of nested delegation.
+
+These checks use local model fixtures and shell processes. They do not measure
+live model accuracy, token-cost savings or multi-day service reliability. See
+[execution behavior and limits](execution-harness.md).
+
+
+## Local browser integration (2026-09-15)
+
+The workspace suite passed 211 tests, with four opt-in/platform tests ignored.
+The Chromium fixture was explicitly run with the sandbox enabled and passed
+navigation, forms, same-origin iframe actions, responsive viewports, screenshots,
+vault fill, tab control and on-disk session restoration in a new browser process.
+HTTP checks passed for profile access, credential privacy and streamed downloads.
+All 12 frontend tests passed; a final targeted run also verified manual typing and
+clicking through the Browser view after the last UI changes. Formatting, skill
+validation and workspace Clippy checks passed. These use local fixtures and mocked
+model responses, not real university or WhatsApp accounts. See [browser.md](browser.md).
+
+## Release 0.3.0 — 2026-09-15
+
+The release passed 211 workspace unit/integration tests, two documentation
+examples and all 12 web scenarios. Four platform-specific or opt-in tests remained
+ignored. Workspace Clippy with warnings denied, Rust formatting, web syntax and
+formatting, and the server build passed. Model requests used local fixtures.
+
+The long active-context scenario now allows sufficient time for its multiple
+large reads and summary requests on shared hosts. The browser UI scenario waits
+for and checks the actual open response before checking the first screenshot,
+respecting Chromium's existing cold-start allowance. Assertions for preserved
+tool results, viewport resizing and owner interaction remain in place.

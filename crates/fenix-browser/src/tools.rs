@@ -1,0 +1,69 @@
+use fenix_core::ToolDefinition;
+use serde_json::json;
+
+pub fn catalog() -> Vec<ToolDefinition> {
+    let string = json!({"type":"string"});
+    let number = json!({"type":"number"});
+    let boolean = json!({"type":"boolean"});
+    let common = json!({"profile":string,"tab":string,"frame":string});
+    let entries = [
+        (
+            "browser_open",
+            "Open local Chromium. Default profile is a task-scoped test session; named personal profiles must be enabled by the owner in the Browser view. Preserves personal logins on disk. No remote provider. URL must be HTTP(S).",
+            json!({"url":string}),
+            vec![],
+        ),
+        (
+            "browser_observe",
+            "Read rendered page text and interactive element references, including open shadow roots. Optional frame selects an iframe ID from browser_inspect. Input values are omitted. References expire on observation/navigation. screenshot saves a PNG for the owner; screenshots are not model vision input.",
+            json!({"screenshot":boolean,"full_page":boolean}),
+            vec![],
+        ),
+        (
+            "browser_act",
+            "Perform one browser action. Ref or unique CSS selector identifies a target. Actions: click, double_click, hover, fill, type, key, select, check, uncheck, scroll, drag, upload, dialog, back, forward, reload. Native inputs, bounded waits; errors may follow an executed action, inspect before retrying. Password fields are owner-only; use the Browser view. Upload path must be a permitted workspace file. Confirm purchases/submissions according to owner intent.",
+            json!({"action":string,"ref":string,"selector":string,"text":string,"key":string,"value":string,"x":number,"y":number,"dx":number,"dy":number,"to_x":number,"to_y":number,"path":string,"accept":boolean}),
+            vec!["action"],
+        ),
+        (
+            "browser_resize",
+            "Set real CSS viewport dimensions (240–3840 by 240–2160), device scale factor 1–3, touch/mobile and orientation through width/height. Re-observe after resizing. Emulation does not prove behavior on physical devices or other engines.",
+            json!({"width":number,"height":number,"dpr":number,"mobile":boolean,"touch":boolean}),
+            vec!["width", "height"],
+        ),
+        (
+            "browser_inspect",
+            "Inspect frame tree, layout, bounded JavaScript/network failure metadata and downloads. Does not expose cookies, passwords, headers or response bodies. action=capture saves a PNG artifact; action=baseline stores a reference image for an explicitly requested visual baseline.",
+            json!({"action":string,"name":string,"full_page":boolean}),
+            vec![],
+        ),
+        (
+            "browser_close",
+            "Close a tab or the profile's browser process. Personal profile data and logins remain on disk. Default test profile is deleted on profile close. Never logs out a personal site automatically.",
+            json!({}),
+            vec![],
+        ),
+        (
+            "browser_wait",
+            "Wait for condition visible, hidden, text, url, ready or download with timeout_ms up to 30000. download requires download_id from browser_inspect events. Use conditions instead of repeated polling. Failure does not authorize repeating a previous submission.",
+            json!({"condition":string,"selector":string,"text":string,"timeout_ms":number,"download_id":string}),
+            vec!["condition"],
+        ),
+        (
+            "browser_tabs",
+            "List, create or select a tab in one profile. action=list/new/select/profiles. profiles lists owner-enabled personal profiles without starting Chromium. A new tab defaults to about:blank. Use browser_close with tab to close it.",
+            json!({"action":string,"url":string}),
+            vec![],
+        ),
+        (
+            "browser_check",
+            "Check condition visible, hidden, text, url, ready, no_overflow or screenshot_matches. Returns passed and evidence, never treats a successful click as a successful workflow. screenshot_matches requires a saved baseline name, same viewport/environment, and exact PNG equality.",
+            json!({"condition":string,"selector":string,"text":string,"name":string}),
+            vec!["condition"],
+        ),
+    ];
+    entries.into_iter().map(|(name,description,extra,required)|{
+        let mut properties=common.clone(); properties.as_object_mut().unwrap().extend(extra.as_object().unwrap().clone());
+        ToolDefinition{name:name.into(),description:description.into(),parameters:json!({"type":"object","properties":properties,"required":required,"additionalProperties":false})}
+    }).collect()
+}

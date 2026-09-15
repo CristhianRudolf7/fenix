@@ -1,5 +1,7 @@
 # Local operation
 
+[Interactive execution, updated limits and on-demand tools](execution-harness.md)
+
 [Español](../es/local-operation.md)
 
 ## Start and configure
@@ -42,7 +44,7 @@ stores explicitly requested facts. To add a manual skill, create
 opening Markdown frontmatter. Refresh the Skills panel to discover it. Default
 templates are never copied over existing files. The complete compact catalog is
 visible to master and children, including disabled entries, but only enabled skill
-instructions can be loaded on demand. Four default skills are included; they are
+instructions can be loaded on demand. Five default skills are included; they are
 not a catalog-size limit. To keep an installation-specific library, supply an
 explicit `--skills-dir`.
 
@@ -54,17 +56,18 @@ library or copy the remaining resources manually.
 
 Tool catalogs vary by role and scope. The master delegates with a precise purpose
 and expected output; context and constraints are optional. Children cannot read
-the main conversation or delegate again, and inspect only their own task. Their transcripts
+the main conversation or delegate again, and inspect their own task plus explicitly authorized plan evidence. Their transcripts
 remain separate; final reports return automatically to the master. The **Tasks**
 panel shows purpose, expected output, IDs, state, attempts, results and pending
 textual requests, refreshed while the view is open.
 
-The engine enforces one delegation level and four concurrent children. Each child
-has at most three total attempts for retryable failures, with 32 steps and ten
-minutes per attempt. Retries preserve context and completed tool results, without
+The engine enforces one delegation level and four concurrent child inference requests. Each child
+has at most three total attempts for retryable failures, with configurable defaults
+of 128 steps per task and one hour per attempt. Retries preserve context and completed tool results, without
 replaying actions. Blockage, cancellation and non-retryable failure can end earlier.
-File, memory and schedule changes and managed command lifetimes are serialized
-inside the runtime; external processes and other Fénix instances are not covered.
+File, memory and schedule changes and foreground command lifetimes are serialized
+inside the runtime. Explicit persistent sessions can overlap later work; external
+processes and other Fénix instances are not covered.
 Commands can use the Linux user's accessible directories and are not sandboxed.
 
 Schedule dates without an offset are Peru local time. Cron accepts five fields
@@ -151,3 +154,5 @@ Closing a browser tab does not stop Fénix. Shutdown cancels managed processes.
 On restart, previous running/waiting/queued tasks are marked interrupted. Original
 history and schedules persist, but missed schedule runs and task effects are not
 replayed. There is no automatic rollback or process restoration in this version.
+
+[Local browser / Navegador local](browser.md)

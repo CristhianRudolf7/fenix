@@ -6,81 +6,223 @@ use crate::{
     redaction::truncate,
     tools,
 };
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use fenix_core::{ContentBlock, FinishReason, Message, Role};
 use fenix_storage::Task;
 use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio_util::sync::CancellationToken;
 
-const MAX_MODEL_STEPS: usize = 32;
-
 impl Runtime {
+    fn record_tool_outcome(
+        &self,
+        task: &str,
+        call_id: &str,
+        name: &str,
+        result: Result<Value>,
+    ) -> Result<(Value, bool)> {
+        let (mut output, is_error) = match result {
+            Ok(value) => (value, false),
+            Err(error) => (
+                json!({"error":self.redactor.text(&error.to_string())}),
+                true,
+            ),
+        };
+        self.redactor.value(&mut output);
+        self.store.event(
+            task,
+            "tool_result",
+            &json!({"call_id":call_id,"tool":name,"result":output,"is_error":is_error}),
+        )?;
+        Ok((output, is_error))
+    }
+
     pub(crate) async fn worker(self: Arc<Self>) {
-        loop {
-            if self.stop.is_cancelled() {
-                break;
-            }
-            let work = {
-                let _lock = self.configure_lock.lock().await;
-                match self.store.claim_next() {
+        let mut jobs = tokio::task::JoinSet::new();
+        let mut ids = HashMap::new();
+        while !self.stop.is_cancelled() {
+            // Waiting questions release execution capacity. Keep a bounded total
+            // of live turns; control replies and edits never pass through this queue.
+            let running = self
+                .active
+                .lock()
+                .await
+                .keys()
+                .filter(|id| self.store.task(id).is_ok_and(|t| t.status != "waiting"))
+                .count();
+            if jobs.len() < 65 {
+                let _config = self.configure_lock.lock().await;
+                let mut active = self.active.lock().await;
+                match self
+                    .store
+                    .claim_next_control(running >= 8 || jobs.len() >= 64)
+                {
                     Ok(Some(task)) => {
                         let cancel = self.stop.child_token();
-                        *self.active.lock().await = Some(ActiveTask {
-                            task_id: task.id.clone(),
-                            cancel: cancel.clone(),
-                        });
-                        Some((task, cancel))
-                    }
-                    Ok(None) => None,
-                    Err(error) => {
-                        eprintln!(
-                            "Task queue error: {}",
-                            self.redactor.text(&error.to_string())
+                        active.insert(
+                            task.id.clone(),
+                            ActiveTask {
+                                cancel: cancel.clone(),
+                                revision: CancellationToken::new(),
+                            },
                         );
-                        None
+                        let runtime = self.clone();
+                        let id = task.id.clone();
+                        let handle =
+                            jobs.spawn(async move { runtime.process_task(task, cancel).await });
+                        ids.insert(handle.id(), id);
+                        continue;
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        eprintln!("Task queue: {}", self.redactor.text(&error.to_string()))
                     }
                 }
-            };
-            if let Some((task, cancel)) = work {
-                let result = tokio::select! {
-                    result=self.run_task(&task,&cancel)=>result,
-                    _=cancel.cancelled()=>Err(anyhow::anyhow!("Task cancelled")),
-                    _=tokio::time::sleep(Duration::from_secs(3600))=>Err(anyhow::anyhow!("Task exceeded the one-hour execution limit")),
-                };
-                self.settle_task(&task.id).await;
-                self.clear_pending(&task.id).await;
-                let (status, error) = match result {
-                    Ok(()) => ("completed", None),
-                    Err(error) => {
-                        let status = if self.stop.is_cancelled() {
-                            "interrupted"
-                        } else if cancel.is_cancelled() {
-                            "cancelled"
-                        } else {
-                            "failed"
-                        };
-                        let error = self.redactor.text(&error.to_string());
-                        // Do not send incomplete tool-call sequences to a future model turn.
-                        let _ = self.store.discard_context(&task.id);
-                        let notice = format!("Tarea {} · {}\n{}", task.id, status, error);
-                        let _ = self.notify(Some(&task.id), &notice);
-                        let _=self.store.append(Some(&task.id),&Message::user(format!("Previous request: {}\nOutcome: {notice}. No automatic resumption. Inspect saved task events before repeating any effect.",task.request)),false,true,"runtime");
-                        (status, Some(error))
-                    }
-                };
-                let _ = self
-                    .store
-                    .set_task_status(&task.id, status, error.as_deref());
-                let _ = self.store.event(
-                    &task.id,
-                    "task_finished",
-                    &json!({"status":status,"error":error}),
+            }
+            tokio::select! {
+                _ = self.stop.cancelled() => break,
+                joined = jobs.join_next_with_id(), if !jobs.is_empty() => { self.finish_master_join(joined, &mut ids).await; },
+                _ = self.wake.notified() => {},
+                _ = tokio::time::sleep(Duration::from_millis(100)) => {},
+            }
+        }
+        while let Some(joined) = jobs.join_next_with_id().await {
+            self.finish_master_join(Some(joined), &mut ids).await;
+        }
+    }
+
+    async fn finish_master_join(
+        &self,
+        joined: Option<Result<(tokio::task::Id, ()), tokio::task::JoinError>>,
+        ids: &mut HashMap<tokio::task::Id, String>,
+    ) {
+        let Some(joined) = joined else { return };
+        let (id, error) = match joined {
+            Ok((id, ())) => (id, None),
+            Err(error) => (error.id(), Some(error.to_string())),
+        };
+        if let Some(task) = ids.remove(&id) {
+            if let Some(error) = error {
+                self.settle_task(&task).await;
+                self.clear_pending(&task).await;
+                let _ = self.store.discard_context(&task);
+                let _ =
+                    self.store
+                        .set_task_status(&task, "failed", Some(&self.redactor.text(&error)));
+                let _ = self.notify(
+                    Some(&task),
+                    "La ejecución se interrumpió. El historial de acciones sigue disponible.",
                 );
-                *self.active.lock().await = None;
-                self.progress.send_replace(Progress::default());
+            }
+            self.active.lock().await.remove(&task);
+        }
+    }
+
+    async fn process_task(self: &Arc<Self>, task: Task, cancel: CancellationToken) {
+        let limits = self
+            .settings()
+            .ok()
+            .flatten()
+            .map(|s| s.execution)
+            .unwrap_or_default();
+        let deadline =
+            self.execution_deadline(&task.id, Duration::from_secs(limits.task_timeout_seconds));
+        tokio::pin!(deadline);
+        let result = loop {
+            let revision = {
+                let mut active = self.active.lock().await;
+                let Some(active) = active.get_mut(&task.id) else {
+                    return;
+                };
+                if active.revision.is_cancelled() {
+                    active.revision = CancellationToken::new();
+                }
+                active.revision.clone()
+            };
+            let execution = cancel.child_token();
+            let result = tokio::select! {
+                biased;
+                _ = cancel.cancelled() => Some(Err(anyhow::anyhow!("Task cancelled"))),
+                _ = revision.cancelled() => None,
+                _ = &mut deadline => Some(Err(anyhow::anyhow!("Task exceeded its configured active execution time"))),
+                result = self.run_task(&task, &execution) => Some(result),
+            };
+            execution.cancel();
+            if result.as_ref().is_some_and(Result::is_ok) {
+                self.processes.cancel_foreground(&task.id).await;
+                self.file_effects.wait(Some(&task.id)).await;
             } else {
-                tokio::select! {_=self.stop.cancelled()=>break,_=self.wake.notified()=>{},_=tokio::time::sleep(Duration::from_secs(1))=>{}}
+                self.settle_task(&task.id).await;
+            }
+            self.clear_pending(&task.id).await;
+            if let Some(result) = result {
+                break result;
+            }
+            let _ = self.store.discard_context(&task.id);
+            let _ = self.store.set_task_status(&task.id, "running", None);
+            let _ = self.store.publish_event(
+                Some(&task.id),
+                "task.replanning",
+                &json!({"task_id":task.id}),
+            );
+        };
+        let (status, error) = match result {
+            Ok(()) => ("completed", None),
+            Err(error) => {
+                let status = if self.stop.is_cancelled() {
+                    "interrupted"
+                } else if cancel.is_cancelled() {
+                    "cancelled"
+                } else {
+                    "failed"
+                };
+                let error = self.redactor.text(&error.to_string());
+                let _ = self.store.discard_context(&task.id);
+                let _ = self.notify(
+                    Some(&task.id),
+                    &format!("Tarea {} · {status}\n{error}", task.id),
+                );
+                let _ = self.store.append(Some(&task.id), &Message::user(format!("Previous request: {}\nOutcome: {status}: {error}. Inspect saved task events before repeating effects.",task.request)),false,true,"runtime");
+                (status, Some(error))
+            }
+        };
+        let _ = self
+            .store
+            .finish_master_context(&task.id, status, error.as_deref());
+        let _ = self.store.event(
+            &task.id,
+            "task_finished",
+            &json!({"status":status,"error":error}),
+        );
+        let _ = self.store.publish_event(
+            Some(&task.id),
+            "task.finished",
+            &json!({"status":status,"error":error}),
+        );
+        self.active.lock().await.remove(&task.id);
+        self.progress.send_if_modified(|progress| {
+            if progress.task_id.as_deref() == Some(&task.id) {
+                *progress = Progress::default();
+                true
+            } else {
+                false
+            }
+        });
+        self.bus_wake.notify_waiters();
+    }
+
+    /// Human response time does not consume the task's execution deadline.
+    pub(crate) async fn execution_deadline(&self, task: &str, budget: Duration) {
+        let mut remaining = budget;
+        loop {
+            let waiting = self.store.task(task).is_ok_and(|t| t.status == "waiting");
+            let started = tokio::time::Instant::now();
+            tokio::time::sleep(Duration::from_millis(100)).await;
+            if !waiting {
+                remaining = remaining.saturating_sub(started.elapsed());
+            }
+            if remaining.is_zero() {
+                return;
             }
         }
     }
@@ -96,6 +238,8 @@ impl Runtime {
         self.route_task(task, &model, cancel).await?;
         let binding = self.store.task_binding(&task.id)?;
         self.store.event(&task.id,"task_started",&json!({"session_id":task.session_id,"objective":task.request,"provider":model.settings.provider,"model":model.settings.model,"reasoning_effort":model.settings.reasoning_effort,"workspace":self.task_workspace(&task.id,&model.settings.workspace)?,"binding":binding}))?;
+        self.store
+            .put("repository_rules_epoch", &task.id, &fenix_storage::id())?;
         let mut messages = self.build_context(task, &model).await?;
         self.run_loop(task, &model, &mut messages, cancel).await?;
         Ok(())
@@ -137,18 +281,39 @@ impl Runtime {
             .store
             .get::<Vec<Value>>("task_denials", &task.id)?
             .unwrap_or_default();
-        for step in 0..MAX_MODEL_STEPS {
+        for _ in 0..model.settings.execution.max_model_steps {
+            let step = self
+                .store
+                .get::<usize>("execution_steps", &task.id)?
+                .unwrap_or(0);
+            if step >= model.settings.execution.max_model_steps {
+                break;
+            }
+            if delegated {
+                self.consume_subagent_inputs(&task.id, messages)?;
+            }
+            self.store.put("execution_steps", &task.id, &(step + 1))?;
+            self.check_plan_editor(&task.id)?;
+            self.store.check_plan_worker(&task.id)?;
             if cancel.is_cancelled() {
                 bail!("Task cancelled");
             }
+            let catalog = self.exposed_tools(&task.id)?;
+            self.compact_active_context(task, model, messages, &catalog, cancel)
+                .await?;
             let mut request = model.settings.request(messages.clone());
-            request.tools = self.task_tool_catalog(&task.id)?;
-            if serde_json::to_vec(&request)?.len() > 512_000 {
-                bail!(
-                    "This task's active context is too large. Original history and tool evidence remain available; split the next request into smaller steps"
+            let available =
+                model.settings.coding.context_window_tokens.saturating_sub(
+                    crate::active_context::estimated_tokens(messages, &catalog) + 1024,
                 );
+            if available < 1024 {
+                bail!("Context leaves insufficient output space; adjust coding context capacity");
             }
+            request.max_output_tokens = request.max_output_tokens.min(available as u32);
+            request.tools = catalog;
             let response = if delegated {
+                let _permit = tokio::select! { biased; _=cancel.cancelled()=>bail!("Task cancelled"), permit=self.subagents.inference.acquire()=>permit? };
+
                 // Task attempts own the retry budget; never multiply it by HTTP retries.
                 let config = model.settings.provider_config();
                 tokio::select! {
@@ -158,6 +323,12 @@ impl Runtime {
             } else {
                 self.infer_with_retry(task, model, &request, cancel).await?
             };
+            if cancel.is_cancelled() {
+                bail!("Task cancelled");
+            }
+            self.check_plan_editor(&task.id)?;
+            self.store.check_plan_worker(&task.id)?;
+            self.acknowledge_repository_rules(&task.id, messages)?;
             self.store.event(&task.id,"model_response",&json!({"turn_id":fenix_storage::id(),"step":step+1,"usage":response.usage,"finish_reason":response.finish_reason,"response_id":response.id}))?;
             let mut encoded = serde_json::to_value(response.message)?;
             self.redactor.value(&mut encoded);
@@ -181,19 +352,16 @@ impl Runtime {
             } else {
                 let message_id =
                     self.store
-                        .append(Some(&task.id), &message, !text.is_empty(), true, "agent")?;
+                        .publish_message(Some(&task.id), &message, true, "agent")?;
                 self.progress.send_modify(|progress| {
+                    if progress.task_id.as_deref() != Some(&task.id) {
+                        return;
+                    }
                     progress.phase = Phase::Saved;
                     progress.message_id = Some(message_id);
                     progress.preview.clear();
                 });
-                if !text.is_empty()
-                    && self
-                        .telegram_settings()?
-                        .is_some_and(|s| s.enabled && s.owner_id.is_some())
-                {
-                    self.store.queue_delivery_for_task(&text, Some(&task.id))?;
-                }
+                self.bus_wake.notify_waiters();
             }
             messages.push(message);
             if matches!(
@@ -205,6 +373,12 @@ impl Runtime {
                 );
             }
             if calls.is_empty() {
+                if delegated {
+                    self.store.save_subagent_context(&task.id, messages, 0)?;
+                }
+                if delegated && !self.store.pending_subagent_inputs(&task.id)?.is_empty() {
+                    continue;
+                }
                 if text.trim().is_empty() {
                     bail!("The model returned neither text nor a tool action");
                 }
@@ -225,21 +399,83 @@ impl Runtime {
             }
             let call_count = calls.len();
             let mut finished = None;
+            // A response containing only public web reads can run as a batch.
+            // Mixed/action responses retain their existing ordered execution.
+            let web_batch = calls.len() > 1
+                && calls
+                    .iter()
+                    .all(|(_, name, _)| matches!(name.as_str(), "web_search" | "web_read"));
+            let mut web_results = if web_batch {
+                for (call_id, name, args) in &calls {
+                    self.check_plan_editor(&task.id)?;
+                    self.store.check_plan_worker(&task.id)?;
+                    if cancel.is_cancelled() {
+                        bail!("Task cancelled");
+                    }
+                    self.report_progress(&task.id, Phase::Tool, Some(name));
+                    self.store.event(
+                        &task.id,
+                        "tool_started",
+                        &json!({"call_id":call_id,"tool":name,"arguments":args}),
+                    )?;
+                }
+                let requests = calls.iter().map(|(call_id, name, args)| {
+                    let denied = denials.contains(&json!({"tool":name,"arguments":args}));
+                    let source = &source;
+                    let settings = &model.settings;
+                    async move {
+                        let result = if denied {
+                            Ok(json!({"denied":true,"executed":false,"previously_denied":true}))
+                        } else {
+                            self.execute_tool(&task.id, source, settings, name, args, cancel)
+                                .await
+                        };
+                        // Persist each completed read immediately, even if a sibling
+                        // is later cancelled. Transcript results remain in call order.
+                        self.record_tool_outcome(&task.id, call_id, name, result)
+                    }
+                });
+                let results = tokio::select! {
+                    biased;
+                    _ = cancel.cancelled() => bail!("Task cancelled"),
+                    results = futures_util::future::try_join_all(requests) => results?,
+                };
+                Some(results.into_iter())
+            } else {
+                None
+            };
             for (call_id, name, args) in calls {
+                self.check_plan_editor(&task.id)?;
+                self.store.check_plan_worker(&task.id)?;
+                if cancel.is_cancelled() {
+                    bail!("Task cancelled");
+                }
                 self.report_progress(&task.id, Phase::Tool, Some(&name));
                 let action = json!({"tool":name,"arguments":args});
-                self.store.event(
-                    &task.id,
-                    "tool_started",
-                    &json!({"call_id":call_id,"tool":name,"arguments":args}),
-                )?;
-                let result:Result<Value>=async {
+                if !web_batch {
+                    self.store.event(
+                        &task.id,
+                        "tool_started",
+                        &json!({"call_id":call_id,"tool":name,"arguments":args}),
+                    )?;
+                }
+                let (output, is_error) = if let Some(results) = &mut web_results {
+                    results.next().context("Missing web batch result")?
+                } else {
+                    let result: Result<Value> = async {
+                    if delegated && !self.store.pending_subagent_inputs(&task.id)?.is_empty() {
+                        return Ok(json!({"executed":false,"reason":"New supervisor input arrived; consume it before performing remaining actions."}));
+                    }
                     tools::validate_for(delegated, &name,&args)?;
                     self.authorize_project_tool(&task.id, &name, &args)?;
                     if name == "subagent_finish" {
                         if call_count != 1 { bail!("Finish must be the only tool call in its response"); }
                         if self.processes.has_running(&task.id).await { bail!("Inspect or cancel running commands before reporting an outcome"); }
                         if args["summary"].as_str().is_none_or(|s| s.trim().is_empty()) { bail!("A concrete outcome summary is required"); }
+                        if self.store.review_for_worker(&task.id)?.is_some() && args["status"] == "completed" {
+                            let report = serde_json::from_value(args["review"].clone()).context("Plan reviewers must return a structured review")?;
+                            self.store.validate_review_report(&task.id, &report)?;
+                        }
                         finished = Some(args.clone());
                         return Ok(json!({"recorded":true}));
                     }
@@ -256,27 +492,21 @@ impl Runtime {
                         return Ok(json!({"approved":approved,"single_use":true}));
                     }
                     if denials.contains(&action) {return Ok(json!({"denied":true,"executed":false,"previously_denied":true}));}
-                    let requires=(name=="command_run" && model.settings.command_policy==ActionPolicy::Ask) || (matches!(name.as_str(),"file_write"|"file_edit") && model.settings.file_write_policy==ActionPolicy::Ask);
+                    if matches!(name.as_str(), "file_write" | "file_edit" | "file_patch") {
+                        let workspace = self.task_workspace(&task.id, &model.settings.workspace)?;
+                        let rules = self.pending_repository_rules(&task.id, &workspace, &name, &args)?;
+                        if !rules.is_empty() { return Ok(json!({"executed":false,"repository_instructions":rules,"instruction":"Read this guidance before retrying; no mutation or approval consumption occurred."})); }
+                    }
+                    let requires=(matches!(name.as_str(),"command_run"|"command_input") && model.settings.command_policy==ActionPolicy::Ask) || (matches!(name.as_str(),"file_write"|"file_edit"|"file_patch") && model.settings.file_write_policy==ActionPolicy::Ask);
                     if requires {
                         if let Some(index)=grants.iter().position(|g|g==&action) {grants.remove(index);self.store.put("task_grants", &task.id, &grants)?;}
                         else if !self.approve(&task.id,action.clone(),cancel).await? {denials.push(action.clone());self.store.put("task_denials", &task.id, &denials)?;return Ok(json!({"denied":true,"executed":false,"instruction":"Owner denied this exact action. Do not retry or bypass it."}));}
                     }
                     self.report_progress(&task.id, Phase::Tool, Some(&name));
                     self.execute_tool(&task.id,&source,&model.settings,&name,&args,cancel).await
-                }.await;
-                let (mut output, is_error) = match result {
-                    Ok(value) => (value, false),
-                    Err(error) => (
-                        json!({"error":self.redactor.text(&error.to_string())}),
-                        true,
-                    ),
+                    }.await;
+                    self.record_tool_outcome(&task.id, &call_id, &name, result)?
                 };
-                self.redactor.value(&mut output);
-                self.store.event(
-                    &task.id,
-                    "tool_result",
-                    &json!({"call_id":call_id,"tool":name,"result":output,"is_error":is_error}),
-                )?;
                 // command_status intentionally waits; the managed-process timeout is its loop bound.
                 if name != "command_status" {
                     let fingerprint = format!("{action}:{output}");
@@ -290,7 +520,7 @@ impl Runtime {
                 }
                 let serialized = output.to_string();
                 let content = if serialized.len() > 16_000 {
-                    json!({"truncated":true,"preview":truncate(&serialized,12_000),"task_id":task.id,"call_id":call_id,"retrieve":"Use task_inspect with task_id, call_id, offset and length to read the saved output in pages."})
+                    json!({"truncated":true,"repository_instructions":output.get("repository_instructions"),"preview":truncate(&serialized,12_000),"task_id":task.id,"call_id":call_id,"retrieve":"Use task_inspect with task_id, call_id, offset and length to read the saved output in pages."})
                 } else {
                     output
                 };
@@ -312,13 +542,16 @@ impl Runtime {
                 if delegated
                     && matches!(
                         name.as_str(),
-                        "subagent_spawn" | "subagent_status" | "subagent_cancel"
+                        "subagent_spawn" | "subagent_status" | "subagent_cancel" | "subagent_send"
                     )
                 {
                     return Ok(
                         json!({"status":"blocked","summary":"Delegation request rejected by the engine.","blockers":"Only the master may manage subagents. Ask the master for assistance.","artifacts":"","evidence":format!("task_inspect task_id={}",task.id)}),
                     );
                 }
+            }
+            if delegated {
+                self.store.save_subagent_context(&task.id, messages, 0)?;
             }
             if let Some(result) = finished {
                 return Ok(result);
@@ -356,8 +589,11 @@ impl Runtime {
                 raw_preview.push_str(&delta[..end]);
                 if published.elapsed() >= Duration::from_millis(100) {
                     let text = self.redactor.preview(&raw_preview);
-                    self.progress
-                        .send_modify(|progress| progress.preview = text);
+                    self.progress.send_modify(|progress| {
+                        if progress.task_id.as_deref() == Some(&task.id) {
+                            progress.preview = text;
+                        }
+                    });
                     published = std::time::Instant::now();
                 }
             };

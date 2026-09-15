@@ -102,6 +102,17 @@ impl ScheduleInput {
 }
 
 impl Runtime {
+    fn pin_schedule_destination(&self, task: &str, schedule: &str) -> Result<()> {
+        if let Some((channel, address)) = self
+            .store
+            .get::<(String, Option<String>)>("schedule_destinations", schedule)?
+        {
+            self.store
+                .set_task_destination(task, &channel, address.as_deref())
+        } else {
+            self.pin_destination(task, "telegram")
+        }
+    }
     pub async fn schedule_manage(&self, mut args: Value) -> Result<Value> {
         let _lock = self.schedule_lock.lock().await;
         let action = args["action"].as_str().unwrap_or("list").to_owned();
@@ -187,6 +198,13 @@ impl Runtime {
                 bail!("An identical active schedule already exists");
             }
             self.store.put("schedules", &schedule.id, &schedule)?;
+            if action == "create" {
+                self.store.put(
+                    "schedule_destinations",
+                    &schedule.id,
+                    &("web", None::<String>),
+                )?;
+            }
             return Ok(json!(schedule));
         }
         let mut schedule = self
@@ -277,6 +295,7 @@ impl Runtime {
                         ..Default::default()
                     },
                 )?;
+                self.pin_schedule_destination(&notification.id, &schedule.id)?;
                 self.notify(
                     Some(&notification.id),
                     &format!(
@@ -321,6 +340,7 @@ impl Runtime {
                         Some(&schedule.id),
                         &binding,
                     )?;
+                    self.pin_schedule_destination(&task.id, &schedule.id)?;
                     self.wake.notify_one();
                     Ok(format!("Queued task {}", task.id))
                 })()

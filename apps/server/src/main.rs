@@ -44,7 +44,8 @@ async fn main() -> Result<()> {
     let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
     let listener = tokio::net::TcpListener::bind(address).await?;
     let port = listener.local_addr()?.port();
-    let workers = runtime.start();
+    let mut workers = runtime.start();
+    workers.push(runtime.start_web_search());
     println!(
         "Fénix is ready at http://127.0.0.1:{port}\nRuntime data: {}\nShared skills: {}",
         runtime.data_dir.display(),

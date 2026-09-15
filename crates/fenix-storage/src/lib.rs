@@ -1,6 +1,15 @@
 //! Durable conversation, task journal and lexical memory. No model or channel dependencies.
 
+mod events;
 mod memory;
+mod plan_reviews;
+mod plans;
+pub use events::BusEvent;
+pub use plan_reviews::{
+    PlanBrief, PlanReview, ReviewAssignment, ReviewFinding, ReviewReport, ReviewResolution,
+    SpecialistRequest,
+};
+pub use plans::{Plan, PlanNode, PlanNodeSpec, PlanRevision};
 mod projects;
 mod subagents;
 pub use memory::Memory;
@@ -62,7 +71,7 @@ impl Store {
         connection.pragma_update(None, "journal_mode", "WAL")?;
         connection.pragma_update(None, "foreign_keys", "ON")?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if version > 3 {
+        if version > 6 {
             bail!("Database was created by a newer Fenix version");
         }
         let migration = connection.transaction()?;
@@ -74,6 +83,15 @@ impl Store {
         }
         if version < 3 {
             migration.execute_batch(include_str!("../migrations/003_projects.sql"))?;
+        }
+        if version < 4 {
+            migration.execute_batch(include_str!("../migrations/004_planning.sql"))?;
+        }
+        if version < 5 {
+            migration.execute_batch(include_str!("../migrations/005_plan_reviews.sql"))?;
+        }
+        if version < 6 {
+            migration.execute_batch(include_str!("../migrations/006_subagent_inbox.sql"))?;
         }
         migration.commit()?;
         connection.execute(
@@ -106,6 +124,12 @@ impl Store {
         let tx = db.transaction()?;
         tx.execute("UPDATE subagents SET result=?1 WHERE id IN (SELECT id FROM tasks WHERE status IN ('queued','running','waiting'))", [json!({"status":"interrupted","error":"Service stopped before completion; actions were not resumed.","pending":"Inspect saved task events before repeating actions."}).to_string()])?;
         let count = tx.execute("UPDATE tasks SET status='interrupted', error='Service stopped before completion; actions were not resumed.', updated_at=?1 WHERE status IN ('queued','running','waiting')", [now()])?;
+        tx.execute("UPDATE plans SET status='interrupted',body=json_set(body,'$.status','interrupted') WHERE status IN ('running','revising','paused')", [])?;
+        tx.execute("UPDATE plan_reviews SET status='interrupted',body=json_set(body,'$.status','interrupted') WHERE status IN ('queued','running','needs_resolution','resolving')", [])?;
+        tx.execute(
+            "UPDATE questions SET status='interrupted' WHERE status='pending'",
+            [],
+        )?;
         // Conversation history remains recoverable, but incomplete tool sequences never enter model context.
         tx.execute("UPDATE messages SET in_context=0 WHERE task_id IN (SELECT id FROM tasks WHERE status='interrupted')", [])?;
         tx.commit()?;
@@ -206,14 +230,24 @@ impl Store {
             "INSERT INTO history_fts(id,text) VALUES (?1,?2)",
             params![message_id, text],
         )?;
+        events::publish(
+            &tx,
+            Some(&task.id),
+            "task.queued",
+            &json!({"task_id":task.id,"origin":origin}),
+        )?;
         tx.commit()?;
         Ok(task)
     }
 
     pub fn claim_next(&self) -> Result<Option<Task>> {
+        self.claim_next_control(false)
+    }
+
+    pub fn claim_next_control(&self, only_controls: bool) -> Result<Option<Task>> {
         let mut db = self.db()?;
         let tx = db.transaction()?;
-        let task = tx.query_row("SELECT id,session_id,request,origin,status,schedule_id,created_at,updated_at,error FROM tasks WHERE status='queued' AND origin!='subagent' ORDER BY CASE WHEN origin='subagent_report' THEN 1 ELSE 0 END,seq LIMIT 1", [], task_row).optional()?;
+        let task = tx.query_row("SELECT id,session_id,request,origin,status,schedule_id,created_at,updated_at,error FROM tasks WHERE status='queued' AND origin!='subagent' AND (?1=0 OR EXISTS (SELECT 1 FROM records r WHERE r.kind='plan_edits' AND r.id=tasks.id)) ORDER BY CASE WHEN EXISTS (SELECT 1 FROM records r WHERE r.kind='plan_edits' AND r.id=tasks.id) THEN 0 WHEN origin='subagent_report' THEN 2 ELSE 1 END,seq LIMIT 1", [only_controls], task_row).optional()?;
         if let Some(mut task) = task {
             task.status = "running".into();
             task.updated_at = now();
@@ -234,6 +268,39 @@ impl Store {
             "UPDATE tasks SET status=?2,error=?3,updated_at=?4 WHERE id=?1 AND (origin!='subagent' OR status NOT IN ('completed','blocked','failed','cancelled','interrupted'))",
             params![task, status, error, now()],
         )?;
+        Ok(())
+    }
+
+    /// Seal a whole task transcript at the end of the context sequence. Other
+    /// concurrent turns never observe an unfinished tool-call/result sequence.
+    pub fn finish_master_context(
+        &self,
+        task: &str,
+        status: &str,
+        error: Option<&str>,
+    ) -> Result<()> {
+        let mut db = self.db()?;
+        let tx = db.transaction()?;
+        let base: i64 = tx.query_row(
+            "SELECT COALESCE(MAX(context_order),0) FROM messages",
+            [],
+            |r| r.get(0),
+        )?;
+        let ids = tx
+            .prepare("SELECT id FROM messages WHERE task_id=?1 AND in_context=1 ORDER BY seq")?
+            .query_map([task], |r| r.get::<_, String>(0))?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        for (offset, id) in ids.iter().enumerate() {
+            tx.execute(
+                "UPDATE messages SET context_order=?2 WHERE id=?1",
+                params![id, base + offset as i64 + 1],
+            )?;
+        }
+        tx.execute(
+            "UPDATE tasks SET status=?2,error=?3,updated_at=?4 WHERE id=?1",
+            params![task, status, error, now()],
+        )?;
+        tx.commit()?;
         Ok(())
     }
 
@@ -391,10 +458,10 @@ impl Store {
             .flatten())
     }
     pub fn deliveries(&self) -> Result<Vec<(i64, String)>> {
-        Ok(self.db()?.prepare("SELECT seq,text FROM outbox WHERE status='pending' AND attempts<3 ORDER BY seq LIMIT 10")?.query_map([],|r|Ok((r.get(0)?,r.get(1)?)))?.collect::<rusqlite::Result<_>>()?)
+        Ok(self.db()?.prepare("SELECT seq,text FROM outbox WHERE status='pending' AND (retry_at IS NULL OR retry_at<=strftime('%Y-%m-%dT%H:%M:%f+00:00','now')) ORDER BY seq LIMIT 10")?.query_map([],|r|Ok((r.get(0)?,r.get(1)?)))?.collect::<rusqlite::Result<_>>()?)
     }
     pub fn delivery_result(&self, seq: i64, delivered: bool) -> Result<()> {
-        self.db()?.execute("UPDATE outbox SET status=CASE WHEN ?2 THEN 'sent' WHEN attempts>=2 THEN 'failed' ELSE 'pending' END,attempts=attempts+1 WHERE seq=?1",params![seq,delivered])?;
+        self.db()?.execute("UPDATE outbox SET status=CASE WHEN ?2 THEN 'sent' ELSE 'pending' END,attempts=attempts+1,retry_at=CASE WHEN ?2 THEN NULL ELSE strftime('%Y-%m-%dT%H:%M:%f+00:00','now', '+' || MIN(300, 2 << MIN(attempts,7)) || ' seconds') END WHERE seq=?1",params![seq,delivered])?;
         Ok(())
     }
 }

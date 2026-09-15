@@ -4,16 +4,17 @@
 
 - Maintain one continuous conversation for the owner. Telegram support ships initially, but its token and activation are optional. Do not expose separate chats, conversation creation, session switching, or resets as the normal workflow. Internal task IDs and context compaction must preserve that continuity.
 - Initially accept text only; document, file, image, audio, and video attachments are outside scope.
-- Web search, page fetching, generic HTTP tools, and all browser functionality belong to `ROADMAP.md`, section 2.22. Model-provider transport and optional Telegram transport remain in scope.
+- Independent web search and bounded public HTTP reading are in scope: a background crawler, a local disk index and `web_search`/`web_read` agent tools without external search providers. Local Chromium navigation, persistent profiles and responsive testing are also in scope; generic HTTP actions remain in the roadmap. See [the web search contract](docs/en/web-search.md).
 - Use `America/Lima` initially. Automatic resumption of interrupted tasks and catch-up of missed scheduled executions remain future work; keeping history and schedules does not imply replaying their actions.
 - Initially support Linux and one owner per installation. The project must be clonable and run locally, with its web interface bound to loopback by default; routine use must not require a terminal.
 - On first visit without configuration, show a welcome/setup screen. Require at least one provider API key and a successful real inference request to the selected provider/model before completing setup, with provider-dependent selectors and fields covering all 17 integrated providers. Telegram setup can be skipped and completed later.
 - The web must include chat and manage provider credentials, Telegram, explicit memory, skills, scheduled tasks, reminders, and their states. Web and optional Telegram use the same continuous conversation and queue.
 - Use a minimal black-and-white visual design inspired by Vercel, with neutral grays and light/dark themes. The first visit must use light mode with a white background, regardless of the operating-system theme. Persist an explicit user theme selection for later visits.
-- New conversational requests enter a FIFO queue, including corrections; do not steer or interrupt an active task automatically. Approvals, rejections, clarification questions, and cancellations are textual, without action buttons. A clear answer to a pending question must resolve that question rather than wait behind its blocked task. Ambiguous text must not grant permission.
+- Planning, execution and conversation are asynchronous. Textual replies and plan edits bypass ordinary queued work; plans and deliveries are persisted and versioned. See section 1.17 and the planning documentation.
+- La planificación, ejecución y conversación son asíncronas. Las respuestas y ediciones textuales de planes no esperan la cola ordinaria; los planes y entregas se guardan con versiones. Véase la sección 1.17.
 - Store manually installed skills at `~/.fenix/skills/<skill-name>/SKILL.md`, shared under the current user home independently of runtime data, with `--skills-dir` as an explicit override. Keep personal runtime data out of Git.
 - Command execution may use any working directory accessible to the Linux user running Fénix; do not restrict it to a project workspace or request approval merely because the directory is outside that workspace. Keep explicit working directories, OS permissions, action-specific approvals, timeouts, and process controls. A file-tool workspace is not a sandbox boundary for this broader command capability.
-- The master catalog covers local tools, project management and `subagent_spawn`, `subagent_status` and `subagent_cancel`. Children use a restricted catalog without conversation history or delegation and require `subagent_finish`; the executor restricts task inspection to their own ID. Include four manual default skills. Merge explicit memory and reminders/scheduling into `memory-and-reminders`; retain `local-file-work`, `conversation-recap`, and `local-troubleshooting`.
+- The master catalog covers local tools, project management and `subagent_spawn`, `subagent_status` and `subagent_cancel`. Children use a restricted catalog without conversation history or delegation and require `subagent_finish`; the executor restricts inspection to their own ID and authorized predecessor/prior-generation plan evidence. Include five manual default skills, including `browser-navigation`. Merge explicit memory and reminders/scheduling into `memory-and-reminders`; retain `local-file-work`, `conversation-recap`, and `local-troubleshooting`.
 - Current agent provider/model: OpenAI `gpt-5.6-luna` through Responses, with `reasoning.effort: "low"`, replacing the earlier Astra selection at the owner's request for initial development and verification. The request contract and Responses adapter implement this setting. No automatic model switching is required.
 - Heartbeat is future work in `ROADMAP.md`, section 2.23. Cron and explicit reminders remain in scope. Provide an approval-request tool backed by mandatory runtime permission checks.
 - Do not implement an application-level maximum token budget or ask for one in initial setup. Provider context/output limits, token usage reporting, timeouts, bounded retries, and basic loop prevention are distinct from that deferred budget feature.
@@ -25,7 +26,7 @@ Este documento define el alcance actual de Fénix: un asistente personal funcion
 - Incluir soporte de Telegram desde el comienzo como único canal externo de mensajería, con token y activación opcionales. La instalación debe poder completarse y la web funcionar sin configurar Telegram. Mantener una única conversación continua del propietario, sólo por texto.
 - Uso personal: un propietario autorizado por instalación. Cualquier persona debe poder clonar el proyecto y ejecutar su propia instalación local, con datos y credenciales independientes.
 - Soportar inicialmente Linux. Incluir una web en localhost, vinculada por defecto sólo a loopback, con bienvenida, configuración de proveedores y Telegram, memoria, skills, programaciones y estados. El uso habitual no debe requerir terminal; no se requiere una plataforma SaaS ni multiusuario compartida.
-- Toda búsqueda en internet, lectura de páginas, herramienta HTTP genérica y funcionalidad de navegador queda para el trabajo futuro de la sección 2.22 de `ROADMAP.md`. La conexión con modelos y el canal opcional de Telegram siguen dentro del alcance.
+- La búsqueda y lectura web propias, la navegación local con Chromium, los perfiles persistentes y las pruebas responsivas forman parte del alcance actual. La herramienta HTTP genérica queda para el roadmap. La conexión con modelos y el canal opcional de Telegram siguen dentro del alcance.
 - El heartbeat, la memoria avanzada, la autonomía prolongada, la voz en tiempo real y el resto de ampliaciones se conservan en [ROADMAP.md](ROADMAP.md).
 - Este documento describe requisitos y criterios de cierre; no implica que las funciones ya estén implementadas.
 - Las referencias de OpenClaw, ZeroClaw y NullClaw sirven para definir el conjunto básico de capacidades y se mantienen como antecedentes de diseño.
@@ -56,8 +57,8 @@ Referencia del modelo actual: [GPT-5.6 Luna](https://developers.openai.com/api/d
 - Mantener una conversación continua, como con una persona, también al conectar Telegram más adelante. No ofrecer conversaciones separadas ni exigir crear, seleccionar o reiniciar sesiones para seguir hablando, cambiar de tema o iniciar una tarea.
 - Aceptar únicamente mensajes de texto. No incorporar recepción ni procesamiento de documentos, archivos, imágenes, audio o vídeo en el alcance inicial.
 - Guardar mensajes, respuestas y resultados de herramientas para continuar la misma conversación después de reiniciar el servicio. Los identificadores internos organizan el trabajo sin dividir la experiencia del usuario en nuevos chats.
-- Mantener una sola ejecución principal activa, con subagentes independientes en segundo plano. Encolar cada nuevo mensaje de conversación por orden de llegada (FIFO), incluso si contiene una corrección; procesarlo cuando termine la tarea activa, sin incorporarlo automáticamente a mitad de ejecución.
-- Tramitar por texto las aprobaciones, rechazos, aclaraciones y cancelaciones; no usar botones para esas acciones. Cuando el agente espere una respuesta, vincular una respuesta clara a esa solicitud pendiente y continuarla sin esperar al final de la cola. Las nuevas peticiones independientes siguen en FIFO. Si el texto es ambiguo, pedir aclaración sin asumir autorización.
+- Mantener una conversación visible con turnos independientes asíncronos y subagentes en segundo plano. Despachar solicitudes ordinarias por llegada dentro de límites de concurrencia, priorizando respuestas y ediciones; no mezclar secuencias incompletas de herramientas entre turnos.
+- Tramitar por texto las aprobaciones, rechazos, aclaraciones y cancelaciones; no usar botones para esas acciones. Cuando el agente espere una respuesta, vincular una respuesta clara a esa solicitud pendiente y continuarla sin esperar al final de la cola. Las peticiones independientes pueden atenderse mientras otra espera. Si el texto es ambiguo, pedir aclaración sin asumir autorización.
 - Incluir chat en la web para usar el asistente sin Telegram. Debe mostrar y utilizar la misma conversación y cola, sin crear un segundo chat independiente; activar Telegram después no crea una conversación nueva.
 - Conservar la conversación general y contextos específicos por proyecto y tarea dentro del mismo chat. Resolver el destino antes de recuperar información o ejecutar herramientas, capturando el espacio de trabajo por ejecución; ver la sección 1.16.
 
@@ -104,10 +105,10 @@ Esta estructura también se reutiliza en la memoria operativa avanzada para mant
 
 - Leer, listar, buscar, crear y editar archivos dentro del espacio autorizado.
 - Ejecutar comandos desde cualquier directorio accesible para el usuario de Linux que ejecuta Fénix, sin restringirlos al espacio de trabajo del proyecto. Usar directorio de trabajo explícito, timeout, salida acotada y control del proceso.
-- No habilitar herramientas de búsqueda web, descarga de páginas, HTTP genérico o navegación en el alcance inicial; se conservan en el roadmap.
+- Incorporar búsqueda web con índice propio en disco, rastreo en segundo plano y lectura HTTP pública de fuentes mediante `web_search` y `web_read`, sin proveedores externos de búsqueda. La navegación interactiva y las acciones HTTP genéricas se conservan en el roadmap.
 - Gestionar memoria explícita, consultar estado de tareas y crear o cancelar programaciones.
 - Definir un registro extensible de herramientas con nombre, descripción, esquema de argumentos, permisos y resultado normalizado. Habilitar sólo las herramientas necesarias para el turno.
-- Dejar preparados los límites de integración para nuevas herramientas o MCP. Toda navegación web y el arnés de programación se incorporarán más adelante.
+- Dejar preparados los límites de integración para nuevas herramientas o MCP. La navegación interactiva y el arnés de pruebas de sitios renderizados se incorporarán más adelante.
 
 ### 1.7. Permisos y aislamiento básico
 
@@ -192,7 +193,7 @@ Referencia: [Detección de bucles de OpenClaw](https://docs.openclaw.ai/tools/lo
 
 The base catalog contains 17 tools; section 1.15 adds delegation controls for 20 master tools and 16 child tools. Names are internal; the owner interacts through text. Each tool has a typed argument schema, per-operation permissions, bounded output, and a normalized result. Register the catalog centrally and expose the tools relevant to the task. Logging, IDs, queue management, authorization enforcement, and channel delivery remain runtime responsibilities, not optional model calls.
 
-El catálogo básico contiene 17 herramientas; la sección 1.15 amplía el principal a 20 y define 16 para cada hijo. Sus nombres son internos; el propietario interactúa por texto. Cada herramienta tiene un esquema de argumentos, permisos por operación, salida acotada y resultado normalizado. Registrar el catálogo de forma centralizada y exponer las herramientas pertinentes a la tarea. Registros, IDs, cola, comprobación de permisos y entrega al canal son responsabilidades del programa, no llamadas opcionales del modelo.
+El catálogo básico se amplía con delegación, proyectos, planificación y búsqueda web según las secciones siguientes. El principal y los hijos reciben las herramientas pertinentes a su función. Sus nombres son internos; el propietario interactúa por texto. Cada herramienta tiene un esquema de argumentos, permisos por operación, salida acotada y resultado normalizado. Registrar el catálogo de forma centralizada y exponer las herramientas pertinentes a la tarea. Registros, IDs, cola, comprobación de permisos y entrega al canal son responsabilidades del programa, no llamadas opcionales del modelo.
 
 | # | Tool | Purpose | Función |
 | --- | --- | --- | --- |
@@ -213,6 +214,8 @@ El catálogo básico contiene 17 herramientas; la sección 1.15 amplía el princ
 | 15 | `task_inspect` | Inspect task state, errors, execution records, and paginated stored outputs. | Consultar estados, errores, registros y salidas guardadas por partes. |
 | 16 | `ask_user` | Ask for missing information and track the pending response. | Pedir información que falta y registrar la respuesta pendiente. |
 | 17 | `request_approval` | Request textual authorization for a specific action and scope. | Solicitar autorización textual para una acción y alcance concretos. |
+| 18 | `web_search` | Search the local public index and optionally read the top sources. | Buscar en el índice público propio y leer las primeras fuentes. |
+| 19 | `web_read` | Read a known public HTTP(S) source into a bounded passage. | Leer una fuente pública HTTP(S) y devolver un fragmento acotado. |
 
 Resuming a paused schedule means enabling its future runs; it does not implement recovery of interrupted tasks or catch-up of missed runs. `task_inspect` is read-only and does not restore previous actions. Merging the memory/reminder skills does not merge or remove the underlying tools.
 
@@ -221,16 +224,16 @@ Volver a habilitar una programación pausada activa sus ejecuciones futuras; no 
 ### 1.15. Background subagents / Subagentes en segundo plano
 
 - The master delegates asynchronously using a precise objective and expected output. Context and constraints are optional; do not require an “information needed” field or copy the entire conversation. The master remains available for queued requests while children work or wait for textual approval.
-- Enforce one delegation level in the engine, with at most four concurrent children. Child tools cannot delegate, read conversation history or inspect another task. Children may search explicit memory when relevant; they do not receive it automatically.
-- Give each child an isolated persisted transcript and its own task ID linked to the parent. Preserve context and completed tool results across at most three total attempts for retryable failures. Limit each attempt to 32 steps and ten minutes. Do not replay tool actions; finish early for non-retryable failure, blockage or cancellation. These are operational limits, not scientifically optimal constants.
+- Enforce one delegation level in the engine, with at most four concurrent child inference requests. Child tools cannot delegate or read conversation history; cross-task inspection is limited to authorized plan evidence. Children may search explicit memory when relevant; they do not receive it automatically.
+- Give each child an isolated persisted transcript and its own task ID linked to the parent. Preserve context and completed tool results across at most three total attempts for retryable failures. Default to 128 model steps per task across retries/follow-ups and one hour per attempt, configurable in execution settings. Do not replay tool actions; finish early for non-retryable failure, blockage or cancellation. These are operational limits, not scientifically optimal constants.
 - Require a structured `subagent_finish` report with outcome, evidence and pending work. Persist the report and return it to the master automatically; the master checks it against the expected output. Restarting interrupts unfinished children without automatic replay or recovery.
 - Show purpose, expected output, state, child/parent IDs, attempts and results in the existing Tasks view. List simultaneous pending requests with their IDs. Approvals, rejection, answers and cancellation stay textual: `aprobar <request_id>`, `rechazar <request_id>`, `responder <request_id> <answer>` and `cancelar <task_id>`.
 - The master and every child see all valid skill metadata, including disabled entries. Load enabled bodies only through `skill_load`; do not silently truncate the catalog. Store shared packages in `~/.fenix/skills`, allowing `--skills-dir`. Copy old `<data-dir>/skills` resources without overwriting destinations or following symbolic links, leaving originals intact. Bound migration resources and report limit failures.
 - Serialize file, memory and schedule mutations and managed command lifetimes within a runtime. This is process-local coordination, not a Linux shell sandbox or coordination with separate Fénix instances. Block model/permission configuration changes while tasks are active.
 
 - El principal delega de forma asíncrona con objetivo y resultado esperado; contexto y restricciones son opcionales, sin exigir “información necesaria” ni copiar toda la conversación. Sigue atendiendo solicitudes mientras los hijos trabajan o esperan aprobación.
-- El motor impone un nivel de delegación y cuatro hijos simultáneos. Cada hijo tiene ID, vínculo al padre y contexto persistido independiente. No puede delegar, leer el historial principal ni inspeccionar otras tareas; puede consultar memoria explícita pertinente mediante herramientas.
-- Limitar a tres intentos totales ante fallos reintentables, 32 pasos y diez minutos por intento, conservando contexto y resultados sin repetir acciones. Detenerse antes ante fallo definitivo, bloqueo o cancelación. Son límites operativos, no constantes científicamente óptimas.
+- El motor impone un nivel de delegación y cuatro inferencias simultáneas de hijos. Cada hijo tiene ID, vínculo al padre y contexto persistido independiente. No puede delegar ni leer el historial principal; la inspección de otras tareas se limita a evidencia autorizada del plan; puede consultar memoria explícita pertinente mediante herramientas.
+- Limitar a tres intentos totales ante fallos reintentables. Por defecto, permitir 128 pasos de modelo por tarea entre reintentos y seguimientos y una hora por intento, configurables desde Ajustes, conservando contexto y resultados sin repetir acciones. Detenerse antes ante fallo definitivo, bloqueo o cancelación. Son límites operativos, no constantes científicamente óptimas.
 - Exigir informe estructurado con `subagent_finish`, guardar resultados y devolverlos al principal para comprobar la entrega. Reiniciar interrumpe los hijos inconclusos sin reanudar ni repetir acciones automáticamente.
 - Mostrar propósito, entrega, estados, IDs, intentos, resultados y solicitudes pendientes en Tareas. Las respuestas y cancelaciones se escriben en la conversación usando los IDs correspondientes, sin botones de aprobación o rechazo.
 - Principal e hijos ven todos los metadatos válidos de skills, incluidas las deshabilitadas; sólo `skill_load` carga instrucciones habilitadas. Usar `~/.fenix/skills` o `--skills-dir`, migrar recursos anteriores por copia sin sobrescribir ni seguir enlaces y conservar los originales.
@@ -257,15 +260,92 @@ Volver a habilitar una programación pausada activa sus ejecuciones futuras; no 
 
 Details / Detalles: [English](docs/en/projects.md), [Español](docs/es/projects.md).
 
+### 1.17. Editable planning and asynchronous events / Planificación editable y eventos asíncronos
+
+- Persist plans with an objective, explicit milestone outcomes, dependencies and versions. Dispatch ready milestones through one-level subagents with the complete on-demand skill catalog.
+- Surface every detected unresolved doubt, including minor ones. Save question IDs and explicit answers; do not silently assume or re-ask resolved questions. Waiting releases execution capacity without consuming active execution time.
+- Keep the conversation available during drafting, execution and questions. Accept textual edits at any point; version-check updates, preserve valid completed work, invalidate superseded generations and reconcile late results.
+- Publish durable events and consume them using subscriber cursors. Preserve task/project/channel destinations; resume web delivery through SSE cursors and retry unacknowledged Telegram output with internal deduplication.
+- Keep prior effects and evidence. A plan edit is not rollback; apply cancellation barriers before declaring the revision effective. Interrupted actions do not resume automatically after restart.
+
+- Guardar planes con objetivo, resultados esperados por hito, dependencias y versiones. Ejecutar los hitos listos mediante subagentes de un nivel y catálogo de skills bajo demanda.
+- Comunicar toda duda detectada, incluso menor. Guardar IDs y respuestas explícitas; no asumir respuestas ni repetir preguntas resueltas. La espera libera capacidad y no consume tiempo activo.
+- Mantener disponible el chat durante elaboración, ejecución y preguntas. Aceptar cambios textuales en cualquier momento, comprobar versiones, conservar avances válidos e invalidar generaciones y resultados sustituidos.
+- Usar eventos durables con cursores, destinos fijos por tarea/proyecto/canal, reconexión SSE y reintentos de Telegram con deduplicación interna.
+- Conservar efectos y evidencia anteriores. Editar no revierte acciones; comprobar la detención antes de declarar aplicada una revisión. No reanudar efectos automáticamente al reiniciar.
+
+Details / Detalles: [English](docs/en/planning.md), [Español](docs/es/planning.md).
+
+### 1.18. Independent web search / Búsqueda web propia
+
+- Provide query-only `web_search` to master and children, with optional result/read limits, and `web_read` for a known public URL. Use a background crawler, persistent URL frontier and separate SQLite FTS5 public corpus; no external search provider or search API key.
+- Bootstrap from configurable seeds and follow permitted links across origins. Accept arbitrary topics while explicitly reporting bounded, initially empty coverage. Read source pages by HTTP, cache and conditionally refresh them, return URLs, excerpts, hashes and retrieval times, and distinguish failed reads from verified evidence.
+- Bound network/parser concurrency, downloaded bytes, stored text, corpus/frontier size and daily attempts. Honor robots and indexing policies, validate public DNS and redirects, reject credentials and private addresses, and propagate shutdown/task cancellation. Do not execute JavaScript or browser actions in this phase.
+- Ofrecer `web_search` y `web_read` al principal y a los hijos, con índice público separado en disco y rastreo en segundo plano. Las semillas son puntos de partida ampliables mediante enlaces, sin proveedores externos de búsqueda.
+- Mostrar cobertura real, fuentes, caché y fallos de lectura; acotar memoria de trabajo, tráfico y almacenamiento. Respetar políticas de rastreo, comprobar DNS y redirecciones y tratar el contenido web como datos no confiables. La navegación interactiva y las pruebas de diseño quedan para otra fase.
+
+Details / Detalles: [English](docs/en/web-search.md), [Español](docs/es/web-search.md).
+
 ### Criterio de cierre del alcance actual
 
-El asistente debe poder ejecutarse localmente en Linux para un propietario, ofrecer una web en localhost con bienvenida que requiera una clave API de proveedor y permita omitir Telegram, administrar la configuración y los recursos definidos, conservar una única conversación, encolar peticiones nuevas, solicitar aprobación y aclaraciones por texto, usar herramientas autorizadas y comprobar resultados. También debe recordar una preferencia explícita después de reiniciar, ejecutar una programación persistida, permitir inspeccionar lo ocurrido, corregir su memoria básica y detenerse ante cancelación, error o límites operativos. Al conectar Telegram debe mantener la misma conversación. El alcance actual puede cerrarse sin presupuesto máximo de tokens de la aplicación, heartbeat, búsqueda web, navegador, recepción de adjuntos, reanudación automática de tareas, componentes de memoria avanzada ni orquestación de más de un nivel de subagentes.
+El asistente debe poder ejecutarse localmente en Linux para un propietario, ofrecer una web en localhost con bienvenida que requiera una clave API de proveedor y permita omitir Telegram, administrar la configuración y los recursos definidos, conservar una única conversación, encolar peticiones nuevas, solicitar aprobación y aclaraciones por texto, usar herramientas autorizadas y comprobar resultados. También debe recordar una preferencia explícita después de reiniciar, ejecutar una programación persistida, permitir inspeccionar lo ocurrido, corregir su memoria básica y detenerse ante cancelación, error o límites operativos. Al conectar Telegram debe mantener la misma conversación. La búsqueda web debe rastrear e indexar fuentes públicas en segundo plano y leer resultados con cobertura y evidencia explícitas. El alcance actual puede cerrarse sin presupuesto máximo de tokens de la aplicación, heartbeat, recepción de adjuntos, reanudación automática de tareas, componentes de memoria avanzada ni orquestación de más de un nivel de subagentes.
+
+## Adaptive plan review / Revisión adaptativa de planes
+
+- Review plans initially when they have at least three milestones, dependencies,
+  explicit review reasons, assumptions or open questions. Use selective review for
+  new contradictions and blocked execution; avoid per-tool LLM review.
+- Keep confirmed requirements with sources, observations, assumptions and questions
+  separate. Clarify broad requests without inventing scope or repeating answered doubts.
+- Use the master's model for one read-only principal and at most two independent
+  specialists. Keep one delegation level, on-demand skills and a responsive chat.
+- Resolve objections using evidence or owner answers, not votes. Allow one master
+  response and a final focused check after correction; unresolved findings block the
+  affected scope. Owner edits remain available and invalidate obsolete reviews.
+- Persist reports, resolutions, versions and provider-reported usage. Surface status
+  and details in the web and notifications in the originating channel.
+- Revisar inicialmente planes con al menos tres hitos, dependencias, motivos explícitos,
+  suposiciones o preguntas. Revisar selectivamente contradicciones y bloqueos, evitando
+  llamadas de revisión por cada herramienta. Separar requisitos con procedencia,
+  observaciones, supuestos y dudas; aclarar instrucciones generales sin inventar alcance.
+- Usar el modelo del maestro para un principal de solo lectura y hasta dos especialistas
+  independientes. Mantener un nivel de delegación, skills bajo demanda y el chat disponible.
+  Resolver con evidencia o respuestas del usuario, permitir una respuesta del maestro y
+  una comprobación final; bloquear objeciones pendientes y admitir ediciones en cualquier
+  momento. Guardar informes, versiones, resoluciones y consumo; mostrarlos en web y avisar
+  al canal original. Detalles: [English](docs/en/plan-reviews.md) / [Español](docs/es/plan-reviews.md).
 
 ## Live chat updates / Actualizaciones del chat
 
 - Show provisional streamed text for OpenAI Responses and runtime-generated tool activity for every provider. Other model adapters and Telegram keep complete-message delivery initially.
-- Reconnect to the current preview without repeating inference, preserve FIFO and textual approvals, and clear provisional output after completion, failure or cancellation.
+- Reconnect to the current preview without repeating inference, preserve task scope and textual approvals, and clear provisional output after completion, failure or cancellation.
 - Keep progress bounded and redacted, outside model context and durable conversation history; do not ask the model to generate status messages.
 - Mostrar texto progresivo con OpenAI Responses y actividad de herramientas para todos los proveedores. Los demás adaptadores y Telegram mantienen mensajes completos inicialmente.
-- Reconectar sin repetir inferencias, mantener FIFO y aprobaciones textuales y retirar la vista provisional al completar, fallar o cancelar.
+- Reconectar sin repetir inferencias, mantener ámbitos y aprobaciones textuales y retirar la vista provisional al completar, fallar o cancelar.
 - Mantener progreso acotado y redactado, fuera del contexto y del historial durable; los estados se generan en el motor.
+
+
+## Repository-aware coding / Programación con contexto de repositorio
+
+- Implement regex/glob search and exact-context multi-file patches with existing approval, project and effect controls.
+- Load workspace and nested AGENTS.md guidance before mutations; do not inherit unrelated project rules.
+- Provide explicitly configured, lazy stdio LSP queries and diagnostics, with bounded sessions and cancellation.
+- Compact active master and worker contexts at complete tool boundaries, preserving durable originals, task/session IDs and recent context. Summaries must not replay effects or reset execution limits.
+- Expose coding configuration in the local web and document capabilities and limits in [English](docs/en/coding-harness.md) and [Spanish](docs/es/coding-harness.md).
+
+Búsqueda regex/glob, parches, instrucciones por repositorio, LSP configurable y compactación durante la tarea forman parte del alcance implementado. Los checkpoints permiten consultar el contexto original; no implican rollback ni reanudación automática tras reinicios.
+
+## Execution harness update / Actualización del motor de ejecución
+
+Implemented: interactive PTY/stdin, explicitly persistent services, cursor-based redacted logs, configurable execution limits, same-context subagent follow-ups and deterministic on-demand tool discovery. See [English](docs/en/execution-harness.md).
+
+Implementado: PTY/entrada interactiva, servicios persistentes explícitos, registros redactados con cursor, límites configurables, seguimientos de subagentes con el mismo contexto y descubrimiento determinista de herramientas bajo demanda. Ver [Español](docs/es/execution-harness.md).
+
+Automatic crash recovery, isolated parallel worktrees, MCP and programmatic tool composition remain separate future work. La recuperación automática tras reinicios, worktrees paralelos aislados, MCP y composición programática de herramientas siguen siendo trabajo futuro separado.
+
+
+## Local browser / Navegador local
+
+The Rust runtime must control local Chromium with its sandbox enabled, without a hosted browser provider. Include manual owner controls, persistent personal profiles, explicit agent access, task-isolated test profiles, responsive viewports, bounded observations and screenshots, condition checks, encrypted owner-only password storage and process-memory monitoring. A skill guides tool use; actual actions execute in Rust. See [the browser contract](docs/en/browser.md) for guarantees and limits.
+
+El navegador local incluye controles manuales, perfiles personales persistentes y pruebas temporales separadas. El propietario habilita el acceso del agente y guarda contraseñas en un almacén cifrado. Las sesiones pueden caducar según cada sitio. El presupuesto de RSS es periódico y flexible, no un límite estricto de RAM; las capturas todavía no son entrada visual del modelo. Véase [el contrato en español](docs/es/browser.md).

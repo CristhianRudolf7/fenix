@@ -7,8 +7,8 @@ use tokio::sync::oneshot;
 use tokio_util::sync::CancellationToken;
 
 pub(crate) struct ActiveTask {
-    pub task_id: String,
     pub cancel: CancellationToken,
+    pub revision: CancellationToken,
 }
 pub(crate) struct Pending {
     pub view: PendingView,
@@ -55,11 +55,13 @@ impl Runtime {
         );
         self.store.set_task_status(task, "waiting", None)?;
         self.store.event(task, "question", &json!(view))?;
+        self.store.save_question(&json!(view))?;
+        self.bus_wake.notify_waiters();
         let instruction = if kind == "approval" {
             format!("Responde «aprobar {request_id}» o «rechazar {request_id}».")
         } else {
             format!(
-                "Responde «responder {request_id} tu respuesta». Los demás mensajes se encolan."
+                "Responde «responder {request_id} tu respuesta». Puedes seguir conversando mientras esta pregunta queda pendiente."
             )
         };
         let details = view
@@ -84,19 +86,28 @@ impl Runtime {
         let result = tokio::select! {
             _=cancel.cancelled()=>Err(anyhow::anyhow!("Task cancelled")),
             _=self.stop.cancelled()=>Err(anyhow::anyhow!("Service stopping")),
-            _=tokio::time::sleep(std::time::Duration::from_secs(1800))=>Err(anyhow::anyhow!("Timed out waiting for the owner")),
             reply=receive=>reply.map_err(|_|anyhow::anyhow!("Pending request closed")),
         };
         self.pending.lock().await.remove(&request_id);
+        if result.is_err() {
+            self.store
+                .resolve_question(&request_id, "cancelled", None)?;
+        }
         self.store.set_task_status(task, "running", None)?;
         result
     }
 
     pub(crate) async fn clear_pending(&self, task: &str) {
-        self.pending
-            .lock()
-            .await
-            .retain(|_, pending| pending.view.task_id != task);
+        let mut pending = self.pending.lock().await;
+        let ids = pending
+            .values()
+            .filter(|p| p.view.task_id == task)
+            .map(|p| p.view.id.clone())
+            .collect::<Vec<_>>();
+        for id in ids {
+            let _ = self.store.resolve_question(&id, "cancelled", None);
+            pending.remove(&id);
+        }
     }
 
     pub(crate) async fn approve(
@@ -127,7 +138,14 @@ impl Runtime {
         {
             let requested = match words.get(1) {
                 Some(id) => Some((*id).to_owned()),
-                None => self.active.lock().await.as_ref().map(|a| a.task_id.clone()),
+                None => {
+                    let active = self.active.lock().await;
+                    if active.len() == 1 {
+                        active.keys().next().cloned()
+                    } else {
+                        None
+                    }
+                }
             };
             let Some(id) = requested.as_deref() else {
                 bail!("There is no active master task. Use cancelar followed by a task ID");
@@ -153,7 +171,7 @@ impl Runtime {
             )?;
             self.store
                 .event(id, "cancellation_requested", &json!({"origin":origin}))?;
-            if let Some(active) = active.as_ref().filter(|a| a.task_id == id) {
+            if let Some(active) = active.get(id) {
                 active.cancel.cancel();
             } else {
                 self.store
@@ -167,6 +185,12 @@ impl Runtime {
         }
         let mut pending = self.pending.lock().await;
         if pending.is_empty() {
+            if matches!(
+                words.first().copied(),
+                Some("aprobar" | "approve" | "rechazar" | "reject" | "responder" | "reply")
+            ) {
+                bail!("That request is no longer pending; no answer or approval was applied");
+            }
             return Ok(None);
         }
         let is_named_control = matches!(
@@ -221,6 +245,8 @@ impl Runtime {
             }
         };
         if let Some(answer) = decision {
+            self.check_plan_editor(&view.task_id)?;
+            self.store.check_plan_worker(&view.task_id)?;
             self.store.append(
                 Some(&view.task_id),
                 &Message::text(Role::User, text),
@@ -233,6 +259,9 @@ impl Runtime {
                 "question_answered",
                 &json!({"request_id":view.id,"kind":view.kind,"answer":answer,"origin":origin}),
             )?;
+            self.store
+                .resolve_question(&view.id, "answered", Some(&answer))?;
+            self.bus_wake.notify_waiters();
             if let Some(pending) = pending.remove(&view.id) {
                 let _ = pending.reply.send(answer);
             }
@@ -328,14 +357,25 @@ fn describe_action(action: &Value) -> String {
             text("expected"),
             text("replacement")
         ),
+        Some("file_patch") => format!("\n\nAplicar parche:\n{}", text("patch")),
         Some("command_run") => format!(
-            "\n\nDirectorio: {}\nComando:\n{}\n\nTiempo máximo: {} segundos.",
+            "\n\nDirectorio: {}\nComando:\n{}\n\nTerminal interactiva: {}. Persistente entre turnos: {}. Tiempo: {}.",
             text("cwd"),
             text("command"),
+            args["tty"] == true,
+            args["persistent"] == true,
             args["timeout_seconds"]
                 .as_u64()
-                .unwrap_or(120)
-                .clamp(1, 600)
+                .map(|v| format!("{v} segundos"))
+                .unwrap_or_else(|| "límite configurado en ajustes".into())
+        ),
+        Some("command_input") => format!(
+            "\n\nEnviar al proceso {}:\n{}\n\nEOF: {}. Filas/columnas: {}/{}",
+            text("process_id"),
+            text("text"),
+            args["eof"] == true,
+            args["rows"],
+            args["columns"]
         ),
         _ => format!("\n\n{}", action),
     }

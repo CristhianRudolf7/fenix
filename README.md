@@ -2,7 +2,7 @@
 
 [English](README.en.md)
 
-**Versión actual: 0.2.0**
+**Versión actual: 0.3.0**
 
 Asistente personal local para Linux. Un servicio Rust ofrece una web y Telegram
 opcional con **una sola conversación continua**, herramientas locales, memoria
@@ -36,15 +36,20 @@ encendidos para atender Telegram y ejecutar programaciones.
 
 ## Funcionalidades disponibles
 
+- [Arnés de programación](docs/es/coding-harness.md): búsqueda regex/glob, parches de varios archivos, reglas `AGENTS.md` del repositorio, LSP configurable y compactación de tareas activas con checkpoints recuperables.
+
 - Web en español e inglés con bienvenida, chat, proyectos, proveedores, Telegram, memoria,
   skills, programaciones, actividad y trazas. Fondo blanco por defecto y modo
   oscuro activado manualmente.
-- Una tarea principal activa y una cola FIFO, con hasta cuatro subagentes en
-  segundo plano. El principal puede atender otras solicitudes mientras los hijos
-  trabajan o esperan aprobación; cada hijo devuelve un informe propio.
+- Turnos de conversación concurrentes, subagentes y planes editables con hitos y
+  dependencias. Las preguntas y la planificación no retienen el chat.
+  [Planes, revisiones y pub/sub](docs/es/planning.md) conservan avances y canales de entrega.
+- [Revisión adaptativa de planes](docs/es/plan-reviews.md): revisión inicial de planes
+  complejos, especialistas bajo demanda y resolución con evidencia. Usa el mismo modelo
+  configurado; el chat permanece disponible y las rondas de corrección están acotadas.
 - Herramientas del principal para trabajo local, memoria, proyectos y delegación.
   Los hijos tienen un catálogo restringido, sin historial de la conversación ni
-  delegación, con informe de cierre obligatorio e inspección de su propia tarea.
+  delegación, con informe de cierre obligatorio e inspección de su tarea y evidencia de plan autorizada.
 - Comandos desde cualquier directorio accesible al usuario de Linux. Las
   herramientas específicas de archivos conservan la carpeta configurada.
 - Aprobaciones por texto para acciones concretas, comprobadas por el ejecutor.
@@ -58,15 +63,20 @@ encendidos para atender Telegram y ejecutar programaciones.
 - Memoria explícita general y por proyecto con CRUD, detección exacta de
   duplicados dentro de su ámbito y búsqueda léxica Unicode mediante FTS5.
   Sin extracción automática ni embeddings.
-- Cuatro skills manuales: `memory-and-reminders`, `local-file-work`,
-  `conversation-recap` y `local-troubleshooting`.
+- [Búsqueda web propia y lectura de fuentes](docs/es/web-search.md): rastreador en
+  segundo plano, índice público en disco y lectura HTTP de resultados. Sin
+  proveedor externo de búsqueda; cobertura inicial pequeña que crece con enlaces.
+- [Navegador interactivo local](docs/es/browser.md): control en Rust de Chromium,
+  perfiles persistentes, contraseñas cifradas, control manual y pruebas responsivas.
+- Cinco skills manuales: `memory-and-reminders`, `local-file-work`,
+  `conversation-recap`, `local-troubleshooting` y `browser-navigation`.
 - Recordatorios únicos, intervalos y cron en `America/Lima`. Los recordatorios
   entregan texto; las tareas programadas ingresan a la misma cola. Se comprueban
   programaciones activas idénticas y ejecuciones solapadas de una programación.
 - Telegram opcional: vinculación de un propietario y mensajes privados de texto.
 - Integración de 17 proveedores con claves estáticas y credenciales por proyecto.
 
-Los datos están en `.fenix/`, excluido de Git. Las claves se guardan en una base de
+Los datos están en `.fenix/`, excluido de Git. Las claves de proveedores de modelos se guardan en una base de
 datos local con permisos privados, sin una clave maestra de cifrado independiente.
 La configuración nunca las devuelve a la web y las claves conocidas se redactan
 en las salidas del agente. El servidor sólo escucha en loopback y rechaza otros
@@ -75,16 +85,17 @@ orígenes y hosts del navegador.
 Las tareas interrumpidas quedan registradas y no se reanudan automáticamente.
 La web muestra texto progresivo con OpenAI Responses y la actividad de las
 herramientas. Los demás adaptadores y Telegram conservan respuestas completas.
-Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Búsqueda web, navegador, heartbeat, voz, memoria avanzada y
+Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Heartbeat, voz, memoria avanzada y
 restauración de acciones permanecen en [ROADMAP.md](ROADMAP.md).
 
 ## Trabajo en segundo plano y skills compartidas
 
 Cada subagente recibe propósito preciso y resultado esperado, con contexto y
 restricciones opcionales; no existe un campo obligatorio de “información
-necesaria”. El motor limita la delegación a un nivel, cuatro hijos simultáneos,
-tres intentos totales ante fallos reintentables y 32 pasos / diez minutos por
-intento. Los reintentos conservan el contexto del hijo y los resultados previos,
+necesaria”. El motor limita la delegación a un nivel, cuatro inferencias simultáneas de hijos,
+tres intentos totales ante fallos reintentables y límites configurables de 128
+pasos de modelo por tarea y una hora por intento, de forma predeterminada.
+Los reintentos conservan el contexto del hijo y los resultados previos,
 sin volver a ejecutar acciones ya completadas. Los bloqueos, cancelaciones y
 fallos no reintentables pueden detenerse antes. Un reinicio interrumpe las tareas
 inconclusas; no las reanuda automáticamente.
@@ -146,3 +157,7 @@ no demuestran acceso real a las 17 cuentas.
 - [Proveedores y autenticación](docs/es/provider-reference.md)
 - [Requisitos actuales](REQUIREMENTS.md)
 - [Trabajo futuro](ROADMAP.md)
+
+Las sesiones de terminal interactivas, servicios persistentes, registros incrementales, límites configurables, seguimiento de subagentes y herramientas bajo demanda se describen en la [guía del motor de ejecución](docs/es/execution-harness.md).
+
+[Local browser / Navegador local — sessions, controls and responsive tests](docs/es/browser.md)

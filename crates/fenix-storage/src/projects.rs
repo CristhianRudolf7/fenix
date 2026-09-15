@@ -201,6 +201,26 @@ impl Store {
         Ok(())
     }
 
+    /// A slow routing response cannot replace the focus selected by a newer turn.
+    pub fn set_task_focus(&self, task: &str, project_id: Option<&str>) -> Result<()> {
+        let mut db = self.db()?;
+        let tx = db.transaction()?;
+        let seq: i64 = tx.query_row("SELECT seq FROM tasks WHERE id=?1", [task], |r| r.get(0))?;
+        let last:i64=tx.query_row("SELECT CAST(value AS INTEGER) FROM metadata WHERE key='conversation_focus_task_seq'",[],|r|r.get(0)).optional()?.unwrap_or(0);
+        if seq < last {
+            return Ok(());
+        }
+        if let Some(project) = project_id {
+            query_project(&tx, project)?;
+            tx.execute("INSERT INTO metadata(key,value) VALUES ('conversation_focus',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[project])?;
+        } else {
+            tx.execute("DELETE FROM metadata WHERE key='conversation_focus'", [])?;
+        }
+        tx.execute("INSERT INTO metadata(key,value) VALUES ('conversation_focus_task_seq',?1) ON CONFLICT(key) DO UPDATE SET value=excluded.value",[seq.to_string()])?;
+        tx.commit()?;
+        Ok(())
+    }
+
     pub fn task_binding(&self, task_id: &str) -> Result<TaskBinding> {
         read_binding(&*self.db()?, task_id)
     }

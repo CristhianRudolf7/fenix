@@ -31,6 +31,12 @@ impl Runtime {
     }
 
     pub(crate) fn report_progress(&self, task_id: &str, phase: Phase, tool: Option<&str>) {
+        let _ = self.store.publish_event(
+            Some(task_id),
+            "task.progress",
+            &serde_json::json!({"phase":phase,"tool":tool}),
+        );
+        self.bus_wake.notify_waiters();
         if self
             .store
             .task(task_id)

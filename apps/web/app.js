@@ -1,3 +1,4 @@
+import { renderBrowser, stopBrowser } from "/browser.js";
 const state = {
   page: "chat",
   status: null,
@@ -52,6 +53,7 @@ const providerNames = {
 const names = () => ({
   chat: t("Conversation", "Conversación"),
   projects: t("Projects", "Proyectos"),
+  browser: t("Browser", "Navegador"),
   memory: t("Memory", "Memoria"),
   skills: "Skills",
   schedules: t("Schedules", "Programaciones"),
@@ -61,6 +63,7 @@ const names = () => ({
 const icons = {
   chat: "◻",
   projects: "▱",
+  browser: "◎",
   memory: "▤",
   skills: "◇",
   schedules: "◷",
@@ -80,6 +83,13 @@ const statusName = (value) =>
     active: t("Active", "Activa"),
     paused: t("Paused", "Pausada"),
     missed: t("Missed", "Vencida"),
+    pending: t("Pending", "Pendiente"),
+    revising: t("Applying changes", "Aplicando cambios"),
+    answered: t("Answered", "Respondida"),
+    passed: t("Reviewed", "Revisada"),
+    needs_resolution: t("Needs resolution", "Observaciones pendientes"),
+    resolving: t("Resolving findings", "Resolviendo observaciones"),
+    superseded: t("Superseded", "Sustituida"),
   })[value] || value;
 
 document.documentElement.dataset.theme =
@@ -166,6 +176,22 @@ function modelForm(setup = false) {
     ${input("workspace", t("File workspace", "Carpeta de archivos"), config.workspace, "required")}
     ${field(`<label for="command_policy">${t("Command permissions", "Permisos para comandos")}</label>`, policySelect("command_policy", config.command_policy))}
     ${field(`<label for="file_write_policy">${t("File changes", "Cambios en archivos")}</label>`, policySelect("file_write_policy", config.file_write_policy))}
+    <details><summary>${t("Coding tools and context", "Herramientas de programación y contexto")}</summary>
+    <p class="muted">${t("Configure installed language servers. Fénix starts these commands with your user permissions; it never installs servers automatically. Leave [] to disable LSP.", "Configura servidores de lenguaje instalados. Fénix inicia estos comandos con tus permisos de usuario; no instala servidores automáticamente. Deja [] para desactivar LSP.")}</p>
+    <label for="language-servers">${t("Language servers (JSON)", "Servidores de lenguaje (JSON)")}</label>
+    <textarea id="language-servers" rows="6" spellcheck="false" placeholder='[{"name":"rust","command":["rust-analyzer"],"extensions":["rs"]}]'>${escape(JSON.stringify(config.coding?.language_servers || [], null, 2))}</textarea>
+    ${input("context_window_tokens", t("Model context capacity (tokens)", "Capacidad de contexto del modelo (tokens)"), config.coding?.context_window_tokens ?? 32768, 'type="number" min="16384" max="2000000" required')}
+    ${input("compact_at_tokens", t("Compact active context at (estimated tokens)", "Compactar contexto activo al llegar a (tokens estimados)"), config.coding?.compact_at_tokens ?? 22000, 'type="number" min="8000" required')}
+    ${input("keep_recent_tokens", t("Recent context to retain (estimated tokens)", "Contexto reciente a conservar (tokens estimados)"), config.coding?.keep_recent_tokens ?? 6000, 'type="number" min="1000" required')}
+    <p class="muted">${t("Set capacity to your model's supported context. These are context limits, not a spending budget. Original context is saved before summarizing.", "Usa la capacidad admitida por tu modelo. Son límites de contexto, no un presupuesto de gasto. El contexto original se guarda antes de resumir.")}</p></details>
+    <details><summary>${t("Execution limits", "Límites de ejecución")}</summary>
+    ${input("max_model_steps", t("Model steps per task", "Pasos del modelo por tarea"), config.execution?.max_model_steps ?? 128, 'type="number" min="8" max="4096" required')}
+    ${input("task_timeout_seconds", t("Task active time (seconds)", "Tiempo activo de tarea (segundos)"), config.execution?.task_timeout_seconds ?? 14400, 'type="number" min="60" max="604800" required')}
+    ${input("subagent_timeout_seconds", t("Subagent attempt time (seconds)", "Tiempo por intento de subagente (segundos)"), config.execution?.subagent_timeout_seconds ?? 3600, 'type="number" min="60" max="604800" required')}
+    ${input("command_timeout_seconds", t("Command default timeout (seconds)", "Tiempo por defecto de comando (segundos)"), config.execution?.command_timeout_seconds ?? 1800, 'type="number" min="1" max="604800" required')}
+    ${input("service_timeout_seconds", t("Persistent session lifetime (seconds)", "Duración de sesión persistente (segundos)"), config.execution?.service_timeout_seconds ?? 86400, 'type="number" min="1" max="604800" required')}
+    ${input("max_output_tokens", t("Maximum model output tokens", "Máximo de tokens de salida del modelo"), config.execution?.max_output_tokens ?? 16384, 'type="number" min="1024" max="131072" required')}
+    <p class="muted">${t("Waiting for your answers does not consume active time. Persistent sessions stop on service shutdown. Retry and loop protections remain enabled.", "La espera de tus respuestas no consume tiempo activo. Las sesiones persistentes se detienen al apagar el servicio. Se mantienen las protecciones de reintentos y bucles.")}</p></details>
     <p class="note">${t("Commands can use any directory accessible to your Linux account. The file workspace is not a shell sandbox.", "Los comandos pueden usar cualquier directorio accesible a tu cuenta de Linux. La carpeta de archivos no limita los comandos.")}</p></details>
     <div class="divider"></div><button class="primary full" type="submit">${setup ? t("Verify and start", "Verificar y comenzar") : t("Verify and save", "Verificar y guardar")} <span aria-hidden="true">→</span></button>
     <p id="model-status" class="form-status" role="status"></p>
@@ -181,6 +207,7 @@ function setupView() {
 }
 
 async function render() {
+  stopBrowser();
   if (!state.status.ready) {
     setupView();
     return;
@@ -198,6 +225,7 @@ async function render() {
         "",
       )}</nav><div class="sidebar-bottom"><div class="local-label"><span class="dot"></span>${t("Local installation", "Instalación local")}<br>America/Lima · Linux</div><div class="row">${preferences()}<small class="grow">v0.2.0</small></div></div></aside><main class="main"><header class="topbar"><div class="breadcrumb"><span>Fénix</span><span>/</span>${labels[state.page]}</div><span class="badge" id="connection-state">${escape(state.status.settings.model)}</span></header><div id="page"></div></main></div>`;
   const views = {
+    browser: () => renderBrowser({ api, t, escape, toast }),
     chat: renderChat,
     projects: renderProjects,
     memory: renderMemory,
@@ -435,6 +463,31 @@ function drawLiveMessage() {
   node.querySelector(".message-text").textContent = text;
   if (nearBottom) scroll.scrollTop = scroll.scrollHeight;
 }
+let activitySource;
+let activityRefresh;
+function connectActivity() {
+  activitySource?.close();
+  const key = `fenix-events:${state.status?.session_id || "local"}`;
+  const cursor = Number(sessionStorage.getItem(key) || 0);
+  activitySource = new EventSource(
+    `/api/events?after=${Number.isSafeInteger(cursor) ? cursor : 0}`,
+  );
+  activitySource.addEventListener("activity", (event) => {
+    sessionStorage.setItem(key, event.lastEventId);
+    // Durable history/state are authoritative. Debounce a burst of milestone
+    // events into one UI refresh, without triggering model work.
+    if (!activityRefresh)
+      activityRefresh = setTimeout(() => {
+        activityRefresh = null;
+        poll();
+      }, 100);
+  });
+}
+window.addEventListener("pagehide", () => activitySource?.close());
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) connectActivity();
+});
+
 let progressSource;
 function connectProgress() {
   progressSource?.close();
@@ -540,10 +593,18 @@ async function renderActivity() {
     api("/status"),
   ]);
   $("#page").innerHTML =
-    `<div class="content task-content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Follow tasks while Fénix keeps the conversation available. To cancel, type cancelar and the task ID in the conversation.", "Sigue las tareas mientras Fénix mantiene disponible la conversación. Para cancelar, escribe cancelar y el ID de la tarea en la conversación."))}<section class="card background-panel" aria-labelledby="background-title"><div class="row spread"><h2 id="background-title">${t("Background tasks", "Tareas en segundo plano")}</h2><span class="badge" id="background-count"></span></div><p class="muted">${t("Delegated work reports back here and in the conversation.", "El trabajo delegado devuelve su resultado aquí y en la conversación.")}</p><div id="background-subagents"></div></section><section class="card pending-panel" id="task-pending" hidden></section><section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div><div id="task-history"></div></section></div>`;
+    `<div class="content task-content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Follow tasks while Fénix keeps the conversation available. To cancel, type cancelar and the task ID in the conversation.", "Sigue las tareas mientras Fénix mantiene disponible la conversación. Para cancelar, escribe cancelar y el ID de la tarea en la conversación."))}<section class="card" id="plans-panel"></section><section class="card background-panel" aria-labelledby="background-title"><div class="row spread"><h2 id="background-title">${t("Background tasks", "Tareas en segundo plano")}</h2><span class="badge" id="background-count"></span></div><p class="muted">${t("Delegated work reports back here and in the conversation.", "El trabajo delegado devuelve su resultado aquí y en la conversación.")}</p><div id="background-subagents"></div></section><section class="card pending-panel" id="task-pending" hidden></section><section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div><div id="task-history"></div></section></div>`;
   drawTaskActivity();
 }
+function drawPlans() {
+  const panel = $("#plans-panel");
+  if (!panel) return;
+  const plans = state.status.plans || [];
+  panel.innerHTML = `<h2>${t("Plans", "Planes")}</h2><p class="muted">${t("You can change a plan at any time in the conversation, including while it is being prepared.", "Puedes modificar un plan en cualquier momento desde la conversación, incluso mientras se prepara.")}</p>${plans.length ? plans.map((plan) => `<article class="record"><div class="row spread"><h3>${escape(plan.objective)}</h3><span class="badge">v${escape(plan.version)} · ${escape(statusName(plan.status))}</span></div><code>${escape(plan.id)}</code><ol>${plan.nodes.map((node) => `<li><strong>${escape(node.objective)}</strong> · ${escape(statusName(node.status))}<p class="muted">${escape(node.expected_output)}</p>${node.depends_on.length ? `<small>${t("Depends on", "Depende de")}: ${escape(node.depends_on.join(", "))}</small>` : ""}</li>`).join("")}</ol>${(plan.reviews || []).map((review) => `<div class="note"><strong>${t("Plan review", "Revisión del plan")}: ${escape(statusName(review.status))}</strong><p>${escape(review.reason)}</p><small>${t("Round", "Ronda")} ${review.round + 1}/2 · ${review.node_ids.length ? escape(review.node_ids.join(", ")) : t("Whole plan", "Plan completo")}</small></div>`).join("")}<button data-plan="${escape(plan.id)}">${t("View revisions", "Ver revisiones")}</button><p class="note">${t("In the chat", "En el chat")}: <code>replanificar ${escape(plan.id)} ${t("your change", "tu cambio")}</code></p></article>`).join("") : `<p class="muted">${t("Long tasks can run as plans with milestones and dependencies.", "Las tareas largas pueden ejecutarse como planes con hitos y dependencias.")}</p>`}`;
+}
+
 function drawTaskActivity() {
+  drawPlans();
   const node = $("#background-subagents");
   if (!node) return;
   const jobs = state.status.subagents || [];
@@ -631,7 +692,7 @@ async function showTask(id, after = 0) {
   const value = await api(`/tasks/${id}?after=${after}`);
   showDetail(
     `${t("Task", "Tarea")} ${id.slice(0, 8)}`,
-    `<p>${escape(value.task.request)}</p><p><span class="badge">${statusName(value.task.status)}</span> ${projectBadge(value)}</p>${value.binding?.workspace ? `<p class="muted">${escape(value.binding.workspace)}</p>` : ""}<code>${escape(id)}</code>${value.task.error ? `<p class="note">${escape(value.task.error)}</p>` : ""}${value.events.map((event) => `<details class="record"><summary>${escape(event.kind)} · ${date(event.created_at)}</summary><pre>${escape(JSON.stringify(event.data, null, 2))}</pre></details>`).join("")}${value.events.length === 50 ? `<button data-task="${id}" data-after="${value.events.at(-1).seq}">${t("More events", "Más eventos")}</button>` : ""}`,
+    `<p>${escape(value.task.request)}</p><p><span class="badge">${statusName(value.task.status)}</span> ${projectBadge(value)}</p>${value.binding?.workspace ? `<p class="muted">${escape(value.binding.workspace)}</p>` : ""}<code>${escape(id)}</code>${value.task.error ? `<p class="note">${escape(value.task.error)}</p>` : ""}${value.questions?.length ? `<h3>${t("Questions", "Preguntas")}</h3>${value.questions.map((q) => `<p>${escape(q.question)} · ${escape(statusName(q.status))}<br><code>${escape(q.id)}</code></p>`).join("")}` : ""}${value.events.map((event) => `<details class="record"><summary>${escape(event.kind)} · ${date(event.created_at)}</summary><pre>${escape(JSON.stringify(event.data, null, 2))}</pre></details>`).join("")}${value.events.length === 50 ? `<button data-task="${id}" data-after="${value.events.at(-1).seq}">${t("More events", "Más eventos")}</button>` : ""}`,
   );
 }
 function showDetail(title, html) {
@@ -645,6 +706,29 @@ document.addEventListener("click", async (event) => {
   const button = event.target.closest("button");
   if (!button) return;
   try {
+    if (button.dataset.plan) {
+      const value = await api(
+        `/plans/${encodeURIComponent(button.dataset.plan)}`,
+      );
+      showDetail(
+        t("Plan revisions", "Revisiones del plan"),
+        (value.review_metrics?.length
+          ? `<details class="record"><summary>${t("Review usage and elapsed time", "Consumo y tiempo de revisiones")}</summary><pre>${escape(JSON.stringify(value.review_metrics, null, 2))}</pre></details>`
+          : "") +
+          (value.reviews || [])
+            .map(
+              (review) =>
+                `<details class="record"><summary>${t("Review", "Revisión")} · v${escape(review.version)} · ${escape(statusName(review.status))}</summary><p>${escape(review.reason)}</p><pre>${escape(JSON.stringify(review, null, 2))}</pre></details>`,
+            )
+            .join("") +
+          value.revisions
+            .map(
+              (revision) =>
+                `<details class="record"><summary>v${escape(revision.version)} · ${date(revision.created_at)}</summary><p>${escape(revision.reason)}</p><pre>${escape(JSON.stringify(revision.plan, null, 2))}</pre></details>`,
+            )
+            .join(""),
+      );
+    }
     if (button.dataset.page) {
       state.page = button.dataset.page;
       await render();
@@ -857,6 +941,29 @@ document.addEventListener("submit", async (event) => {
         "reasoning_effort",
       ])
         if (!fields[key]) fields[key] = null;
+      fields.coding = {
+        language_servers: JSON.parse($("#language-servers").value),
+      };
+      for (const key of [
+        "context_window_tokens",
+        "compact_at_tokens",
+        "keep_recent_tokens",
+      ]) {
+        fields.coding[key] = Number(fields[key]);
+        delete fields[key];
+      }
+      fields.execution = {};
+      for (const key of [
+        "max_model_steps",
+        "task_timeout_seconds",
+        "subagent_timeout_seconds",
+        "command_timeout_seconds",
+        "service_timeout_seconds",
+        "max_output_tokens",
+      ]) {
+        fields.execution[key] = Number(fields[key]);
+        delete fields[key];
+      }
       if (!fields.api_key) fields.api_key = null;
       if (fields.provider !== "openai") fields.reasoning_effort = null;
       const result = await api("/settings", { method: "POST", body: fields });
@@ -1041,6 +1148,7 @@ async function boot() {
     state.projects = state.status.projects || [];
     await render();
     connectProgress();
+    connectActivity();
     setInterval(poll, 1800);
   } catch (error) {
     $("#app").innerHTML =

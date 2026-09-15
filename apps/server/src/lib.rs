@@ -19,6 +19,8 @@ use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio_stream::wrappers::WatchStream;
 
+mod browser;
+
 type ApiResult<T> = Result<Json<T>, ApiError>;
 pub struct ApiError(anyhow::Error);
 impl<E: Into<anyhow::Error>> From<E> for ApiError {
@@ -37,7 +39,9 @@ impl IntoResponse for ApiError {
 }
 
 pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
+    runtime.browser.set_control_port(port);
     Router::new()
+        .merge(browser::routes())
         .route(
             "/",
             get(|| async { Html(include_str!("../../web/index.html")) }),
@@ -61,7 +65,12 @@ pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
             }),
         )
         .route("/api/status", get(status))
+        .route("/api/web/status", get(web_status))
         .route("/api/progress", get(progress))
+        .route("/api/events", get(events))
+        .route("/api/plans", get(plans))
+        .route("/api/plans/{id}", get(plan))
+        .route("/api/tasks/{id}/replan", post(replan))
         .route("/api/providers", get(|| async { Json(provider_catalog()) }))
         .route("/api/settings", post(settings))
         .route("/api/telegram", post(telegram))
@@ -129,11 +138,70 @@ async fn local_guard(request: Request, next: Next, port: u16) -> Response {
         HeaderValue::from_static("nosniff"),
     );
     headers.insert("referrer-policy", HeaderValue::from_static("no-referrer"));
-    headers.insert("content-security-policy",HeaderValue::from_static("default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"));
+    headers.insert("content-security-policy",HeaderValue::from_static("default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"));
     response
 }
 async fn status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
     Ok(Json(runtime.status().await?))
+}
+
+async fn web_status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
+    Ok(Json(serde_json::to_value(runtime.web.status().await?)?))
+}
+
+#[derive(Deserialize, Default)]
+struct EventCursor {
+    after: Option<i64>,
+}
+
+async fn events(
+    State(runtime): State<Arc<Runtime>>,
+    Query(query): Query<EventCursor>,
+    headers: axum::http::HeaderMap,
+) -> impl IntoResponse {
+    let cursor = headers
+        .get("last-event-id")
+        .and_then(|h| h.to_str().ok())
+        .and_then(|s| s.parse::<i64>().ok())
+        .unwrap_or(query.after.unwrap_or(0))
+        .max(0);
+    let stop = runtime.stop.clone();
+    let stream=futures_util::stream::unfold((runtime,cursor,std::collections::VecDeque::new()), |(runtime,mut cursor,mut queued)| async move {
+        loop {
+            if runtime.stop.is_cancelled() {return None}
+            if let Some(event) = queued.pop_front() { return Some((Ok::<_,std::convert::Infallible>(event),(runtime,cursor,queued))); }
+            match runtime.store.bus_events(cursor,100) {
+                Ok(events) if !events.is_empty() => {
+                    for event in events {
+                        cursor=event.seq;
+                        queued.push_back(Event::default().id(event.seq.to_string()).event("activity").data(serde_json::to_string(&event).expect("Serializable event")));
+                    }
+                },
+                Err(error) => {
+                    eprintln!("Event stream: {}",runtime.redactor.text(&error.to_string()));
+                    return None;
+                },
+                _ => tokio::select! { _=runtime.stop.cancelled()=>return None, _=tokio::time::sleep(std::time::Duration::from_millis(150))=>{} },
+            }
+        }
+    }).take_until(stop.cancelled_owned());
+    Sse::new(stream).keep_alive(KeepAlive::default())
+}
+
+async fn plans(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
+    Ok(Json(json!(runtime.store.plans()?)))
+}
+async fn plan(State(runtime): State<Arc<Runtime>>, Path(id): Path<String>) -> ApiResult<Value> {
+    Ok(Json(
+        json!({"plan":runtime.store.plan(&id)?,"revisions":runtime.store.plan_history(&id)?,"reviews":runtime.store.plan_reviews(&id)?,"review_metrics":runtime.store.plan_review_metrics(&id)?}),
+    ))
+}
+async fn replan(
+    State(runtime): State<Arc<Runtime>>,
+    Path(id): Path<String>,
+    Json(input): Json<TextInput>,
+) -> ApiResult<Value> {
+    Ok(Json(runtime.steer_task(&id, &input.text, "web").await?))
 }
 
 async fn progress(State(runtime): State<Arc<Runtime>>) -> impl IntoResponse {
@@ -349,7 +417,7 @@ async fn task(
         )?));
     }
     Ok(Json(
-        json!({"task":runtime.store.task(&id)?,"binding":runtime.store.task_binding(&id)?,"subagent":runtime.store.subagent(&id).ok(),"events":runtime.store.events(&id,page.after.unwrap_or(0),page.limit.unwrap_or(50))?}),
+        json!({"task":runtime.store.task(&id)?,"binding":runtime.store.task_binding(&id)?,"subagent":runtime.store.subagent(&id).ok(),"plan":runtime.store.plan_for_task(&id)?,"questions":runtime.store.saved_questions(Some(&id))?,"events":runtime.store.events(&id,page.after.unwrap_or(0),page.limit.unwrap_or(50))?}),
     ))
 }
 fn instruction_path(runtime: &Runtime, name: &str) -> Result<std::path::PathBuf, ApiError> {

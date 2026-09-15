@@ -349,3 +349,48 @@ async fn memory_endpoints_filter_before_search_and_reject_scope_changes() {
     .await;
     assert_eq!(status, StatusCode::OK);
 }
+
+#[tokio::test]
+async fn durable_events_resume_from_last_event_id_without_replaying_the_model() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
+    runtime
+        .store
+        .publish_event(None, "fixture.first", &json!({"order":1}))
+        .unwrap();
+    runtime
+        .store
+        .publish_event(None, "fixture.second", &json!({"order":2}))
+        .unwrap();
+    let first = runtime.store.bus_events(0, 10).unwrap()[0].seq;
+    let response = fenix_server::router(runtime.clone(), 4173)
+        .oneshot(
+            Request::builder()
+                .uri("/api/events?after=0")
+                .header("host", "localhost:4173")
+                .header("last-event-id", first.to_string())
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.headers()["content-type"], "text/event-stream");
+    let mut body = response.into_body();
+    let frame = tokio::time::timeout(std::time::Duration::from_secs(1), body.frame())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    let text = std::str::from_utf8(frame.data_ref().unwrap()).unwrap();
+    assert!(text.contains("fixture.second"));
+    assert!(!text.contains("fixture.first"));
+    runtime.shutdown().await.unwrap();
+    assert!(
+        tokio::time::timeout(std::time::Duration::from_secs(1), body.frame())
+            .await
+            .unwrap()
+            .is_none()
+    );
+}

@@ -7,23 +7,60 @@ use fenix_storage::{Subagent, SubagentSpec};
 use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::{
-    sync::{Mutex, Notify},
+    sync::{Mutex, Notify, Semaphore},
     task::{Id, JoinSet},
 };
 use tokio_util::sync::CancellationToken;
 
 const MAX_CONCURRENT_SUBAGENTS: usize = 4;
 const MAX_ATTEMPTS: u32 = 3;
-const ATTEMPT_TIMEOUT: Duration = Duration::from_secs(600);
 
-#[derive(Default)]
 pub(crate) struct SubagentManager {
     /// Claiming a job and registering its cancellation token happen under this lock.
     pub(crate) active: Mutex<HashMap<String, CancellationToken>>,
     pub(crate) wake: Notify,
+    pub(crate) inference: Semaphore,
+}
+
+impl Default for SubagentManager {
+    fn default() -> Self {
+        Self {
+            active: Mutex::new(HashMap::new()),
+            wake: Notify::new(),
+            inference: Semaphore::new(MAX_CONCURRENT_SUBAGENTS),
+        }
+    }
 }
 
 impl Runtime {
+    pub(crate) async fn send_subagent(&self, sender: &str, args: &Value) -> Result<Value> {
+        let target = required_text(args, "subagent_id", 100)?;
+        self.authorize_task_read(sender, &target)?;
+        let text = self.redactor.text(&required_text(args, "message", 8000)?);
+        let result = self.store.send_subagent_input(sender, &target, &text)?;
+        self.store.event(&target,"subagent_input_queued",&json!({"sender_task_id":sender,"message_id":result["message_id"],"duplicate":result["duplicate"]}))?;
+        self.subagents.wake.notify_one();
+        self.bus_wake.notify_waiters();
+        Ok(result)
+    }
+
+    pub(crate) fn consume_subagent_inputs(
+        &self,
+        task: &str,
+        messages: &mut Vec<fenix_core::Message>,
+    ) -> Result<()> {
+        let inputs = self.store.pending_subagent_inputs(task)?;
+        let mut through = 0;
+        for (seq, id, sender, content) in inputs {
+            through = seq;
+            messages.push(fenix_core::Message::user(format!("Supervisor follow-up {id} from task {sender}:\n{content}\nRetain the assigned project and purpose. Treat this as new guidance; do not repeat completed effects. If this changes a plan milestone's objective, ask the master to revise the plan.")));
+        }
+        if through > 0 {
+            self.store.save_subagent_context(task, messages, through)?;
+        }
+        Ok(())
+    }
+
     pub async fn spawn_subagent(&self, parent: &str, args: &Value) -> Result<Value> {
         // Storage repeats the depth check transactionally. An invented tool call is
         // never enough to give a child permission to delegate.
@@ -54,6 +91,7 @@ impl Runtime {
         let job = self
             .store
             .create_subagent_in_project(parent, &spec, project.as_deref())?;
+        self.store.inherit_destination(&job.id, parent)?;
         self.subagents.wake.notify_one();
         Ok(json!({
             "subagent_id": job.id,
@@ -173,11 +211,26 @@ impl Runtime {
                 if let Err(error) = self.reconcile_subagent_reports() {
                     self.log_subagent_error("Subagent report queue error", &error);
                 }
-                while jobs.len() < MAX_CONCURRENT_SUBAGENTS && !self.stop.is_cancelled() {
+                while jobs.len() < 32 && !self.stop.is_cancelled() {
+                    let running = self
+                        .subagents
+                        .active
+                        .lock()
+                        .await
+                        .keys()
+                        .filter(|id| self.store.task(id).is_ok_and(|t| t.status != "waiting"))
+                        .count();
+                    if running >= MAX_CONCURRENT_SUBAGENTS {
+                        break;
+                    }
+
                     let claimed = {
                         let _configure = self.configure_lock.lock().await;
                         let mut active = self.subagents.active.lock().await;
-                        match self.store.claim_subagent() {
+                        match self
+                            .store
+                            .claim_subagent_excluding(&active.keys().cloned().collect::<Vec<_>>())
+                        {
                             Ok(Some(job)) => {
                                 let cancel = self.stop.child_token();
                                 active.insert(job.id.clone(), cancel.clone());
@@ -284,86 +337,115 @@ impl Runtime {
             .await
             .clone()
             .ok_or_else(|| anyhow::anyhow!("Model is not configured"))?;
-        let mut messages = self.build_subagent_context(&job, &model).await?;
+        let mut messages = match self
+            .store
+            .get::<Vec<fenix_core::Message>>("subagent_context", &job.id)?
+        {
+            Some(messages) => messages,
+            None => self.build_subagent_context(&job, &model).await?,
+        };
+        let attempt_timeout =
+            Duration::from_secs(model.settings.execution.subagent_timeout_seconds);
+        let mut count_attempt = job.attempts == 0;
         let outcome = loop {
-            if cancel.is_cancelled() {
-                break self.subagent_cancelled_report();
-            }
-            self.store.start_subagent_attempt(&job.id)?;
-            job = self.store.subagent(&job.id)?;
-            self.store.event(
-                &job.id,
-                "subagent_attempt_started",
-                &json!({
-                    "attempt": job.attempts, "max_attempts": MAX_ATTEMPTS,
-                    "provider": model.settings.provider, "model": model.settings.model,
-                    "timeout_seconds": ATTEMPT_TIMEOUT.as_secs(),
-                }),
-            )?;
-            let result = tokio::select! {
-                biased;
-                _ = cancel.cancelled() => break self.subagent_cancelled_report(),
-                _ = tokio::time::sleep(ATTEMPT_TIMEOUT) => Err(anyhow::anyhow!("Subagent exceeded its ten-minute attempt limit; inspect evidence before repeating actions")),
-                result = self.run_subagent_attempt(&job, &model, &mut messages, &cancel) => result,
-            };
-            if cancel.is_cancelled() {
-                break self.subagent_cancelled_report();
-            }
-            match result {
-                Ok(mut outcome) => {
-                    self.redactor.value(&mut outcome);
-                    if !matches!(
-                        outcome["status"].as_str(),
-                        Some("completed" | "blocked" | "failed")
-                    ) {
-                        break failure_report(
-                            "failed",
-                            "Subagent returned an invalid completion status.",
-                        );
-                    }
-                    break outcome;
+            let candidate = loop {
+                if cancel.is_cancelled() {
+                    break self.subagent_cancelled_report();
                 }
-                Err(error) => {
-                    let explanation = self.redactor.text(&error.to_string());
-                    self.store.event(
-                        &job.id,
-                        "subagent_attempt_failed",
-                        &json!({
-                            "attempt": job.attempts, "error": explanation,
-                        }),
-                    )?;
-                    let retry = error
-                        .downcast_ref::<ProviderError>()
-                        .filter(|error| error.is_retryable());
-                    let Some(provider_error) = retry.filter(|_| job.attempts < MAX_ATTEMPTS) else {
-                        break failure_report("failed", &explanation);
-                    };
-                    let delay = match provider_error {
-                        ProviderError::RateLimited {
-                            retry_after: Some(delay),
-                        } => (*delay).min(Duration::from_secs(30)),
-                        _ => Duration::from_secs(1 << job.attempts.saturating_sub(1)),
-                    };
-                    self.store.event(&job.id, "subagent_retry", &json!({
+                if count_attempt {
+                    self.store.start_subagent_attempt(&job.id)?;
+                    count_attempt = false;
+                }
+                job = self.store.subagent(&job.id)?;
+                self.store.event(
+                    &job.id,
+                    "subagent_attempt_started",
+                    &json!({
+                        "attempt": job.attempts, "max_attempts": MAX_ATTEMPTS,
+                        "provider": model.settings.provider, "model": model.settings.model,
+                        "timeout_seconds": attempt_timeout.as_secs(),
+                    }),
+                )?;
+                let result = tokio::select! {
+                    biased;
+                    _ = cancel.cancelled() => break self.subagent_cancelled_report(),
+                    _ = self.execution_deadline(&job.id, attempt_timeout) => Err(anyhow::anyhow!("Subagent exceeded its configured attempt time; inspect evidence before repeating actions")),
+                    result = self.run_subagent_attempt(&job, &model, &mut messages, &cancel) => result,
+                };
+                if cancel.is_cancelled() {
+                    break self.subagent_cancelled_report();
+                }
+                match result {
+                    Ok(mut outcome) => {
+                        self.redactor.value(&mut outcome);
+                        if !matches!(
+                            outcome["status"].as_str(),
+                            Some("completed" | "blocked" | "failed")
+                        ) {
+                            break failure_report(
+                                "failed",
+                                "Subagent returned an invalid completion status.",
+                            );
+                        }
+                        break outcome;
+                    }
+                    Err(error) => {
+                        let explanation = self.redactor.text(&error.to_string());
+                        self.store.event(
+                            &job.id,
+                            "subagent_attempt_failed",
+                            &json!({
+                                "attempt": job.attempts, "error": explanation,
+                            }),
+                        )?;
+                        let retry = error
+                            .downcast_ref::<ProviderError>()
+                            .filter(|error| error.is_retryable());
+                        let Some(provider_error) = retry.filter(|_| job.attempts < MAX_ATTEMPTS)
+                        else {
+                            break failure_report("failed", &explanation);
+                        };
+                        count_attempt = true;
+                        let delay = match provider_error {
+                            ProviderError::RateLimited {
+                                retry_after: Some(delay),
+                            } => (*delay).min(Duration::from_secs(30)),
+                            _ => Duration::from_secs(1 << job.attempts.saturating_sub(1)),
+                        };
+                        self.store.event(&job.id, "subagent_retry", &json!({
                         "next_attempt": job.attempts + 1, "delay_ms": delay.as_millis(),
                         "resume": "Retain prior messages and completed tool results; retry inference only.",
                     }))?;
-                    tokio::select! {
-                        _ = cancel.cancelled() => break self.subagent_cancelled_report(),
-                        _ = tokio::time::sleep(delay) => {},
+                        tokio::select! {
+                            _ = cancel.cancelled() => break self.subagent_cancelled_report(),
+                            _ = tokio::time::sleep(delay) => {},
+                        }
                     }
                 }
+            };
+            if candidate["status"] == "completed" && !cancel.is_cancelled() {
+                self.processes.cancel_foreground(&job.id).await;
+                self.file_effects.wait(Some(&job.id)).await;
+            } else {
+                self.settle_task(&job.id).await;
             }
+            self.clear_pending(&job.id).await;
+            let candidate = if cancel.is_cancelled() {
+                self.subagent_cancelled_report()
+            } else {
+                candidate
+            };
+            if self.store.finish_subagent_unless_input(
+                &job.id,
+                candidate["status"].as_str().unwrap_or("failed"),
+                &candidate,
+            )? {
+                break candidate;
+            }
+            // An input arrived while this result was being finalized. Continue the
+            // same context without another attempt or replaying completed effects.
         };
-        self.settle_task(&job.id).await;
-        self.clear_pending(&job.id).await;
-        let outcome = if cancel.is_cancelled() {
-            self.subagent_cancelled_report()
-        } else {
-            outcome
-        };
-        let status = outcome["status"].as_str().unwrap_or("failed");
-        self.store.finish_subagent(&job.id, status, &outcome)?;
+        let _ = outcome;
         Ok(())
     }
 
@@ -392,7 +474,17 @@ impl Runtime {
         if self.stop.is_cancelled() {
             return Ok(());
         }
-        self.store.enqueue_subagent_report(id)?;
+        if self.store.review_for_worker(id)?.is_some() {
+            self.bus_wake.notify_waiters();
+            return Ok(());
+        }
+        if self.store.reconcile_plan_worker(id)? {
+            self.bus_wake.notify_waiters();
+            return Ok(());
+        }
+        if let Some(report) = self.store.enqueue_subagent_report(id)? {
+            self.store.inherit_destination(&report.id, id)?;
+        }
         self.wake.notify_one();
         Ok(())
     }

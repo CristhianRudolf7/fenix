@@ -103,7 +103,8 @@ fn terminal_report_is_once_only_hidden_and_waits_behind_user_messages() {
     let parent = store.enqueue("Do work", "web", None).unwrap();
     store.claim_next().unwrap();
     let child = store.create_subagent(&parent.id, &spec()).unwrap();
-    assert!(store.enqueue_subagent_report(&child.id).is_err());
+    // A queued or reopened worker has no terminal result to report yet.
+    assert!(store.enqueue_subagent_report(&child.id).unwrap().is_none());
     store
         .finish_subagent(
             &child.id,
@@ -212,9 +213,87 @@ fn upgrade_preserves_existing_data_and_restart_does_not_resume_children() {
         connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        3
+        6
     );
-    connection.pragma_update(None, "user_version", 4).unwrap();
+    connection.pragma_update(None, "user_version", 7).unwrap();
     drop(connection);
     assert!(Store::open(&path).is_err());
+}
+
+#[test]
+fn followups_are_durable_idempotent_scoped_and_preserve_attempts() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = Store::open(&dir.path().join("test.db")).unwrap();
+    let parent = store.enqueue("Do the work", "web", None).unwrap();
+    store.claim_next().unwrap();
+    let child = store.create_subagent(&parent.id, &spec()).unwrap();
+    store.claim_subagent().unwrap();
+    store.start_subagent_attempt(&child.id).unwrap();
+    let sent = store
+        .send_subagent_input(&parent.id, &child.id, "Keep CSV compatibility")
+        .unwrap();
+    assert_eq!(
+        store
+            .send_subagent_input(&parent.id, &child.id, "Keep CSV compatibility")
+            .unwrap()["message_id"],
+        sent["message_id"]
+    );
+    assert!(
+        store
+            .send_subagent_input(&child.id, &child.id, "Delegate again")
+            .is_err()
+    );
+    let result = json!({"status":"completed","summary":"Ready"});
+    assert!(
+        !store
+            .finish_subagent_unless_input(&child.id, "completed", &result)
+            .unwrap()
+    );
+    let inputs = store.pending_subagent_inputs(&child.id).unwrap();
+    assert_eq!(inputs.len(), 1);
+    store
+        .save_subagent_context(
+            &child.id,
+            &[fenix_core::Message::user("Remember CSV compatibility")],
+            inputs[0].0,
+        )
+        .unwrap();
+    assert!(store.pending_subagent_inputs(&child.id).unwrap().is_empty());
+    assert!(
+        store
+            .finish_subagent_unless_input(&child.id, "completed", &result)
+            .unwrap()
+    );
+    assert_eq!(
+        store
+            .send_subagent_input(&parent.id, &child.id, "Also summarize the changed files")
+            .unwrap()["reopened"],
+        true
+    );
+    assert_eq!(store.subagent(&child.id).unwrap().attempts, 1);
+    assert!(
+        store
+            .claim_subagent_excluding(std::slice::from_ref(&child.id))
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(store.claim_subagent().unwrap().unwrap().id, child.id);
+    assert!(
+        store
+            .get::<Vec<fenix_core::Message>>("subagent_context", &child.id)
+            .unwrap()
+            .unwrap()[0]
+            .text_content()
+            .contains("CSV")
+    );
+    store.start_subagent_attempt(&child.id).unwrap();
+    store.start_subagent_attempt(&child.id).unwrap();
+    store
+        .finish_subagent(&child.id, "failed", &json!({"error":"Unreachable"}))
+        .unwrap();
+    assert!(
+        store
+            .send_subagent_input(&parent.id, &child.id, "Try again")
+            .is_err()
+    );
 }

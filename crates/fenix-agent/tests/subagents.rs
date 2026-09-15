@@ -169,6 +169,8 @@ async fn master_remains_available_and_child_context_loads_skills_on_demand() {
                 ResponseTemplate::new(200).set_body_json(answer("Delivered the delegated result"))
             } else if has_result(&body, "spawn") {
                 ResponseTemplate::new(200).set_body_json(answer("Delegated; I remain available"))
+            } else if !has_result(&body, "load-delegation") {
+                ResponseTemplate::new(200).set_body_json(call("load-delegation", "tool_search", json!({"names":["subagent_spawn"]})))
             } else {
                 assert!(body["tools"].as_array().unwrap().iter().any(|tool| tool["name"] == "subagent_spawn"));
                 ResponseTemplate::new(200).set_body_json(call("spawn", "subagent_spawn", json!({"objective":"Slow independent work","expected_output":"A brief completion report"})))
@@ -587,4 +589,76 @@ async fn an_internal_report_cannot_reset_the_attempt_budget_by_spawning_a_replac
             .contains("new user task is required")
     );
     assert_eq!(runtime.store.subagents(None, 20).unwrap().len(), 1);
+}
+
+#[tokio::test]
+async fn supervisor_messages_interrupt_stale_actions_and_reuse_finished_context() {
+    let (dir, runtime, server) = fixture().await;
+    let job = delegate(&runtime, "Apply the supervisor's scoped corrections").await;
+    let sender = runtime
+        .store
+        .enqueue_bound(
+            "Correct the delegated work",
+            "web",
+            None,
+            &fenix_storage::TaskBinding::default(),
+        )
+        .unwrap();
+    runtime.store.claim_next().unwrap();
+    let store = runtime.store.clone();
+    let target = job.id.clone();
+    let source = sender.id.clone();
+    let first = Arc::new(AtomicBool::new(true));
+    let initial = first.clone();
+    Mock::given(method("POST"))
+        .and(path("/responses"))
+        .respond_with(move |r: &Request| {
+            let body: Value = serde_json::from_slice(&r.body).unwrap();
+            if !child_request(&body) {
+                return ResponseTemplate::new(200).set_body_json(answer("Report received"));
+            }
+            let text = body.to_string();
+            let response = if initial.swap(false, Ordering::SeqCst) {
+                store
+                    .send_subagent_input(&source, &target, "Use the confirmed CSV format")
+                    .unwrap();
+                call(
+                    "stale-write",
+                    "file_write",
+                    json!({"path":"must-not-exist.txt","content":"stale instructions"}),
+                )
+            } else if text.contains("Also report the delimiter") {
+                assert!(text.contains("confirmed CSV format"));
+                assert!(has_result(&body, "stale-write"));
+                finish("CSV uses a comma delimiter")
+            } else {
+                assert!(text.contains("confirmed CSV format"));
+                finish("CSV format preserved")
+            };
+            ResponseTemplate::new(200).set_body_json(response)
+        })
+        .mount(&server)
+        .await;
+    let workers = runtime.start();
+    wait_task(&runtime, &job.id, "completed").await;
+    assert!(!dir.path().join("must-not-exist.txt").exists());
+    assert_eq!(runtime.store.subagent(&job.id).unwrap().attempts, 1);
+    runtime
+        .store
+        .send_subagent_input(&sender.id, &job.id, "Also report the delimiter")
+        .unwrap();
+    wait_task(&runtime, &job.id, "completed").await;
+    assert_eq!(
+        runtime.store.subagent(&job.id).unwrap().result.unwrap()["summary"],
+        "CSV uses a comma delimiter"
+    );
+    assert_eq!(runtime.store.subagent(&job.id).unwrap().attempts, 1);
+    assert!(
+        runtime
+            .store
+            .pending_subagent_inputs(&job.id)
+            .unwrap()
+            .is_empty()
+    );
+    stop(&runtime, workers).await;
 }

@@ -277,7 +277,11 @@ impl Runtime {
         settings.last_error = None;
         self.store.put("telegram", "settings", &settings)?;
         if let Some(owner) = settings.owner_id {
-            for (id, text) in self.store.deliveries()? {
+            self.deliver_events()?;
+            for (id, text) in self
+                .store
+                .deliveries_for(&format!("{}:{owner}", settings.username))?
+            {
                 let sent = client.send_tracked(owner, &text).await;
                 if let Ok(ids) = &sent
                     && let Some(task) = self.store.delivery_task(id)?

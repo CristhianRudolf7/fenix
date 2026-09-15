@@ -1,5 +1,7 @@
 # Arquitectura
 
+[Ejecución interactiva, límites actualizados y herramientas bajo demanda](execution-harness.md)
+
 [English](../en/architecture.md)
 
 Fénix es un workspace Rust modular que inicialmente se ejecuta en un solo proceso.
@@ -14,13 +16,14 @@ La web y Telegram utilizan el mismo motor, la misma cola y una única conversaci
 | `fenix-providers` | HTTP reutilizable, cinco protocolos y autenticación de proveedores. |
 | `fenix-storage` | Migraciones SQLite, proyectos, asignaciones fijas, memoria/historial por ámbito, cola, mensajes, eventos, FTS5 y entregas. |
 | `fenix-agent` | Motor, contexto, permisos, herramientas, procesos, cron y adaptador de Telegram. |
+| `fenix-web` | Rastreador público, índice FTS5 en disco, extracción HTTP acotada, comprobaciones robots/DNS y lectura de fuentes; [contrato y límites](web-search.md). |
 | `apps/server` | Ejecutable, API de loopback y archivos estáticos incrustados. |
 | `apps/web` | Interfaz en módulos ES, HTML y CSS, sin servidor Node durante el uso. |
 
 El servidor tiene dos hilos de Tokio. Las operaciones de archivos utilizan el pool
 de trabajo bloqueante; las llamadas al modelo, Telegram y los comandos utilizan
-I/O asíncrona. Una tarea del principal atiende la conversación mientras hasta cuatro
-hijos trabajan como tareas Tokio en el mismo proceso. Comparten cliente HTTP,
+I/O asíncrona. El principal atiende turnos concurrentes y los hijos trabajan como
+tareas Tokio en el mismo proceso. Comparten cliente HTTP,
 conexiones y configuración de modelo; no necesitan procesos o navegadores propios.
 
 ## Ciclo y permisos
@@ -32,18 +35,18 @@ consulta al modelo, valida las herramientas, aplica
 permisos, ejecuta y registra sus resultados. Continúa hasta responder, fallar,
 cancelarse o alcanzar un límite operativo.
 
-El orden de llegada de mensajes es diferente del orden del contexto del modelo:
-un mensaje nuevo aparece en el chat, pero espera a que termine la tarea anterior
-para incorporarse al contexto. El registro conserva objetivo, respuestas,
-supuestos declarados visiblemente y evidencia de validación. No constituye una
-prueba formal del cumplimiento de cada requisito en lenguaje natural.
+El orden de llegada y el orden del contexto son independientes. Los turnos pueden
+atenderse en paralelo y cada uno excluye las secuencias incompletas de los demás.
+Al finalizar, las llamadas y resultados de la tarea se agrupan. Los controles
+textuales permiten editar durante la elaboración o ejecución, conservando ámbitos.
+Véase [planificación editable y eventos durables](planning.md).
 
 Los comandos y cambios de archivos piden aprobación por defecto. El motor la
 exige aunque el modelo no llame a `request_approval`. Cada aprobación autoriza una
 herramienta y argumentos exactos, una sola vez. Se responde `aprobar <id>` o
 `rechazar <id>`; un sí/no claro también resuelve la única aprobación pendiente.
-Las aclaraciones usan `responder <id> <respuesta>`. Los demás mensajes se encolan.
-`cancelar` detiene al principal; `cancelar <task_id>` admite trabajos en cola o
+Las aclaraciones usan `responder <id> <respuesta>`. Otros mensajes pueden atenderse mientras se espera.
+`cancelar` exige que haya un único turno principal activo; `cancelar <task_id>` admite trabajos en cola o
 hijos. Varias solicitudes pueden estar pendientes simultáneamente, cada una con su
 ID y resolución independiente. La espera de un hijo no pausa al principal.
 
@@ -93,7 +96,7 @@ continúa y puede atender solicitudes posteriores mientras el hijo trabaja o esp
 aprobación. El ejecutor y la base de datos imponen un único nivel: los hijos no
 pueden crear hijos. El catálogo varía por rol y ámbito. Los hijos no tienen
 historial principal ni delegación y requieren `subagent_finish`; sólo inspeccionan
-su propia tarea. Coordinación e informes tienen restricciones adicionales. La
+su propia tarea y evidencia de planes autorizada. Coordinación e informes tienen restricciones adicionales. La
 inspección del principal también respeta sus ámbitos consultables.
 
 Un worker toma los trabajos delegados independientemente de la cola del principal.
@@ -104,8 +107,9 @@ recibe el historial principal; las herramientas de memoria conservan sus filtros
 guardan y se encolan para el principal; los detalles quedan en el registro del hijo.
 
 Los fallos reintentables admiten hasta tres intentos totales conservando el contexto
-y los resultados de herramientas, sin repetir efectos. Cada intento dispone de
-32 pasos y diez minutos. Se exige cierre estructurado con `subagent_finish`; un
+y los resultados de herramientas, sin repetir efectos. Por defecto se permiten
+128 pasos de modelo por tarea y una hora por intento, configurables.
+Se exige cierre estructurado con `subagent_finish`; un
 bloqueo, cancelación o fallo definitivo puede terminar antes. Reiniciar marca los
 hijos inconclusos como interrumpidos, sin restaurar su ejecución automáticamente.
 
@@ -158,26 +162,29 @@ anteriores sin terminar quedan interrumpidas, sin repetición automática.
 Telegram usa `getMe`, `getUpdates` y `sendMessage`. Un código aleatorio mostrado
 localmente vincula al propietario; grupos, terceros y adjuntos no pueden generar
 tareas. El cursor evita redeliveries normales de entradas y la bandeja de salida
-registra intentos acotados. Una caída o un resultado de red ambiguo puede duplicar
+reintenta pendientes con espera creciente acotada. Una caída o un resultado de red ambiguo puede duplicar
 un mensaje saliente: no se promete entrega exactamente una vez. Las entregas
 fallidas permanecen registradas en la base de datos.
 
 ## Límites iniciales
 
-- Una tarea principal y hasta cuatro hijos simultáneos, 32 pasos de modelo por
-  tarea/intento y hasta 16 herramientas por respuesta.
+- Ocho plazas normales de despacho principal y capacidad reservada para controles;
+  64 turnos normales vivos más uno de control. Hasta 32 hijos vivos y cuatro inferencias
+  simultáneas de hijos. Por defecto, 128 pasos por tarea y 16 herramientas por respuesta.
 - Hasta tres intentos totales por hijo ante fallos reintentables, conservando contexto;
-  diez minutos por intento, incluida la espera de aprobación.
+  una hora activa por intento de forma predeterminada, sin consumir tiempo esperando respuestas.
 - Hasta dos reintentos adicionales de inferencia transitoria del principal, sin repetir efectos
   de herramientas automáticamente. No existe presupuesto acumulado de tokens.
-- Una hora por tarea principal y 30 minutos de espera para una respuesta del propietario.
-- Timeout HTTP de 120 segundos; hasta 4.096 tokens de salida por llamada del agente.
+- Cuatro horas activas por tarea principal de forma predeterminada, configurables; la espera del propietario no consume ese tiempo.
+- Timeout HTTP de 120 segundos; hasta 16.384 tokens de salida por llamada del agente de forma predeterminada, acotados por el contexto disponible.
 - Solicitud activa de hasta 512 KB, argumentos de herramientas de hasta 128 KB y
   resultados grandes recuperables en páginas.
 - Archivos UTF-8 regulares de hasta 1 MiB, con búsqueda y listados acotados.
-- Un comando gestionado a la vez por runtime, con límite de registro de ocho, timeout
-  de 1–600 segundos y hasta 128 KiB de stdout/stderr combinado. El límite
-  predeterminado de comando es 120 segundos.
+- Efectos en primer plano serializados; las sesiones persistentes explícitas pueden
+  seguir activas entre turnos. Hasta 16 procesos simultáneos, comandos de 30 minutos
+  y servicios de 24 horas de forma predeterminada, con tiempos configurables.
+- Logs redactados de hasta 64 MiB por proceso, vistas incrementales de hasta
+  12.000 bytes y recuperación por páginas. Los fallos de captura detienen el proceso.
 - Hasta 32 KB por skill y 8 KB por archivo de instrucciones estable.
 
 Las referencias primarias de bibliotecas y APIs están enlazadas en la

@@ -58,6 +58,18 @@ impl Runtime {
             return Ok(());
         }
         if self.store.task(reader)?.origin == "subagent" {
+            if self
+                .store
+                .plan_evidence_sources(reader)?
+                .iter()
+                .any(|id| id == target)
+                || self
+                    .review_evidence_sources(reader)?
+                    .iter()
+                    .any(|id| id == target)
+            {
+                return Ok(());
+            }
             bail!("Subagents may inspect only their own task evidence");
         }
         let other = self.store.task_binding(target)?;
@@ -90,6 +102,11 @@ impl Runtime {
         let delegated = origin == "subagent";
         let binding = self.store.task_binding(task)?;
         let mut catalog = tools::catalog_for(delegated);
+        if matches!(binding.mode.as_str(), "coordination" | "clarification")
+            || origin == "subagent_report"
+        {
+            catalog.retain(|t| !t.name.starts_with("browser_"));
+        }
         if matches!(binding.mode.as_str(), "coordination" | "clarification") {
             catalog.retain(|t| {
                 !matches!(
@@ -97,10 +114,16 @@ impl Runtime {
                     "files_list"
                         | "file_read"
                         | "files_search"
+                        | "files_glob"
+                        | "code_query"
                         | "file_write"
                         | "file_edit"
+                        | "file_patch"
                         | "command_run"
+                        | "command_input"
                         | "command_status"
+                        | "command_output"
+                        | "command_list"
                         | "command_cancel"
                         | "request_approval"
                 )
@@ -112,15 +135,31 @@ impl Runtime {
                     t.name.as_str(),
                     "file_write"
                         | "file_edit"
+                        | "file_patch"
                         | "command_run"
+                        | "command_input"
                         | "command_cancel"
                         | "request_approval"
                         | "subagent_spawn"
                         | "subagent_cancel"
+                        | "subagent_send"
+                        | "plan_manage"
                 )
             });
         }
-        Ok(catalog)
+        let mut filtered = Vec::new();
+        for mut tool in catalog {
+            if self.review_tool_allowed(task, &tool.name, &json!({"action":"get"}))? {
+                if tool.name == "subagent_finish" && self.store.review_for_worker(task)?.is_none() {
+                    tool.parameters["properties"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("review");
+                }
+                filtered.push(tool);
+            }
+        }
+        Ok(filtered)
     }
 
     pub(crate) fn authorize_project_tool(
@@ -130,16 +169,47 @@ impl Runtime {
         args: &Value,
     ) -> Result<()> {
         let binding = self.store.task_binding(task)?;
+        self.check_plan_editor(task)?;
+        if !self.review_tool_allowed(task, name, args)? {
+            bail!(
+                "Plan reviewers may only inspect evidence and ask questions; the master alone resolves plans"
+            );
+        }
+        if (self.store.get::<String>("plan_edits", task)?.is_some()
+            || self
+                .store
+                .plan_for_task(task)?
+                .is_some_and(|p| p.task_id == task))
+            && (matches!(
+                name,
+                "file_write"
+                    | "file_edit"
+                    | "file_patch"
+                    | "command_run"
+                    | "command_input"
+                    | "subagent_spawn"
+            ) || name == "memory_manage" && args["action"] != "get"
+                || name == "schedule_manage"
+                    && !matches!(args["action"].as_str(), Some("get" | "list")))
+        {
+            bail!(
+                "This turn manages a plan. Delegate effects through its milestones instead of executing them twice"
+            );
+        }
+
         if self.store.task(task)?.origin == "subagent_report"
             && (matches!(
                 name,
                 "file_write"
                     | "file_edit"
+                    | "file_patch"
                     | "command_run"
+                    | "command_input"
                     | "command_cancel"
                     | "request_approval"
                     | "subagent_spawn"
                     | "subagent_cancel"
+                    | "subagent_send"
             ) || (name == "memory_manage" && args["action"] != "get")
                 || (name == "schedule_manage"
                     && !matches!(args["action"].as_str(), Some("list" | "get")))
@@ -156,10 +226,16 @@ impl Runtime {
                 "files_list"
                     | "file_read"
                     | "files_search"
+                    | "files_glob"
+                    | "code_query"
                     | "file_write"
                     | "file_edit"
+                    | "file_patch"
                     | "command_run"
+                    | "command_input"
                     | "command_status"
+                    | "command_output"
+                    | "command_list"
                     | "command_cancel"
                     | "request_approval"
             ) {
@@ -178,6 +254,12 @@ impl Runtime {
                 );
             }
         }
+        if name.starts_with("browser_")
+            && (matches!(binding.mode.as_str(), "coordination" | "clarification")
+                || self.store.task(task)?.origin == "subagent_report")
+        {
+            bail!("Browser execution requires an authorized execution task");
+        }
         match name {
             "memory_search" | "memory_manage" | "history_search" | "history_read"
             | "schedule_manage" => {
@@ -195,7 +277,7 @@ impl Runtime {
             "task_inspect" => {
                 self.authorize_task_read(task, args["task_id"].as_str().unwrap_or(task))?
             }
-            "subagent_status" | "subagent_cancel" => {
+            "subagent_status" | "subagent_cancel" | "subagent_send" => {
                 if let Some(id) = args["subagent_id"].as_str() {
                     self.authorize_task_read(task, id)?;
                 }

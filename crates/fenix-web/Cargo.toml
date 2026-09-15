@@ -1,0 +1,31 @@
+[package]
+name = "fenix-web"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+reqwest = { workspace = true, features = ["gzip", "charset"] }
+tokio.workspace = true
+tokio-util.workspace = true
+scraper = "0.27"
+robotstxt = "0.3"
+quick-xml = "0.38"
+encoding_rs = "0.8"
+sha2 = "0.10"
+url = "2"
+futures-util = "0.3"
+
+[dev-dependencies]
+tempfile.workspace = true
+wiremock.workspace = true
+flate2 = "1"
+
+[lints]
+workspace = true

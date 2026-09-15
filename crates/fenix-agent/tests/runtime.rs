@@ -50,7 +50,10 @@ async fn fixture(script: Vec<Value>) -> (tempfile::TempDir, Arc<Runtime>, MockSe
     (dir, runtime, server)
 }
 async fn wait_for(runtime: &Runtime, id: &str, status: &str) {
-    tokio::time::timeout(Duration::from_secs(5), async {
+    wait_for_with_timeout(runtime, id, status, Duration::from_secs(5)).await;
+}
+async fn wait_for_with_timeout(runtime: &Runtime, id: &str, status: &str, timeout: Duration) {
+    tokio::time::timeout(timeout, async {
         loop {
             if runtime.store.task(id).unwrap().status == status {
                 break;
@@ -125,7 +128,7 @@ async fn incomplete_stream_discards_preview_without_retries_or_tool_execution() 
 }
 
 #[tokio::test]
-async fn mandatory_approval_unblocks_active_task_while_new_messages_stay_fifo() {
+async fn mandatory_approval_waits_without_blocking_independent_conversation() {
     let (dir, runtime, server) = fixture(vec![
         call(
             "write-1",
@@ -151,6 +154,8 @@ async fn mandatory_approval_unblocks_active_task_while_new_messages_stay_fifo() 
         .to_owned();
     assert_eq!(runtime.store.task(&second).unwrap().status, "queued");
     assert!(!dir.path().join("approved.txt").exists());
+    wait_for(&runtime, &second, "completed").await;
+    assert_eq!(runtime.store.task(&first).unwrap().status, "waiting");
     runtime.submit("quizá", "web").await.unwrap();
     assert!(!dir.path().join("approved.txt").exists());
     assert_eq!(
@@ -177,15 +182,18 @@ async fn mandatory_approval_unblocks_active_task_while_new_messages_stay_fifo() 
             .any(|r| String::from_utf8_lossy(&r.body).contains("function_call_output"))
     );
     let context = runtime.store.context(0).unwrap();
-    let first_end = context
+    let first_start = context
         .iter()
-        .position(|m| m.text == "File verified")
+        .position(|m| m.task_id.as_deref() == Some(&first))
         .unwrap();
-    let second_start = context
+    let second_end = context
         .iter()
-        .position(|m| m.text == "A new independent request")
+        .rposition(|m| m.task_id.as_deref() == Some(&second))
         .unwrap();
-    assert!(first_end < second_start);
+    assert!(
+        second_end < first_start,
+        "Completed turns are sealed independently; a waiting tool sequence never enters another turn"
+    );
     assert!(
         !runtime
             .status()
@@ -513,7 +521,7 @@ async fn skill_installation_preserves_personal_edits_and_enabled_state() {
     let runtime = Runtime::open(&path, Some(&path.join("skills")))
         .await
         .unwrap();
-    assert_eq!(runtime.skills().unwrap().len(), 4);
+    assert_eq!(runtime.skills().unwrap().len(), 5);
     let skill = runtime.skills_dir.join("conversation-recap/SKILL.md");
     std::fs::write(
         &skill,
@@ -705,5 +713,348 @@ async fn explicit_denial_overrides_a_previously_allowing_policy() {
         .unwrap();
     wait_for(&runtime, &task, "completed").await;
     assert!(!dir.path().join("denied.txt").exists());
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn file_patch_uses_exact_textual_approval_and_preserves_existing_files() {
+    let (dir,runtime,server)=fixture(vec![call("patch-1","file_patch",json!({"patch":"*** Begin Patch\n*** Add File: created.rs\n+fn main() {}\n*** End Patch"})),answer("Patch complete")]).await;
+    let workers = runtime.start();
+    let task = runtime
+        .submit("Create created.rs using a patch", "web")
+        .await
+        .unwrap();
+    let id = task["task_id"].as_str().unwrap();
+    let question = pending(&runtime).await;
+    assert_eq!(question["action"]["tool"], "file_patch");
+    assert!(!dir.path().join("created.rs").exists());
+    runtime
+        .submit(
+            &format!("aprobar {}", question["id"].as_str().unwrap()),
+            "web",
+        )
+        .await
+        .unwrap();
+    wait_for(&runtime, id, "completed").await;
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join("created.rs")).unwrap(),
+        "fn main() {}\n"
+    );
+    stop(&runtime, workers).await;
+    server.verify().await;
+}
+
+#[tokio::test]
+async fn nested_guidance_is_consumed_before_a_same_batch_edit() {
+    let mut batch = call("read-rules", "file_read", json!({"path":"src/a.rs"}));
+    batch["output"].as_array_mut().unwrap().push(json!({"type":"function_call","call_id":"early-edit","name":"file_edit","arguments":json!({"path":"src/a.rs","expected":"old","replacement":"new"}).to_string()}));
+    let (dir, runtime, server) = fixture(vec![
+        batch,
+        call(
+            "retry-edit",
+            "file_edit",
+            json!({"path":"src/a.rs","expected":"old","replacement":"new"}),
+        ),
+        answer("Done"),
+    ])
+    .await;
+    std::fs::create_dir(dir.path().join("src")).unwrap();
+    std::fs::write(dir.path().join("src/AGENTS.md"), "Preserve the public API.").unwrap();
+    std::fs::write(dir.path().join("src/a.rs"), "old").unwrap();
+    let workers = runtime.start();
+    let task = runtime.submit("Update src/a.rs", "web").await.unwrap();
+    let id = task["task_id"].as_str().unwrap();
+    let question = pending(&runtime).await;
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join("src/a.rs")).unwrap(),
+        "old"
+    );
+    let events = runtime.store.events(id, 0, 100).unwrap();
+    let blocked = events
+        .iter()
+        .find(|e| e["kind"] == "tool_result" && e["data"]["call_id"] == "early-edit")
+        .unwrap();
+    assert_eq!(blocked["data"]["result"]["executed"], false);
+    runtime
+        .submit(
+            &format!("aprobar {}", question["id"].as_str().unwrap()),
+            "web",
+        )
+        .await
+        .unwrap();
+    wait_for(&runtime, id, "completed").await;
+    assert_eq!(
+        std::fs::read_to_string(dir.path().join("src/a.rs")).unwrap(),
+        "new"
+    );
+    stop(&runtime, workers).await;
+    server.verify().await;
+}
+
+#[tokio::test]
+async fn long_active_task_compacts_and_continues_without_replaying_tools() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    let (dir, runtime, server) = fixture(vec![]).await;
+    let text = (0..5000)
+        .map(|i| format!("line {i}: {}\n", "reference ".repeat(15)))
+        .collect::<String>();
+    std::fs::write(dir.path().join("large.txt"), text).unwrap();
+    let mut settings = runtime.settings().unwrap().unwrap();
+    settings.coding.context_window_tokens = 65536;
+    settings.coding.compact_at_tokens = 16000;
+    settings.coding.keep_recent_tokens = 5000;
+    runtime.configure(settings, None).await.unwrap();
+    server.reset().await;
+    let calls = Arc::new(AtomicUsize::new(0));
+    let counter = calls.clone();
+    Mock::given(method("POST")).and(path("/responses")).respond_with(move |request:&Request| {
+        let body:Value=serde_json::from_slice(&request.body).unwrap();
+        let reply=if body.get("tools").is_none() {answer("Objective: inspect large.txt. Progress: prior reads completed; do not repeat them. Next steps: continue remaining reads. Critical context: retain the same task.")} else {
+            let inputs=body["input"].as_array().unwrap();
+            for item in inputs.iter().filter(|v|v["type"]=="function_call_output") {assert!(inputs.iter().any(|v|v["type"]=="function_call" && v["call_id"]==item["call_id"]));}
+            let i=counter.fetch_add(1,Ordering::SeqCst);
+            if i<9 {call(&format!("read-{i}"),"file_read",json!({"path":"large.txt","start_line":1+i*500,"line_count":500}))} else {answer("All nine distinct ranges inspected")}
+        };ResponseTemplate::new(200).set_body_json(reply)
+    }).mount(&server).await;
+    let workers = runtime.start();
+    let task = runtime
+        .submit("Inspect large.txt in nine ranges", "web")
+        .await
+        .unwrap();
+    let id = task["task_id"].as_str().unwrap();
+    // Several large reads and summary calls need headroom on shared CI hosts.
+    wait_for_with_timeout(&runtime, id, "completed", Duration::from_secs(30)).await;
+    let events = runtime.store.events(id, 0, 1000).unwrap();
+    assert_eq!(
+        events
+            .iter()
+            .filter(|e| e["kind"] == "tool_started")
+            .count(),
+        9
+    );
+    assert!(
+        events
+            .iter()
+            .any(|e| e["kind"] == "active_context_compacted")
+    );
+    assert_eq!(calls.load(Ordering::SeqCst), 10);
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn persistent_processes_reuse_stdin_across_turns_and_load_tools_on_demand() {
+    use fenix_agent::config::ActionPolicy;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    let (dir, runtime, server) = fixture(vec![]).await;
+    let mut settings = runtime.settings().unwrap().unwrap();
+    settings.command_policy = ActionPolicy::Allow;
+    runtime.configure(settings, None).await.unwrap();
+    server.reset().await;
+    let root = dir.path().to_string_lossy().into_owned();
+    let process_id = Arc::new(Mutex::new(String::new()));
+    let saved = process_id.clone();
+    let counter = Arc::new(AtomicUsize::new(0));
+    let steps = counter.clone();
+    Mock::given(method("POST"))
+        .and(path("/responses"))
+        .respond_with(move |request: &Request| {
+            let body: Value = serde_json::from_slice(&request.body).unwrap();
+            let step = steps.fetch_add(1, Ordering::SeqCst);
+            let response = match step {
+                0 => call(
+                    "start-service",
+                    "command_run",
+                    json!({"command":"cat","cwd":root,"persistent":true}),
+                ),
+                1 => {
+                    let result = body["input"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .find(|m| {
+                            m["call_id"] == "start-service" && m["type"] == "function_call_output"
+                        })
+                        .unwrap();
+                    let output: Value =
+                        serde_json::from_str(result["output"].as_str().unwrap()).unwrap();
+                    *saved.lock().unwrap() = output["process_id"].as_str().unwrap().into();
+                    answer("The persistent session is ready")
+                }
+                2 => {
+                    assert!(
+                        !body["tools"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .any(|t| t["name"] == "command_input")
+                    );
+                    call(
+                        "load-input",
+                        "tool_search",
+                        json!({"names":["command_input","command_cancel"]}),
+                    )
+                }
+                3 => {
+                    assert!(
+                        body["tools"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .any(|t| t["name"] == "command_input")
+                    );
+                    call(
+                        "stdin",
+                        "command_input",
+                        json!({"process_id":*saved.lock().unwrap(),"text":"hello fixture\n"}),
+                    )
+                }
+                4 => call(
+                    "poll",
+                    "command_status",
+                    json!({"process_id":*saved.lock().unwrap(),"wait_ms":100}),
+                ),
+                5 => {
+                    let result = body["input"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .find(|m| m["call_id"] == "poll" && m["type"] == "function_call_output")
+                        .unwrap();
+                    assert!(result["output"].as_str().unwrap().contains("hello fixture"));
+                    call(
+                        "stop-service",
+                        "command_cancel",
+                        json!({"process_id":*saved.lock().unwrap()}),
+                    )
+                }
+                _ => answer("The session echoed the input and is stopped"),
+            };
+            ResponseTemplate::new(200).set_body_json(response)
+        })
+        .mount(&server)
+        .await;
+    let workers = runtime.start();
+    let first = runtime
+        .submit("Start a persistent echo session", "web")
+        .await
+        .unwrap();
+    wait_for(&runtime, first["task_id"].as_str().unwrap(), "completed").await;
+    assert!(!process_id.lock().unwrap().is_empty());
+    let next = runtime
+        .submit(
+            "Send hello fixture to the existing session and stop it",
+            "web",
+        )
+        .await
+        .unwrap();
+    wait_for(&runtime, next["task_id"].as_str().unwrap(), "completed").await;
+    assert_eq!(counter.load(Ordering::SeqCst), 7);
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn tasks_can_progress_beyond_the_previous_32_step_limit() {
+    let mut script = (0..40)
+        .map(|i| {
+            call(
+                &format!("read-{i}"),
+                "file_read",
+                json!({"path":format!("source-{i}.txt")}),
+            )
+        })
+        .collect::<Vec<_>>();
+    script.push(answer("All forty distinct sources read"));
+    let (dir, runtime, _server) = fixture(script).await;
+    for i in 0..40 {
+        std::fs::write(
+            dir.path().join(format!("source-{i}.txt")),
+            format!("Evidence {i}"),
+        )
+        .unwrap();
+    }
+    let mut settings = runtime.settings().unwrap().unwrap();
+    settings.coding.context_window_tokens = 262144;
+    settings.coding.compact_at_tokens = 200000;
+    runtime.store.put("settings", "active", &settings).unwrap();
+    // Re-open to exercise persisted settings without consuming a scripted model response.
+    let data = runtime.data_dir.clone();
+    let skills = runtime.skills_dir.clone();
+    drop(runtime);
+    let runtime = Runtime::open(&data, Some(&skills)).await.unwrap();
+    let workers = runtime.start();
+    let task = runtime.submit("Read forty sources", "web").await.unwrap();
+    wait_for_with_timeout(
+        &runtime,
+        task["task_id"].as_str().unwrap(),
+        "completed",
+        Duration::from_secs(30),
+    )
+    .await;
+    assert_eq!(
+        runtime
+            .store
+            .get::<usize>("execution_steps", task["task_id"].as_str().unwrap())
+            .unwrap(),
+        Some(41)
+    );
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn agent_discovers_browser_tools_and_enforces_personal_profile_handoff() {
+    let (_dir, runtime, server) = fixture(vec![
+        call(
+            "discover-browser",
+            "tool_search",
+            json!({"names":["browser_open","browser_resize"]}),
+        ),
+        call(
+            "open-browser",
+            "browser_open",
+            json!({"profile":"personal","url":"https://example.com"}),
+        ),
+        answer("Enable agent access in the Browser view first."),
+    ])
+    .await;
+    runtime.browser.profile("personal", false).await.unwrap();
+    let workers = runtime.start();
+    let submitted = runtime
+        .submit("Use my personal browser profile", "web")
+        .await
+        .unwrap();
+    wait_for(
+        &runtime,
+        submitted["task_id"].as_str().unwrap(),
+        "completed",
+    )
+    .await;
+    let requests = server.received_requests().await.unwrap();
+    let last: Value = serde_json::from_slice(&requests.last().unwrap().body).unwrap();
+    assert!(
+        last["tools"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|t| t["name"] == "browser_open")
+    );
+    assert!(last["input"].as_array().unwrap().iter().any(|v| {
+        v["type"] == "function_call_output"
+            && v["output"]
+                .as_str()
+                .unwrap_or("")
+                .contains("enable agent access")
+    }));
+    assert!(
+        runtime.browser.status().await.unwrap()["sessions"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        runtime
+            .skill_load("browser-navigation")
+            .unwrap()
+            .contains("Owner handoff")
+    );
     stop(&runtime, workers).await;
 }

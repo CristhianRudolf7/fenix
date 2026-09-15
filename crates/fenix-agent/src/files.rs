@@ -7,7 +7,7 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-const MAX_FILE_BYTES: u64 = 1_048_576;
+pub(crate) const MAX_FILE_BYTES: u64 = 1_048_576;
 
 impl Runtime {
     pub(crate) fn file_path(&self, workspace: &Path, path: &str, create: bool) -> Result<PathBuf> {
@@ -57,6 +57,12 @@ impl Runtime {
         name: &str,
         args: &Value,
     ) -> Result<Value> {
+        if matches!(name, "files_search" | "files_glob") {
+            return self.search_files(workspace, name, args);
+        }
+        if name == "file_patch" {
+            return self.apply_file_patch(workspace, args);
+        }
         let path = args["path"].as_str().unwrap_or(".");
         let creating = name == "file_write";
         let path = self.file_path(workspace, path, creating)?;
@@ -84,60 +90,6 @@ impl Runtime {
                     .join("\n");
                 Ok(
                     json!({"path":path,"start_line":start,"total_lines":text.lines().count(),"content":self.redactor.text(&truncate(&lines,32_000))}),
-                )
-            }
-            "files_search" => {
-                let query = args["query"].as_str().context("Search query required")?;
-                if query.trim().is_empty() {
-                    bail!("Search query cannot be empty");
-                }
-                let needle = query.to_lowercase();
-                let mut matches = vec![];
-                let mut scanned = 0;
-                for entry in walkdir::WalkDir::new(path)
-                    .follow_links(false)
-                    .max_depth(12)
-                    .into_iter()
-                    .filter_entry(|e| {
-                        let name = e.file_name().to_string_lossy();
-                        !matches!(
-                            name.as_ref(),
-                            ".git"
-                                | "node_modules"
-                                | "target"
-                                | ".fenix"
-                                | "credentials"
-                                | "secrets"
-                        ) && !e.path().starts_with(&self.data_dir)
-                    })
-                    .filter_map(Result::ok)
-                    .take(5000)
-                {
-                    if !entry.file_type().is_file()
-                        || self
-                            .file_path(workspace, &entry.path().to_string_lossy(), false)
-                            .is_err()
-                    {
-                        continue;
-                    }
-                    scanned += 1;
-                    let Ok(text) = read_text(entry.path()) else {
-                        continue;
-                    };
-                    for (i, line) in text.lines().enumerate() {
-                        if line.to_lowercase().contains(&needle) {
-                            matches.push(json!({"path":entry.path(),"line":i+1,"text":self.redactor.text(&truncate(line,500))}));
-                        }
-                        if matches.len() >= 100 {
-                            break;
-                        }
-                    }
-                    if matches.len() >= 100 {
-                        break;
-                    }
-                }
-                Ok(
-                    json!({"matches":matches,"files_scanned":scanned,"limit":100,"max_entries":5000}),
                 )
             }
             "file_write" => {
@@ -182,7 +134,7 @@ impl Runtime {
         }
     }
 }
-fn read_text(path: &Path) -> Result<String> {
+pub(crate) fn read_text(path: &Path) -> Result<String> {
     let file = File::open(path)?;
     let metadata = file.metadata()?;
     if !metadata.is_file() || metadata.len() > MAX_FILE_BYTES {

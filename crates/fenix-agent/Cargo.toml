@@ -10,6 +10,9 @@ fenix-core.workspace = true
 fenix-credentials.workspace = true
 fenix-providers.workspace = true
 fenix-storage.workspace = true
+fenix-web.workspace = true
+fenix-browser.workspace = true
+futures-util = "0.3"
 anyhow.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -19,10 +22,15 @@ cron.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 regex.workspace = true
+globset = "0.4"
+ignore = "0.4"
+sha2 = "0.10"
+url = "2"
 reqwest.workspace = true
 fs2 = "0.4"
 walkdir = "2"
 nix = { version = "0.30", features = ["signal", "process"] }
+pty-process = { version = "0.5.3", features = ["async"] }
 
 [dev-dependencies]
 tempfile.workspace = true

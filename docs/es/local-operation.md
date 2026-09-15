@@ -1,5 +1,7 @@
 # Uso local
 
+[Ejecución interactiva, límites actualizados y herramientas bajo demanda](execution-harness.md)
+
 [English](../en/local-operation.md)
 
 ## Inicio y configuración
@@ -52,13 +54,14 @@ o copia manualmente los recursos restantes.
 El catálogo varía según rol y ámbito. El principal delega con propósito preciso
 y resultado esperado; el contexto y las restricciones son opcionales. Los hijos
 no pueden leer la conversación principal ni volver a delegar; sólo inspeccionan
-su propia tarea. Mantienen contexto independiente y devuelven informes
+su propia tarea y evidencia de planes autorizada. Mantienen contexto independiente y devuelven informes
 al principal. **Tareas** muestra propósito, entrega esperada, IDs, estado, intentos,
 resultados y pendientes textuales, actualizados mientras la vista está abierta.
 
-El motor impone un nivel de delegación y cuatro hijos simultáneos. Cada hijo tiene
-hasta tres intentos totales por fallos reintentables, con 32 pasos y diez minutos
-por intento. Se conserva el contexto y los resultados sin repetir acciones. Un
+El motor impone un nivel de delegación y cuatro inferencias simultáneas de hijos. Cada hijo tiene
+hasta tres intentos totales por fallos reintentables. Por defecto dispone de 128
+pasos de modelo por tarea y una hora por intento, configurables desde Ajustes.
+Se conserva el contexto y los resultados sin repetir acciones. Un
 bloqueo, cancelación o error no reintentable puede finalizar antes. El programa
 serializa cambios de archivos, memoria, programaciones y comandos hasta su cierre;
 no coordina procesos externos ni otras instancias. Los comandos mantienen acceso
@@ -140,3 +143,5 @@ Cerrar la pestaña no detiene el servicio. Al apagarlo se cancelan procesos
 gestionados. El reinicio conserva historial y programaciones, pero marca las tareas
 anteriores sin terminar como interrumpidas; no repite sus efectos ni recupera
 ejecuciones vencidas. No hay rollback automático ni restauración de procesos.
+
+[Local browser / Navegador local](browser.md)

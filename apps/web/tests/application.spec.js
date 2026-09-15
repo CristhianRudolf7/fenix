@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { createServer } from "node:http";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
@@ -23,6 +23,11 @@ const completion = (text) => ({
 test.describe.configure({ mode: "serial" });
 test.beforeAll(async () => {
   directory = await mkdtemp(join(tmpdir(), "fenix-browser-"));
+  await mkdir(join(directory, "data"));
+  await writeFile(
+    join(directory, "data", "web-search.json"),
+    JSON.stringify({ enabled: false }),
+  );
   modelServer = createServer(async (request, response) => {
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
@@ -154,7 +159,7 @@ test("welcome validates inference, lists all providers and defaults to white eve
     path: testInfo.outputPath("welcome-light.png"),
     fullPage: true,
   });
-  await page.locator("details summary").click();
+  await page.locator("#advanced-settings > summary").click();
   await page.locator("#base_url").fill(modelURL);
   await page.locator("#api_key").fill("bad-key");
   await page.getByRole("button", { name: "Verificar y comenzar" }).click();
@@ -172,7 +177,7 @@ test("welcome validates inference, lists all providers and defaults to white eve
   expect(errors).toEqual([]);
 });
 
-test("chat uses textual approval and a continuous FIFO conversation", async ({
+test("chat stays available while an exact textual approval is pending", async ({
   page,
 }, testInfo) => {
   await page.goto("/");
@@ -189,14 +194,12 @@ test("chat uses textual approval and a continuous FIFO conversation", async ({
   await page.locator("#chat-input").fill("Hello next");
   await page.locator("#chat-input").press("Enter");
   const status = await (await page.request.get("/api/status")).json();
-  await expect
-    .poll(
-      async () =>
-        (await (await page.request.get("/api/tasks")).json()).filter(
-          (task) => task.status === "queued",
-        ).length,
-    )
-    .toBe(1);
+  await expect(page.locator("#message-list")).toContainText(
+    "Hello from Fénix.",
+  );
+  expect(
+    (await (await page.request.get("/api/status")).json()).pending.id,
+  ).toBe(status.pending.id);
   await page.locator("#chat-input").fill(`aprobar ${status.pending.id}`);
   await page.locator("#chat-input").press("Enter");
   await expect(page.locator("#message-list")).toContainText(
@@ -241,7 +244,7 @@ test("memory CRUD, skill states, schedules and activity work through the real lo
     "Aún no hay recuerdos",
   );
   await page.locator('[data-page="skills"]').click();
-  await expect(page.locator("[data-skill]")).toHaveCount(4);
+  await expect(page.locator("[data-skill]")).toHaveCount(5);
   await page.locator('[data-skill="conversation-recap"]').uncheck();
   await expect(
     page.locator('[data-read-skill="conversation-recap"]'),
@@ -601,4 +604,285 @@ test("projects keep separate memories and referenced replies in one conversation
     ),
   ).toBe(true);
   expect(errors).toEqual([]);
+});
+
+test("plan milestones, reviews and revisions stay readable without action approval buttons", async ({
+  page,
+}, testInfo) => {
+  const plan = {
+    id: "plan-browser-example",
+    version: 3,
+    status: "paused",
+    objective: "Prepare the office launch",
+    reviews: [
+      {
+        id: "review-browser-example",
+        version: 3,
+        status: "blocked",
+        round: 1,
+        reason: "Confirm the owner's report format <unsafe>",
+        node_ids: ["report"],
+      },
+    ],
+    nodes: [
+      {
+        id: "analysis",
+        objective: "Analysis complete",
+        expected_output: "Cited sources",
+        status: "completed",
+        depends_on: [],
+      },
+      {
+        id: "report",
+        objective: "Revise the report <unsafe>",
+        expected_output: "Updated document",
+        status: "pending",
+        depends_on: ["analysis"],
+      },
+    ],
+  };
+  await page.route("**/api/status", async (route) => {
+    const response = await route.fetch();
+    const status = await response.json();
+    status.plans = [plan];
+    await route.fulfill({ response, json: status });
+  });
+  await page.route("**/api/plans/plan-browser-example", (route) =>
+    route.fulfill({
+      json: {
+        plan,
+        reviews: plan.reviews,
+        review_metrics: [
+          { review_id: "review-browser-example", reported_total_tokens: 321 },
+        ],
+        revisions: [
+          {
+            version: 3,
+            reason: "Keep the finished analysis and change the report",
+            created_at: "2026-09-14T12:00:00Z",
+            plan,
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto("/");
+  await page.locator('[data-page="activity"]').click();
+  const panel = page.locator("#plans-panel");
+  await expect(panel).toContainText("Prepare the office launch");
+  await expect(panel).toContainText("v3");
+  await expect(panel).toContainText("analysis");
+  await expect(panel).toContainText("Revisión del plan");
+  await expect(panel).toContainText("Ronda 2/2");
+  await expect(panel).toContainText("Confirm the owner's report format");
+  await expect(panel).toContainText("replanificar plan-browser-example");
+  await expect(panel.locator("unsafe")).toHaveCount(0);
+  await panel.locator("[data-plan]").click();
+  await expect(page.locator("#detail-content")).toContainText(
+    "Keep the finished analysis",
+  );
+  await page
+    .getByText("Consumo y tiempo de revisiones", { exact: true })
+    .click();
+  await expect(page.locator("#detail-content")).toContainText(
+    '"reported_total_tokens": 321',
+  );
+  await expect(page.locator("#detail-content unsafe")).toHaveCount(0);
+  await page.locator("#close-dialog").click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: testInfo.outputPath("editable-plans-mobile.png"),
+    fullPage: true,
+  });
+  await expect(
+    page.getByRole("button", { name: /aprobar|rechazar|approve|reject/i }),
+  ).toHaveCount(0);
+});
+
+test("durable web events reconnect with a saved cursor without creating work", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        Object.keys(sessionStorage).some(
+          (key) =>
+            key.startsWith("fenix-events:") &&
+            Number(sessionStorage.getItem(key)) > 0,
+        ),
+      ),
+    )
+    .toBe(true);
+  const before = (await (await page.request.get("/api/tasks")).json()).map(
+    (task) => task.id,
+  );
+  const streams = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/api/events?")) streams.push(request.url());
+  });
+  await page.reload();
+  await expect
+    .poll(() =>
+      streams.some((url) => Number(new URL(url).searchParams.get("after")) > 0),
+    )
+    .toBe(true);
+  await expect(page.locator("#chat-input")).toBeVisible();
+  expect(
+    (await (await page.request.get("/api/tasks")).json()).map(
+      (task) => task.id,
+    ),
+  ).toEqual(before);
+});
+
+test("coding settings persist language servers and context budgets through the web", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator('[data-page="settings"]').click();
+  await page.locator("#advanced-settings > summary").click();
+  await page.locator("#advanced-settings details > summary").first().click();
+  const servers = [
+    { name: "rust", command: ["rust-analyzer"], extensions: ["rs"] },
+  ];
+  await page.locator("#language-servers").fill(JSON.stringify(servers));
+  await page.locator("#context_window_tokens").fill("65536");
+  await page.locator("#compact_at_tokens").fill("32000");
+  await page.locator("#keep_recent_tokens").fill("6000");
+  await page
+    .getByText(/Execution limits|Límites de ejecución/, { exact: true })
+    .click();
+  await page.locator("#max_model_steps").fill("256");
+  await page.locator("#command_timeout_seconds").fill("3600");
+  await page.locator('#model-form button[type="submit"]').click();
+  await expect
+    .poll(async () => {
+      const result = await page.request.get("/api/status");
+      return (await result.json()).settings.coding.context_window_tokens;
+    })
+    .toBe(65536);
+  await page.reload();
+  await page.locator('[data-page="settings"]').click();
+  await page.locator("#advanced-settings > summary").click();
+  await page.locator("#advanced-settings details > summary").first().click();
+  await expect(page.locator("#context_window_tokens")).toHaveValue("65536");
+  await page
+    .getByText(/Execution limits|Límites de ejecución/, { exact: true })
+    .click();
+  await expect(page.locator("#max_model_steps")).toHaveValue("256");
+  await expect(page.locator("#command_timeout_seconds")).toHaveValue("3600");
+  expect(
+    JSON.parse(await page.locator("#language-servers").inputValue()),
+  ).toEqual([{ ...servers[0], initialization_options: null }]);
+});
+
+test("local browser controls preserve profiles and resize the rendered page", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const status = await (await page.request.get("/api/browser/status")).json();
+  test.skip(!status.available, "Requires installed sandbox-capable Chromium");
+  const fixture = createServer((_request, response) => {
+    response.setHeader("content-type", "text/html");
+    response.end(
+      '<!doctype html><meta name="viewport" content="width=device-width"><style>body{margin:0}</style><h1>Local browser fixture</h1><input aria-label="Name" id="name"><button onclick="document.querySelector(\'h1\').textContent=document.querySelector(\'input\').value">Apply</button>',
+    );
+  });
+  await new Promise((resolve) => fixture.listen(0, "127.0.0.1", resolve));
+  try {
+    await page.goto("/");
+    await page.locator('[data-page="browser"]').click();
+    await page.locator("#browser-create input").fill("ui-personal");
+    await page.locator("#browser-create button").click();
+    await expect(page.locator("#browser-profile")).toHaveValue("ui-personal");
+    await page
+      .locator("#browser-open input")
+      .fill(`http://127.0.0.1:${fixture.address().port}/`);
+    // Chromium startup may use the runtime's 45-second cold-start budget.
+    // Check its response before waiting for the first rendered screenshot.
+    const opened = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/browser/command") &&
+        response.request().method() === "POST" &&
+        response.request().postDataJSON()?.tool === "browser_open",
+      { timeout: 65_000 },
+    );
+    await page.locator("#browser-open button").last().click();
+    const openResponse = await opened;
+    expect(openResponse.ok(), await openResponse.text()).toBe(true);
+    await expect
+      .poll(
+        () => page.locator("#browser-screen").evaluate((e) => e.naturalWidth),
+        { timeout: 20_000 },
+      )
+      .toBe(1280);
+    await page.locator("#browser-preset").selectOption("390,844");
+    await page.locator("#browser-resize").click();
+    await expect
+      .poll(() =>
+        page.locator("#browser-screen").evaluate((e) => e.naturalWidth),
+      )
+      .toBe(390);
+    const observation = await (
+      await page.request.post("/api/browser/command", {
+        data: { tool: "browser_observe", args: { profile: "ui-personal" } },
+      })
+    ).json();
+    const screen = page.locator("#browser-screen");
+    const box = await screen.boundingBox();
+    const clickElement = async (name) => {
+      const e = observation.elements.find((e) => e.name === name);
+      await screen.click({
+        position: {
+          x: ((e.rect.x + e.rect.width / 2) * box.width) / 390,
+          y: ((e.rect.y + e.rect.height / 2) * box.width) / 390,
+        },
+      });
+    };
+    await clickElement("Name");
+    await page.keyboard.type("Owner");
+    await clickElement("Apply");
+    await expect
+      .poll(
+        async () =>
+          (
+            await (
+              await page.request.post("/api/browser/command", {
+                data: {
+                  tool: "browser_check",
+                  args: {
+                    profile: "ui-personal",
+                    condition: "text",
+                    text: "Owner",
+                  },
+                },
+              })
+            ).json()
+          ).passed,
+      )
+      .toBe(true);
+    await page.locator("#browser-agent").check();
+    await expect
+      .poll(
+        async () =>
+          (
+            await (await page.request.get("/api/browser/status")).json()
+          ).profiles.find((p) => p.name === "ui-personal").allow_agent,
+      )
+      .toBe(true);
+    await page.locator("#browser-control").click();
+    await expect(page.locator("#browser-agent")).not.toBeChecked();
+    await page.locator("#browser-close").click();
+    await expect(page.locator("#browser-screen")).toBeHidden();
+    await page.reload();
+    await page.locator('[data-page="browser"]').click();
+    await expect(page.locator("#browser-profile")).toHaveValue("ui-personal");
+  } finally {
+    await new Promise((resolve) => fixture.close(resolve));
+  }
 });

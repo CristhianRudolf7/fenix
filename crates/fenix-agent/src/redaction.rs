@@ -16,6 +16,35 @@ impl Default for Redactor {
     }
 }
 impl Redactor {
+    /// Return a stable redacted prefix and its consumed byte count. Retain only
+    /// unfinished known secrets/key patterns, so ordinary terminal prompts render.
+    pub(crate) fn stream_prefix(&self, text: &str, finished: bool) -> (usize, String) {
+        if finished {
+            return (text.len(), self.text(text));
+        }
+        let mut end = text.len();
+        for secret in self.secrets.read().expect("secret lock").iter() {
+            for (length, _) in secret.char_indices().skip(1) {
+                if text.ends_with(&secret[..length]) {
+                    end = end.min(text.len() - length);
+                }
+            }
+            for (start, _) in text.match_indices(secret.as_str()) {
+                if start < end && end < start + secret.len() {
+                    end = start;
+                }
+            }
+        }
+        static PARTIAL: std::sync::OnceLock<Regex> = std::sync::OnceLock::new();
+        let pattern = PARTIAL.get_or_init(|| {
+            Regex::new(r"(?:s(?:k(?:-[A-Za-z0-9_-]*)?)?|[0-9]{1,12}(?::[A-Za-z0-9_-]*)?)$")
+                .expect("static regex")
+        });
+        if let Some(partial) = pattern.find(text) {
+            end = end.min(partial.start());
+        }
+        (end, self.text(&text[..end]))
+    }
     pub fn add(&self, value: &str) {
         if !value.is_empty() {
             self.secrets

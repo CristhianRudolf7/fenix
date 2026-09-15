@@ -1,0 +1,2366 @@
+{
+  "bootstrap": [
+    {
+      "passage_chars": 6000,
+      "seconds": 2.420090371,
+      "source": "network",
+      "topic": "Astronomy",
+      "url": "https://science.nasa.gov/solar-system/"
+    },
+    {
+      "passage_chars": 6000,
+      "seconds": 0.240620092,
+      "source": "network",
+      "topic": "Health",
+      "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+    },
+    {
+      "passage_chars": 6000,
+      "seconds": 0.222477668,
+      "source": "network",
+      "topic": "Climate",
+      "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+    },
+    {
+      "passage_chars": 6000,
+      "seconds": 2.156210129,
+      "source": "network",
+      "topic": "Economics",
+      "url": "https://www.worldbank.org/en/topic/poverty/overview"
+    },
+    {
+      "error": "Web response exceeds the download byte limit",
+      "seconds": 0.093224134,
+      "topic": "History",
+      "url": "https://en.wikipedia.org/wiki/Roman_Empire"
+    },
+    {
+      "error": "Web response exceeds the download byte limit",
+      "seconds": 5.017027272,
+      "topic": "Biology",
+      "url": "https://en.wikipedia.org/wiki/Photosynthesis"
+    },
+    {
+      "passage_chars": 5480,
+      "seconds": 0.081393212,
+      "source": "network",
+      "topic": "Programming",
+      "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+    },
+    {
+      "passage_chars": 4476,
+      "seconds": 0.299712203,
+      "source": "network",
+      "topic": "Web design",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+    },
+    {
+      "passage_chars": 4224,
+      "seconds": 0.169765996,
+      "source": "network",
+      "topic": "AI research",
+      "url": "https://arxiv.org/abs/1706.03762"
+    },
+    {
+      "error": "Web response exceeds the download byte limit",
+      "seconds": 4.473939241,
+      "topic": "Mathematics",
+      "url": "https://en.wikipedia.org/wiki/Pythagorean_theorem"
+    }
+  ],
+  "clock_ticks_per_second": "100",
+  "default_crawl": {
+    "disk_bytes": 1629091,
+    "rss_kib": 23464,
+    "seconds": 60.021910529,
+    "status": {
+      "active_downloads": 0,
+      "active_operations": 0,
+      "coverage": {
+        "due_urls": 868,
+        "indexed_origins": 10,
+        "indexed_pages": 10,
+        "known_urls": 883,
+        "last_fetch_at": 1789405624,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 28
+      },
+      "crawler_running": false,
+      "enabled": true,
+      "last_error": "Public page returned HTTP 403",
+      "max_concurrent_searches": 10,
+      "queued_operations": 0
+    }
+  },
+  "disk_bytes": 2014026,
+  "final_status": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 1091,
+      "indexed_origins": 11,
+      "indexed_pages": 17,
+      "known_urls": 1105,
+      "last_fetch_at": 1789405705,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 79
+    },
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0
+  },
+  "method": "single shared Web instance; live public HTTP; unoptimized build; no LLM; 20 ms RSS sampling; fixed ten English queries; not a search relevance benchmark",
+  "phases": [
+    {
+      "concurrency": 1,
+      "coverage": {
+        "due_urls": 12,
+        "indexed_origins": 0,
+        "indexed_pages": 0,
+        "known_urls": 12,
+        "last_fetch_at": null,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 0
+      },
+      "cpu_ticks": 1,
+      "elapsed_seconds": 0.070065649,
+      "http_attempts": 0,
+      "name": "empty_index",
+      "peak_sampled_rss_kib": 12444,
+      "queries": [
+        {
+          "elapsed_ms": 7.894448,
+          "hits": 0,
+          "query": "solar system",
+          "results": [],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 1.030327,
+          "hits": 0,
+          "query": "malaria",
+          "results": [],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 0.791767,
+          "hits": 0,
+          "query": "climate change",
+          "results": [],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 14.12908,
+          "hits": 0,
+          "query": "poverty",
+          "results": [],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 1.046988,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 6.24842,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 5.916526,
+          "hits": 0,
+          "query": "installation Rust",
+          "results": [],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 2.811633,
+          "hits": 0,
+          "query": "CSS",
+          "results": [],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 13.161686000000001,
+          "hits": 0,
+          "query": "attention transformer",
+          "results": [],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 6.8682229999999995,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 12444,
+      "rss_start_kib": 11552
+    },
+    {
+      "concurrency": 1,
+      "coverage": {
+        "due_urls": 868,
+        "indexed_origins": 10,
+        "indexed_pages": 10,
+        "known_urls": 883,
+        "last_fetch_at": 1789405624,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 28
+      },
+      "cpu_ticks": 3,
+      "elapsed_seconds": 0.033190764,
+      "http_attempts": 0,
+      "name": "default_corpus",
+      "peak_sampled_rss_kib": 23476,
+      "queries": [
+        {
+          "elapsed_ms": 8.429917999999999,
+          "hits": 4,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Portal:Portada - Wikipedia, la enciclopedia libre",
+              "url": "https://es.wikipedia.org/wiki/Portal:Portada"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 1.2208189999999999,
+          "hits": 0,
+          "query": "malaria",
+          "results": [],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 5.132854,
+          "hits": 2,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 2.632228,
+          "hits": 1,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 1.272888,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 1.214217,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 2.833949,
+          "hits": 2,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 4.415452,
+          "hits": 1,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 3.4621090000000003,
+          "hits": 0,
+          "query": "attention transformer",
+          "results": [],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 1.221682,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 23476,
+      "rss_start_kib": 23472
+    },
+    {
+      "concurrency": 1,
+      "coverage": {
+        "due_urls": 1090,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405641,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 40
+      },
+      "cpu_ticks": 2,
+      "elapsed_seconds": 0.030252326,
+      "http_attempts": 0,
+      "name": "index_sequential",
+      "peak_sampled_rss_kib": 25820,
+      "queries": [
+        {
+          "elapsed_ms": 4.301358,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 1.991732,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 8.669635,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 2.6909870000000002,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 1.341514,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 1.928621,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 2.198995,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 2.565818,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 1.603227,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 1.446047,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 0,
+      "rss_end_kib": 25820,
+      "rss_start_kib": 25716
+    },
+    {
+      "concurrency": 4,
+      "coverage": {
+        "due_urls": 1090,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405641,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 40
+      },
+      "cpu_ticks": 2,
+      "elapsed_seconds": 0.031506796,
+      "http_attempts": 0,
+      "name": "index_parallel_4",
+      "peak_sampled_rss_kib": 25820,
+      "queries": [
+        {
+          "elapsed_ms": 15.431123,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 8.307886,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 15.169931,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 11.456971999999999,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 4.48782,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 5.265494,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 5.786658,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 5.926515,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 4.84464,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 4.849677,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 0,
+      "rss_end_kib": 25820,
+      "rss_start_kib": 25820
+    },
+    {
+      "concurrency": 10,
+      "coverage": {
+        "due_urls": 1090,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405641,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 40
+      },
+      "cpu_ticks": 3,
+      "elapsed_seconds": 0.030120476,
+      "http_attempts": 0,
+      "name": "index_parallel_10",
+      "peak_sampled_rss_kib": 26556,
+      "queries": [
+        {
+          "elapsed_ms": 22.424844999999998,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 24.313668,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 24.080486,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 26.695871999999998,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 26.571621999999998,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 26.502179,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 29.757475,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 22.605524,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 26.902953,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 26.542112,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 0,
+      "rss_end_kib": 26588,
+      "rss_start_kib": 25820
+    },
+    {
+      "concurrency": 1,
+      "coverage": {
+        "due_urls": 1090,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405641,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 40
+      },
+      "cpu_ticks": 3,
+      "elapsed_seconds": 0.053424804,
+      "http_attempts": 0,
+      "name": "cached_reads_sequential",
+      "peak_sampled_rss_kib": 27064,
+      "queries": [
+        {
+          "elapsed_ms": 7.6637889999999995,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 4.7920549999999995,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 13.432084,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 3.9926120000000003,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 1.258329,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 1.100916,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 5.381122,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 6.1239099999999995,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 2.342115,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 1.344076,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 27064,
+      "rss_start_kib": 26588
+    },
+    {
+      "concurrency": 4,
+      "coverage": {
+        "due_urls": 1090,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405641,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 40
+      },
+      "cpu_ticks": 4,
+      "elapsed_seconds": 0.038090598,
+      "http_attempts": 0,
+      "name": "cached_reads_parallel_4",
+      "peak_sampled_rss_kib": 27092,
+      "queries": [
+        {
+          "elapsed_ms": 19.047257000000002,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 20.559104,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 20.922052,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 25.011576,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 3.889291,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 1.660856,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 6.630890000000001,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 6.616987,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 3.2776099999999997,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 2.738865,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 27092,
+      "rss_start_kib": 27072
+    },
+    {
+      "concurrency": 10,
+      "coverage": {
+        "due_urls": 1090,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405641,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 40
+      },
+      "cpu_ticks": 3,
+      "elapsed_seconds": 0.030640074,
+      "http_attempts": 0,
+      "name": "cached_reads_parallel_10",
+      "peak_sampled_rss_kib": 27324,
+      "queries": [
+        {
+          "elapsed_ms": 25.687552,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 29.574691,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 21.722337,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 28.789745,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 20.971529999999998,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 23.050121999999998,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 22.754696000000003,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 28.007298,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 26.86995,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "cache",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 21.120423,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 27324,
+      "rss_start_kib": 27092
+    },
+    {
+      "concurrency": 1,
+      "coverage": {
+        "due_urls": 1090,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405672,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 55
+      },
+      "cpu_ticks": 128,
+      "elapsed_seconds": 26.326166441,
+      "http_attempts": 15,
+      "name": "fresh_reads_sequential",
+      "peak_sampled_rss_kib": 31420,
+      "queries": [
+        {
+          "elapsed_ms": 1238.025373,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "network",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "network",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 117.099669,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 18725.2894,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 2081.628463,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 1.291555,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 1.0593320000000002,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 2048.365741,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 2056.872308,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 52.014114,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 1.1993049999999998,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 28216,
+      "rss_start_kib": 27600
+    },
+    {
+      "concurrency": 4,
+      "coverage": {
+        "due_urls": 1091,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405688,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 67
+      },
+      "cpu_ticks": 82,
+      "elapsed_seconds": 15.882700019,
+      "http_attempts": 12,
+      "name": "fresh_reads_parallel_4",
+      "peak_sampled_rss_kib": 33560,
+      "queries": [
+        {
+          "elapsed_ms": 3742.57844,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "network",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "network",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 103.340137,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 13747.075347999998,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "shared",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 2093.9155079999996,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "shared",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 8.849555,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 14.255945,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 2068.750153,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 2067.983553,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "shared",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 62.077077,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 3.716961,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 33560,
+      "rss_start_kib": 28216
+    },
+    {
+      "concurrency": 10,
+      "coverage": {
+        "due_urls": 1091,
+        "indexed_origins": 11,
+        "indexed_pages": 17,
+        "known_urls": 1105,
+        "last_fetch_at": 1789405705,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "requests_today": 79
+      },
+      "cpu_ticks": 90,
+      "elapsed_seconds": 17.868892482,
+      "http_attempts": 12,
+      "name": "fresh_reads_parallel_10",
+      "peak_sampled_rss_kib": 37624,
+      "queries": [
+        {
+          "elapsed_ms": 7874.393279,
+          "hits": 5,
+          "query": "solar system",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "network",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "network",
+              "title": "NASA",
+              "url": "https://www.nasa.gov/"
+            },
+            {
+              "read_error": null,
+              "read_status": "shared",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "arXiv.org e-Print archive",
+              "url": "https://arxiv.org/"
+            }
+          ],
+          "topic": "Astronomy"
+        },
+        {
+          "elapsed_ms": 169.01106,
+          "hits": 1,
+          "query": "malaria",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Malaria",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+            }
+          ],
+          "topic": "Health"
+        },
+        {
+          "elapsed_ms": 17868.42987,
+          "hits": 5,
+          "query": "climate change",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "What Is Climate Change? | United Nations",
+              "url": "https://www.un.org/en/climatechange/what-is-climate-change"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "United Nations | Peace, dignity and equality <BR>on a healthy planet",
+              "url": "https://www.un.org/en/"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "Solar System Exploration",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "read_error": null,
+              "read_status": "not_requested",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "Climate"
+        },
+        {
+          "elapsed_ms": 2112.806156,
+          "hits": 2,
+          "query": "poverty",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Poverty | World Bank Group",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "read_error": null,
+              "read_status": "shared",
+              "title": "World Bank Group - International Development, Poverty and Sustainability",
+              "url": "https://www.worldbank.org/ext/en/home"
+            }
+          ],
+          "topic": "Economics"
+        },
+        {
+          "elapsed_ms": 24.956709,
+          "hits": 0,
+          "query": "Roman Empire",
+          "results": [],
+          "topic": "History"
+        },
+        {
+          "elapsed_ms": 24.599151,
+          "hits": 0,
+          "query": "photosynthesis",
+          "results": [],
+          "topic": "Biology"
+        },
+        {
+          "elapsed_ms": 3935.699031,
+          "hits": 3,
+          "query": "installation Rust",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Installation - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/ch01-01-installation.html"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "The Rust Programming Language - The Rust Programming Language",
+              "url": "https://doc.rust-lang.org/book/"
+            },
+            {
+              "read_error": null,
+              "read_status": "shared",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Programming"
+        },
+        {
+          "elapsed_ms": 3935.585592,
+          "hits": 2,
+          "query": "CSS",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "CSS: Cascading Style Sheets | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS"
+            },
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "Web technology for developers | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            }
+          ],
+          "topic": "Web design"
+        },
+        {
+          "elapsed_ms": 14991.445074,
+          "hits": 1,
+          "query": "attention transformer",
+          "results": [
+            {
+              "read_error": null,
+              "read_status": "revalidated",
+              "title": "[1706.03762] Attention Is All You Need",
+              "url": "https://arxiv.org/abs/1706.03762"
+            }
+          ],
+          "topic": "AI research"
+        },
+        {
+          "elapsed_ms": 21.048939999999998,
+          "hits": 0,
+          "query": "Pythagorean theorem",
+          "results": [],
+          "topic": "Mathematics"
+        }
+      ],
+      "read_pages": 3,
+      "rss_end_kib": 37580,
+      "rss_start_kib": 33560
+    }
+  ],
+  "topics": [
+    [
+      "Astronomy",
+      "solar system",
+      "https://science.nasa.gov/solar-system/"
+    ],
+    [
+      "Health",
+      "malaria",
+      "https://www.who.int/news-room/fact-sheets/detail/malaria"
+    ],
+    [
+      "Climate",
+      "climate change",
+      "https://www.un.org/en/climatechange/what-is-climate-change"
+    ],
+    [
+      "Economics",
+      "poverty",
+      "https://www.worldbank.org/en/topic/poverty/overview"
+    ],
+    [
+      "History",
+      "Roman Empire",
+      "https://en.wikipedia.org/wiki/Roman_Empire"
+    ],
+    [
+      "Biology",
+      "photosynthesis",
+      "https://en.wikipedia.org/wiki/Photosynthesis"
+    ],
+    [
+      "Programming",
+      "installation Rust",
+      "https://doc.rust-lang.org/book/ch01-01-installation.html"
+    ],
+    [
+      "Web design",
+      "CSS",
+      "https://developer.mozilla.org/en-US/docs/Web/CSS"
+    ],
+    [
+      "AI research",
+      "attention transformer",
+      "https://arxiv.org/abs/1706.03762"
+    ],
+    [
+      "Mathematics",
+      "Pythagorean theorem",
+      "https://en.wikipedia.org/wiki/Pythagorean_theorem"
+    ]
+  ],
+  "process_metrics": {
+    "peak_process_hwm_kib": 37624,
+    "method": "Linux VmHWM observed every 100 ms"
+  },
+  "benchmark_date": "2026-09-14",
+  "build": "Rust 1.98.1; dev profile; debug=0; incremental=0; two Tokio runtime threads",
+  "implementation": "Ten foreground operations and ten HTTP downloads per shared Web instance; per-origin lanes; concurrent top-three source reads; in-flight URL coalescing.",
+  "baseline": "web-search-2026-09-14.json",
+  "limitations": [
+    "One pass per condition, not a statistical load test.",
+    "Known source URLs were explicitly read after measuring default discovery.",
+    "Ten fixed English-language queries; result counts do not establish relevance.",
+    "No LLM, full Fenix runtime, rendering browser or large populated corpus.",
+    "HTTP attempts include reservations and can include cancelled work.",
+    "Memory phases run in one process; allocator retention and phase order affect RSS.",
+    "Concurrency four uses batches of 4+4+2, concurrency ten uses one batch.",
+    "Live HTTP before/after runs have variable network, remote content and revalidation behavior; this is not an isolated causal speedup measurement."
+  ]
+}

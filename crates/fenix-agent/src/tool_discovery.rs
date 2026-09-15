@@ -1,0 +1,254 @@
+//! Deterministic BM25 discovery over the task's authorized tool catalog.
+use crate::Runtime;
+use anyhow::{Result, bail};
+use fenix_core::ToolDefinition;
+use serde_json::{Value, json};
+use std::collections::{HashMap, HashSet};
+
+fn essential(name: &str) -> bool {
+    matches!(
+        name,
+        "tool_search"
+            | "file_read"
+            | "files_search"
+            | "command_run"
+            | "command_status"
+            | "ask_user"
+            | "subagent_finish"
+            | "plan_review_read"
+    )
+}
+fn words(text: &str) -> Vec<String> {
+    text.to_lowercase()
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|s| !s.is_empty())
+        .map(str::to_owned)
+        .collect()
+}
+fn search_text(tool: &ToolDefinition) -> String {
+    let hints = match tool.name.as_str() {
+        "file_patch" | "file_edit" | "file_write" => "archivo editar crear modificar parche",
+        "files_glob" | "files_list" => "archivos carpeta buscar rutas patrones",
+        "code_query" => "código referencias definición símbolos diagnóstico lsp",
+        "command_input" => "terminal entrada escribir enviar stdin interactiva teclado eof",
+        "command_list" | "command_output" | "command_cancel" => {
+            "proceso comando salida registro historial cancelar servicios"
+        }
+        "subagent_spawn" | "subagent_send" | "subagent_status" | "subagent_cancel" => {
+            "subagente delegar tarea mensaje corregir continuar estado"
+        }
+        "plan_manage" => "planificar planificación hitos plan tareas dependencias",
+        "memory_search" | "memory_manage" => "memoria preferencias recordar guardar",
+        "schedule_manage" => "recordatorio cron programar horario",
+        "skill_load" => "habilidad cargar skill instrucciones",
+        "project_manage" => "proyecto contexto estado",
+        "web_read" | "web_search" => "internet web investigar buscar página",
+        name if name.starts_with("browser_") => {
+            "navegador navegar clic escribir formulario pantalla responsivo sesión pestaña captura scroll"
+        }
+        "task_inspect" => "auditoría tarea checkpoint registro evidencia",
+        _ => "",
+    };
+    format!("{} {} {} {}", tool.name, tool.name, tool.description, hints)
+}
+impl Runtime {
+    pub(crate) fn exposed_tools(&self, task: &str) -> Result<Vec<ToolDefinition>> {
+        let loaded = self
+            .store
+            .get::<Vec<String>>("loaded_tools", task)?
+            .unwrap_or_default();
+        let mut tools = self.task_tool_catalog(task)?;
+        let catalog = tools
+            .iter()
+            .filter(|t| !essential(&t.name))
+            .map(|t| t.name.as_str())
+            .collect::<Vec<_>>()
+            .join(", ");
+        tools.retain(|t| essential(&t.name) || loaded.contains(&t.name));
+        if let Some(search) = tools.iter_mut().find(|t| t.name == "tool_search") {
+            search
+                .description
+                .push_str(&format!(" Available names: {catalog}."));
+        }
+        Ok(tools)
+    }
+    pub(crate) fn search_tools(&self, task: &str, args: &Value) -> Result<Value> {
+        let tools = self.task_tool_catalog(task)?;
+        let requested = args["names"]
+            .as_array()
+            .map(|a| a.iter().filter_map(Value::as_str).collect::<Vec<_>>())
+            .unwrap_or_default();
+        if requested.len() > 8 {
+            bail!("Load at most eight tools per search");
+        }
+        let query = args["query"].as_str().unwrap_or_default();
+        if query.len() > 1000 {
+            bail!("Tool query exceeds 1000 bytes");
+        }
+        if query.trim().is_empty() && requested.is_empty() {
+            return Ok(
+                json!({"catalog":tools.iter().map(|t|json!({"name":t.name,"description":t.description.chars().take(180).collect::<String>()})).collect::<Vec<_>>(),"instruction":"Search a purpose or supply exact names to load schemas."}),
+            );
+        }
+        for name in &requested {
+            if !tools.iter().any(|t| t.name == *name) {
+                bail!("Tool is unavailable in this task: {name}");
+            }
+        }
+        let docs = tools
+            .iter()
+            .map(|t| words(&search_text(t)))
+            .collect::<Vec<_>>();
+        let avg = docs.iter().map(Vec::len).sum::<usize>() as f64 / docs.len().max(1) as f64;
+        let mut frequency = HashMap::<&str, usize>::new();
+        for doc in &docs {
+            for word in doc.iter().map(String::as_str).collect::<HashSet<_>>() {
+                *frequency.entry(word).or_default() += 1;
+            }
+        }
+        let tokens = words(query);
+        let mut ranked = tools
+            .iter()
+            .enumerate()
+            .map(|(i, t)| {
+                let mut score = if requested.contains(&t.name.as_str()) {
+                    1e6
+                } else {
+                    0.0
+                };
+                if t.name == query {
+                    score += 1e5;
+                }
+                for token in &tokens {
+                    let tf = docs[i].iter().filter(|w| *w == token).count() as f64;
+                    let df = *frequency.get(token.as_str()).unwrap_or(&0) as f64;
+                    let idf = (1.0 + (docs.len() as f64 - df + 0.5) / (df + 0.5)).ln();
+                    score += idf * tf * 2.2
+                        / (tf + 1.2 * (0.25 + 0.75 * docs[i].len() as f64 / avg.max(1.0)));
+                }
+                (score, t)
+            })
+            .filter(|(score, _)| *score > 0.0)
+            .collect::<Vec<_>>();
+        ranked.sort_by(|(a, ta), (b, tb)| b.total_cmp(a).then_with(|| ta.name.cmp(&tb.name)));
+        let limit = args["limit"].as_u64().unwrap_or(5).clamp(1, 8) as usize;
+        let selected = ranked
+            .into_iter()
+            .take(limit.max(requested.len()))
+            .map(|(_, t)| t)
+            .collect::<Vec<_>>();
+        let mut loaded = self
+            .store
+            .get::<Vec<String>>("loaded_tools", task)?
+            .unwrap_or_default();
+        for tool in &selected {
+            if !essential(&tool.name) {
+                loaded.retain(|name| name != &tool.name);
+                loaded.push(tool.name.clone());
+            }
+        }
+        // Tools remain discoverable even when older schemas leave the prompt.
+        if loaded.len() > 24 {
+            loaded.drain(..loaded.len() - 24);
+        }
+        self.store.put("loaded_tools", task, &loaded)?;
+        Ok(
+            json!({"tools":selected.iter().map(|t|json!({"name":t.name,"description":t.description})).collect::<Vec<_>>(),"loaded":true,"instruction":"The selected schemas are available on the next response. Authorization remains scoped to this task."}),
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[tokio::test]
+    async fn discovery_reduces_prompt_and_cannot_unlock_worker_delegation() {
+        let dir = tempfile::tempdir().unwrap();
+        let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+            .await
+            .unwrap();
+        let task = runtime
+            .store
+            .enqueue_bound(
+                "Fix code",
+                "web",
+                None,
+                &fenix_storage::TaskBinding::default(),
+            )
+            .unwrap();
+        runtime.store.claim_next().unwrap();
+        let full = runtime.task_tool_catalog(&task.id).unwrap();
+        let initial = runtime.exposed_tools(&task.id).unwrap();
+        assert!(
+            serde_json::to_vec(&initial).unwrap().len()
+                < serde_json::to_vec(&full).unwrap().len() / 2
+        );
+        assert!(!initial.iter().any(|t| t.name == "file_patch"));
+        let result = runtime
+            .search_tools(&task.id, &json!({"names":["file_patch"]}))
+            .unwrap();
+        assert_eq!(result["tools"][0]["name"], "file_patch");
+        // Selecting an older schema must refresh it before the bounded cache evicts entries.
+        let old_cache = full
+            .iter()
+            .filter(|t| !essential(&t.name))
+            .map(|t| t.name.clone())
+            .take(24)
+            .collect::<Vec<_>>();
+        runtime
+            .store
+            .put("loaded_tools", &task.id, &old_cache)
+            .unwrap();
+        let fresh = full
+            .iter()
+            .find(|t| !essential(&t.name) && !old_cache.contains(&t.name))
+            .unwrap();
+        runtime
+            .search_tools(&task.id, &json!({"names":[old_cache[0],fresh.name]}))
+            .unwrap();
+        let refreshed: Vec<String> = runtime
+            .store
+            .get("loaded_tools", &task.id)
+            .unwrap()
+            .unwrap();
+        assert_eq!(refreshed.len(), 24);
+        assert!(refreshed.contains(&old_cache[0]));
+        assert!(refreshed.contains(&fresh.name));
+        runtime
+            .search_tools(&task.id, &json!({"names":["file_patch"]}))
+            .unwrap();
+        assert!(
+            runtime
+                .exposed_tools(&task.id)
+                .unwrap()
+                .iter()
+                .any(|t| t.name == "file_patch")
+        );
+        let result = runtime
+            .search_tools(&task.id, &json!({"query":"recordatorio","limit":1}))
+            .unwrap();
+        assert_eq!(result["tools"][0]["name"], "schedule_manage");
+        let child = runtime
+            .store
+            .create_subagent(
+                &task.id,
+                &fenix_storage::SubagentSpec {
+                    objective: "Read sources".into(),
+                    expected_output: "References".into(),
+                    context: String::new(),
+                    constraints: String::new(),
+                },
+            )
+            .unwrap();
+        assert!(
+            runtime
+                .search_tools(&child.id, &json!({"names":["subagent_spawn"]}))
+                .is_err()
+        );
+        assert!(
+            runtime
+                .search_tools(&child.id, &json!({"names":["subagent_send"]}))
+                .is_err()
+        );
+    }
+}

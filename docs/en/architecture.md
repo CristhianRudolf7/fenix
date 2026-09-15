@@ -1,5 +1,7 @@
 # Architecture
 
+[Interactive execution, updated limits and on-demand tools](execution-harness.md)
+
 [Español](../es/architecture.md)
 
 Fénix is a modular Rust workspace, deployed initially as one local process. The
@@ -15,12 +17,13 @@ channel owns a separate conversation or agent loop.
 | `fenix-providers` | Reusable HTTP clients, five protocol codecs, native authentication headers and bounded inference transport. |
 | `fenix-storage` | Versioned SQLite schema, projects, fixed task bindings, scoped history/memory, conversation queue, child jobs/reports, events, FTS5 and delivery outbox. |
 | `fenix-agent` | Master and background child loops, context, permissions, effect coordination, tools, processes, schedules and Telegram. |
+| `fenix-web` | Independent public crawler, disk-backed FTS5 index, bounded HTTP extraction, robots/DNS checks and source reading; [contract and budgets](web-search.md). |
 | `apps/server` | Linux process entry point, loopback API, origin/host checks and embedded static assets. |
 | `apps/web` | Framework-free browser ES modules, forms, chat and administration. No build server or per-agent browser is required. |
 
 The server uses two Tokio worker threads. File-tool I/O runs on the blocking pool;
-model calls, Telegram and managed commands use asynchronous I/O. One master serves
-the continuous conversation while up to four children run as Tokio tasks in the
+model calls, Telegram and managed commands use asynchronous I/O. The master serves
+concurrent conversation turns while children run as Tokio tasks in the
 same process, reusing the configured provider client and HTTP connections. No
 additional process, browser or model configuration is created per child.
 
@@ -39,13 +42,14 @@ additional process, browser or model configuration is created per child.
 6. Execute tools serially, record their result/error and return bounded context to
    the model. Large bounded results remain recoverable through `task_inspect`.
 7. Continue until a final response, cancellation, error or operational limit.
-   Remaining managed processes are stopped. Failed/interrupted tool sequences
+   Remaining foreground processes are stopped; explicit persistent sessions may survive success. Failed/interrupted tool sequences
    remain in the audit history but are excluded from future model replay.
 
-Incoming message order and model-context order are stored separately. If request B
-arrives while A is running, B appears in the chat immediately but only enters model
-context after A's tool results and response. This prevents a queued correction from
-silently becoming part of the active turn.
+Incoming message order and model-context order are separate. Independent turns can
+run concurrently; each context excludes other unfinished transcripts. Completed
+tasks are sealed as contiguous tool-call/result groups. Textual plan controls can
+interrupt drafting or revise active work without changing task/project scope.
+See [editable planning and durable events](planning.md).
 
 The request, visible assumptions, responses and validation evidence form the basic
 task record. This is not a formal proof that every natural-language requirement
@@ -90,7 +94,7 @@ exclude conversation-history and delegation controls and require `subagent_finis
 Coordination and report turns have further restrictions. Child task inspection is
 limited to its own ID; master inspection must respect its resolved read scopes.
 
-A separate worker claims child jobs independently of the master FIFO. SQLite stores
+A separate worker claims child jobs independently of the conversation dispatcher. SQLite stores
 parent links, attempt counts, isolated transcripts and completion reports. A child
 starts with its scoped handoff, project brief, stable instructions, applicable
 project/general explicit memories and complete skill metadata. It does not receive
@@ -100,13 +104,13 @@ remains in the child's task journal.
 
 Retryable failures allow at most three total child attempts, preserving the
 transcript and completed tool results without replaying actions. Each attempt is
-limited to 32 steps and ten minutes. A structured `subagent_finish` is required;
+limited to 128 steps per task and one hour per attempt by default. A structured `subagent_finish` is required;
 blockage, cancellation or non-retryable failure can stop earlier. Restarting marks
 unfinished children interrupted instead of automatically restoring execution.
 
 `GET /api/status` exposes child state and a `pending_requests` collection alongside
 the legacy `pending` field. The Tasks panel refreshes IDs, purpose, expected output,
-attempts and results through the existing polling loop. Only master previews use
+attempts and results through durable event-triggered refresh plus polling. Only master previews use
 the single SSE progress snapshot, so children cannot replace its live response.
 
 ## Approvals and commands
@@ -196,17 +200,17 @@ an outgoing message. Failed deliveries remain in the database for inspection.
 
 | Resource | Bound |
 | --- | --- |
-| Active agent tasks | 1 master with FIFO backlog, plus up to 4 asynchronous children |
-| Model steps | 32 per task, at most 16 tool calls per response |
+| Active agent tasks | 8 normal master dispatch slots, reserved control capacity, 64 ordinary live turns + 1 control; 32 live child jobs / 4 child inferences |
+| Model steps | 128 per task by default, configurable up to 4,096; at most 16 tool calls per response |
 | Master inference retries | Up to 2 additional attempts for classified transient errors; no automatic tool-effect replay |
-| Child attempts | At most 3 total for retryable failure, preserving transcript; 32 steps / 10 minutes each |
-| Master execution | 1 hour maximum; pending owner question times out after 30 minutes; child attempt timeout also bounds child waits |
-| Provider request | 120-second default HTTP timeout; 4,096 output tokens per agent call, 1,024 for setup |
+| Child attempts | At most 3 total for retryable failure, preserving transcript; 128 steps per task / 1 hour per attempt by default |
+| Master execution | 4 hours by default, configurable; owner response time is excluded for master and child deadlines |
+| Provider request | 120-second default HTTP timeout; up to 16,384 output tokens per agent call by default, bounded by remaining context; 1,024 for setup |
 | Active agent request | 512 KB serialized; no cumulative token-budget setting |
 | Tool arguments / context result | 128 KB arguments; results above 16 KB become references with previews |
 | Regular UTF-8 file | Up to 1 MiB; file search and listing also bound traversal/results |
-| Managed processes | One command lifetime at a time in a runtime, registry cap 8; 1–600 seconds per command, default 120 |
-| Process output | Up to 128 KiB combined stdout/stderr; truncation reported |
+| Managed processes | Foreground effects serialized; explicit persistent sessions may overlap later work; cap 16; command default 30 minutes, service default 24 hours |
+| Process output | Redacted logs up to 64 MiB per process; 12,000-byte incremental previews and recoverable pages; output failures stop the process explicitly |
 | Skills / instructions | 32 KB per skill; 8 KB per stable instruction file |
 
 Relevant primary references: [Axum](https://docs.rs/axum/0.8.9/axum/),

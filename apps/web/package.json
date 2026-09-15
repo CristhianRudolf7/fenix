@@ -1,11 +1,11 @@
 {
   "name": "@fenix/web",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check app.js",
-    "format:check": "prettier --check app.js styles.css index.html playwright.config.js tests/*.js package.json",
+    "check": "node --check app.js && node --check browser.js",
+    "format:check": "prettier --check app.js browser.js styles.css index.html playwright.config.js tests/*.js package.json",
     "test": "playwright test"
   },
   "devDependencies": {

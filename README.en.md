@@ -2,7 +2,7 @@
 
 [Español](README.md)
 
-**Current version: 0.2.0**
+**Current version: 0.3.0**
 
 A local personal AI assistant for Linux. A Rust service provides a web interface
 and optional Telegram with **one continuous conversation**, local tools, explicit
@@ -35,14 +35,19 @@ computer and service must stay on for Telegram and scheduled work.
 
 ## Available features
 
+- [Coding harness](docs/en/coding-harness.md): regex/glob search, multi-file patches, repository `AGENTS.md` guidance, configurable LSP and active-task compaction with recoverable checkpoints.
+
 - Bilingual web with chat, projects, provider setup, Telegram, memory, skills, schedules and
   task traces. White light mode is the default; an explicit dark-mode choice persists.
-- One active master task and a FIFO conversation queue, with up to four background
-  subagents. Delegated work has its own transcript and returns a report to the
-  master. The master can serve other requests while children work or await approval.
+- Concurrent conversation turns, background subagents and editable plans with
+  milestones and dependencies. Questions and planning do not hold the chat.
+  [Planning, revisions and pub/sub](docs/en/planning.md) preserve work and channel destinations.
+- [Adaptive plan review](docs/en/plan-reviews.md): initial review of complex plans,
+  specialists on demand and evidence-backed resolution, using the same configured
+  model. The chat stays available and correction rounds are bounded.
 - Master tools cover local work, memory, projects and delegation. Children have
   a restricted catalog without conversation history or delegation, plus a required
-  finish report; they can inspect only their own task.
+  finish report; they inspect their own task and explicitly scoped plan evidence.
   Commands may use any OS-accessible directory; dedicated file tools stay within the configured workspace.
 - Backend-enforced, single-action textual approvals for commands and file changes
   by default. Local settings can explicitly allow those actions.
@@ -54,20 +59,25 @@ computer and service must stay on for Telegram and scheduled work.
   and executions retain their project bindings when the foreground topic changes.
 - General and project memory CRUD, scoped exact duplicate checks and Unicode
   lexical search with FTS5. No automatic extraction or embeddings.
-- Four versioned manual skills: `memory-and-reminders`, `local-file-work`,
-  `conversation-recap`, `local-troubleshooting`.
+- [Independent web search and source reading](docs/en/web-search.md): a background
+  crawler, disk-backed public index and HTTP reading of results. No external
+  search provider; coverage starts small and grows from discovered links.
+- [Local interactive browser](docs/en/browser.md): Rust controls local Chromium,
+  persistent personal logins, encrypted password vault, manual controls and responsive tests.
+- Five versioned manual skills: `memory-and-reminders`, `local-file-work`,
+  `conversation-recap`, `local-troubleshooting`, `browser-navigation`.
 - One-time, interval and cron schedules in `America/Lima`. Reminders deliver text;
   scheduled agent tasks join the same queue. Identical active schedules and
   overlapping executions of one schedule are checked.
 - Optional Telegram pairing for one owner, private text messages only.
 - Static and project-scoped credentials for 17 providers and five protocols.
 
-Runtime data lives in ignored `.fenix/` by default. Credentials are stored in a
+Runtime data lives in ignored `.fenix/` by default. Model provider credentials are stored in a
 private local SQLite database, without a separate encryption master key. Known
 keys are redacted from agent output and never returned by settings endpoints.
 The service binds to loopback and rejects foreign browser origins and hosts.
 
-Web search, browsers, heartbeat, voice, advanced memory, action
+Heartbeat, voice, advanced memory, action
 restoration and automatic task recovery remain in [ROADMAP.md](ROADMAP.md).
 Interrupted tasks are recorded, not replayed. The web previews OpenAI Responses text as it arrives and shows live tool activity.
 Other provider adapters retain complete responses; Telegram delivers complete messages.
@@ -77,8 +87,9 @@ Reconnecting the browser restores the current preview without repeating inferenc
 
 Every subagent receives a precise purpose and expected output, with optional
 context and constraints; there is no mandatory “information needed” field. The
-engine enforces one delegation level, four concurrent children, at most three
-total attempts for retryable failures, and 32 steps / ten minutes per attempt.
+engine enforces one delegation level, four concurrent child inference requests, at most three
+total attempts for retryable failures, and configurable defaults of 128 model
+steps per task and one hour per attempt.
 Retries preserve the child transcript and completed tool results rather than
 replaying tool actions. Blocked, cancelled and non-retryable work can stop early.
 Restarting interrupts unfinished children; it does not automatically resume them.
@@ -96,7 +107,7 @@ Skills live in **`~/.fenix/skills/<skill-name>/SKILL.md`**, shared across runtim
 data directories. `--skills-dir PATH` overrides this location; `--data-dir` only
 changes runtime data. Master and children see the complete compact metadata
 catalog, including enabled state; only `skill_load` loads enabled instructions.
-Disabled skills stay visible but cannot be loaded. The four defaults are templates,
+Disabled skills stay visible but cannot be loaded. The five defaults are templates,
 not a limit on how many skills can be installed.
 
 On startup, legacy `<data-dir>/skills` resources are copied into the selected
@@ -152,3 +163,7 @@ root. It uses temporary data and writes a secret-free report under ignored
 - [Provider endpoints and authentication](docs/en/provider-reference.md)
 - [Current requirements](REQUIREMENTS.md)
 - [Future work](ROADMAP.md)
+
+Interactive terminal sessions, persistent services, incremental logs, configurable execution limits, subagent follow-ups and on-demand tools are described in the [execution harness guide](docs/en/execution-harness.md).
+
+[Local browser / Navegador local — sessions, controls and responsive tests](docs/en/browser.md)

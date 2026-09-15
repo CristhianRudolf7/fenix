@@ -29,6 +29,91 @@ pub struct Settings {
     pub command_policy: ActionPolicy,
     #[serde(default = "default_approval")]
     pub file_write_policy: ActionPolicy,
+    #[serde(default)]
+    pub coding: CodingSettings,
+    #[serde(default)]
+    pub execution: ExecutionSettings,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct ExecutionSettings {
+    pub max_model_steps: usize,
+    pub task_timeout_seconds: u64,
+    pub subagent_timeout_seconds: u64,
+    pub command_timeout_seconds: u64,
+    pub service_timeout_seconds: u64,
+    pub max_output_tokens: u32,
+}
+impl Default for ExecutionSettings {
+    fn default() -> Self {
+        Self {
+            max_model_steps: 128,
+            task_timeout_seconds: 14_400,
+            subagent_timeout_seconds: 3_600,
+            command_timeout_seconds: 1_800,
+            service_timeout_seconds: 86_400,
+            max_output_tokens: 16_384,
+        }
+    }
+}
+impl ExecutionSettings {
+    pub fn validate(&self) -> Result<()> {
+        if !(8..=4096).contains(&self.max_model_steps)
+            || !(60..=604_800).contains(&self.task_timeout_seconds)
+            || !(60..=604_800).contains(&self.subagent_timeout_seconds)
+            || !(1..=604_800).contains(&self.command_timeout_seconds)
+            || !(1..=604_800).contains(&self.service_timeout_seconds)
+            || !(1024..=131_072).contains(&self.max_output_tokens)
+        {
+            bail!("Invalid execution limits; timeouts must not exceed seven days");
+        }
+        Ok(())
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct CodingSettings {
+    pub language_servers: Vec<crate::coding::lsp::ServerConfig>,
+    /// Operator-supplied model context capacity; conservative estimates reserve headroom.
+    pub context_window_tokens: usize,
+    pub compact_at_tokens: usize,
+    pub keep_recent_tokens: usize,
+}
+impl Default for CodingSettings {
+    fn default() -> Self {
+        Self {
+            language_servers: Vec::new(),
+            context_window_tokens: 32_768,
+            compact_at_tokens: 22_000,
+            keep_recent_tokens: 6_000,
+        }
+    }
+}
+impl CodingSettings {
+    pub fn validate(&self) -> Result<()> {
+        if self.context_window_tokens < 16_384
+            || self.context_window_tokens > 2_000_000
+            || self.compact_at_tokens < 8_000
+            || self.compact_at_tokens > self.context_window_tokens.saturating_sub(8_192)
+            || self.keep_recent_tokens < 1_000
+            || self.keep_recent_tokens > self.compact_at_tokens / 2
+            || self.language_servers.len() > 16
+        {
+            bail!("Invalid coding context budget or too many language servers");
+        }
+        let mut extensions = std::collections::HashSet::new();
+        for server in &self.language_servers {
+            server.validate()?;
+            for extension in &server.extensions {
+                if !extensions.insert(extension) {
+                    bail!("Each extension must have only one configured language server");
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -54,11 +139,13 @@ impl Settings {
             workspace,
             command_policy: ActionPolicy::Ask,
             file_write_policy: ActionPolicy::Ask,
+            coding: CodingSettings::default(),
+            execution: ExecutionSettings::default(),
         }
     }
     pub fn request(&self, messages: Vec<Message>) -> ChatRequest {
         let mut request = ChatRequest::new(&self.model, messages);
-        request.max_output_tokens = 4096;
+        request.max_output_tokens = self.execution.max_output_tokens;
         if self.provider == ProviderId::OpenAi {
             request.reasoning_effort = self.reasoning_effort;
         }
@@ -106,7 +193,7 @@ impl Runtime {
 
     pub async fn configure(&self, mut settings: Settings, key: Option<String>) -> Result<Value> {
         let _guard = self.configure_lock.lock().await;
-        if self.active.lock().await.is_some()
+        if !self.active.lock().await.is_empty()
             || self
                 .store
                 .tasks(200)?
@@ -115,6 +202,11 @@ impl Runtime {
             || !self.subagents.active.lock().await.is_empty()
         {
             bail!("Wait for queued or active tasks before changing model configuration");
+        }
+        settings.coding.validate()?;
+        settings.execution.validate()?;
+        if settings.execution.max_output_tokens as usize >= settings.coding.context_window_tokens {
+            bail!("Output limit must be smaller than model context capacity");
         }
         settings.model = settings.model.trim().to_owned();
         if settings.model.is_empty() || settings.model.len() > 512 {
@@ -168,6 +260,7 @@ impl Runtime {
         self.store.put("settings", "active", &settings)?;
         // Signed replay data is protocol-specific. Preserve it on disk; only clear it
         // when building context for a different protocol (see context.rs).
+        self.language_servers.shutdown().await;
         *self.model.write().await = Some(Arc::new(connection));
         Ok(json!({"connected":true,"model":settings.model,"usage":response.usage}))
     }

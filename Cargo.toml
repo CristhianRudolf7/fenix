@@ -1,9 +1,9 @@
 [workspace]
-members = ["crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers", "crates/fenix-storage", "crates/fenix-agent", "apps/server"]
+members = ["crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers", "crates/fenix-storage", "crates/fenix-web", "crates/fenix-browser", "crates/fenix-agent", "apps/server"]
 resolver = "2"
 
 [workspace.package]
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.98"
 publish = false
@@ -15,6 +15,8 @@ fenix-credentials = { path = "crates/fenix-credentials" }
 fenix-providers = { path = "crates/fenix-providers" }
 fenix-storage = { path = "crates/fenix-storage" }
 fenix-agent = { path = "crates/fenix-agent" }
+fenix-web = { path = "crates/fenix-web" }
+fenix-browser = { path = "crates/fenix-browser" }
 anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 chrono-tz = "0.10"

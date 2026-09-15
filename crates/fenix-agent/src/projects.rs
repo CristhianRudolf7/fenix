@@ -232,7 +232,7 @@ impl Runtime {
         )?;
         if route.focus_project_id.is_some() {
             self.store
-                .set_conversation_focus(route.focus_project_id.as_deref())?;
+                .set_task_focus(&task.id, route.focus_project_id.as_deref())?;
         } else if explicitly_general(&task.request)
             || route.mode == "general"
                 && clarification
@@ -240,7 +240,7 @@ impl Runtime {
                     .and_then(|item| item["answer"].as_str())
                     .is_some_and(explicitly_general)
         {
-            self.store.set_conversation_focus(None)?;
+            self.store.set_task_focus(&task.id, None)?;
         }
         Ok(())
     }
