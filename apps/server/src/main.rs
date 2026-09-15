@@ -5,8 +5,46 @@ use std::{
     path::PathBuf,
 };
 
-#[tokio::main(worker_threads = 2)]
-async fn main() -> Result<()> {
+fn main() -> Result<()> {
+    if std::env::args().nth(1).as_deref() == Some("internal-read-only") {
+        let args: Vec<String> = std::env::args().skip(2).collect();
+        if args.len() != 3 {
+            bail!("Read-only helper requires command, cwd and JSON input paths");
+        }
+        return fenix_agent::read_only::exec(
+            &args[0],
+            std::path::Path::new(&args[1]),
+            &serde_json::from_str::<Vec<String>>(&args[2])?,
+        );
+    }
+    tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(2)
+        .enable_all()
+        .build()?
+        .block_on(run())
+}
+
+async fn run() -> Result<()> {
+    if std::env::args().nth(1).as_deref() == Some("eval") {
+        let mut args = std::env::args().skip(2);
+        let config = args.next().ok_or_else(|| {
+            anyhow::anyhow!("Usage: fenix eval CONFIG.json OUTPUT_DIR [--keep-services]")
+        })?;
+        let output = args
+            .next()
+            .ok_or_else(|| anyhow::anyhow!("Evaluation output directory required"))?;
+        let keep_services = match args.next().as_deref() {
+            Some("--keep-services") => true,
+            None => false,
+            _ => bail!("Unknown evaluation option"),
+        };
+        if args.next().is_some() {
+            bail!("Unexpected evaluation arguments");
+        }
+        let config = serde_json::from_slice(&std::fs::read(config)?)?;
+        return fenix_agent::evaluation::run(config, std::path::Path::new(&output), keep_services)
+            .await;
+    }
     let mut data_dir = PathBuf::from(".fenix");
     let mut skills_dir = None;
     let mut port = 4173;
@@ -33,7 +71,7 @@ async fn main() -> Result<()> {
             }
             "--help" | "-h" => {
                 println!(
-                    "Fenix local assistant\n\nfenix [--port 4173] [--data-dir .fenix] [--skills-dir PATH]\n\nSkills default to ~/.fenix/skills, shared across data directories. --skills-dir overrides it.\n\nOpen http://127.0.0.1:4173 to configure the model and optional Telegram."
+                    "Fenix local assistant\n\nfenix eval CONFIG.json NEW_OUTPUT_DIR [--keep-services]\nfenix [--port 4173] [--data-dir .fenix] [--skills-dir PATH]\n\nSkills default to ~/.fenix/skills, shared across data directories. --skills-dir overrides it.\n\nOpen http://127.0.0.1:4173 to configure the model and optional Telegram."
                 );
                 return Ok(());
             }

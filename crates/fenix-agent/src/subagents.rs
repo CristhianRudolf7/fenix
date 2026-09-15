@@ -207,7 +207,10 @@ impl Runtime {
             }
             // A terminal record is durable before its report is enqueued. This
             // sweep closes the crash window between those two operations.
-            if self.model.read().await.is_some() {
+            // Drop the model read guard before acquiring configure_lock below.
+            // configure() holds configure_lock before replacing the model.
+            let model_ready = self.model.read().await.is_some();
+            if model_ready {
                 if let Err(error) = self.reconcile_subagent_reports() {
                     self.log_subagent_error("Subagent report queue error", &error);
                 }
@@ -531,4 +534,38 @@ fn is_terminal(status: &str) -> bool {
         status,
         "completed" | "blocked" | "failed" | "cancelled" | "interrupted"
     )
+}
+
+#[cfg(test)]
+mod lock_order_tests {
+    use super::*;
+    #[tokio::test]
+    async fn idle_worker_does_not_hold_model_while_waiting_for_configuration() {
+        let dir = tempfile::tempdir().unwrap();
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+            .await
+            .unwrap();
+        let model = rt
+            .model_connection(
+                crate::config::Settings::initial(dir.path().into()),
+                fenix_credentials::ApiKey::new("fake-lock-order-key").unwrap(),
+            )
+            .unwrap();
+        *rt.model.write().await = Some(Arc::new(model));
+        let configuration = rt.configure_lock.lock().await;
+        let worker = tokio::spawn(rt.clone().subagent_worker());
+        tokio::time::sleep(Duration::from_millis(50)).await;
+        let write = tokio::time::timeout(Duration::from_secs(1), rt.model.write()).await;
+        drop(configuration);
+        assert!(
+            write.is_ok(),
+            "Worker inverted the model/configuration lock order"
+        );
+        drop(write);
+        rt.stop.cancel();
+        tokio::time::timeout(Duration::from_secs(2), worker)
+            .await
+            .unwrap()
+            .unwrap();
+    }
 }

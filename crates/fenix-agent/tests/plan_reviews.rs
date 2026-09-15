@@ -39,9 +39,13 @@ fn child_request(body: &Value) -> bool {
 
 fn has_result(body: &Value, call_id: &str) -> bool {
     body["input"].as_array().is_some_and(|input| {
-        input
-            .iter()
-            .any(|item| item["type"] == "function_call_output" && item["call_id"] == call_id)
+        input.iter().any(|item| {
+            item["type"] == "function_call_output"
+                && !item["output"]
+                    .as_str()
+                    .is_some_and(|s| s.contains("tool_schema_loaded"))
+                && item["call_id"] == call_id
+        })
     })
 }
 

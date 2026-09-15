@@ -66,7 +66,12 @@ test.beforeAll(async () => {
       response.end();
       return;
     }
-    if (last?.role === "user" && last.content.includes("browser-check.txt")) {
+    if (
+      (last?.role === "user" && last.content.includes("browser-check.txt")) ||
+      (last?.type === "function_call_output" &&
+        last.call_id === "browser-file" &&
+        JSON.parse(last.output).code === "tool_schema_loaded")
+    ) {
       response.end(
         JSON.stringify({
           id: "browser-call",
@@ -226,25 +231,37 @@ test("memory CRUD, skill states, schedules and activity work through the real lo
 }) => {
   await page.goto("/");
   await page.locator('[data-page="memory"]').click();
+  await expect(page.locator("#memory-auto")).toBeChecked();
+  await page.locator("#memory-auto").uncheck();
+  await page.locator("#memory-kind").selectOption("preference");
+  await page.locator("#memory-state").selectOption("candidate");
   await page.locator("#memory-title").fill("Test preference");
   await page.locator("#memory-content").fill("Prefiero café peruano");
   await page.getByRole("button", { name: "Guardar recuerdo" }).click();
   await expect(page.locator("#memory-list")).toContainText(
     "Prefiero café peruano",
   );
+  await expect(page.locator("#memory-list")).toContainText("Candidato");
   await page.locator("#memory-query").fill("cafe");
   await page.getByRole("button", { name: "Buscar", exact: true }).click();
   await expect(page.locator("#memory-list")).toContainText("Test preference");
   await page.getByRole("button", { name: "Editar", exact: true }).click();
+  await page.locator("#memory-state").selectOption("confirmed");
   await page.locator("#memory-content").fill("Prefiero té verde");
   await page.getByRole("button", { name: "Guardar recuerdo" }).click();
   await expect(page.locator("#memory-list")).toContainText("Prefiero té verde");
+  await expect(page.locator("#memory-list")).toContainText("Confirmado");
+  await page.getByRole("button", { name: "Historial", exact: true }).click();
+  await expect(page.locator("#detail-content")).toContainText(
+    "Prefiero café peruano",
+  );
+  await page.locator("#close-dialog").click();
   await page.getByRole("button", { name: "Eliminar recuerdo" }).click();
   await expect(page.locator("#memory-list")).toContainText(
     "Aún no hay recuerdos",
   );
   await page.locator('[data-page="skills"]').click();
-  await expect(page.locator("[data-skill]")).toHaveCount(5);
+  await expect(page.locator("[data-skill]")).toHaveCount(13);
   await page.locator('[data-skill="conversation-recap"]').uncheck();
   await expect(
     page.locator('[data-read-skill="conversation-recap"]'),
@@ -531,9 +548,15 @@ test("projects keep separate memories and referenced replies in one conversation
     await page.locator("#memory-filter").selectOption(scope);
     await page.locator("#memory-title").fill("Project preference");
     await page.locator("#memory-content").fill(text);
+    const saved = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/memory") &&
+        response.request().method() === "POST",
+    );
     await page
       .getByRole("button", { name: "Guardar recuerdo", exact: true })
       .click();
+    expect((await saved).ok()).toBe(true);
     await expect(page.locator("#memory-list")).toContainText(text);
     await expect(page.locator("#memory-list .record")).toHaveCount(1);
   }
@@ -766,6 +789,9 @@ test("coding settings persist language servers and context budgets through the w
       return (await result.json()).settings.coding.context_window_tokens;
     })
     .toBe(65536);
+  await expect(page.locator("#toast")).toContainText(
+    /Connection verified|Conexión verificada/,
+  );
   await page.reload();
   await page.locator('[data-page="settings"]').click();
   await page.locator("#advanced-settings > summary").click();
@@ -885,4 +911,35 @@ test("local browser controls preserve profiles and resize the rendered page", as
   } finally {
     await new Promise((resolve) => fixture.close(resolve));
   }
+});
+
+test("a late skill update does not replace the page selected by the owner", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator('[data-page="skills"]').click();
+  let release;
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/skills/conversation-recap", async (route) => {
+    const response = await route.fetch();
+    await gate;
+    await route.fulfill({ response });
+  });
+  const finished = page.waitForResponse((response) =>
+    response.url().endsWith("/api/skills/conversation-recap"),
+  );
+  await page.locator('[data-skill="conversation-recap"]').uncheck();
+  await page.locator('[data-page="activity"]').click();
+  await expect(page.locator("#task-history")).toBeVisible();
+  release();
+  await finished;
+  // Let the response handler and any follow-up rendering complete.
+  await page.waitForTimeout(300);
+  await expect(page.locator("#task-history")).toBeVisible();
+  await expect(page.locator('[data-page="activity"]')).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
 });

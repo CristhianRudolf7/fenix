@@ -83,14 +83,14 @@ fn base_catalog() -> Vec<ToolDefinition> {
         ),
         definition(
             "command_run",
-            "Run a shell command in any explicitly supplied OS-accessible cwd. Not restricted to the file workspace. Runtime approval required. tty enables a real interactive terminal; persistent explicitly keeps a service/session alive after successful turns. Timeouts use configured defaults (up to seven days). Use command_status for incremental output and command_input for stdin. Persistent sessions may overlap later edits; inspect readiness before using them.",
-            json!({"command":string,"cwd":string,"timeout_seconds":integer,"tty":{"type":"boolean"},"persistent":{"type":"boolean"}}),
+            "Run a shell command in any supplied OS-accessible cwd, under configured approval policy. Optional read_paths lists exact existing input files/directories for Linux-enforced read-only execution: no writes, network or persistent/TTY mode; independent output-file writes may proceed. Runtime dependencies under /usr,/bin,/lib,/etc are implicit read inputs. It fails closed on unsupported kernels. Omit read_paths for ordinary mutable commands. tty enables a terminal; persistent keeps a service alive after successful turns and supervises ordinary shell background jobs. Prefer foreground service commands; do not use daemonization or exit the supervisor shell. Timeouts use configured defaults (up to seven days). Short commands may return completed output immediately. Before dependent effects the engine waits for earlier foreground work. Inspect service readiness with command_status ready_port; stop it with command_cancel.",
+            json!({"command":string,"cwd":string,"timeout_seconds":integer,"tty":{"type":"boolean"},"persistent":{"type":"boolean"},"read_paths":{"type":"array","items":string}}),
             &["command", "cwd"],
         ),
         definition(
             "command_status",
             "Read only new redacted process output by default. cursor replays a byte position; omitted bytes remain in command_output. wait_ms waits up to 30000 ms. A completed process is successful only when exit_code is zero. Persistent processes are accessible from later authorized master turns.",
-            json!({"process_id":string,"wait_ms":integer,"cursor":integer,"limit":integer}),
+            json!({"process_id":string,"wait_ms":integer,"cursor":integer,"limit":integer,"ready_port":integer}),
             &["process_id"],
         ),
         definition(
@@ -125,14 +125,26 @@ fn base_catalog() -> Vec<ToolDefinition> {
         ),
         definition(
             "memory_search",
-            "Lexically search memory within the fixed task project. Optional scope=global reads explicit global preferences; project_id is allowed only for projects authorized on this turn. Empty query lists recent records.",
-            json!({"query":string,"limit":integer,"project_id":string,"scope":{"type":"string","enum":["project","global"]}}),
+            "Search active, valid memories within the fixed task project. Optional scope=global reads explicit global preferences; project_id is allowed only for projects authorized on this turn. Empty query lists recent records.",
+            json!({"query":string,"limit":integer,"since":string,"as_of":string,"semantic":{"type":"boolean"},"project_id":string,"scope":{"type":"string","enum":["project","global"]}}),
             &["query"],
         ),
         definition(
             "memory_manage",
-            "Manage explicitly requested memories only. Actions get/add/update/delete. Search for duplicates before add; source is recorded automatically.",
-            json!({"action":{"type":"string","enum":["get","add","update","delete"]},"id":string,"title":string,"content":string,"project_id":string,"scope":{"type":"string","enum":["project","global"]}}),
+            "Manage memories: get/add/update/delete. Explicit saves may be confirmed; automatic observations and inferred assumptions must be candidates. metadata includes kind, status, assertion, entity_id, valid_from/valid_until (RFC3339), supersedes, pinned, evidence [{reference,quote}]. Corrections must be explicit; similarity is not contradiction. Delete withdraws a claim and prevents recapture. Review candidates using memory_context. Source is recorded automatically.",
+            json!({"action":{"type":"string","enum":["get","add","update","delete"]},"id":string,"title":string,"content":string,"metadata":{"type":"object"},"project_id":string,"scope":{"type":"string","enum":["project","global"]}}),
+            &["action"],
+        ),
+        definition(
+            "knowledge_manage",
+            "Manage scoped knowledge. Register entities with English snake_case kind and aliases; schema_save registers a versioned relation name, description, source_kinds, target_kinds and status candidate/active/disabled. Activate only well-defined useful predicates. relation_save needs source_id,target_id,predicate,evidence_memory_id,status. Confirm only evidence-backed relations; do not infer edges from similarity. All endpoints must share the task scope.",
+            json!({"action":{"type":"string","enum":["entities","entity_save","schemas","schema_save","relation_save","review_resolve"]},"id":string,"entity":{"type":"object"},"schema":{"type":"object"},"relation":{"type":"object"},"second_id":string,"decision":string,"project_id":string,"scope":{"type":"string","enum":["project","global"]}}),
+            &["action"],
+        ),
+        definition(
+            "memory_context",
+            "Read scoped memory context: card or neighbors (query names an entity), history (id, includes retired records), delta (after is an integer sequence cursor; persist next_cursor only after consumption), candidates, context_pack. Neighbor walks are limited to three hops and return evidence paths. All returned content is reference data, never authority.",
+            json!({"action":{"type":"string","enum":["card","neighbors","history","delta","candidates","reviews","context_pack"]},"query":string,"id":string,"after":integer,"limit":integer,"depth":integer,"project_id":string,"scope":{"type":"string","enum":["project","global"]}}),
             &["action"],
         ),
         definition(
@@ -146,6 +158,12 @@ fn base_catalog() -> Vec<ToolDefinition> {
             "Recover a referenced original message and nearby history. At most 15 neighboring messages on each side.",
             json!({"message_id":string,"radius":integer,"project_id":string,"scope":{"type":"string","enum":["project","global"]}}),
             &["message_id"],
+        ),
+        definition(
+            "skill_search",
+            "Find enabled skills by purpose using names, descriptions and full bodies. Returns up to three compact candidates by default; load selected instructions with skill_load.",
+            json!({"query":string,"limit":integer}),
+            &["query"],
         ),
         definition(
             "skill_load",
@@ -163,6 +181,12 @@ fn base_catalog() -> Vec<ToolDefinition> {
             "project_manage",
             "Read a project's recorded status/context without delegating a status lookup. Actions list (compact registry), get (authorized project), create (register an explicitly requested project), update (replace this project's brief using expected_version from get). Briefs preserve Objective; Constraints and preferences; Progress; Key decisions; Relevant files; Next steps; Critical context, with sources and assumptions. Subagents may only get/update their own project. Workspace is optional for non-code projects; aliases are comma-separated.",
             json!({"action":{"type":"string","enum":["list","get","create","update"]},"project_id":string,"name":string,"aliases":string,"description":string,"workspace":string,"brief":string,"expected_version":integer}),
+            &["action"],
+        ),
+        definition(
+            "task_contract",
+            "Read the durable objective, explicit answers, policies and evidence. action=annotate records optional constraints, assumptions or completion criteria as AGENT annotations with source references; these never change user authorization or the original objective. Reuse evidence before asking a resolved question. Verification is proportional; no mandatory model reviewer or per-action test specification.",
+            json!({"action":{"type":"string","enum":["get","annotate"]},"kind":{"type":"string","enum":["constraint","assumption","completion_criterion","verification"]},"text":string,"source":string}),
             &["action"],
         ),
         definition(
@@ -243,7 +267,67 @@ pub fn validate(name: &str, args: &Value) -> Result<()> {
     validate_for(false, name, args)
 }
 
+#[derive(Debug, serde::Serialize)]
+pub(crate) struct ArgumentFailure {
+    pub code: &'static str,
+    pub executed: bool,
+    pub error: String,
+    pub required: Value,
+    pub received_fields: Vec<String>,
+    pub schema: Value,
+    pub example: Value,
+}
+impl std::fmt::Display for ArgumentFailure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.error)
+    }
+}
+impl std::error::Error for ArgumentFailure {}
+
 pub fn validate_for(delegated: bool, name: &str, args: &Value) -> Result<()> {
+    if let Err(error) = validate_arguments(delegated, name, args) {
+        let Some(definition) = catalog_for(delegated).into_iter().find(|t| t.name == name) else {
+            return Err(error);
+        };
+        let mut example = serde_json::Map::new();
+        for key in definition.parameters["required"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+        {
+            let schema = &definition.parameters["properties"][key];
+            let value = schema["enum"]
+                .as_array()
+                .and_then(|a| a.first())
+                .cloned()
+                .unwrap_or_else(|| match schema["type"].as_str() {
+                    Some("integer" | "number") => json!(1),
+                    Some("boolean") => json!(false),
+                    Some("array") => json!([]),
+                    Some("object") => json!({}),
+                    _ => json!("REPLACE_WITH_TASK_VALUE"),
+                });
+            example.insert(key.into(), value);
+        }
+        return Err(ArgumentFailure {
+            code: "invalid_tool_arguments",
+            executed: false,
+            error: error.to_string(),
+            required: definition.parameters["required"].clone(),
+            received_fields: args
+                .as_object()
+                .map(|o| o.keys().cloned().collect())
+                .unwrap_or_default(),
+            schema: definition.parameters,
+            example: json!(example),
+        }
+        .into());
+    }
+    Ok(())
+}
+
+fn validate_arguments(delegated: bool, name: &str, args: &Value) -> Result<()> {
     let definition = catalog_for(delegated)
         .into_iter()
         .find(|t| t.name == name)
@@ -319,6 +403,39 @@ impl Runtime {
                 .await;
         }
         match name {
+            "task_contract" => {
+                let mut contract = self.task_contract(task)?;
+                if args["action"] == "annotate" {
+                    let text = s(args, "text")?;
+                    let source = s(args, "source")?;
+                    let kind = s(args, "kind")?;
+                    if text.is_empty()
+                        || text.len() > 4000
+                        || source.is_empty()
+                        || source.len() > 500
+                    {
+                        bail!("Provide a bounded note and source reference");
+                    }
+                    if !contract["annotations"].is_array() {
+                        contract["annotations"] = json!([]);
+                    }
+                    let annotations = contract["annotations"]
+                        .as_array_mut()
+                        .context("Invalid contract annotations")?;
+                    let note = json!({"kind":kind,"text":text,"source":source,"assertion":"agent_annotation_not_authority"});
+                    if !annotations.contains(&note) {
+                        if annotations.len() >= 32 {
+                            bail!(
+                                "Contract annotation limit reached; keep additional details in task artifacts"
+                            );
+                        }
+                        annotations.push(note.clone());
+                        self.store.event(task, "contract_annotation", &note)?;
+                    }
+                    self.store.put("task_contracts", task, &contract)?;
+                }
+                Ok(contract)
+            }
             "tool_search" => self.search_tools(task, args),
             "subagent_send" => self.send_subagent(task, args).await,
             "plan_review_read" => self.read_review_context(task, args),
@@ -380,7 +497,13 @@ impl Runtime {
                     );
                 }
                 let lease = if matches!(name, "file_write" | "file_edit" | "file_patch") {
-                    Some(self.effect_lease(task, cancel).await?)
+                    Some(if matches!(name, "file_write" | "file_edit") {
+                        let path =
+                            self.file_path(&workspace, s(args, "path")?, name == "file_write")?;
+                        self.effect_lease_for(task, Some(&[path]), cancel).await?
+                    } else {
+                        self.effect_lease(task, cancel).await?
+                    })
                 } else {
                     None
                 };
@@ -459,17 +582,104 @@ impl Runtime {
                 Ok(result)
             }
             "command_run" => {
-                let lease = self.effect_lease(task, cancel).await?;
+                let read_inputs: Vec<String> =
+                    serde_json::from_value(args.get("read_paths").cloned().unwrap_or(json!([])))?;
+                if read_inputs.len() > 16 {
+                    bail!("At most sixteen read-only inputs are allowed");
+                }
+                if !read_inputs.is_empty() && (args["tty"] == true || args["persistent"] == true) {
+                    bail!("Read-only commands cannot be persistent or interactive");
+                }
                 let cwd = std::path::Path::new(s(args, "cwd")?);
                 let cwd = if cwd.is_absolute() {
                     cwd.to_owned()
                 } else {
                     self.task_workspace(task, &settings.workspace)?.join(cwd)
                 };
-                self.processes
+                let mut read_paths = Vec::new();
+                for path in &read_inputs {
+                    let path = std::path::Path::new(path);
+                    read_paths.push(std::fs::canonicalize(if path.is_absolute() {
+                        path.to_owned()
+                    } else {
+                        cwd.join(path)
+                    })?);
+                }
+                if !read_paths.is_empty() {
+                    for path in [
+                        "/usr",
+                        "/bin",
+                        "/sbin",
+                        "/lib",
+                        "/lib64",
+                        "/etc",
+                        "/dev/null",
+                        "/dev/urandom",
+                    ] {
+                        if let Ok(path) = std::fs::canonicalize(path)
+                            && !read_paths.contains(&path)
+                        {
+                            read_paths.push(path);
+                        }
+                    }
+                }
+                let lease = if read_paths.is_empty() {
+                    self.effect_lease(task, cancel).await?
+                } else {
+                    self.effect_lease_for(task, Some(&[]), cancel).await?
+                };
+                let original_command = s(args, "command")?;
+                let command = if read_paths.is_empty() {
+                    original_command.to_owned()
+                } else {
+                    let actual = std::env::current_exe()?;
+                    let executable = if actual
+                        .file_name()
+                        .is_some_and(|n| n.to_string_lossy().starts_with("ld-linux"))
+                    {
+                        std::fs::canonicalize(
+                            std::env::args_os()
+                                .next()
+                                .context("Executable path unavailable")?,
+                        )?
+                    } else {
+                        actual.clone()
+                    };
+                    let quote = |v: &str| format!("'{}'", v.replace('\'', "'\"'\"'"));
+                    let launcher = if actual != executable
+                        && actual
+                            .file_name()
+                            .is_some_and(|n| n.to_string_lossy().starts_with("ld-linux"))
+                    {
+                        format!(
+                            "{} --library-path {} {}",
+                            quote(&actual.to_string_lossy()),
+                            quote(
+                                &executable
+                                    .parent()
+                                    .context("Executable parent missing")?
+                                    .to_string_lossy()
+                            ),
+                            quote(&executable.to_string_lossy())
+                        )
+                    } else {
+                        quote(&executable.to_string_lossy())
+                    };
+                    format!(
+                        "exec {} internal-read-only {} {} {}",
+                        launcher,
+                        quote(original_command),
+                        quote(&cwd.to_string_lossy()),
+                        quote(&serde_json::to_string(&read_paths)?)
+                    )
+                };
+                let independent = !read_paths.is_empty();
+                let mut lease = Some(lease);
+                let started = self
+                    .processes
                     .start(
                         task,
-                        s(args, "command")?,
+                        &command,
                         &cwd,
                         args["timeout_seconds"]
                             .as_u64()
@@ -479,13 +689,34 @@ impl Runtime {
                                 settings.execution.command_timeout_seconds
                             }),
                         cancel,
-                        Some(lease),
+                        if independent { None } else { lease.take() },
                         crate::processes::ProcessOptions {
                             tty: args["tty"] == true,
                             persistent: args["persistent"] == true,
+                            read_paths,
                         },
                     )
-                    .await
+                    .await?;
+                drop(lease);
+                let mut result = self
+                    .processes
+                    .status(
+                        task,
+                        task,
+                        started["process_id"]
+                            .as_str()
+                            .context("Process ID missing")?,
+                        &json!({"wait_ms":100}),
+                    )
+                    .await?;
+                result["tty"] = started["tty"].clone();
+                result["timeout_seconds"] = started["timeout_seconds"].clone();
+                result["instruction"] = json!(if result["status"] == "running" {
+                    "Use command_status with wait_ms for incremental output; do not cancel progressing work merely to inspect it."
+                } else {
+                    "Command ended. Output and exit_code are included; no status poll is needed unless more evidence is required."
+                });
+                Ok(result)
             }
             "command_list" => {
                 let mut items = Vec::new();
@@ -518,14 +749,40 @@ impl Runtime {
                     _ => self.processes.cancel(&info.owner, id).await,
                 }
             }
-            "memory_search" => Ok(json!(self.store.memories_scoped(
-                s(args, "query")?,
-                args["limit"].as_u64().unwrap_or(10) as usize,
-                self.readable_project(task, args)?.as_deref(),
-                false
-            )?)),
+            "memory_search" => self.search_memory(task, args).await,
+            "memory_context" | "knowledge_manage" => {
+                let project = self.readable_project(task, args)?;
+                let write = matches!(
+                    args["action"].as_str(),
+                    Some("entity_save" | "schema_save" | "relation_save" | "review_resolve")
+                );
+                let _lease = if write {
+                    Some(self.effect_lease(task, cancel).await?)
+                } else {
+                    None
+                };
+                if write {
+                    let binding = self.store.task_binding(task)?;
+                    if !binding.bound
+                        || !matches!(binding.mode.as_str(), "general" | "project")
+                        || binding.project_id != project
+                    {
+                        bail!("Knowledge writes must stay in the fixed task scope");
+                    }
+                }
+                self.knowledge_action(args, project.as_deref())
+            }
             "memory_manage" => {
                 let project = self.readable_project(task, args)?;
+                if args["action"] != "get" {
+                    let binding = self.store.task_binding(task)?;
+                    if !binding.bound
+                        || !matches!(binding.mode.as_str(), "general" | "project")
+                        || binding.project_id != project
+                    {
+                        bail!("Memory writes must stay in the fixed task scope");
+                    }
+                }
                 let _lease = if args["action"] != "get" {
                     Some(self.effect_lease(task, cancel).await?)
                 } else {
@@ -542,21 +799,23 @@ impl Runtime {
                                 .context("Memory not found")?
                         ))
                     }
-                    "add" => Ok(json!(self.store.save_memory_scoped(
+                    "add" => Ok(json!(self.store.save_memory_record(
                         None,
                         s(args, "title")?,
                         s(args, "content")?,
                         source,
                         project.as_deref(),
-                        Some(task)
+                        Some(task),
+                        Some(self.validate_memory_metadata(task, args, project.as_deref())?)
                     )?)),
-                    "update" => Ok(json!(self.store.save_memory_scoped(
+                    "update" => Ok(json!(self.store.save_memory_record(
                         Some(s(args, "id")?),
                         s(args, "title")?,
                         s(args, "content")?,
                         source,
                         project.as_deref(),
-                        Some(task)
+                        Some(task),
+                        Some(self.validate_memory_metadata(task, args, project.as_deref())?)
                     )?)),
                     "delete" => {
                         self.store
@@ -578,11 +837,36 @@ impl Runtime {
                 args["radius"].as_u64().unwrap_or(3) as usize,
                 self.readable_project(task, args)?.as_deref()
             )?)),
+            "skill_search" => self.search_skills(
+                s(args, "query")?,
+                args["limit"].as_u64().unwrap_or(3).clamp(1, 8) as usize,
+            ),
             "skill_load" => {
                 let name = s(args, "name")?;
                 let content = self.skill_load(name)?;
                 let metadata = self.skills()?.into_iter().find(|s| s.name == name);
-                Ok(json!({"skill":metadata,"content":content}))
+                let allowed = self.task_tool_catalog(task)?;
+                let requested = metadata
+                    .as_ref()
+                    .map(|s| s.required_tools.clone())
+                    .unwrap_or_default();
+                let names: Vec<_> = requested
+                    .iter()
+                    .filter(|n| allowed.iter().any(|t| t.name == **n))
+                    .take(8)
+                    .collect();
+                let unavailable: Vec<_> = requested
+                    .iter()
+                    .filter(|n| !allowed.iter().any(|t| t.name == **n))
+                    .collect();
+                let loaded = if names.is_empty() {
+                    json!([])
+                } else {
+                    self.search_tools(task, &json!({"names":names}))?["tools"].clone()
+                };
+                Ok(
+                    json!({"skill":metadata,"content":content,"tools":loaded,"unavailable_tools":unavailable}),
+                )
             }
             "schedule_manage" => {
                 let _lease = if !matches!(args["action"].as_str(), Some("list" | "get")) {
@@ -620,7 +904,7 @@ impl Runtime {
                     );
                 }
                 Ok(
-                    json!({"task":self.store.task(id)?,"events":self.store.events(id,args["after"].as_i64().unwrap_or(0),args["limit"].as_u64().unwrap_or(20) as usize)?}),
+                    json!({"task":self.store.task(id)?,"contract":self.task_contract(id)?,"execution":self.store.get::<Value>("task_execution_state",id)?,"events":self.store.events(id,args["after"].as_i64().unwrap_or(0),args["limit"].as_u64().unwrap_or(20) as usize)?}),
                 )
             }
             "ask_user" => Ok(
@@ -638,15 +922,19 @@ impl Runtime {
         task: &str,
         cancel: &CancellationToken,
     ) -> Result<tokio::sync::OwnedMutexGuard<()>> {
-        if self.processes.has_running(task).await {
-            bail!(
-                "This task has a running command. Inspect it with command_status or cancel it before requesting another effect"
-            );
-        }
+        self.effect_lease_for(task, None, cancel).await
+    }
+    async fn effect_lease_for(
+        &self,
+        task: &str,
+        writes: Option<&[std::path::PathBuf]>,
+        cancel: &CancellationToken,
+    ) -> Result<tokio::sync::OwnedMutexGuard<()>> {
+        self.processes.wait_effect(task, writes, cancel).await?;
         tokio::select! {
             biased;
             _ = cancel.cancelled() => bail!("Task cancelled before executing an effect"),
-            lease = self.effects.clone().lock_owned() => { self.store.check_plan_worker(task)?; if cancel.is_cancelled() {bail!("Task cancelled before effect");} Ok(lease) },
+            lease = self.effects.clone().lock_owned() => { self.processes.wait_effect(task,writes,cancel).await?; self.store.check_plan_worker(task)?; if cancel.is_cancelled() {bail!("Task cancelled before effect");} Ok(lease) },
         }
     }
 }

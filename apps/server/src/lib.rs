@@ -1,4 +1,5 @@
 //! Loopback-only HTTP adapter. No separate chat state; Runtime owns the conversation.
+use anyhow::Context;
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::{
     Json, Router,
@@ -79,6 +80,11 @@ pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
         .route("/api/projects", get(projects).post(create_project))
         .route("/api/projects/{id}", get(project).put(update_project))
         .route("/api/memory", get(memories).post(save_memory))
+        .route("/api/memory/knowledge", axum::routing::post(knowledge))
+        .route(
+            "/api/memory/settings",
+            get(memory_settings).post(configure_memory),
+        )
         .route("/api/memory/{id}", axum::routing::delete(delete_memory))
         .route("/api/skills", get(skills))
         .route("/api/skills/{name}", get(skill).put(skill_enabled))
@@ -329,6 +335,8 @@ async fn memories(
 }
 #[derive(Deserialize)]
 struct MemoryInput {
+    #[serde(default)]
+    metadata: Option<fenix_storage::MemoryMetadata>,
     id: Option<String>,
     title: String,
     content: String,
@@ -339,13 +347,24 @@ async fn save_memory(
     State(runtime): State<Arc<Runtime>>,
     Json(input): Json<MemoryInput>,
 ) -> ApiResult<Value> {
-    let memory = runtime.store.save_memory_scoped(
+    let metadata = input
+        .metadata
+        .map(
+            |metadata| -> anyhow::Result<fenix_storage::MemoryMetadata> {
+                let mut value = serde_json::to_value(metadata)?;
+                runtime.redactor.value(&mut value);
+                Ok(serde_json::from_value(value)?)
+            },
+        )
+        .transpose()?;
+    let memory = runtime.store.save_memory_record(
         input.id.as_deref(),
         &runtime.redactor.text(&input.title),
         &runtime.redactor.text(&input.content),
         "web:explicit-owner-edit",
         input.project_id.as_deref(),
         None,
+        metadata,
     )?;
     runtime.export_memory()?;
     Ok(Json(json!(memory)))
@@ -447,4 +466,39 @@ async fn save_instruction(
         &runtime.redactor.text(&input.text),
     )?;
     Ok(Json(json!({"saved":name})))
+}
+
+async fn knowledge(
+    State(runtime): State<Arc<Runtime>>,
+    Json(mut input): Json<Value>,
+) -> ApiResult<Value> {
+    runtime.redactor.value(&mut input);
+    Ok(Json(
+        runtime.knowledge_action(&input, input["project_id"].as_str())?,
+    ))
+}
+async fn memory_settings(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
+    Ok(Json(
+        json!({"settings":runtime.memory_settings()?,"maintenance":runtime.store.get::<Value>("memory_maintenance","latest")?}),
+    ))
+}
+async fn configure_memory(
+    State(runtime): State<Arc<Runtime>>,
+    Json(mut input): Json<Value>,
+) -> ApiResult<Value> {
+    let key = input
+        .as_object_mut()
+        .and_then(|o| o.remove("embedding_api_key"));
+    let settings = serde_json::from_value(input)?;
+    runtime.configure_memory(settings)?;
+    if let Some(key) = key {
+        runtime
+            .configure_memory_embedding_key(
+                key.as_str()
+                    .context("Embedding API key must be a string")?
+                    .to_owned(),
+            )
+            .await?;
+    }
+    Ok(Json(json!({"saved":true})))
 }

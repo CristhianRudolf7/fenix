@@ -394,3 +394,39 @@ async fn durable_events_resume_from_last_event_id_without_replaying_the_model() 
             .is_none()
     );
 }
+
+#[tokio::test]
+async fn adaptive_memory_settings_history_and_entities_are_accessible_without_leaking_keys() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
+    let app = fenix_server::router(runtime, 4173);
+    let (status,_)=request_json(app.clone(),"POST","/api/memory/settings",json!({"automatic_capture":false,"embedding_endpoint":"http://127.0.0.1:9999/embeddings","embedding_model":"fixture","embedding_api_key":"private-embedding-key"})).await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, settings) = request_json(app.clone(), "GET", "/api/memory/settings", Value::Null).await;
+    assert_eq!(settings["settings"]["automatic_capture"], false);
+    assert!(!settings.to_string().contains("private-embedding-key"));
+    let (status,entity)=request_json(app.clone(),"POST","/api/memory/knowledge",json!({"action":"entity_save","entity":{"name":"Research note","kind":"paper","aliases":["Reference"]}})).await;
+    assert_eq!(status, StatusCode::OK);
+    let (status,memory)=request_json(app.clone(),"POST","/api/memory",json!({"title":"Hypothesis","content":"The note proposes a hypothesis","metadata":{"status":"candidate","entity_id":entity["id"]}})).await;
+    assert_eq!(status, StatusCode::OK);
+    let (_, pack) = request_json(
+        app.clone(),
+        "POST",
+        "/api/memory/knowledge",
+        json!({"action":"context_pack","query":"hypothesis"}),
+    )
+    .await;
+    assert!(!pack["text"].as_str().unwrap().contains("The note proposes"));
+    let (_, history) = request_json(
+        app.clone(),
+        "POST",
+        "/api/memory/knowledge",
+        json!({"action":"history","id":memory["id"]}),
+    )
+    .await;
+    assert_eq!(history.as_array().unwrap().len(), 1);
+    let (status,_)=request_json(app,"POST","/api/memory/knowledge",json!({"action":"schema_save","schema":{"name":"supports","description":"supports a claim","status":"active","source_kinds":["paper"],"target_kinds":["hypothesis"]}})).await;
+    assert_eq!(status, StatusCode::OK);
+}

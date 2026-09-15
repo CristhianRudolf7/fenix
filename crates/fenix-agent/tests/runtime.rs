@@ -31,13 +31,29 @@ async fn fixture(script: Vec<Value>) -> (tempfile::TempDir, Arc<Runtime>, MockSe
             let body: Value = serde_json::from_slice(&request.body).unwrap();
             assert_eq!(body["model"], "gpt-5.6-luna");
             assert_eq!(body["reasoning"]["effort"], "low");
-            ResponseTemplate::new(200).set_body_json(
-                steps
-                    .lock()
-                    .unwrap()
-                    .pop_front()
-                    .unwrap_or_else(|| answer("Handled")),
-            )
+            let mut queue = steps.lock().unwrap();
+            if let Some(next) = queue.front()
+                && next["status"] == "completed"
+                && let Some(name) = next["output"][0]["name"].as_str()
+            {
+                let tools = body["tools"].as_array();
+                let exposed = tools.is_some_and(|ts| ts.iter().any(|t| t["name"] == name));
+                let available = tools.is_some_and(|ts| {
+                    ts.iter().any(|t| {
+                        t["name"] == "tool_search"
+                            && t["description"].as_str().is_some_and(|s| s.contains(name))
+                    })
+                });
+                if !exposed && available {
+                    return ResponseTemplate::new(200).set_body_json(call(
+                        &format!("load-{name}"),
+                        "tool_search",
+                        json!({"names":[name]}),
+                    ));
+                }
+            }
+            ResponseTemplate::new(200)
+                .set_body_json(queue.pop_front().unwrap_or_else(|| answer("Handled")))
         })
         .mount(&server)
         .await;
@@ -309,7 +325,7 @@ async fn clarification_answer_bypasses_queue_without_consuming_other_requests() 
 #[tokio::test]
 async fn repeated_identical_tools_stop_without_erasing_the_audit_trail() {
     let (_dir, runtime, _server) = fixture(
-        (1..=3)
+        (1..=6)
             .map(|i| {
                 call(
                     &format!("repeat-{i}"),
@@ -333,7 +349,7 @@ async fn repeated_identical_tools_stop_without_erasing_the_audit_trail() {
             .unwrap()
             .error
             .unwrap()
-            .contains("avoid a loop")
+            .contains("Recovery budget exhausted for no_progress")
     );
     assert_eq!(
         runtime
@@ -341,9 +357,9 @@ async fn repeated_identical_tools_stop_without_erasing_the_audit_trail() {
             .events(&task, 0, 100)
             .unwrap()
             .iter()
-            .filter(|e| e["kind"] == "tool_result")
+            .filter(|e| e["kind"] == "tool_result" && e["data"]["tool"] == "memory_search")
             .count(),
-        3
+        6
     );
     stop(&runtime, workers).await;
 }
@@ -521,7 +537,7 @@ async fn skill_installation_preserves_personal_edits_and_enabled_state() {
     let runtime = Runtime::open(&path, Some(&path.join("skills")))
         .await
         .unwrap();
-    assert_eq!(runtime.skills().unwrap().len(), 5);
+    assert_eq!(runtime.skills().unwrap().len(), 13);
     let skill = runtime.skills_dir.join("conversation-recap/SKILL.md");
     std::fs::write(
         &skill,
@@ -1055,6 +1071,77 @@ async fn agent_discovers_browser_tools_and_enforces_personal_profile_handoff() {
             .skill_load("browser-navigation")
             .unwrap()
             .contains("Owner handoff")
+    );
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn truncated_action_is_not_executed_and_recovery_keeps_task_identity() {
+    let mut truncated = call(
+        "partial",
+        "file_write",
+        json!({"path":"must-not-exist.txt","content":"partial"}),
+    );
+    truncated["status"] = json!("incomplete");
+    truncated["incomplete_details"] = json!({"reason":"max_output_tokens"});
+    let (dir, runtime, server) = fixture(vec![
+        truncated,
+        answer("Recovered without executing the partial action."),
+    ])
+    .await;
+    let workers = runtime.start();
+    let task = runtime
+        .submit("Respond after a truncated generation", "web")
+        .await
+        .unwrap()["task_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    wait_for(&runtime, &task, "completed").await;
+    assert!(!dir.path().join("must-not-exist.txt").exists());
+    let events = runtime.store.events(&task, 0, 100).unwrap();
+    assert!(
+        events
+            .iter()
+            .any(|e| e["kind"] == "task_recovery" && e["data"]["reason"] == "output_length")
+    );
+    assert!(!events.iter().any(|e| e["kind"] == "tool_started"));
+    let requests = server.received_requests().await.unwrap();
+    let last: Value = serde_json::from_slice(&requests.last().unwrap().body).unwrap();
+    assert!(!last.to_string().contains("must-not-exist.txt"));
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn length_recovery_has_a_durable_finite_budget() {
+    let mut response = answer("unfinished");
+    response["status"] = json!("incomplete");
+    response["incomplete_details"] = json!({"reason":"max_output_tokens"});
+    let (_dir, runtime, _server) = fixture(vec![response; 5]).await;
+    let workers = runtime.start();
+    let task = runtime.submit("Bound recovery", "web").await.unwrap()["task_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    wait_for(&runtime, &task, "failed").await;
+    assert!(
+        runtime
+            .store
+            .task(&task)
+            .unwrap()
+            .error
+            .unwrap()
+            .contains("Recovery budget exhausted")
+    );
+    assert_eq!(
+        runtime
+            .store
+            .events(&task, 0, 100)
+            .unwrap()
+            .iter()
+            .filter(|e| e["kind"] == "task_recovery")
+            .count(),
+        3
     );
     stop(&runtime, workers).await;
 }

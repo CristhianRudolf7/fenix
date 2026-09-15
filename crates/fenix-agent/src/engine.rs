@@ -22,6 +22,24 @@ impl Runtime {
         result: Result<Value>,
     ) -> Result<(Value, bool)> {
         let (mut output, is_error) = match result {
+            Err(error)
+                if error
+                    .downcast_ref::<crate::processes::BusyProcess>()
+                    .is_some() =>
+            {
+                (
+                    serde_json::to_value(
+                        error
+                            .downcast_ref::<crate::processes::BusyProcess>()
+                            .unwrap(),
+                    )?,
+                    true,
+                )
+            }
+            Err(error) if error.downcast_ref::<tools::ArgumentFailure>().is_some() => (
+                serde_json::to_value(error.downcast_ref::<tools::ArgumentFailure>().unwrap())?,
+                true,
+            ),
             Ok(value) => (value, false),
             Err(error) => (
                 json!({"error":self.redactor.text(&error.to_string())}),
@@ -34,6 +52,20 @@ impl Runtime {
             "tool_result",
             &json!({"call_id":call_id,"tool":name,"result":output,"is_error":is_error}),
         )?;
+        if name != "task_contract" {
+            let mut contract = self.task_contract(task)?;
+            if !contract["recent_tool_evidence"].is_array() {
+                contract["recent_tool_evidence"] = json!([]);
+            }
+            let evidence = contract["recent_tool_evidence"]
+                .as_array_mut()
+                .context("Invalid task evidence")?;
+            evidence.push(json!({"call_id":call_id,"tool":name,"is_error":is_error,"executed":output.get("executed"),"process_id":output.get("process_id"),"status":output.get("status"),"exit_code":output.get("exit_code"),"code":output.get("code"),"error":output.get("error"),"artifact":output.get("path"),"source":"task_inspect call_id; tool success alone is not task success"}));
+            if evidence.len() > 16 {
+                evidence.remove(0);
+            }
+            self.store.put("task_contracts", task, &contract)?;
+        }
         Ok((output, is_error))
     }
 
@@ -186,6 +218,7 @@ impl Runtime {
                 (status, Some(error))
             }
         };
+        let _ = self.execution_stage(&task.id, status);
         let _ = self
             .store
             .finish_master_context(&task.id, status, error.as_deref());
@@ -236,6 +269,7 @@ impl Runtime {
             .clone()
             .ok_or_else(|| anyhow::anyhow!("Model is not configured"))?;
         self.route_task(task, &model, cancel).await?;
+        self.queue_memory_capture(task, None)?;
         let binding = self.store.task_binding(&task.id)?;
         self.store.event(&task.id,"task_started",&json!({"session_id":task.session_id,"objective":task.request,"provider":model.settings.provider,"model":model.settings.model,"reasoning_effort":model.settings.reasoning_effort,"workspace":self.task_workspace(&task.id,&model.settings.workspace)?,"binding":binding}))?;
         self.store
@@ -253,7 +287,14 @@ impl Runtime {
         cancel: &CancellationToken,
     ) -> Result<Value> {
         let task = self.store.task(&job.id)?;
-        self.run_loop(&task, model, messages, cancel).await
+        let result = self.run_loop(&task, model, messages, cancel).await;
+        let stage = result
+            .as_ref()
+            .ok()
+            .and_then(|v| v["status"].as_str())
+            .unwrap_or("failed");
+        self.execution_stage(&task.id, stage)?;
+        result
     }
 
     async fn run_loop(
@@ -272,7 +313,11 @@ impl Runtime {
                 .map(|m| m.id)
                 .unwrap_or_else(|| task.id.clone())
         };
-        let mut repetition = HashMap::<String, usize>::new();
+        let mut repetition = crate::execution_state::LoopGuard::default();
+        messages.push(Message::user(format!(
+            "Persistent task contract: {}",
+            self.task_contract(&task.id)?
+        )));
         let mut grants = self
             .store
             .get::<Vec<Value>>("task_grants", &task.id)?
@@ -301,11 +346,12 @@ impl Runtime {
             let catalog = self.exposed_tools(&task.id)?;
             self.compact_active_context(task, model, messages, &catalog, cancel)
                 .await?;
+            self.execution_stage(&task.id, "inferring")?;
+            let inference_started = std::time::Instant::now();
             let mut request = model.settings.request(messages.clone());
-            let available =
-                model.settings.coding.context_window_tokens.saturating_sub(
-                    crate::active_context::estimated_tokens(messages, &catalog) + 1024,
-                );
+            let budget = crate::context_budget::ContextBudget::new(&model.settings);
+            let available = budget
+                .output_available(crate::active_context::estimated_tokens(messages, &catalog));
             if available < 1024 {
                 bail!("Context leaves insufficient output space; adjust coding context capacity");
             }
@@ -329,7 +375,7 @@ impl Runtime {
             self.check_plan_editor(&task.id)?;
             self.store.check_plan_worker(&task.id)?;
             self.acknowledge_repository_rules(&task.id, messages)?;
-            self.store.event(&task.id,"model_response",&json!({"turn_id":fenix_storage::id(),"step":step+1,"usage":response.usage,"finish_reason":response.finish_reason,"response_id":response.id}))?;
+            self.store.event(&task.id,"model_response",&json!({"turn_id":fenix_storage::id(),"step":step+1,"usage":response.usage,"finish_reason":response.finish_reason,"response_id":response.id,"elapsed_ms":inference_started.elapsed().as_millis()}))?;
             let mut encoded = serde_json::to_value(response.message)?;
             self.redactor.value(&mut encoded);
             let message: Message = serde_json::from_value(encoded)?;
@@ -346,6 +392,50 @@ impl Runtime {
                     _ => None,
                 })
                 .collect::<Vec<_>>();
+            if response.finish_reason == FinishReason::ContentFilter {
+                bail!("The provider filtered the response; no proposed tool calls were executed");
+            }
+            if response.finish_reason == FinishReason::Length {
+                self.store.event(
+                    &task.id,
+                    "truncated_response",
+                    &json!({"message":message,"executed":false}),
+                )?;
+                self.recover_execution(
+                    &task.id,
+                    "output_length",
+                    json!({"step":step+1,"output_ceiling":request.max_output_tokens}),
+                )?;
+                // Never execute partial calls or leave unmatched pairs in active context.
+                let oversized_action = calls
+                    .iter()
+                    .any(|(_, _, args)| args.to_string().len() > 8000);
+                let strategy = if oversized_action {
+                    "An action payload was large. Split it into small edits; send only the next complete tool call."
+                } else {
+                    "No large action payload was observed; reasoning or response generation exhausted the output allowance. Stop speculative analysis. Choose one concrete executable probe or small implementation, then test its observed behavior before further reasoning."
+                };
+                self.store.event(&task.id, "recovery_strategy", &json!({"reason":"output_length","strategy":strategy,"classification":"observed_payload_heuristic_not_provider_reasoning_count"}))?;
+                messages.push(Message::user(format!("The previous generation was NOT executed. {strategy} Preserve completed work and inspect existing evidence.")));
+                continue;
+            }
+            if calls.is_empty() && self.processes.has_running(&task.id).await {
+                self.store.event(
+                    &task.id,
+                    "premature_completion",
+                    &json!({"message":message,"published":false}),
+                )?;
+                self.recover_execution(&task.id, "completion_with_running_process", json!({"processes":self.processes.list().await.into_iter().filter(|p| p.owner == task.id).collect::<Vec<_>>()}))?;
+                if let Err(error) = self.processes.wait_foreground(&task.id, cancel).await
+                    && error
+                        .downcast_ref::<crate::processes::BusyProcess>()
+                        .is_none()
+                {
+                    return Err(error);
+                }
+                messages.push(Message::user(format!("A completion was withheld because a foreground command was still running. No action was repeated. Inspect its output and status before finishing. Processes: {}", json!(self.processes.list().await.into_iter().filter(|p| p.owner == task.id).collect::<Vec<_>>()))));
+                continue;
+            }
             if delegated {
                 self.store
                     .event(&task.id, "subagent_message", &json!({"message":message}))?;
@@ -364,14 +454,6 @@ impl Runtime {
                 self.bus_wake.notify_waiters();
             }
             messages.push(message);
-            if matches!(
-                response.finish_reason,
-                FinishReason::Length | FinishReason::ContentFilter
-            ) {
-                bail!(
-                    "The model response was truncated or filtered; task completion has not been verified"
-                );
-            }
             if calls.is_empty() {
                 if delegated {
                     self.store.save_subagent_context(&task.id, messages, 0)?;
@@ -398,6 +480,8 @@ impl Runtime {
                 bail!("Too many tool calls in one response");
             }
             let call_count = calls.len();
+            let tool_byte_budget = budget.tool_bytes(call_count);
+            self.execution_stage(&task.id, "executing_tools")?;
             let mut finished = None;
             // A response containing only public web reads can run as a batch.
             // Mixed/action responses retain their existing ordered execution.
@@ -466,6 +550,8 @@ impl Runtime {
                     if delegated && !self.store.pending_subagent_inputs(&task.id)?.is_empty() {
                         return Ok(json!({"executed":false,"reason":"New supervisor input arrived; consume it before performing remaining actions."}));
                     }
+                    self.authorize_project_tool(&task.id, &name, &args)?;
+                    if let Some(receipt) = self.ensure_tool_loaded(&task.id, &name)? { return Ok(receipt); }
                     tools::validate_for(delegated, &name,&args)?;
                     self.authorize_project_tool(&task.id, &name, &args)?;
                     if name == "subagent_finish" {
@@ -485,6 +571,7 @@ impl Runtime {
                         self.authorize_project_tool(&task.id, target, &args["arguments"])?;
                         let requested=json!({"tool":target,"arguments":args["arguments"]});
                         if denials.contains(&requested) {return Ok(json!({"approved":false,"previously_denied":true}));}
+                        if grants.contains(&requested) {return Ok(json!({"approved":true,"single_use":true,"previously_granted":true}));}
                         let approved=self.approve(&task.id,requested.clone(),cancel).await?;
                         if approved {grants.push(requested);} else {denials.push(requested);}
                         self.store.put("task_grants", &task.id, &grants)?;
@@ -507,20 +594,19 @@ impl Runtime {
                     }.await;
                     self.record_tool_outcome(&task.id, &call_id, &name, result)?
                 };
-                // command_status intentionally waits; the managed-process timeout is its loop bound.
-                if name != "command_status" {
-                    let fingerprint = format!("{action}:{output}");
-                    let count = repetition.entry(fingerprint).or_default();
-                    *count += 1;
-                    if *count >= 3 {
-                        bail!(
-                            "Repeated tool call produced the same result three times; stopped to avoid a loop"
-                        );
-                    }
-                }
+                let progress = self.processes.progress_signature(&task.id).await;
+                let effect_completed = !is_error
+                    && output["executed"] != false
+                    && output["denied"] != true
+                    && matches!(
+                        name.as_str(),
+                        "file_write" | "file_edit" | "file_patch" | "command_run" | "command_input"
+                    );
+                let looping = name != "command_status"
+                    && repetition.observe(format!("{action}:{output}"), progress, effect_completed);
                 let serialized = output.to_string();
-                let content = if serialized.len() > 16_000 {
-                    json!({"truncated":true,"repository_instructions":output.get("repository_instructions"),"preview":truncate(&serialized,12_000),"task_id":task.id,"call_id":call_id,"retrieve":"Use task_inspect with task_id, call_id, offset and length to read the saved output in pages."})
+                let content = if serialized.len() > tool_byte_budget {
+                    json!({"truncated":true,"repository_instructions":output.get("repository_instructions"),"preview":truncate(&serialized,tool_byte_budget),"task_id":task.id,"call_id":call_id,"retrieve":"Use task_inspect with task_id, call_id, offset and length to read the saved output in pages."})
                 } else {
                     output
                 };
@@ -539,6 +625,11 @@ impl Runtime {
                         .append(Some(&task.id), &tool_message, false, true, "tool")?;
                 }
                 messages.push(tool_message);
+                if looping {
+                    self.store.event(&task.id, "loop_detected", &json!({"tool":name,"action":action,"reason":"identical result without observed progress"}))?;
+                    self.recover_execution(&task.id, "no_progress", json!({"tool":name,"action":action,"processes":self.processes.list().await.into_iter().filter(|p|p.owner==task.id).collect::<Vec<_>>() }))?;
+                    messages.push(Message::user("Three identical observations produced no visible progress. Diagnose the cause before the next action: inspect a blocking process with command_status/command_output, load the exact tool schema after argument errors, retrieve task_inspect after missing context, or run one focused behavioral test. Choose a different evidence-backed strategy. Silence from a live process is not proof of failure. Do not replay completed effects."));
+                }
                 if delegated
                     && matches!(
                         name.as_str(),
@@ -550,6 +641,8 @@ impl Runtime {
                     );
                 }
             }
+            self.store.put("execution_context", &task.id, messages)?;
+            self.execution_stage(&task.id, "running")?;
             if delegated {
                 self.store.save_subagent_context(&task.id, messages, 0)?;
             }

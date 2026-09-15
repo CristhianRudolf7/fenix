@@ -14,11 +14,13 @@ fn call(id: &str, name: &str, args: Value) -> Value {
     json!({"id":"project-tool","status":"completed","output":[{"type":"function_call","call_id":id,"name":name,"arguments":args.to_string()}],"usage":{"input_tokens":10,"output_tokens":5,"total_tokens":15}})
 }
 fn has_result(body: &Value, id: &str) -> bool {
-    body["input"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|m| m["type"] == "function_call_output" && m["call_id"] == id)
+    body["input"].as_array().unwrap().iter().any(|m| {
+        m["type"] == "function_call_output"
+            && !m["output"]
+                .as_str()
+                .is_some_and(|s| s.contains("tool_schema_loaded"))
+            && m["call_id"] == id
+    })
 }
 fn project(runtime: &Runtime, root: &std::path::Path, name: &str, brief: &str) -> Project {
     let workspace = root.join(name);

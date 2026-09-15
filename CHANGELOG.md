@@ -1,5 +1,15 @@
 # Changelog / Historial de cambios
 
+## Unreleased / Sin publicar
+
+- Add native Rust benchmark execution, isolated reports and a Harbor transport adapter. / Evaluación nativa en Rust, informes aislados y adaptador para Harbor.
+- Reserve response capacity, bound tool batches and recover from context-summary failures and truncated generations without replaying effects. / Reserva de contexto, salidas acotadas y recuperación sin repetir efectos.
+- Supervise background services, wait for dependent commands, detect loops using observed progress and persist task contracts and explicit answers. / Supervisión de servicios, espera de comandos, detección de bucles según progreso y contratos con respuestas persistentes.
+
+- Add scoped adaptive memory with provenance, candidate review, validity, withdrawal and revision history. / Memoria adaptable por ámbito con procedencia, candidatos, vigencia, retirada e historial.
+- Add entities, aliases, versioned relation schemas, bounded graph traversal and context packs. / Entidades, alias, esquemas de relaciones versionados, recorridos acotados y paquetes de contexto.
+- Add durable background capture, overlap review, optional semantic retrieval and web memory controls. / Captura durable en segundo plano, revisión de solapamientos, búsqueda semántica opcional y controles web.
+
 ## 0.3.0 — 2026-09-15
 
 ### English
@@ -55,3 +65,13 @@ publicados en 0.2.0 el 14 de septiembre, e incorpora el trabajo posterior del 14
 El modelo recibe texto y geometría del DOM, no capturas de pantalla. La cobertura
 de búsqueda depende del índice local. Voz, aprendizaje autónomo de memoria y
 reanudación automática tras caídas siguen como trabajo futuro.
+
+## Unreleased
+
+- Add curated coding skills, field-aware skill retrieval and actionable tool-schema recovery.
+- Allow independent writes alongside Linux-enforced read-only commands; clarify supervised service lifetimes.
+- Prefer checkpoint-backed observation masking and preserve execution provenance during compaction.
+- Add bounded failure-specific recovery and reproducible five-task native benchmark cohorts.
+- Preserve the latest memory-list response when concurrent requests finish out of order.
+- Release model read guards before background workers wait for configuration or inference, preventing configuration lock inversion.
+- Ignore late view loads after navigation so background settings updates cannot replace the owner's current page.

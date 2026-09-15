@@ -8,7 +8,9 @@ use std::collections::{HashMap, HashSet};
 fn essential(name: &str) -> bool {
     matches!(
         name,
-        "tool_search"
+        "skill_search"
+            | "skill_load"
+            | "tool_search"
             | "file_read"
             | "files_search"
             | "command_run"
@@ -38,7 +40,9 @@ fn search_text(tool: &ToolDefinition) -> String {
             "subagente delegar tarea mensaje corregir continuar estado"
         }
         "plan_manage" => "planificar planificación hitos plan tareas dependencias",
-        "memory_search" | "memory_manage" => "memoria preferencias recordar guardar",
+        "memory_search" | "memory_manage" | "memory_context" | "knowledge_manage" => {
+            "memoria preferencias recordar guardar"
+        }
         "schedule_manage" => "recordatorio cron programar horario",
         "skill_load" => "habilidad cargar skill instrucciones",
         "project_manage" => "proyecto contexto estado",
@@ -71,6 +75,20 @@ impl Runtime {
                 .push_str(&format!(" Available names: {catalog}."));
         }
         Ok(tools)
+    }
+    /// Discovery cannot grant authorization or execute a guessed tool call.
+    pub(crate) fn ensure_tool_loaded(&self, task: &str, name: &str) -> Result<Option<Value>> {
+        let catalog = self.task_tool_catalog(task)?;
+        if !catalog.iter().any(|t| t.name == name) {
+            bail!("Tool is unavailable in this task: {name}");
+        }
+        if self.exposed_tools(task)?.iter().any(|t| t.name == name) {
+            return Ok(None);
+        }
+        let result = self.search_tools(task, &json!({"names":[name]}))?;
+        Ok(Some(
+            json!({"executed":false,"code":"tool_schema_loaded","tools":result["tools"],"instruction":"No action executed. Read the exact schema and send a new valid call. Existing permissions still apply."}),
+        ))
     }
     pub(crate) fn search_tools(&self, task: &str, args: &Value) -> Result<Value> {
         let tools = self.task_tool_catalog(task)?;
@@ -153,7 +171,7 @@ impl Runtime {
         }
         self.store.put("loaded_tools", task, &loaded)?;
         Ok(
-            json!({"tools":selected.iter().map(|t|json!({"name":t.name,"description":t.description})).collect::<Vec<_>>(),"loaded":true,"instruction":"The selected schemas are available on the next response. Authorization remains scoped to this task."}),
+            json!({"tools":selected.iter().map(|t|json!({"name":t.name,"description":t.description,"parameters":t.parameters})).collect::<Vec<_>>(),"loaded":true,"instruction":"The selected schemas are available on the next response. Authorization remains scoped to this task."}),
         )
     }
 }
@@ -161,6 +179,38 @@ impl Runtime {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn guessed_tools_load_schemas_without_executing() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue("Create an artifact", "web", None)?;
+        let receipt = rt.ensure_tool_loaded(&task.id, "file_write")?.unwrap();
+        assert_eq!(receipt["executed"], false);
+        assert_eq!(
+            receipt["tools"][0]["parameters"]["required"],
+            json!(["path", "content"])
+        );
+        assert!(rt.ensure_tool_loaded(&task.id, "file_write")?.is_none());
+        assert!(!dir.path().join("artifact").exists());
+        let error = crate::tools::validate(
+            "file_edit",
+            &json!({"path":"a","old_text":"b","new_text":"c"}),
+        )
+        .unwrap_err();
+        let detail = error
+            .downcast_ref::<crate::tools::ArgumentFailure>()
+            .unwrap();
+        assert!(!detail.executed);
+        assert!(
+            detail
+                .required
+                .as_array()
+                .unwrap()
+                .contains(&json!("expected"))
+        );
+        assert!(detail.received_fields.contains(&"old_text".to_owned()));
+        Ok(())
+    }
     #[tokio::test]
     async fn discovery_reduces_prompt_and_cannot_unlock_worker_delegation() {
         let dir = tempfile::tempdir().unwrap();

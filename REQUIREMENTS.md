@@ -1,5 +1,7 @@
 # Fénix — Especificación de requisitos
 
+> Memory implementation / Implementación de memoria: [English](docs/en/adaptive-memory.md) · [Español](docs/es/adaptive-memory.md). This document retains broader design goals; see the implementation contract for delivered behavior and limits. / Este documento conserva objetivos más amplios; consulta el contrato para conocer lo implementado y sus límites.
+
 ## Current scope decisions / Decisiones de alcance actuales
 
 - Maintain one continuous conversation for the owner. Telegram support ships initially, but its token and activation are optional. Do not expose separate chats, conversation creation, session switching, or resets as the normal workflow. Internal task IDs and context compaction must preserve that continuity.
@@ -349,3 +351,9 @@ Automatic crash recovery, isolated parallel worktrees, MCP and programmatic tool
 The Rust runtime must control local Chromium with its sandbox enabled, without a hosted browser provider. Include manual owner controls, persistent personal profiles, explicit agent access, task-isolated test profiles, responsive viewports, bounded observations and screenshots, condition checks, encrypted owner-only password storage and process-memory monitoring. A skill guides tool use; actual actions execute in Rust. See [the browser contract](docs/en/browser.md) for guarantees and limits.
 
 El navegador local incluye controles manuales, perfiles personales persistentes y pruebas temporales separadas. El propietario habilita el acceso del agente y guarda contraseñas en un almacén cifrado. Las sesiones pueden caducar según cada sitio. El presupuesto de RSS es periódico y flexible, no un límite estricto de RAM; las capturas todavía no son entrada visual del modelo. Véase [el contrato en español](docs/es/browser.md).
+
+## Procedural coding and recovery / Procedimientos y recuperación
+
+Provide thirteen curated manual skills, lexical field-aware skill discovery, selective loading of authorized tool schemas, actionable argument errors, bounded failure-specific recovery and checkpoint-backed context reduction. Allow independent file writes alongside Linux-enforced read-only commands with explicit inputs; preserve ordinary command policies and conservative handling of unknown effects. Reuse editable plans, nonblocking supervision and one-level delegation. See [English](docs/en/harness-recovery.md) / [Español](docs/es/harness-recovery.md).
+
+Incluir trece skills manuales, selección léxica, esquemas bajo demanda, errores accionables y recuperación limitada según la causa. Conservar estado y procedencia al compactar. Permitir escrituras independientes durante lecturas restringidas por Linux sin ampliar permisos ni crear delegación anidada.

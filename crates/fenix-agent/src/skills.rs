@@ -116,9 +116,43 @@ pub struct Skill {
     pub description: String,
     pub version: String,
     pub enabled: bool,
+    #[serde(default)]
+    pub required_tools: Vec<String>,
 }
 
-const DEFAULTS: [(&str, &str); 5] = [
+const DEFAULTS: [(&str, &str); 13] = [
+    (
+        "repository-navigation",
+        include_str!("../../../resources/skills/repository-navigation/SKILL.md"),
+    ),
+    (
+        "test-driven-repair",
+        include_str!("../../../resources/skills/test-driven-repair/SKILL.md"),
+    ),
+    (
+        "environment-and-dependencies",
+        include_str!("../../../resources/skills/environment-and-dependencies/SKILL.md"),
+    ),
+    (
+        "process-and-service-management",
+        include_str!("../../../resources/skills/process-and-service-management/SKILL.md"),
+    ),
+    (
+        "package-build-and-install",
+        include_str!("../../../resources/skills/package-build-and-install/SKILL.md"),
+    ),
+    (
+        "sql-analysis-and-optimization",
+        include_str!("../../../resources/skills/sql-analysis-and-optimization/SKILL.md"),
+    ),
+    (
+        "text-processing-and-parsing",
+        include_str!("../../../resources/skills/text-processing-and-parsing/SKILL.md"),
+    ),
+    (
+        "git-recovery-and-change-management",
+        include_str!("../../../resources/skills/git-recovery-and-change-management/SKILL.md"),
+    ),
     (
         "browser-navigation",
         include_str!("../../../resources/skills/browser-navigation/SKILL.md"),
@@ -147,7 +181,19 @@ impl Runtime {
         for (name, content) in DEFAULTS {
             let path = self.skills_dir.join(name);
             std::fs::create_dir_all(&path)?;
-            crate::write_new(&path.join("SKILL.md"), content)?;
+            let file = path.join("SKILL.md");
+            if name == "memory-and-reminders"
+                && std::fs::read_to_string(&file).is_ok_and(|current| {
+                    current
+                        == include_str!(
+                            "../../../resources/skills/memory-and-reminders/SKILL.v1.md"
+                        )
+                })
+            {
+                crate::write_private(&file, content)?;
+            } else {
+                crate::write_new(&file, content)?;
+            }
         }
         let dir = self.data_dir.join("instructions");
         std::fs::create_dir_all(&dir)?;
@@ -205,6 +251,13 @@ impl Runtime {
                 description: crate::redaction::truncate(&description, 512),
                 version: crate::redaction::truncate(&version, 80),
                 enabled,
+                required_tools: field(&text, "required_tools")
+                    .unwrap_or_default()
+                    .split(',')
+                    .map(str::trim)
+                    .filter(|s| valid_name(s))
+                    .map(str::to_owned)
+                    .collect(),
             });
         }
         skills.sort_by(|a, b| a.name.cmp(&b.name));
@@ -231,6 +284,52 @@ impl Runtime {
         }
         self.read_skill(name)
     }
+    /// Field-aware lexical retrieval; bodies are indexed but not returned until loaded.
+    pub(crate) fn search_skills(&self, query: &str, limit: usize) -> Result<serde_json::Value> {
+        if query.len() > 1000 {
+            bail!("Skill query exceeds 1000 bytes");
+        }
+        let terms: Vec<_> = query
+            .to_lowercase()
+            .split(|c: char| !c.is_alphanumeric())
+            .filter(|s| !s.is_empty())
+            .map(str::to_owned)
+            .collect();
+        let mut ranked = Vec::new();
+        for skill in self.skills()?.into_iter().filter(|s| s.enabled) {
+            let body = self.read_skill(&skill.name)?;
+            let fields = [
+                (skill.name.as_str(), 5.0),
+                (skill.description.as_str(), 3.0),
+                (body.as_str(), 1.0),
+            ];
+            let score: f64 = fields
+                .iter()
+                .map(|(text, weight)| {
+                    let tokens: Vec<_> = text
+                        .to_lowercase()
+                        .split(|c: char| !c.is_alphanumeric())
+                        .filter(|s| !s.is_empty())
+                        .map(str::to_owned)
+                        .collect();
+                    terms
+                        .iter()
+                        .map(|term| {
+                            let count = tokens.iter().filter(|t| *t == term).count() as f64;
+                            weight * count / (count + 1.0)
+                        })
+                        .sum::<f64>()
+                })
+                .sum();
+            if score > 0.0 || terms.is_empty() {
+                ranked.push((score, skill));
+            }
+        }
+        ranked.sort_by(|(a, sa), (b, sb)| b.total_cmp(a).then_with(|| sa.name.cmp(&sb.name)));
+        Ok(
+            serde_json::json!({"skills":ranked.into_iter().take(limit.clamp(1, 8)).map(|(score, skill)| serde_json::json!({"score":score,"skill":skill})).collect::<Vec<_>>(),"instruction":"Load selected bodies with skill_load; search again if needed. Scores are lexical relevance, not correctness probabilities."}),
+        )
+    }
     pub fn set_skill_enabled(&self, name: &str, enabled: bool) -> Result<()> {
         if !self.skills()?.iter().any(|s| s.name == name) {
             bail!("Skill not found");
@@ -241,7 +340,12 @@ impl Runtime {
         let mut text = String::from(
             "# Explicit memory / Memoria explícita\n\nGenerated reference; edit entries through the web or memory tools.\nReferencia generada; edita las entradas desde la web o las herramientas.\n",
         );
-        for memory in self.store.memories("", 200)? {
+        for memory in self
+            .store
+            .memories("", 200)?
+            .into_iter()
+            .filter(|m| m.metadata.active())
+        {
             let scope = memory
                 .project_id
                 .as_deref()
@@ -274,6 +378,32 @@ fn field(text: &str, name: &str) -> Option<String> {
 mod tests {
     use super::*;
     use std::os::unix::fs::symlink;
+
+    #[tokio::test]
+    async fn retrieval_indexes_bodies_and_respects_enabled_state() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
+        let custom = rt.skills_dir.join("custom-procedure");
+        fs::create_dir(&custom)?;
+        fs::write(
+            custom.join("SKILL.md"),
+            "description: General workflow\n\nUse quasarflange to diagnose this uncommon condition.",
+        )?;
+        let results = rt.search_skills("quasarflange", 3)?;
+        assert_eq!(results["skills"][0]["skill"]["name"], "custom-procedure");
+        assert!(results.to_string().find("Use quasarflange").is_none());
+        rt.set_skill_enabled("custom-procedure", false)?;
+        assert_eq!(
+            rt.search_skills("quasarflange", 3)?["skills"],
+            serde_json::json!([])
+        );
+        assert!(rt.skill_load("custom-procedure").is_err());
+        assert_eq!(
+            fs::read_to_string(custom.join("SKILL.md"))?,
+            "description: General workflow\n\nUse quasarflange to diagnose this uncommon condition."
+        );
+        Ok(())
+    }
 
     #[test]
     fn migration_merges_resources_without_overwriting_or_following_links() -> Result<()> {

@@ -213,9 +213,9 @@ fn upgrade_preserves_existing_data_and_restart_does_not_resume_children() {
         connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        6
+        7
     );
-    connection.pragma_update(None, "user_version", 7).unwrap();
+    connection.pragma_update(None, "user_version", 8).unwrap();
     drop(connection);
     assert!(Store::open(&path).is_err());
 }

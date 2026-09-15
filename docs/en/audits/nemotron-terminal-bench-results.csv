@@ -1,0 +1,41 @@
+task,agent,trial,cohort,reward,verifier_status,checks_passed,checks_failed,checks_total,agent_seconds,environment_seconds,setup_seconds,verifier_seconds,api_calls,input_tokens,cached_input_tokens,output_tokens,provider_reported_usd,runtime_status,runtime_error,api_errors
+cancel-async-tasks,fenix,cancel-async-tasks__ucrUbhq,baseline,0.0,checks_executed,5,1,6,52.21776,2.596563,8.60911,25.575717,24,234375,145792,12051,0.00769472,completed,,0
+cancel-async-tasks,terminus-2,cancel-async-tasks__TpMrs7C,baseline,0.0,checks_executed,5,1,6,26.086339,5.06529,20.025377,27.386874,4,8338,0,6858,0.0014456,,,0
+fix-git,fenix,fix-git__GLD3Z6a,baseline,0.0,checks_executed,0,2,2,43.618944,25.145392,1.971938,13.724064,20,154507,84864,2743,0.00474224,waiting,,0
+fix-git,terminus-2,fix-git__oZBRLoU,baseline,1.0,checks_executed,2,0,2,38.858681,25.043137,28.448353,11.410097,13,63514,21760,3832,0.0028801,,,0
+db-wal-recovery,fenix,db-wal-recovery__7kk7gCk,baseline,0.0,checks_executed,0,7,7,39.268472,49.807524,2.650706,24.191644,26,214995,119680,5933,0.0068525,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+db-wal-recovery,terminus-2,db-wal-recovery__nv7Ciop,baseline,0.0,checks_executed,0,7,7,643.761693,49.671071,28.403559,20.013337,143,2189373,1577600,119096,0.06422905,,,0
+multi-source-data-merger,fenix,multi-source-data-merger__FCQAcRX,baseline,1.0,checks_executed,3,0,3,44.041881,55.87178,3.58993,46.41225,21,204351,117504,12219,0.00735024,completed,,0
+multi-source-data-merger,terminus-2,multi-source-data-merger__GNgnRcc,baseline,1.0,checks_executed,3,0,3,98.238349,55.710255,4.693152,27.25169,15,115878,58752,22542,0.00682512,,,0
+build-cython-ext,fenix,build-cython-ext__eVhyuPT,baseline,0.0,checks_executed,2,9,11,122.255404,66.431239,3.869552,13.724027,46,566106,374272,7370,0.01443992,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+build-cython-ext,terminus-2,build-cython-ext__feM8M4C,baseline,0.0,checks_executed,9,2,11,541.017271,66.032366,26.569303,16.137714,32,540963,422144,8107,0.01137844,,,0
+build-pmars,fenix,build-pmars__xbGXz9e,baseline,0.0,checks_executed,2,2,4,99.828454,15.044148,7.272028,26.338924,37,358130,206720,6976,0.0106841,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+build-pmars,terminus-2,build-pmars__vwq7jQb,baseline,1.0,checks_executed,4,0,4,310.170001,14.707263,4.073447,16.680294,43,538694,385152,11885,0.01331137,,,0
+cobol-modernization,fenix,cobol-modernization__P384n5Z,baseline,0.0,checks_executed,1,2,3,31.998708,33.016429,2.260657,13.415434,12,131272,87040,7161,0.00415615,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+cobol-modernization,terminus-2,cobol-modernization__U6ph5K5,baseline,1.0,checks_executed,3,0,3,806.264198,32.769424,23.417378,14.379911,137,2400749,1843072,123079,0.06477642,,,0
+kv-store-grpc,fenix,kv-store-grpc__CHeQPc2,baseline,0.0,checks_executed,5,2,7,41.367952,13.935341,2.686065,8.524156,17,149691,91392,2872,0.00425967,completed,,0
+kv-store-grpc,terminus-2,kv-store-grpc__mtKomau,baseline,1.0,checks_executed,7,0,7,61.658123,13.839134,28.604319,12.560694,9,33565,4352,3125,0.00197292,,,0
+polyglot-c-py,fenix,polyglot-c-py__ufsLaNs,baseline,0.0,checks_executed,0,1,1,42.460845,20.599568,30.856091,16.819214,2,5880,0,16471,0.00276465,failed,The model response was truncated or filtered; task completion has not been verified,0
+polyglot-c-py,terminus-2,polyglot-c-py__b48wLkS,baseline,0.0,checks_executed,0,1,1,900.007792,6.183048,29.101538,27.42562,39,353351,221952,350276,0.06133087,,,1
+polyglot-rust-c,fenix,polyglot-rust-c__sYgBQS6,baseline,0.0,checks_executed,0,1,1,54.767135,58.817748,26.17356,19.442335,2,5950,0,16470,0.002768,failed,The model response was truncated or filtered; task completion has not been verified,0
+polyglot-rust-c,terminus-2,polyglot-rust-c__VU6UQ6b,baseline,1.0,checks_executed,1,0,1,370.146512,4.395365,28.518133,37.096865,21,123344,52224,112108,0.02089444,,,0
+git-multibranch,fenix,git-multibranch__2a3KqZE,baseline,0.0,checks_executed,0,1,1,24.796513,56.128271,1.44305,35.366054,3,12986,4352,535,0.00055547,waiting,,0
+git-multibranch,terminus-2,git-multibranch__i5NWpZk,baseline,0.0,checks_executed,0,1,1,281.849555,4.339559,19.049374,49.83758,51,827810,644096,13767,0.01769171,,,0
+configure-git-webserver,fenix,configure-git-webserver__WXWE96y,baseline,0.0,checks_executed,0,1,1,26.631571,8.313934,25.172204,19.42226,10,63866,32640,1516,0.0021151,waiting,,0
+configure-git-webserver,terminus-2,configure-git-webserver__wom8Vzp,baseline,1.0,checks_executed,1,0,1,688.120287,2.269893,25.553888,24.656176,134,2103792,1614592,39589,0.04654427,,,0
+nginx-request-logging,fenix,nginx-request-logging__VX4eVcs,baseline,0.0,checks_executed,1,7,8,37.401972,26.808602,1.473619,19.778423,21,228380,150144,4209,0.00604459,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+nginx-request-logging,terminus-2,nginx-request-logging__HHGbeHv,baseline,0.0,checks_executed,7,1,8,321.140069,2.635379,20.683202,15.077274,67,931219,691968,41601,0.02512238,,,0
+openssl-selfsigned-cert,fenix,openssl-selfsigned-cert__4a4bWsg,baseline,0.0,checks_executed,5,1,6,30.110841,4.149853,4.957573,16.199409,22,193315,113152,6034,0.00604477,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+openssl-selfsigned-cert,terminus-2,openssl-selfsigned-cert__FPT5niV,baseline,1.0,checks_executed,6,0,6,50.158902,3.329561,19.800049,12.221056,14,93203,43520,9350,0.00432185,,,0
+sqlite-db-truncate,fenix,sqlite-db-truncate__3REqfEa,baseline,0.0,checks_executed,0,1,1,34.407759,2.772752,2.811407,22.164618,17,160272,82688,9348,0.00610828,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+sqlite-db-truncate,terminus-2,sqlite-db-truncate__uiWBwtz,baseline,0.0,checks_executed,0,1,1,112.204287,1.972963,27.529062,16.437997,18,308735,228480,26920,0.01033555,,,0
+large-scale-text-editing,fenix,large-scale-text-editing__JVW2qKK,baseline,0.0,checks_executed,0,5,5,53.360415,10.084092,1.734033,21.052549,9,62650,32640,17698,0.0044816,failed,The model response was truncated or filtered; task completion has not been verified,0
+large-scale-text-editing,terminus-2,large-scale-text-editing__ymuNfLL,baseline,0.0,checks_executed,4,1,5,1200.041274,5.893787,22.769542,62.365273,122,1454566,1044480,178370,0.0577046,,,0
+log-summary-date-ranges,fenix,log-summary-date-ranges__njBfZPu,baseline,0.0,checks_executed,0,2,2,9.095738,2.905464,2.682489,15.660372,3,17258,4352,556,0.00077222,failed,No complete old tool batch can be compacted; reduce the tool output or increase the context budget,0
+log-summary-date-ranges,terminus-2,log-summary-date-ranges__rtfU2V7,baseline,1.0,checks_executed,2,0,2,22.681895,5.142996,17.544378,11.573035,7,60113,30464,3198,0.00226679,,,0
+constraints-scheduling,fenix,constraints-scheduling__tbsWFir,baseline,0.0,checks_executed,0,3,3,40.668879,21.048527,2.434215,28.59875,4,19247,4352,16803,0.00330872,failed,No complete old tool batch can be compacted; reduce the tool output or increase the context budget,0
+constraints-scheduling,terminus-2,constraints-scheduling__KEZ83N5,baseline,1.0,checks_executed,3,0,3,133.277639,2.054642,15.277089,28.89997,10,58021,21760,49272,0.00942145,,,0
+adaptive-rejection-sampler,fenix,adaptive-rejection-sampler__qYZNZVM,baseline,0.0,blocked_by_agent_environment,,,,67.662576,3.641783,52.379129,8.322346,25,245475,134912,10752,0.00849007,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+adaptive-rejection-sampler,terminus-2,adaptive-rejection-sampler__zt5kGHB,baseline,0.0,checks_executed,4,5,9,714.83963,2.539589,43.500842,51.214784,137,1944002,1420928,60209,0.04939433,,,0
+fix-code-vulnerability,fenix,fix-code-vulnerability__bWYGX9s,baseline,0.0,checks_executed,2,4,6,21.653695,53.527169,4.463121,30.677103,13,144215,76160,3125,0.0046331,failed,Invalid or truncated context summary; original context and checkpoint retained,0
+fix-code-vulnerability,terminus-2,fix-code-vulnerability__iiaPFNL,baseline,0.0,checks_executed,5,1,6,422.275278,2.912648,2.720974,7.743214,114,1657236,1222912,32225,0.03877907,,,0

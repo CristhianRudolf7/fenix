@@ -4,9 +4,13 @@ mod active_context;
 mod coding;
 pub mod config;
 mod context;
+mod context_budget;
 mod effects;
 mod engine;
+pub mod evaluation;
+mod execution_state;
 mod files;
+pub mod memory;
 mod permissions;
 mod plan_reviews;
 mod planning;
@@ -14,6 +18,7 @@ mod processes;
 pub mod progress;
 mod project_tools;
 mod projects;
+pub mod read_only;
 pub mod redaction;
 pub mod schedules;
 pub mod skills;
@@ -166,11 +171,13 @@ impl Runtime {
         let planner = tokio::spawn(async move { runtime.planning_worker().await });
         let runtime = self.clone();
         let events = tokio::spawn(async move { runtime.event_worker().await });
+        let runtime = self.clone();
+        let memory = tokio::spawn(async move { runtime.memory_worker().await });
         let browser = self.browser.clone();
         let stop = self.stop.clone();
         let browser = tokio::spawn(async move { browser.maintain(stop).await });
         vec![
-            worker, scheduler, telegram, subagents, planner, events, browser,
+            worker, scheduler, telegram, subagents, planner, events, browser, memory,
         ]
     }
 

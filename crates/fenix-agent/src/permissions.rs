@@ -34,6 +34,16 @@ impl Runtime {
         action: Option<Value>,
         cancel: &CancellationToken,
     ) -> Result<String> {
+        if kind == "clarification"
+            && let Some(answer) = self.answered_question(task, question)?
+        {
+            self.store.event(
+                task,
+                "clarification_reused",
+                &json!({"question":question,"source":"explicit_user_reply"}),
+            )?;
+            return Ok(answer);
+        }
         let request_id = fenix_storage::id();
         let question = self.redactor.text(question);
         let view = PendingView {
@@ -94,6 +104,11 @@ impl Runtime {
                 .resolve_question(&request_id, "cancelled", None)?;
         }
         self.store.set_task_status(task, "running", None)?;
+        if kind == "clarification"
+            && let Ok(answer) = &result
+        {
+            self.contract_answer(task, &question, answer)?;
+        }
         result
     }
 

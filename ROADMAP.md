@@ -1,5 +1,7 @@
 # Fénix — Hoja de ruta
 
+> Memory implementation / Implementación de memoria: [English](docs/en/adaptive-memory.md) · [Español](docs/es/adaptive-memory.md). This document retains broader design goals; see the implementation contract for delivered behavior and limits. / Este documento conserva objetivos más amplios; consulta el contrato para conocer lo implementado y sus límites.
+
 ## Alcance del documento
 
 Este documento conserva las capacidades futuras de Fénix. Se implementarán después de cerrar y validar la especificación de requisitos. Las ideas se mantienen como requisitos de evolución, propuestas de arquitectura y líneas de investigación; no representan funcionalidades disponibles actualmente.
@@ -746,3 +748,9 @@ Automatic crash recovery, isolated parallel worktrees, MCP and programmatic tool
 The baseline local Chromium controller is implemented in Rust, with nine agent tools, an owner browser panel, persistent profiles, a separate encrypted password vault, responsive viewports and a soft RSS budget. See [English](docs/en/browser.md) / [Español](docs/es/browser.md). Future browser work includes model vision, comprehensive cross-process frame support, cross-engine/physical-device testing, hard OS memory ceilings and broader site compatibility.
 
 La base de navegación local ya está implementada. Quedan como ampliaciones la visión del modelo, la cobertura completa de frames entre procesos, pruebas en otros motores y dispositivos, límites estrictos de memoria del sistema operativo y compatibilidad ampliada con sitios.
+
+### Harness experiments / Experimentos del arnés
+
+Curated skills, actionable discovery and read-only execution are implemented; evaluate quality with paired native Terminal-Bench cohorts before claiming gains. Keep experimental changes in a separate branch and review their evidence. Semantic skill retrieval, automatic skill promotion and broader sandbox compatibility remain future work contingent on observed needs and regression results.
+
+Las mejoras de skills y ejecución requieren comparación experimental para afirmar avances. La búsqueda semántica de skills, su promoción automática y mayor compatibilidad del entorno restringido quedan pendientes de evidencia y validación.

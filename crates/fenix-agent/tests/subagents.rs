@@ -42,9 +42,13 @@ fn child_request(body: &Value) -> bool {
 
 fn has_result(body: &Value, call_id: &str) -> bool {
     body["input"].as_array().is_some_and(|input| {
-        input
-            .iter()
-            .any(|item| item["type"] == "function_call_output" && item["call_id"] == call_id)
+        input.iter().any(|item| {
+            item["type"] == "function_call_output"
+                && !item["output"]
+                    .as_str()
+                    .is_some_and(|s| s.contains("tool_schema_loaded"))
+                && item["call_id"] == call_id
+        })
     })
 }
 
@@ -316,6 +320,18 @@ async fn inference_retry_keeps_completed_tool_results_and_does_not_repeat_the_ef
             let body: Value = serde_json::from_slice(&request.body).unwrap();
             if !child_request(&body) {
                 return ResponseTemplate::new(200).set_body_json(answer("Created the file"));
+            }
+            if !body["tools"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|t| t["name"] == "file_write")
+            {
+                return ResponseTemplate::new(200).set_body_json(call(
+                    "load-write",
+                    "tool_search",
+                    json!({"names":["file_write"]}),
+                ));
             }
             match count.fetch_add(1, Ordering::SeqCst) {
                 0 => ResponseTemplate::new(200).set_body_json(call(

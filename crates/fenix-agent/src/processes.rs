@@ -21,10 +21,27 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 
+#[derive(Debug, Serialize)]
+pub(crate) struct BusyProcess {
+    pub code: &'static str,
+    pub retryable: bool,
+    pub executed: bool,
+    pub processes: Value,
+    pub instruction: &'static str,
+}
+impl std::fmt::Display for BusyProcess {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.instruction)
+    }
+}
+impl std::error::Error for BusyProcess {}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub(crate) struct ProcessOptions {
     pub tty: bool,
     pub persistent: bool,
+    #[serde(default)]
+    pub read_paths: Vec<PathBuf>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub(crate) struct ProcessInfo {
@@ -33,6 +50,8 @@ pub(crate) struct ProcessInfo {
     pub cwd: PathBuf,
     pub tty: bool,
     pub persistent: bool,
+    #[serde(default)]
+    pub read_paths: Vec<PathBuf>,
     pub status: String,
     pub exit_code: Option<i32>,
     #[serde(default)]
@@ -76,6 +95,82 @@ impl Process {
     }
 }
 impl Processes {
+    pub async fn progress_signature(&self, owner: &str) -> String {
+        let items = self.items.lock().await;
+        let mut result = Vec::new();
+        for p in items.values().filter(|p| p.info.owner == owner) {
+            let state = p.state.lock().await;
+            result.push(format!(
+                "{}:{}:{}:{:?}",
+                p.info.process_id, state.status, state.bytes, state.exit_code
+            ));
+        }
+        result.sort();
+        result.join(";")
+    }
+    pub async fn wait_foreground(&self, owner: &str, cancel: &CancellationToken) -> Result<()> {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
+        loop {
+            if !self.has_running(owner).await {
+                return Ok(());
+            }
+            if tokio::time::Instant::now() >= deadline {
+                let processes = self
+                    .list()
+                    .await
+                    .into_iter()
+                    .filter(|p| p.owner == owner && !p.persistent && p.status == "running")
+                    .collect::<Vec<_>>();
+                return Err(BusyProcess {
+                    code: "process_busy", retryable: true, executed: false,
+                    processes: json!(processes),
+                    instruction: "An earlier command is still running. Use command_status with its process_id and wait_ms. Do not cancel a progressing installation merely to inspect it. This action has NOT executed.",
+                }.into());
+            }
+            tokio::select! { _ = cancel.cancelled() => bail!("Task cancelled while waiting for command"), _ = tokio::time::sleep(Duration::from_millis(100)) => {} }
+        }
+    }
+    pub async fn wait_effect(
+        &self,
+        owner: &str,
+        writes: Option<&[PathBuf]>,
+        cancel: &CancellationToken,
+    ) -> Result<()> {
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(30);
+        loop {
+            let conflicts: Vec<_> = self
+                .list()
+                .await
+                .into_iter()
+                .filter(|p| {
+                    if p.status != "running" || p.persistent {
+                        return false;
+                    }
+                    if p.read_paths.is_empty() {
+                        return p.owner == owner;
+                    }
+                    writes.is_none_or(|writes| {
+                        use std::os::unix::fs::MetadataExt;
+                        writes
+                            .iter()
+                            .any(|write| std::fs::metadata(write).is_ok_and(|m| m.nlink() > 1))
+                            || p.read_paths.iter().any(|read| {
+                                writes
+                                    .iter()
+                                    .any(|write| read.starts_with(write) || write.starts_with(read))
+                            })
+                    })
+                })
+                .collect();
+            if conflicts.is_empty() {
+                return Ok(());
+            }
+            if tokio::time::Instant::now() >= deadline {
+                return Err(BusyProcess { code:"process_busy",retryable:true,executed:false,processes:json!(conflicts),instruction:"A process conflicts with these resources. The requested action did NOT execute. Inspect its output/status or use an independent output path. Read-only inputs stay locked until their process exits." }.into());
+            }
+            tokio::select! { _=cancel.cancelled()=>bail!("Task cancelled while waiting for resources"), _=tokio::time::sleep(Duration::from_millis(100))=>{} }
+        }
+    }
     pub fn new(
         directory: PathBuf,
         redactor: Arc<Redactor>,
@@ -149,6 +244,14 @@ impl Processes {
         if !(1..=604_800).contains(&timeout) {
             bail!("Process timeout must be between one second and seven days");
         }
+        // Keep the supervising shell alive for ordinary background jobs as well
+        // as foreground services. Group cleanup still runs on timeout/cancel.
+        let supervised = if options.persistent {
+            format!("{command}\n_fenix_command_status=$?\nwait\nexit \"$_fenix_command_status\"")
+        } else {
+            command.to_owned()
+        };
+        let command = supervised.as_str();
         let cwd = std::fs::canonicalize(cwd)?;
         if !cwd.is_dir() {
             bail!("Working directory is not a directory");
@@ -179,6 +282,7 @@ impl Processes {
             cwd: cwd.clone(),
             tty: options.tty,
             persistent: options.persistent,
+            read_paths: options.read_paths.clone(),
             status: "running".into(),
             exit_code: None,
             log_complete: true,
@@ -222,6 +326,9 @@ impl Processes {
                     .process_group(0);
                 for key in &private_env {
                     builder.env_remove(key);
+                }
+                if !options.read_paths.is_empty() {
+                    builder.env_remove("BASH_ENV").env_remove("ENV");
                 }
                 let mut child = builder.spawn().context("Could not start command")?;
                 let input = Input::Pipe(child.stdin.take().context("Missing stdin")?);
@@ -335,6 +442,11 @@ impl Processes {
         Ok(process)
     }
     pub async fn status(&self, owner: &str, reader: &str, id: &str, args: &Value) -> Result<Value> {
+        if let Some(port) = args["ready_port"].as_u64()
+            && (port == 0 || port > 65535)
+        {
+            bail!("ready_port must be between 1 and 65535");
+        }
         let process = self.owned(owner, id).await?;
         let notified = process.done.notified();
         tokio::pin!(notified);
@@ -355,9 +467,18 @@ impl Processes {
         let (text, next, omitted) =
             output::read_page(&process.log_path, start, state.bytes, limit, true).await?;
         state.cursors.insert(reader.into(), next);
-        Ok(
-            json!({"process_id":id,"status":state.status,"exit_code":state.exit_code,"output":text,"cursor":start,"next_cursor":next,"omitted_bytes":omitted,"truncated":omitted>0,"log_complete":state.log_complete,"output_error":state.output_error,"persistent":process.info.persistent}),
-        )
+        let mut result = json!({"process_id":id,"status":state.status,"exit_code":state.exit_code,"output":text,"cursor":start,"next_cursor":next,"omitted_bytes":omitted,"truncated":omitted>0,"log_complete":state.log_complete,"output_error":state.output_error,"persistent":process.info.persistent,"read_paths":process.info.read_paths,"descendant_policy":if process.info.persistent {"supervised_until_cancel_or_timeout"} else {"reaped_when_shell_exits"}});
+        drop(state);
+        if let Some(port) = args["ready_port"].as_u64() {
+            let connected = tokio::time::timeout(
+                Duration::from_millis(500),
+                tokio::net::TcpStream::connect((std::net::Ipv4Addr::LOCALHOST, port as u16)),
+            )
+            .await
+            .is_ok_and(|v| v.is_ok());
+            result["readiness"] = json!({"port":port,"tcp_accepting":connected,"process_running":process.state.lock().await.status == "running","scope":"TCP availability only; verify application behavior separately"});
+        }
+        Ok(result)
     }
     pub async fn output(&self, owner: &str, id: &str, args: &Value) -> Result<Value> {
         let info = self.info(id).await?;
@@ -521,6 +642,115 @@ mod tests {
             .unwrap()
     }
     #[tokio::test]
+    async fn persistent_background_job_survives_shell_launch_and_is_cancelled() {
+        let (dir, processes) = fixture();
+        let cancel = CancellationToken::new();
+        let run = processes
+            .start(
+                "task",
+                "sleep 60 & printf '%s\\n' $!",
+                dir.path(),
+                60,
+                &cancel,
+                None,
+                ProcessOptions {
+                    tty: false,
+                    persistent: true,
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        let id = run["process_id"].as_str().unwrap();
+        let status = tokio::time::timeout(Duration::from_secs(5), async {
+            loop {
+                let status = processes
+                    .status("task", "task", id, &json!({"wait_ms":2000}))
+                    .await
+                    .unwrap();
+                if !status["output"].as_str().unwrap().trim().is_empty() {
+                    break status;
+                }
+            }
+        })
+        .await
+        .unwrap();
+        assert_eq!(status["status"], "running");
+        let child: u32 = status["output"].as_str().unwrap().trim().parse().unwrap();
+        assert!(std::path::Path::new(&format!("/proc/{child}")).exists());
+        cancel.cancel();
+        processes.cancel_foreground("task").await;
+        assert_eq!(processes.info(id).await.unwrap().status, "running");
+        processes.cancel_all().await;
+        assert_eq!(processes.info(id).await.unwrap().status, "cancelled");
+        // A reparented dead child may briefly remain a zombie; it is not executing.
+        if let Ok(stat) = std::fs::read_to_string(format!("/proc/{child}/stat")) {
+            assert!(
+                stat.split(')')
+                    .nth(1)
+                    .unwrap()
+                    .trim_start()
+                    .starts_with('Z')
+            );
+        }
+    }
+    #[tokio::test]
+    async fn effects_wait_for_foreground_completion_without_cancelling_it() {
+        let (dir, processes) = fixture();
+        let cancel = CancellationToken::new();
+        let run = processes
+            .start(
+                "task",
+                "sleep 0.2; printf done",
+                dir.path(),
+                10,
+                &cancel,
+                None,
+                ProcessOptions::default(),
+            )
+            .await
+            .unwrap();
+        processes.wait_foreground("task", &cancel).await.unwrap();
+        let result = complete(&processes, run["process_id"].as_str().unwrap()).await;
+        assert_eq!(result["exit_code"], 0);
+        assert_eq!(result["output"], "done");
+    }
+    #[tokio::test]
+    async fn readiness_is_explicit_tcp_evidence_not_application_success() {
+        let (dir, processes) = fixture();
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let run = processes
+            .start(
+                "task",
+                "sleep 60",
+                dir.path(),
+                60,
+                &CancellationToken::new(),
+                None,
+                ProcessOptions {
+                    tty: false,
+                    persistent: true,
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        let id = run["process_id"].as_str().unwrap();
+        let ready = processes
+            .status("task", "task", id, &json!({"wait_ms":0,"ready_port":port}))
+            .await
+            .unwrap();
+        assert_eq!(ready["readiness"]["tcp_accepting"], true);
+        drop(listener);
+        let absent = processes
+            .status("task", "task", id, &json!({"wait_ms":0,"ready_port":port}))
+            .await
+            .unwrap();
+        assert_eq!(absent["readiness"]["tcp_accepting"], false);
+        processes.cancel_all().await;
+    }
+    #[tokio::test]
     async fn pipe_and_pty_accept_input_and_eof() {
         let (dir, processes) = fixture();
         for tty in [false, true] {
@@ -540,6 +770,7 @@ mod tests {
                     ProcessOptions {
                         tty,
                         persistent: false,
+                        ..Default::default()
                     },
                 )
                 .await
@@ -547,7 +778,7 @@ mod tests {
             let id = run["process_id"].as_str().unwrap();
             if tty {
                 let preview = processes
-                    .status("task", "task", id, &json!({"wait_ms":100}))
+                    .status("task", "task", id, &json!({"wait_ms":2000}))
                     .await
                     .unwrap();
                 assert!(preview["output"].as_str().unwrap().contains("Name?"));
@@ -697,6 +928,7 @@ mod tests {
                 ProcessOptions {
                     tty: false,
                     persistent: true,
+                    ..Default::default()
                 },
             )
             .await
@@ -715,11 +947,22 @@ mod tests {
             )
             .await
             .unwrap();
-        let result = processes
-            .status("task", "later-turn", id, &json!({"wait_ms":100}))
-            .await
-            .unwrap();
-        assert!(result["output"].as_str().unwrap().contains("alive"));
+        let output = tokio::time::timeout(Duration::from_secs(5), async {
+            let mut output = String::new();
+            loop {
+                let result = processes
+                    .status("task", "later-turn", id, &json!({"wait_ms":100}))
+                    .await
+                    .unwrap();
+                output.push_str(result["output"].as_str().unwrap());
+                if output.contains("alive") {
+                    break output;
+                }
+            }
+        })
+        .await
+        .unwrap();
+        assert!(output.contains("alive"));
         processes.cancel_all().await;
         assert_eq!(processes.info(id).await.unwrap().status, "cancelled");
     }
@@ -745,5 +988,55 @@ mod tests {
         assert_eq!(status["status"], "timed_out");
         assert!(effects.try_lock().is_ok());
         assert!(processes.cancel("other", id).await.is_err());
+    }
+}
+
+#[cfg(test)]
+mod resource_tests {
+    use super::*;
+    #[tokio::test]
+    async fn declared_readers_allow_independent_writes_and_hold_conflicts() {
+        let dir = tempfile::tempdir().unwrap();
+        let stop = CancellationToken::new();
+        let processes = Processes::new(
+            dir.path().join("logs"),
+            Arc::new(Redactor::default()),
+            stop.clone(),
+        );
+        // The kernel helper is tested through the real CLI; this test isolates scheduling.
+        let processes = processes.unwrap();
+        let input = dir.path().join("input.db");
+        std::fs::write(&input, "data").unwrap();
+        let started = processes
+            .start(
+                "owner",
+                "sleep 2",
+                dir.path(),
+                10,
+                &stop,
+                None,
+                ProcessOptions {
+                    read_paths: vec![input.clone()],
+                    ..Default::default()
+                },
+            )
+            .await
+            .unwrap();
+        processes
+            .wait_effect("owner", Some(&[dir.path().join("answer.sql")]), &stop)
+            .await
+            .unwrap();
+        assert!(
+            tokio::time::timeout(
+                Duration::from_millis(50),
+                processes.wait_effect("other", Some(&[input]), &stop)
+            )
+            .await
+            .is_err()
+        );
+        processes
+            .cancel("owner", started["process_id"].as_str().unwrap())
+            .await
+            .unwrap();
     }
 }

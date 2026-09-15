@@ -57,8 +57,7 @@ computer and service must stay on for Telegram and scheduled work.
 - Projects with names, aliases, briefs and optional workspaces within the same
   chat. Routing precedes memory retrieval; general conversation has its own scope
   and executions retain their project bindings when the foreground topic changes.
-- General and project memory CRUD, scoped exact duplicate checks and Unicode
-  lexical search with FTS5. No automatic extraction or embeddings.
+- [Adaptive project memory](docs/en/adaptive-memory.md): sourced facts, candidates, validity and revisions; entities, aliases and versioned relation schemas. Lexical/temporal retrieval, context packs, background extraction and optional embeddings.
 - [Independent web search and source reading](docs/en/web-search.md): a background
   crawler, disk-backed public index and HTTP reading of results. No external
   search provider; coverage starts small and grows from discovered links.
@@ -77,7 +76,7 @@ private local SQLite database, without a separate encryption master key. Known
 keys are redacted from agent output and never returned by settings endpoints.
 The service binds to loopback and rejects foreign browser origins and hosts.
 
-Heartbeat, voice, advanced memory, action
+Heartbeat, voice, action
 restoration and automatic task recovery remain in [ROADMAP.md](ROADMAP.md).
 Interrupted tasks are recorded, not replayed. The web previews OpenAI Responses text as it arrives and shows live tool activity.
 Other provider adapters retain complete responses; Telegram delivers complete messages.
@@ -167,3 +166,7 @@ root. It uses temporary data and writes a secret-free report under ignored
 Interactive terminal sessions, persistent services, incremental logs, configurable execution limits, subagent follow-ups and on-demand tools are described in the [execution harness guide](docs/en/execution-harness.md).
 
 [Local browser / Navegador local — sessions, controls and responsive tests](docs/en/browser.md)
+
+[Native evaluation and execution recovery](docs/en/native-evaluation.md)
+
+See [procedural skills and recovery](docs/en/harness-recovery.md) for demand-loaded coding procedures, enforced read-only commands and reproducible evaluation.

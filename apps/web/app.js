@@ -519,10 +519,19 @@ window.addEventListener("pageshow", (event) => {
   if (event.persisted) connectProgress();
 });
 
+let viewLoadSequence = 0;
 async function renderProjects() {
+  if (state.page !== "projects") return;
+  const target = $("#page");
+  const sequence = ++viewLoadSequence;
   state.projects = await api("/projects");
-  $("#page").innerHTML =
-    `<div class="content">${heading(t("Each project, in context.", "Cada proyecto, con su contexto."), t("Keep objectives and decisions separate while talking in the same conversation. Mention a project by its name or alias when you need it.", "Mantén separados los objetivos y decisiones, conversando siempre en el mismo chat. Menciona el nombre o alias de un proyecto cuando lo necesites."))}<div class="grid"><section class="card"><div class="row spread"><h2>${t("Your projects", "Tus proyectos")}</h2><button data-action="refresh-projects">${t("Refresh", "Actualizar")}</button></div><div id="project-list"></div></section><form class="card" id="project-form"><h2 id="project-form-title">${t("Create a project", "Crear un proyecto")}</h2><input type="hidden" id="project-id">${input("project-name", t("Name", "Nombre"), "", "required maxlength=200")}${input("project-aliases", t("Aliases, separated by commas", "Alias, separados por comas"), "", "maxlength=2000")}${field(`<label for="project-description">${t("Description", "Descripción")}</label>`, '<textarea id="project-description" rows="3" maxlength="4000"></textarea>')}${input("project-workspace", t("Project folder (optional)", "Carpeta del proyecto (opcional)"), "", 'placeholder="/home/user/projects/example"')}${field(`<label for="project-brief">${t("Project context", "Contexto del proyecto")}</label>`, `<textarea id="project-brief" rows="12" maxlength="16000" placeholder="${escape(t("Objective\nConstraints and preferences\nProgress\nKey decisions\nRelevant files\nNext steps\nCritical context", "Objetivo\nRestricciones y preferencias\nProgreso\nDecisiones clave\nArchivos relevantes\nPróximos pasos\nContexto crítico"))}"></textarea>`, t("Keep the decisions and constraints that apply to this project. An optional folder supports projects with local files.", "Conserva las decisiones y restricciones de este proyecto. La carpeta es opcional y sirve para proyectos con archivos locales."))}<button class="primary" type="submit">${t("Save project", "Guardar proyecto")}</button><button class="subtle" type="button" data-action="clear-project">${t("New project", "Nuevo proyecto")}</button><p class="form-status" id="project-status"></p></form></div></div>`;
+  if (
+    state.page !== "projects" ||
+    target !== $("#page") ||
+    sequence !== viewLoadSequence
+  )
+    return;
+  target.innerHTML = `<div class="content">${heading(t("Each project, in context.", "Cada proyecto, con su contexto."), t("Keep objectives and decisions separate while talking in the same conversation. Mention a project by its name or alias when you need it.", "Mantén separados los objetivos y decisiones, conversando siempre en el mismo chat. Menciona el nombre o alias de un proyecto cuando lo necesites."))}<div class="grid"><section class="card"><div class="row spread"><h2>${t("Your projects", "Tus proyectos")}</h2><button data-action="refresh-projects">${t("Refresh", "Actualizar")}</button></div><div id="project-list"></div></section><form class="card" id="project-form"><h2 id="project-form-title">${t("Create a project", "Crear un proyecto")}</h2><input type="hidden" id="project-id">${input("project-name", t("Name", "Nombre"), "", "required maxlength=200")}${input("project-aliases", t("Aliases, separated by commas", "Alias, separados por comas"), "", "maxlength=2000")}${field(`<label for="project-description">${t("Description", "Descripción")}</label>`, '<textarea id="project-description" rows="3" maxlength="4000"></textarea>')}${input("project-workspace", t("Project folder (optional)", "Carpeta del proyecto (opcional)"), "", 'placeholder="/home/user/projects/example"')}${field(`<label for="project-brief">${t("Project context", "Contexto del proyecto")}</label>`, `<textarea id="project-brief" rows="12" maxlength="16000" placeholder="${escape(t("Objective\nConstraints and preferences\nProgress\nKey decisions\nRelevant files\nNext steps\nCritical context", "Objetivo\nRestricciones y preferencias\nProgreso\nDecisiones clave\nArchivos relevantes\nPróximos pasos\nContexto crítico"))}"></textarea>`, t("Keep the decisions and constraints that apply to this project. An optional folder supports projects with local files.", "Conserva las decisiones y restricciones de este proyecto. La carpeta es opcional y sirve para proyectos con archivos locales."))}<button class="primary" type="submit">${t("Save project", "Guardar proyecto")}</button><button class="subtle" type="button" data-action="clear-project">${t("New project", "Nuevo proyecto")}</button><p class="form-status" id="project-status"></p></form></div></div>`;
   drawProjects();
 }
 function drawProjects() {
@@ -547,23 +556,105 @@ function projectOptions(selected = "") {
   return `<option value="">${t("General memory", "Memoria general")}</option>${state.projects.map((project) => `<option value="${escape(project.id)}" ${project.id === selected ? "selected" : ""}>${escape(project.name)}</option>`).join("")}`;
 }
 async function renderMemory() {
+  if (state.page !== "memory") return;
+  const target = $("#page");
+  const sequence = ++viewLoadSequence;
   state.projects = await api("/projects");
-  $("#page").innerHTML =
-    `<div class="content">${heading(t("A memory you can trust.", "Lo importante, a mano."), t("Only the facts you ask to keep. Search, correct or remove them at any time.", "Sólo los datos que pides conservar. Búscalos, corrígelos o elimínalos cuando quieras."))}<div class="grid"><section class="card"><h2>${t("Saved memories", "Recuerdos guardados")}</h2>${field(`<label for="memory-filter">${t("Memory scope", "Ámbito de memoria")}</label>`, `<select id="memory-filter">${projectOptions()}</select>`)}<form class="search-form" id="memory-search"><input id="memory-query" aria-label="${t("Search memory", "Buscar recuerdos")}" placeholder="${t("Search by words, title or ID…", "Buscar por palabras, título o ID…")}"><button type="submit">${t("Search", "Buscar")}</button></form><div id="memory-list"></div></section><form class="card" id="memory-form"><h2>${t("Keep a detail", "Guardar un detalle")}</h2><input type="hidden" id="memory-id">${field(`<label for="memory-project">${t("Save in", "Guardar en")}</label>`, `<select id="memory-project">${projectOptions()}</select>`)}${input("memory-title", t("Title", "Título"), "", "required maxlength=200")}${field(`<label for="memory-content">${t("What should I remember?", "¿Qué debo recordar?")}</label>`, '<textarea id="memory-content" required maxlength="16000" rows="5"></textarea>')}<button class="primary" type="submit">${t("Save memory", "Guardar recuerdo")}</button><button class="subtle" data-action="clear-memory" type="button">${t("Clear form", "Limpiar formulario")}</button><p class="form-status" id="memory-status"></p></form></div></div>`;
+  if (
+    state.page !== "memory" ||
+    target !== $("#page") ||
+    sequence !== viewLoadSequence
+  )
+    return;
+  target.innerHTML = `<div class="content">${heading(t("A memory you can trust.", "Lo importante, a mano."), t("Review memory candidates, confirmed facts and their sources. Correct or withdraw them at any time.", "Revisa candidatos, recuerdos confirmados y sus fuentes. Corrígelos o retíralos cuando quieras."))}<div class="grid"><section class="card"><h2>${t("Saved memories", "Recuerdos guardados")}</h2>${field(`<label for="memory-filter">${t("Memory scope", "Ámbito de memoria")}</label>`, `<select id="memory-filter">${projectOptions()}</select>`)}<form class="search-form" id="memory-search"><input id="memory-query" aria-label="${t("Search memory", "Buscar recuerdos")}" placeholder="${t("Search by words, title or ID…", "Buscar por palabras, título o ID…")}"><button type="submit">${t("Search", "Buscar")}</button></form><div id="memory-list"></div></section><form class="card" id="memory-form"><h2>${t("Keep a detail", "Guardar un detalle")}</h2><input type="hidden" id="memory-id">${field(`<label for="memory-kind">${t("Type", "Tipo")}</label>`, `<select id="memory-kind">${["fact", "preference", "decision", "assumption", "commitment", "constraint"].map((k) => `<option value="${k}">${escape(memoryLabel(k))}</option>`).join("")}</select>`)}${field(`<label for="memory-state">${t("Status", "Estado")}</label>`, `<select id="memory-state">${["confirmed", "candidate", "conflict", "expired", "superseded"].map((k) => `<option value="${k}">${escape(memoryLabel(k))}</option>`).join("")}</select>`)}${field(`<label for="memory-until">${t("Valid until (optional)", "Válido hasta (opcional)")}</label>`, '<input id="memory-until" type="datetime-local">')}${field(`<label for="memory-project">${t("Save in", "Guardar en")}</label>`, `<select id="memory-project">${projectOptions()}</select>`)}${input("memory-title", t("Title", "Título"), "", "required maxlength=200")}${field(`<label for="memory-content">${t("What should I remember?", "¿Qué debo recordar?")}</label>`, '<textarea id="memory-content" required maxlength="16000" rows="5"></textarea>')}<button class="primary" type="submit">${t("Save memory", "Guardar recuerdo")}</button><button class="subtle" data-action="clear-memory" type="button">${t("Clear form", "Limpiar formulario")}</button><p class="form-status" id="memory-status"></p></form></div></div>`;
+  $(".content").insertAdjacentHTML(
+    "beforeend",
+    `<section class="card"><h2>${t("Automatic memory", "Memoria automática")}</h2><label><input type="checkbox" id="memory-auto"> ${t("Collect relevant statements as candidates in the background", "Recopilar afirmaciones relevantes como candidatos en segundo plano")}</label><p>${t("Extraction uses the configured model. Repeated preferences can be promoted; inferred assumptions remain candidates.", "La extracción utiliza el modelo configurado. Las preferencias repetidas pueden promoverse; los supuestos inferidos permanecen como candidatos.")}</p><p id="memory-health"></p><h2>${t("Entities and connections", "Entidades y conexiones")}</h2><p>${t("Manage names, aliases and relationships in the conversation. Each project keeps its own structure.", "Gestiona nombres, alias y relaciones en la conversación. Cada proyecto conserva su propia estructura.")}</p><div id="memory-entities"></div></section>`,
+  );
+  const config = await api("/memory/settings");
+  if (
+    state.page !== "memory" ||
+    target !== $("#page") ||
+    sequence !== viewLoadSequence
+  )
+    return;
+  $("#memory-auto").checked = config.settings.automatic_capture;
+  $("#memory-auto").onchange = async () => {
+    try {
+      await api("/memory/settings", {
+        method: "POST",
+        body: {
+          ...config.settings,
+          automatic_capture: $("#memory-auto").checked,
+        },
+      });
+    } catch (error) {
+      toast(error.message);
+      $("#memory-auto").checked = !$("#memory-auto").checked;
+    }
+  };
+  $("#memory-health").textContent =
+    `${t("Pending candidates", "Candidatos pendientes")}: ${config.maintenance?.candidates || 0} · ${t("Failed extraction jobs", "Extracciones fallidas")}: ${config.maintenance?.failed_jobs || 0}`;
   await loadMemories();
 }
+function memoryLabel(value) {
+  const labels = {
+    fact: ["Fact", "Hecho"],
+    preference: ["Preference", "Preferencia"],
+    decision: ["Decision", "Decisión"],
+    assumption: ["Assumption", "Supuesto"],
+    commitment: ["Commitment", "Compromiso"],
+    constraint: ["Constraint", "Restricción"],
+    confirmed: ["Confirmed", "Confirmado"],
+    candidate: ["Candidate", "Candidato"],
+    conflict: ["Conflict", "Conflicto"],
+    expired: ["Expired", "Caducado"],
+    superseded: ["Superseded", "Sustituido"],
+  };
+  return labels[value] ? t(...labels[value]) : value;
+}
 let memories = [];
+let memoryLoadSequence = 0;
 async function loadMemories(query = "") {
+  const sequence = ++memoryLoadSequence;
   const projectId = $("#memory-filter")?.value;
-  memories = await api(
+  const loaded = await api(
     `/memory?query=${encodeURIComponent(query)}${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`,
   );
-  if (!$("#memory-list")) return;
+  if (
+    sequence !== memoryLoadSequence ||
+    !$("#memory-list") ||
+    $("#memory-filter")?.value !== projectId
+  )
+    return;
+  const entities = await api("/memory/knowledge", {
+    method: "POST",
+    body: { action: "entities", project_id: projectId || null },
+  });
+  if (
+    sequence !== memoryLoadSequence ||
+    !$("#memory-list") ||
+    $("#memory-filter")?.value !== projectId
+  )
+    return;
+  memories = loaded;
+  if ($("#memory-entities"))
+    $("#memory-entities").innerHTML =
+      entities
+        .map(
+          (e) =>
+            `<button data-entity-card="${escape(e.id)}">${escape(e.name)} · ${escape(e.kind)}</button>`,
+        )
+        .join("") ||
+      t(
+        "No entities in this scope yet.",
+        "Aún no hay entidades en este ámbito.",
+      );
   $("#memory-list").innerHTML = memories.length
     ? memories
         .map(
           (memory) =>
-            `<article class="record"><h3>${escape(memory.title)}</h3><span class="badge">${escape(memory.project_id ? projectName(memory.project_id) : t("General memory", "Memoria general"))}</span><p>${escape(memory.content)}</p><small>${date(memory.updated_at)}<br>${escape(memory.source)}<br>${escape(memory.id)}</small><div class="actions"><button data-edit-memory="${memory.id}">${t("Edit", "Editar")}</button><button data-delete-memory="${memory.id}">${t("Remove memory", "Eliminar recuerdo")}</button></div></article>`,
+            `<article class="record"><h3>${escape(memory.title)}</h3><span class="badge">${escape(memory.project_id ? projectName(memory.project_id) : t("General memory", "Memoria general"))}</span><span class="badge">${escape(memoryLabel(memory.metadata?.kind || "fact"))} · ${escape(memoryLabel(memory.metadata?.status || "confirmed"))}</span><p>${escape(memory.content)}</p>${(memory.metadata?.evidence || []).map((e) => `<blockquote>${escape(e.quote)}<small>${escape(e.reference)}</small></blockquote>`).join("")}<small>${date(memory.updated_at)}<br>${escape(memory.source)}<br>${escape(memory.id)}</small><div class="actions"><button data-edit-memory="${memory.id}">${t("Edit", "Editar")}</button><button data-history-memory="${memory.id}">${t("History", "Historial")}</button><button data-delete-memory="${memory.id}">${t("Remove memory", "Eliminar recuerdo")}</button></div></article>`,
         )
         .join("")
     : empty(
@@ -575,25 +666,49 @@ async function loadMemories(query = "") {
       );
 }
 async function renderSkills() {
+  if (state.page !== "skills") return;
+  const target = $("#page");
+  const sequence = ++viewLoadSequence;
   const skills = await api("/skills");
-  $("#page").innerHTML =
-    `<div class="content">${heading(t("A familiar way to work.", "Una forma de trabajar, definida."), t("Manual skills give Fénix repeatable instructions for specific tasks. You choose which ones are active.", "Los skills manuales guían tareas específicas. Tú eliges cuáles están activos."))}<div class="grid">${skills.map((skill) => `<article class="card"><div class="skill-title"><h2>${escape(skill.name)}</h2><span class="badge">v${escape(skill.version)}</span></div><p class="muted">${escape(skill.description)}</p><div class="row spread"><label class="toggle"><input type="checkbox" data-skill="${escape(skill.name)}" ${skill.enabled ? "checked" : ""}>${t("Enabled", "Activo")}</label><button data-read-skill="${escape(skill.name)}" ${skill.enabled ? "" : "disabled"}>${t("Read instructions", "Ver instrucciones")}</button></div></article>`).join("")}</div><p class="note">${t("Install your own skill in", "Instala tus propios skills en")} <code>${escape(state.status.skills_directory)}/&lt;name&gt;/SKILL.md</code>. ${t("Skills are never created or rewritten automatically.", "Los skills nunca se crean ni reescriben automáticamente.")}</p></div>`;
+  if (
+    state.page !== "skills" ||
+    target !== $("#page") ||
+    sequence !== viewLoadSequence
+  )
+    return;
+  target.innerHTML = `<div class="content">${heading(t("A familiar way to work.", "Una forma de trabajar, definida."), t("Manual skills give Fénix repeatable instructions for specific tasks. You choose which ones are active.", "Los skills manuales guían tareas específicas. Tú eliges cuáles están activos."))}<div class="grid">${skills.map((skill) => `<article class="card"><div class="skill-title"><h2>${escape(skill.name)}</h2><span class="badge">v${escape(skill.version)}</span></div><p class="muted">${escape(skill.description)}</p><div class="row spread"><label class="toggle"><input type="checkbox" data-skill="${escape(skill.name)}" ${skill.enabled ? "checked" : ""}>${t("Enabled", "Activo")}</label><button data-read-skill="${escape(skill.name)}" ${skill.enabled ? "" : "disabled"}>${t("Read instructions", "Ver instrucciones")}</button></div></article>`).join("")}</div><p class="note">${t("Install your own skill in", "Instala tus propios skills en")} <code>${escape(state.status.skills_directory)}/&lt;name&gt;/SKILL.md</code>. ${t("Skills are never created or rewritten automatically.", "Los skills nunca se crean ni reescriben automáticamente.")}</p></div>`;
 }
 
 let schedules = [];
 async function renderSchedules() {
+  if (state.page !== "schedules") return;
+  const target = $("#page");
+  const sequence = ++viewLoadSequence;
   schedules = await api("/schedules");
-  $("#page").innerHTML =
-    `<div class="content">${heading(t("The right thing, at the right time.", "Cada cosa, a su tiempo."), t("Reminders and recurring work in Peru time. Your computer and Fénix must be running.", "Recordatorios y trabajo recurrente en horario de Perú. Tu computadora y Fénix deben estar encendidos."))}<div class="grid"><section class="card"><h2>${t("Your schedules", "Tus programaciones")}</h2>${schedules.length ? schedules.map((schedule) => `<article class="record"><div class="row spread"><h3>${escape(schedule.name)}</h3><span class="badge">${statusName(schedule.status)}</span></div><p>${escape(schedule.content)}</p><small>${t("Next", "Próxima")}: ${date(schedule.next_run)} · America/Lima<br>${escape(schedule.kind)} · ${escape(schedule.mode)}<br>${escape(schedule.id)}${schedule.last_result ? `<br>${escape(schedule.last_result)}` : ""}</small><div class="actions"><button data-edit-schedule="${schedule.id}">${t("Edit", "Editar")}</button>${["active", "paused"].includes(schedule.status) ? `<button data-schedule-state="${schedule.status === "active" ? "pause" : "resume"}" data-id="${schedule.id}">${schedule.status === "active" ? t("Pause", "Pausar") : t("Resume future runs", "Reactivar futuras ejecuciones")}</button>` : ""}</div></article>`).join("") : empty(t("A little space in your day", "Un pendiente menos en tu cabeza"), t("Create a reminder here or ask for one in the conversation.", "Crea un recordatorio aquí o pídelo en la conversación."))}<p class="note">${t("To cancel a schedule, ask in the conversation and include its name or ID.", "Para cancelar una programación, pídelo en la conversación e indica su nombre o ID.")}</p></section><form class="card" id="schedule-form"><h2>${t("Create a schedule", "Crear programación")}</h2><input type="hidden" id="schedule-id">${input("schedule-name", t("Name", "Nombre"), "", "required maxlength=200")}${field(`<label for="schedule-content">${t("Reminder or task", "Recordatorio o tarea")}</label>`, '<textarea id="schedule-content" required maxlength="16000"></textarea>')}${field(`<label for="schedule-mode">${t("What happens", "Qué ocurre")}</label>`, `<select id="schedule-mode"><option value="reminder">${t("Deliver a reminder", "Entregar un recordatorio")}</option><option value="task">${t("Run an agent task", "Ejecutar una tarea del agente")}</option></select>`)}${field(`<label for="schedule-kind">${t("When", "Cuándo")}</label>`, `<select id="schedule-kind"><option value="once">${t("Once", "Una vez")}</option><option value="interval">${t("Every interval", "Por intervalo")}</option><option value="cron">Cron</option></select>`)}<div id="schedule-once">${input("schedule-at", t("Date and time · Peru", "Fecha y hora · Perú"), "", 'type="datetime-local"')}</div><div id="schedule-interval" hidden>${input("schedule-seconds", t("Interval in seconds", "Intervalo en segundos"), 3600, 'type="number" min="1" max="31536000"')}</div><div id="schedule-cron" hidden>${input("schedule-expression", t("Cron expression", "Expresión cron"), "0 9 * * 1-5")}</div><button class="primary" type="submit">${t("Save schedule", "Guardar programación")}</button><p id="schedule-status" class="form-status"></p></form></div></div>`;
+  if (
+    state.page !== "schedules" ||
+    target !== $("#page") ||
+    sequence !== viewLoadSequence
+  )
+    return;
+  target.innerHTML = `<div class="content">${heading(t("The right thing, at the right time.", "Cada cosa, a su tiempo."), t("Reminders and recurring work in Peru time. Your computer and Fénix must be running.", "Recordatorios y trabajo recurrente en horario de Perú. Tu computadora y Fénix deben estar encendidos."))}<div class="grid"><section class="card"><h2>${t("Your schedules", "Tus programaciones")}</h2>${schedules.length ? schedules.map((schedule) => `<article class="record"><div class="row spread"><h3>${escape(schedule.name)}</h3><span class="badge">${statusName(schedule.status)}</span></div><p>${escape(schedule.content)}</p><small>${t("Next", "Próxima")}: ${date(schedule.next_run)} · America/Lima<br>${escape(schedule.kind)} · ${escape(schedule.mode)}<br>${escape(schedule.id)}${schedule.last_result ? `<br>${escape(schedule.last_result)}` : ""}</small><div class="actions"><button data-edit-schedule="${schedule.id}">${t("Edit", "Editar")}</button>${["active", "paused"].includes(schedule.status) ? `<button data-schedule-state="${schedule.status === "active" ? "pause" : "resume"}" data-id="${schedule.id}">${schedule.status === "active" ? t("Pause", "Pausar") : t("Resume future runs", "Reactivar futuras ejecuciones")}</button>` : ""}</div></article>`).join("") : empty(t("A little space in your day", "Un pendiente menos en tu cabeza"), t("Create a reminder here or ask for one in the conversation.", "Crea un recordatorio aquí o pídelo en la conversación."))}<p class="note">${t("To cancel a schedule, ask in the conversation and include its name or ID.", "Para cancelar una programación, pídelo en la conversación e indica su nombre o ID.")}</p></section><form class="card" id="schedule-form"><h2>${t("Create a schedule", "Crear programación")}</h2><input type="hidden" id="schedule-id">${input("schedule-name", t("Name", "Nombre"), "", "required maxlength=200")}${field(`<label for="schedule-content">${t("Reminder or task", "Recordatorio o tarea")}</label>`, '<textarea id="schedule-content" required maxlength="16000"></textarea>')}${field(`<label for="schedule-mode">${t("What happens", "Qué ocurre")}</label>`, `<select id="schedule-mode"><option value="reminder">${t("Deliver a reminder", "Entregar un recordatorio")}</option><option value="task">${t("Run an agent task", "Ejecutar una tarea del agente")}</option></select>`)}${field(`<label for="schedule-kind">${t("When", "Cuándo")}</label>`, `<select id="schedule-kind"><option value="once">${t("Once", "Una vez")}</option><option value="interval">${t("Every interval", "Por intervalo")}</option><option value="cron">Cron</option></select>`)}<div id="schedule-once">${input("schedule-at", t("Date and time · Peru", "Fecha y hora · Perú"), "", 'type="datetime-local"')}</div><div id="schedule-interval" hidden>${input("schedule-seconds", t("Interval in seconds", "Intervalo en segundos"), 3600, 'type="number" min="1" max="31536000"')}</div><div id="schedule-cron" hidden>${input("schedule-expression", t("Cron expression", "Expresión cron"), "0 9 * * 1-5")}</div><button class="primary" type="submit">${t("Save schedule", "Guardar programación")}</button><p id="schedule-status" class="form-status"></p></form></div></div>`;
 }
 
 async function renderActivity() {
+  if (state.page !== "activity") return;
+  const target = $("#page");
+  const sequence = ++viewLoadSequence;
   [state.tasks, state.status] = await Promise.all([
     api("/tasks"),
     api("/status"),
   ]);
-  $("#page").innerHTML =
-    `<div class="content task-content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Follow tasks while Fénix keeps the conversation available. To cancel, type cancelar and the task ID in the conversation.", "Sigue las tareas mientras Fénix mantiene disponible la conversación. Para cancelar, escribe cancelar y el ID de la tarea en la conversación."))}<section class="card" id="plans-panel"></section><section class="card background-panel" aria-labelledby="background-title"><div class="row spread"><h2 id="background-title">${t("Background tasks", "Tareas en segundo plano")}</h2><span class="badge" id="background-count"></span></div><p class="muted">${t("Delegated work reports back here and in the conversation.", "El trabajo delegado devuelve su resultado aquí y en la conversación.")}</p><div id="background-subagents"></div></section><section class="card pending-panel" id="task-pending" hidden></section><section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div><div id="task-history"></div></section></div>`;
+  if (
+    state.page !== "activity" ||
+    target !== $("#page") ||
+    sequence !== viewLoadSequence
+  )
+    return;
+  target.innerHTML = `<div class="content task-content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Follow tasks while Fénix keeps the conversation available. To cancel, type cancelar and the task ID in the conversation.", "Sigue las tareas mientras Fénix mantiene disponible la conversación. Para cancelar, escribe cancelar y el ID de la tarea en la conversación."))}<section class="card" id="plans-panel"></section><section class="card background-panel" aria-labelledby="background-title"><div class="row spread"><h2 id="background-title">${t("Background tasks", "Tareas en segundo plano")}</h2><span class="badge" id="background-count"></span></div><p class="muted">${t("Delegated work reports back here and in the conversation.", "El trabajo delegado devuelve su resultado aquí y en la conversación.")}</p><div id="background-subagents"></div></section><section class="card pending-panel" id="task-pending" hidden></section><section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div><div id="task-history"></div></section></div>`;
   drawTaskActivity();
 }
 function drawPlans() {
@@ -815,9 +930,39 @@ document.addEventListener("click", async (event) => {
         );
       drawMessages();
     }
+    if (button.dataset.historyMemory || button.dataset.entityCard) {
+      const body = button.dataset.historyMemory
+        ? { action: "history", id: button.dataset.historyMemory }
+        : { action: "card", query: button.dataset.entityCard };
+      const data = await api("/memory/knowledge", {
+        method: "POST",
+        body: { ...body, project_id: $("#memory-filter").value || null },
+      });
+      const renderFact = (m) =>
+        `<article class="record"><h3>${escape(m.title)}</h3><span class="badge">${escape(memoryLabel(m.metadata?.status || "confirmed"))}</span><p>${escape(m.content)}</p>${(m.metadata?.evidence || []).map((e) => `<blockquote>${escape(e.quote)}<small>${escape(e.reference)}</small></blockquote>`).join("")}</article>`;
+      const html = button.dataset.historyMemory
+        ? data
+            .map(
+              (revision) =>
+                `<section><small>${date(revision.changed_at)}</small>${renderFact(revision.snapshot)}</section>`,
+            )
+            .join("")
+        : `<h3>${escape(data.entity?.name)}</h3><p>${escape(data.entity?.description)}</p><small>${escape((data.entity?.aliases || []).join(", "))}</small>${(data.facts || []).map(renderFact).join("")}<h3>${t("Connections", "Conexiones")}</h3>${(data.relations?.neighbors || []).map((n) => `<article class="record"><p>${escape(n.edge.predicate.replaceAll("_", " "))} · ${escape(n.entity.name)}</p><small>${t("Evidence", "Evidencia")}: ${escape(n.edge.evidence_memory_id)}</small></article>`).join("")}`;
+      showDetail(t("Memory evidence", "Evidencia de memoria"), html);
+    }
     if (button.dataset.editMemory) {
       const memory = memories.find((m) => m.id === button.dataset.editMemory);
       $("#memory-id").value = memory.id;
+      $("#memory-kind").value = memory.metadata?.kind || "fact";
+      $("#memory-state").value = memory.metadata?.status || "confirmed";
+      $("#memory-until").value = memory.metadata?.valid_until
+        ? new Date(
+            new Date(memory.metadata.valid_until).getTime() -
+              new Date(memory.metadata.valid_until).getTimezoneOffset() * 60000,
+          )
+            .toISOString()
+            .slice(0, 16)
+        : "";
       $("#memory-title").value = memory.title;
       $("#memory-content").value = memory.content;
       $("#memory-project").value = memory.project_id || "";
@@ -1018,6 +1163,20 @@ document.addEventListener("submit", async (event) => {
           id: $("#memory-id").value || null,
           title: $("#memory-title").value,
           content: $("#memory-content").value,
+          metadata: {
+            ...(memories.find((m) => m.id === $("#memory-id").value)
+              ?.metadata || {}),
+            kind: $("#memory-kind").value,
+            status: $("#memory-state").value,
+            assertion:
+              $("#memory-state").value === "confirmed"
+                ? "explicit"
+                : memories.find((m) => m.id === $("#memory-id").value)?.metadata
+                    ?.assertion || "explicit",
+            valid_until: $("#memory-until").value
+              ? new Date($("#memory-until").value).toISOString()
+              : null,
+          },
           project_id: $("#memory-project").value || null,
         },
       });

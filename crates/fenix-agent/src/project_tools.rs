@@ -189,6 +189,11 @@ impl Runtime {
                     | "command_input"
                     | "subagent_spawn"
             ) || name == "memory_manage" && args["action"] != "get"
+                || name == "knowledge_manage"
+                    && matches!(
+                        args["action"].as_str(),
+                        Some("entity_save" | "schema_save" | "relation_save" | "review_resolve")
+                    )
                 || name == "schedule_manage"
                     && !matches!(args["action"].as_str(), Some("get" | "list")))
         {
@@ -210,7 +215,12 @@ impl Runtime {
                     | "subagent_spawn"
                     | "subagent_cancel"
                     | "subagent_send"
-            ) || (name == "memory_manage" && args["action"] != "get")
+            ) || (name == "memory_manage" && args["action"] != "get"
+                || name == "knowledge_manage"
+                    && matches!(
+                        args["action"].as_str(),
+                        Some("entity_save" | "schema_save" | "relation_save" | "review_resolve")
+                    ))
                 || (name == "schedule_manage"
                     && !matches!(args["action"].as_str(), Some("list" | "get")))
                 || (name == "project_manage"
@@ -243,7 +253,12 @@ impl Runtime {
                     "This turn coordinates multiple projects; delegate execution with an explicit project_id"
                 );
             }
-            if (name == "memory_manage" && args["action"] != "get")
+            if (name == "memory_manage" && args["action"] != "get"
+                || name == "knowledge_manage"
+                    && matches!(
+                        args["action"].as_str(),
+                        Some("entity_save" | "schema_save" | "relation_save" | "review_resolve")
+                    ))
                 || (name == "schedule_manage"
                     && !matches!(args["action"].as_str(), Some("list" | "get")))
                 || (name == "project_manage"
@@ -264,7 +279,14 @@ impl Runtime {
             "memory_search" | "memory_manage" | "history_search" | "history_read"
             | "schedule_manage" => {
                 let project = self.readable_project(task, args)?;
-                if ((name == "memory_manage" && args["action"] != "get")
+                if ((name == "memory_manage" && args["action"] != "get"
+                    || name == "knowledge_manage"
+                        && matches!(
+                            args["action"].as_str(),
+                            Some(
+                                "entity_save" | "schema_save" | "relation_save" | "review_resolve"
+                            )
+                        ))
                     || (name == "schedule_manage"
                         && !matches!(args["action"].as_str(), Some("list" | "get"))))
                     && project != binding.project_id

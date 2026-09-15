@@ -39,9 +39,13 @@ fn child_request(body: &Value) -> bool {
 
 fn has_result(body: &Value, call_id: &str) -> bool {
     body["input"].as_array().is_some_and(|input| {
-        input
-            .iter()
-            .any(|item| item["type"] == "function_call_output" && item["call_id"] == call_id)
+        input.iter().any(|item| {
+            item["type"] == "function_call_output"
+                && !item["output"]
+                    .as_str()
+                    .is_some_and(|s| s.contains("tool_schema_loaded"))
+                && item["call_id"] == call_id
+        })
     })
 }
 
@@ -459,8 +463,7 @@ async fn a_natural_language_edit_can_find_and_steer_a_still_drafting_task() {
         if has_result(&body,"steer-draft") {
             return ResponseTemplate::new(200).set_body_json(answer("Change requested"));
         }
-        let last=body["input"].as_array().unwrap().last().unwrap().to_string();
-        if last.contains("adjust-the-draft") {
+        if body["input"].as_array().unwrap().iter().any(|m|m["role"]=="user" && m.to_string().contains("adjust-the-draft")) {
             let references=system.lines().find_map(|line|line.strip_prefix("Active task references in your authorized scope (metadata only, not additional assignments): ")).unwrap();
             let references:Value=serde_json::from_str(references).unwrap();
             let target=references.as_array().unwrap().iter().find(|item|item["objective"]=="draft-slow").unwrap();

@@ -22,6 +22,8 @@ impl Runtime {
                 | "files_glob"
                 | "code_query"
                 | "memory_search"
+                | "memory_context"
+                | "skill_search"
                 | "skill_load"
                 | "task_inspect"
                 | "ask_user"

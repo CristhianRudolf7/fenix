@@ -60,9 +60,7 @@ encendidos para atender Telegram y ejecutar programaciones.
 - Proyectos con nombres, alias, contexto y carpeta opcional, sin abrir nuevos
   chats. Enrutamiento antes de recuperar memoria, conversación general separada
   y contexto fijo por ejecución; los informes tardíos no cambian el proyecto activo.
-- Memoria explícita general y por proyecto con CRUD, detección exacta de
-  duplicados dentro de su ámbito y búsqueda léxica Unicode mediante FTS5.
-  Sin extracción automática ni embeddings.
+- [Memoria adaptable por proyecto](docs/es/adaptive-memory.md): hechos con procedencia, candidatos, vigencia e historial; entidades, alias y relaciones con esquemas versionados. Recuperación léxica/temporal, contexto seleccionado, extracción en segundo plano y embeddings opcionales.
 - [Búsqueda web propia y lectura de fuentes](docs/es/web-search.md): rastreador en
   segundo plano, índice público en disco y lectura HTTP de resultados. Sin
   proveedor externo de búsqueda; cobertura inicial pequeña que crece con enlaces.
@@ -85,7 +83,7 @@ orígenes y hosts del navegador.
 Las tareas interrumpidas quedan registradas y no se reanudan automáticamente.
 La web muestra texto progresivo con OpenAI Responses y la actividad de las
 herramientas. Los demás adaptadores y Telegram conservan respuestas completas.
-Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Heartbeat, voz, memoria avanzada y
+Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Heartbeat, voz y
 restauración de acciones permanecen en [ROADMAP.md](ROADMAP.md).
 
 ## Trabajo en segundo plano y skills compartidas
@@ -161,3 +159,7 @@ no demuestran acceso real a las 17 cuentas.
 Las sesiones de terminal interactivas, servicios persistentes, registros incrementales, límites configurables, seguimiento de subagentes y herramientas bajo demanda se describen en la [guía del motor de ejecución](docs/es/execution-harness.md).
 
 [Local browser / Navegador local — sessions, controls and responsive tests](docs/es/browser.md)
+
+[Evaluación nativa y recuperación del motor](docs/es/native-evaluation.md)
+
+Consulta [skills y recuperación](docs/es/harness-recovery.md) para procedimientos bajo demanda, comandos restringidos a lectura y evaluación reproducible.

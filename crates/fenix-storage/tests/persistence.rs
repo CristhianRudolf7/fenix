@@ -151,3 +151,33 @@ fn one_schedule_cannot_overlap_itself_and_outputs_are_recoverable() {
             .is_ok()
     );
 }
+
+#[test]
+fn evaluation_pagination_keeps_tasks_beyond_the_recent_ui_limit() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = fenix_storage::Store::open(&dir.path().join("evaluation.sqlite3")).unwrap();
+    let mut expected = Vec::new();
+    for index in 0..205 {
+        expected.push(
+            store
+                .enqueue(&format!("Task {index}"), "evaluation", None)
+                .unwrap()
+                .id,
+        );
+    }
+    let mut ids = Vec::new();
+    let mut cursor = 0;
+    loop {
+        let page = store.tasks_page(cursor, 64).unwrap();
+        if page.is_empty() {
+            break;
+        }
+        for (seq, task) in page {
+            assert!(seq > cursor);
+            cursor = seq;
+            ids.push(task.id);
+        }
+    }
+    assert_eq!(ids, expected);
+    assert_eq!(store.tasks(1000).unwrap().len(), 200);
+}

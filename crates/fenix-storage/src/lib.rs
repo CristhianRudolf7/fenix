@@ -1,7 +1,10 @@
 //! Durable conversation, task journal and lexical memory. No model or channel dependencies.
 
 mod events;
+mod knowledge;
 mod memory;
+mod semantic_memory;
+pub use knowledge::*;
 mod plan_reviews;
 mod plans;
 pub use events::BusEvent;
@@ -12,7 +15,7 @@ pub use plan_reviews::{
 pub use plans::{Plan, PlanNode, PlanNodeSpec, PlanRevision};
 mod projects;
 mod subagents;
-pub use memory::Memory;
+pub use memory::{Memory, MemoryEvidence, MemoryMetadata};
 pub use projects::{Project, ProjectInput, TaskBinding};
 pub use subagents::{Subagent, SubagentSpec};
 
@@ -71,7 +74,7 @@ impl Store {
         connection.pragma_update(None, "journal_mode", "WAL")?;
         connection.pragma_update(None, "foreign_keys", "ON")?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if version > 6 {
+        if version > 7 {
             bail!("Database was created by a newer Fenix version");
         }
         let migration = connection.transaction()?;
@@ -92,6 +95,9 @@ impl Store {
         }
         if version < 6 {
             migration.execute_batch(include_str!("../migrations/006_subagent_inbox.sql"))?;
+        }
+        if version < 7 {
+            migration.execute_batch(include_str!("../migrations/007_adaptive_memory.sql"))?;
         }
         migration.commit()?;
         connection.execute(
@@ -312,6 +318,11 @@ impl Store {
 
     pub fn tasks(&self, limit: usize) -> Result<Vec<Task>> {
         Ok(self.db()?.prepare("SELECT id,session_id,request,origin,status,schedule_id,created_at,updated_at,error FROM tasks ORDER BY seq DESC LIMIT ?1")?.query_map([limit.min(200)], task_row)?.collect::<rusqlite::Result<_>>()?)
+    }
+
+    /// Stable ascending pagination for exports; the UI's recent-task limit does not apply.
+    pub fn tasks_page(&self, after_seq: i64, limit: usize) -> Result<Vec<(i64, Task)>> {
+        Ok(self.db()?.prepare("SELECT id,session_id,request,origin,status,schedule_id,created_at,updated_at,error,seq FROM tasks WHERE seq>?1 ORDER BY seq LIMIT ?2")?.query_map(params![after_seq,limit.clamp(1,1000)], |row| Ok((row.get(9)?,task_row(row)?)))?.collect::<rusqlite::Result<_>>()?)
     }
 
     pub fn task(&self, id: &str) -> Result<Task> {
