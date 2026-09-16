@@ -3,6 +3,7 @@ import argparse
 from collections import Counter
 import hashlib
 import json
+import math
 import os
 import subprocess
 import time
@@ -111,7 +112,10 @@ def summarize(root):
                      'cached_input_tokens':sum((u.get('prompt_tokens_details') or {}).get('cached_tokens',0) for u in usages),
                      'calls': len(calls), 'input_tokens': total('prompt_tokens'),
                      'output_tokens': total('completion_tokens'),
-                     'cost_usd': total('cost') if usages and all('cost' in u for u in usages) and len(usages)==len(calls) else None,
+                     'cost_usd': total('cost') if usages and len(usages)==len(calls) and all(
+                         type(u.get('cost')) in (int, float)
+                         and (not isinstance(u['cost'], float) or math.isfinite(u['cost']))
+                         for u in usages) else None,
                      'missing_usage': len(calls)-len(usages),
                      'http_errors': sum(c.get('http_status') != 200 for c in calls),
                      'agent_execution': result.get('agent_execution'),

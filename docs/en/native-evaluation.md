@@ -161,3 +161,5 @@ Original redacted evidence remains recoverable, but lossy summaries/excerpts do
 not guarantee that the model retrieves every relevant detail. Persisted contracts
 and instructions that alone exceed the minimum context budget cause an explicit
 error with a checkpoint rather than silently dropping requirements.
+
+When started explicitly through the bundled `ld-linux` loader, `binary_sha256` hashes the evaluated program, not the loader. `binary_path` and `process_image_path` record both identities. Earlier loader-launched manifests lack this correction: use the external frozen bundle/source protocol for their program hash; do not rewrite historical reports.

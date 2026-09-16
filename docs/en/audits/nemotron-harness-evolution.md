@@ -1,132 +1,91 @@
-# Nemotron harness evolution
+# Nemotron harness evolution — final audit
 
-[Español](../../es/audits/nemotron-harness-evolution.md)
+[Español](../../es/audits/nemotron-harness-evolution.md) · [Per-attempt evidence](nemotron-harness-evolution-results.csv)
+
+**The adoption target was not met.** The first context candidate improved confirmation from **0/20 to 2/20**, both repetitions of one task. Three subsequent cycles did not demonstrate an additional reproducible gain over that candidate, so the predeclared stopping rule was applied. The experimental PR remains a draft, without automatic merging.
+
+The study ran on September 15–16, 2026: **70 attempts, 65 valid and five explicit transport exclusions**. Recorded provider spend was **US$2.13128346**, including **US$0.07315928** for excluded inferred attempts. This includes connection probes and summaries, not machine or development costs. Every provider call has numeric billing; the two zero-call setup failures incurred no inference charge.
 
 ## Protocol
 
-The reference is main commit `574e390`, with the real Rust native evaluator. Terminal-Bench 2.1 is pinned to `7131e4375048a0e408a8fb404b5f499d726b695b`; Harbor is 0.23.0. Both arms use RunInfra `nemotron-3-5-lightning-30b`, provider-default reasoning, identical runtime settings, and official task instructions/verifiers. No hidden tests or reference solutions enter the agent prompt. Two trials run concurrently. Environment download/setup time is separate from native execution and verification time.
+Reference: main `574e390`; real Rust native evaluator; Terminal-Bench 2.1 revision `7131e4375048a0e408a8fb404b5f499d726b695b`; Harbor 0.23.0. All arms use RunInfra `nemotron-3-5-lightning-30b`, provider-default reasoning, the same settings and official instructions/verifiers. No hidden tests or reference solutions were supplied to agents or skills. Verifier output was inspected afterward for audit only.
 
-The development cohort contains `custom-memory-heap-crash`, `extract-elf`, `modernize-scientific-stack`, `schemelike-metacircular-eval`, and `sanitize-git-repo`. Development results guide general harness changes; they do not establish unseen-task improvement.
+The configured context capacity is 32,768 tokens, output ceiling 16,384 tokens and model-step ceiling 128; recovery remains bounded. Native time limit is 900 seconds, even where an official task permits more. At most two trials run concurrently. Environment setup and verification are separate from native execution. Shared-host build/Docker activity limits timing comparisons; cycle 4 ran after compilation finished. These are controlled subset results, not an official full-budget leaderboard score.
 
-Confirmation uses two preselected five-task cohorts, with two attempts per version. Cohort A: `build-pov-ray`, `prove-plus-comm`, `regex-chess`, `sqlite-with-gcov`, `mailman`. Cohort B: `circuit-fibsqrt`, `make-mips-interpreter`, `write-compressor`, `sparql-university`, `raman-fitting`. Success requires at least two additional passes per ten tasks on average, positive gain in both repetitions, and passing regressions. Three consecutive cycles without reproducible gain stop the loop. Infrastructure exclusions must be explicit; model/tool failures count as failures.
+Development uses the same five tasks: `custom-memory-heap-crash`, `extract-elf`, `modernize-scientific-stack`, `schemelike-metacircular-eval`, `sanitize-git-repo`. Confirmation uses ten preselected unseen tasks, two attempts per version: A — `build-pov-ray`, `prove-plus-comm`, `regex-chess`, `sqlite-with-gcov`, `mailman`; B — `circuit-fibsqrt`, `make-mips-interpreter`, `write-compressor`, `sparql-university`, `raman-fitting`.
 
-Each arm freezes binary/configuration hashes. Costs use recorded provider usage; missing billing stays unknown. Private traces remain under ignored `.fenix/evaluations/harness-evolution-20260915/`. The experimental branch is reviewed separately and is not automatically merged.
+Acceptance required at least **two additional passes per ten tasks on average**, a positive gain in both repetitions, and passing regressions. Actual gains were **+1/10 and +1/10**. The further unseen reserve was not used: later development candidates did not improve on cycle 1. Small samples, repeated tasks and stochastic outputs do not establish broad statistical superiority.
 
-## Evidence and interpretation
+## Development results
 
-[Agentic Harness Engineering](https://arxiv.org/html/2604.25850v4) motivates recording a predicted mechanism before each edit and checking task-level regressions afterward. [SkillsBench](https://arxiv.org/abs/2602.12670) motivates concise, curated procedures, while its negative task deltas caution against treating a larger catalog as a guaranteed improvement. These are research hypotheses, not evidence that this implementation improves Nemotron.
+| Variant / commit | Passes | Calls | Input tokens | Output tokens | USD | Native seconds |
+|---|---:|---:|---:|---:|---:|---:|
+| main / `574e390` | 0/5 | 78 | 626,763 | 188,884 | 0.05044451 | 535.0 |
+| cycle1 / `ea8b673` | 2/5 | 306 | 3,871,562 | 621,873 | 0.20582481 | 1,689.5 |
+| cycle2 / `d95f8c1` | 1/5 | 158 | 1,906,808 | 253,367 | 0.09269777 | 748.0 |
+| cycle3 / `f1efd24` | 1/5 | 328 | 4,293,553 | 633,872 | 0.21906277 | 2,149.7 |
+| cycle4 / `4d4b534` | 2/5 | 402 | 5,304,397 | 768,083 | 0.26310238 | 2,499.1 |
 
-## Validation and infrastructure
+Each row contains five valid attempts, including declared replacements; excluded inference spend is reported separately. Seconds are summed, not concurrent wall time. Cycles 1 and 4 passed extraction and modernization. Cycles 2 and 3 passed only modernization. Cycle 4 therefore matched the best development score at higher recorded cost and accumulated time.
 
-Reference validation: 239 Rust tests and 13 browser tests passed; four environment-dependent Rust tests were ignored. Clippy, formatting and documentation tests passed. The host `/tmp` volume was full, so browser and benchmark temporary files use a private directory on the main filesystem. GitHub Actions did not start because the account was locked for billing; this is not a CI test pass.
+No `skill_search` or `skill_load` occurred in the **25 valid development attempts**, although the catalog/schemas were available. This shows non-use in this sample, not that the skill bodies themselves are ineffective. One search occurred in main confirmation; no skill load occurred there. A broader catalog alone did not demonstrate a benefit.
 
-## Results
+## Confirmation results
 
-Reference: **0/5**. Provider totals: 78 calls, 626,763 input tokens, 188,884 output tokens, **$0.05044451**. Three empty-tail compaction failures; two no-progress recovery failures. Setup/download time is not included in native seconds. Candidate development and completed cycle 1 confirmation results are below.
-| Task | Main pass | Native seconds | Input tokens | Output tokens | USD |
-|---|---:|---:|---:|---:|---:|
-| custom-memory-heap-crash | 0 | 64.1 | 95111 | 24587 | 0.007225 |
-| extract-elf | 0 | 208.1 | 203788 | 66755 | 0.016982 |
-| modernize-scientific-stack | 0 | 48.1 | 66619 | 20857 | 0.005850 |
-| sanitize-git-repo | 0 | 112.0 | 173451 | 40970 | 0.011685 |
-| schemelike-metacircular-eval | 0 | 102.6 | 87794 | 35715 | 0.008702 |
-
-
-## Cycle 1: context admission
-
-Before testing the candidate: the first two reference tasks failed (0/2). Extraction stopped with `No completed batch to compact`; the C++ repair reread the same files after compaction and exhausted recovery. The candidate caps the input-admission output reservation at 8,192 tokens, while retaining the configured output ceiling and clamping each actual request to available capacity. It also accepts a complete-context cut when no recent tail fits and asks for a concise summary. Prediction: fewer compactions and repeated observations, no empty-tail failure. Risk: less output room on large-context turns can increase truncation. Provider, model, configured context capacity and maximum output remain unchanged.
-
-Related checks: [ARC](https://arxiv.org/abs/2607.25066) separates archived observations from active context, but its reported tasks are long-context QA, not this coding benchmark. [Context Compaction Theory](https://arxiv.org/abs/2608.01326) formalizes selection versus generated summaries; it does not prescribe an 8,192-token reservation. That value is an explicit engineering hypothesis tested here. The 2025 antecedent [The Complexity Trap](https://arxiv.org/abs/2508.21433) also motivates measuring masking against costly summaries rather than assuming summarization is superior.
-
-## Cycle 1 development results
-
-The candidate resolved **2/5**, against **0/5** for main. Totals: 306 provider calls, 3,871,562 input tokens, 621,873 output tokens, **$0.20582481**. Accumulated native time was 1,689.5 seconds versus 535.0 seconds. Longer successful/unsuccessful attempts cost more than early harness failures. This is not a speed improvement overall.
-
-| Task | Candidate pass | Native seconds | Input tokens | Output tokens | USD |
-|---|---:|---:|---:|---:|---:|
-| custom-memory-heap-crash | 0 | 576.1 | 1250914 | 187942 | 0.062188 |
-| extract-elf | 1 | 454.2 | 903475 | 163516 | 0.052119 |
-| modernize-scientific-stack | 1 | 14.8 | 80982 | 2585 | 0.002783 |
-| sanitize-git-repo | 0 | 588.1 | 1400213 | 251774 | 0.079315 |
-| schemelike-metacircular-eval | 0 | 56.3 | 235978 | 16056 | 0.009420 |
-
-Remaining failures: C++ compiled but still failed release execution and memory checks; the evaluator task ended in a mistaken clarification without creating the requested file; Git cleanup exhausted no-progress recovery. Inspecting code also found that `command_run` is counted as an effect even if its exit code is nonzero; this limitation remains unchanged in the frozen candidate. No hidden verifier content was added to prompts or skills.
-
-The configured native task timeout is 900 seconds in both arms, even where the official outer task allowance is longer. Scores describe this controlled subset/configuration, not an official full-budget leaderboard result. The shared host was not reserved exclusively; wall time is descriptive. Frozen `source.json` files associate binary hashes with their actual source commits, independently of the runner checkout.
-
-## Confirmation transport correction
-
-`prove-plus-comm` uses `/workspace`, not `/app`. The original adapter failed before any provider request. The adapter now discovers the official container working directory with `pwd`; it does not create or modify task files. Two transport unit tests passed. The two zero-inference setup failures were excluded and replaced after the paired cohorts; both replacements failed. The original setup failures are not counted as model failures or evidence of improvement. Binary hashes and inference settings remain fixed.
-
-## Skill audit
-
-The user explicitly included skill improvements in the experimental scope. Across the ten development executions (five per arm), the native journals contain no `skill_search` or `skill_load` calls. Recorded inference requests confirm that both schemas and the manual catalog were available. This shows non-use in this sample, not that the skill bodies are ineffective. Adding more skills alone cannot establish a benefit when none are loaded.
-
-A subsequent candidate may test clearer selection triggers, compact relevant recommendations, or procedural revisions supported by execution evidence. It must preserve owner-edited skills, on-demand loading, and fresh confirmation data. The current confirmation binaries and skills remain frozen. [SkillRevise](https://arxiv.org/html/2606.01139v3) motivates diagnosing whether a failure is attributable to a skill before editing it and validating the revision through execution. [Group of Skills](https://arxiv.org/html/2605.06978v1) motivates making the entry procedure and supporting checks explicit. Neither paper establishes a gain for Fénix or Nemotron; no benchmark-specific solutions will be embedded in skills.
-
-## Cycle 2 candidate: skill selection and procedures
-
-Prepared from development traces while cycle 1 confirmation remains frozen: add up to two task-local lexical metadata suggestions, keeping full skill bodies on demand; add a software-implementation procedure focused on the requested runnable artifact; refine repair guidance for observed memory faults and Git guidance for current files versus history. Prediction: more relevant skill loads, fewer unchanged observations, and fewer missing deliverables. Risks: irrelevant suggestions, extra prompt/tool cost and skill-induced regressions. This is a combined skill intervention; it cannot isolate the effect of selection from content.
-
-Unmodified shipped repair/Git skills migrate by exact-content comparison; user edits and disabled state are preserved. The generic Codex skill validator rejects Fénix's existing `version` and `required_tools` extensions, so it is not a passing validation result; Fénix's parser and migration tests cover its native format. No current confirmation binary or task configuration changes. Benchmark outcomes for this candidate are pending.
-
-The skill retrieval test exposed generic description words outranking a distinctive body term. The candidate now saturates weighted term frequency jointly and applies inverse document frequency and document-length normalization. This is deterministic lexical retrieval, with no embeddings or extra inference. Concurrent local builds on the shared host are an additional latency confound; timing is descriptive, not a throughput claim.
-
-Candidate validation: 60 agent unit tests passed (one environment-dependent test ignored), 22 runtime integration tests passed, and workspace Clippy passed without warnings. The final five skill tests, including bounded Unicode queries and disabled/customized skills, passed after the last selector edit. Browser code is unchanged; browser tests were not repeated for this candidate.
-
-## Clarification audit
-
-Some cycle 1 confirmation runs ended with plain-text clarification questions instead of the requested artifact; the runtime marked those turns completed, while the verifier rejected the result. A tool-based question instead produced `requires_user_input`, also unresolved in this unattended benchmark. These are distinct from setup failures. Some questions concern facts available in task files or ordinary implementation choices; genuine unresolved owner requirements must still be surfaced.
-
-[Ask or Assume?](https://arxiv.org/html/2603.26233v1) evaluates missing requirements using a simulated user supplied with withheld original information. It supports appropriate clarification, not suppressing all questions, and does not validate a Nemotron-specific remedy. [SWE-RPG](https://arxiv.org/html/2608.09072v1) motivates diagnosing requirements, planning and artifact submission separately from final pass/fail. A future intervention should improve evidence gathering and distinguish user intent from technical investigation without inventing requirements or supplying verifier answers.
-
-## Cycle 1 confirmation result
-
-All 40 valid attempts are complete: ten tasks, two repetitions per version. Main resolved **0/20 (0%)**; cycle 1 resolved **2/20 (10%)**, both repetitions of `prove-plus-comm`. Each repetition improved from 0/10 to 1/10. This is a narrow repeated gain, but it **fails the predeclared target of two additional passes per ten tasks on average**. The experiment continues; the development gain of 2/5 must not be presented as general performance.
-
-| Metric, 20 valid attempts per version | Main | Cycle 1 |
+| Metric, 20 valid attempts | Main | Cycle 1 |
 |---|---:|---:|
 | Passes | 0 | 2 |
-| Provider calls | 707 | 1,334 |
-| Input tokens | 6,037,494 | 16,999,044 |
-| Output tokens | 1,533,464 | 1,954,413 |
-| Recorded provider cost, USD | 0.42910006 | 0.76266231 |
-| Accumulated native seconds | 3,979.4 | 6,603.2 |
+| Provider calls | 707 | 1,387 |
+| Input tokens | 6,037,494 | 17,730,132 |
+| Output tokens | 1,533,464 | 2,065,696 |
+| Recorded provider cost, USD | 0.42910006 | 0.79789188 |
+| Accumulated native seconds | 3,979.4 | 6,907.5 |
 
-All recorded calls have numeric billing. Native seconds are summed across attempts, not elapsed wall time for the concurrent study; environment setup and verifier time are separate. Binary hashes were rechecked.
+Only `prove-plus-comm` passed, in both cycle 1 repetitions. Removing premature compaction failures allowed more work, but most tasks still failed and total cost/time rose.
 
-| Outcome category | Main | Cycle 1 |
+| Outcome | Main | Cycle 1 |
 |---|---:|---:|
 | Empty-tail compaction failure | 9 | 0 |
 | No-progress recovery exhausted | 8 | 2 |
-| Model-step limit | 0 | 4 |
+| Model-call limit | 0 | 4 |
 | Timeout | 1 | 1 |
-| Requires user input | 0 | 1 |
-| Turn completed, verification failed | 2 | 10 |
+| Turn completed, verifier failed | 2 | 11 |
 | Official verifier passed | 0 | 2 |
 
-The unresolved interactive attempt counts as a failure despite having no numeric verifier reward; it is not an infrastructure exclusion. Removing premature harness failures allowed more work, but did not make most results correct and increased total cost/time. Candidate 2 skill evaluation is underway on the original five development tasks.
+## Interventions and observed limits
 
-## Cycle 3 candidate: preserve tool evidence and count replay once
+1. **Context admission and empty-tail compaction (`ea8b673`).** Reserve a useful reasoning allowance instead of the full output ceiling for every admission; still clamp output to remaining estimated capacity. Permit a complete cut when no recent tail fits; request concise summaries. This removed the nine observed empty-tail failures, but the held-out gain remained below target.
+2. **Skill selection and procedures (`d95f8c1`).** Add up to two lexical metadata suggestions, a software-implementation skill, and revised repair/Git procedures. Bodies remain on demand. Weighted term frequency, inverse document frequency and length normalization improve lexical selection tests. Owner-edited files and disabled state survive exact-content migrations. No actual skill loads were observed in development, so procedure quality was not established by these runs.
+3. **Tool evidence and replay accounting (`f1efd24`).** Preserve head/tail previews, execution/exit/cursor metadata, repository guidance and access to complete redacted tool receipts. Count the larger of normalized content and provider replay instead of both; retain hidden/signed reasoning. Regression tests pass, but development score did not improve. Byte estimation remains a heuristic, not a model tokenizer or billing meter.
+4. **Evidence-first clarification and basic writes (`4d4b534`).** Check original requests and local facts before asking; still surface every unresolved doubt. Expose basic create/edit schemas immediately while keeping permissions and advanced discovery. Revise environment guidance to distinguish diagnostic failure from application failure. This recovered 2/5, without exceeding cycle 1.
 
-The process layer preserves a head/tail preview, but the engine previously cut that serialized receipt a second time using only its prefix. This could hide final compiler/test errors. The candidate preserves both ends, explicit execution/exit/cursor metadata, complete repository guidance, and a link to the full redacted journal. Regression tests cover a final diagnostic, omitted middle recovery, secrets and UTF-8 boundaries.
+Cycle 4 failures illustrate remaining gaps: C++ timed out; Scheme exhausted no-progress recovery; Git made verified edits and declared completion, but failed secret-removal and replacement checks while preserving unrelated files. Tool-level success is not task-level success. Search reported 531 scanned files and one skipped error with ignore rules enabled; code also applies a 1 MiB file filter. Complete search coverage must not be inferred from zero matches. This is a coverage limitation, not proof of which filter caused the remaining secret.
 
-Context estimation also serialized normalized assistant content plus its opaque provider replay, although provider codecs send the replay instead of both representations. The candidate counts the larger representation plus a wrapper allowance. Hidden/signed reasoning is still counted and retained; this remains a conservative byte estimate, not token billing. Prediction: fewer unnecessary compactions and fewer lost diagnostics. No model, configured context size, output limit, permissions or timeout changes. This is a combined mechanical intervention and remains unconfirmed.
+Further hypotheses, **not implemented or validated in this study**: better progress accounting for repeated failed commands (new process IDs can look like progress); explicit search coverage/exclusions; a bounded longer initial command wait to reduce polling calls. The current 100 ms initial wait returned `running` for 11 of the first 19 extraction command receipts in cycle 4. Do not label those polls redundant: the processes were still reported running.
 
-The trace-driven iteration follows [AHE](https://arxiv.org/abs/2604.25850); [Context Compaction Theory](https://arxiv.org/abs/2608.01326) motivates testing information retention, not a specific byte heuristic. Neither source proves this candidate improves Nemotron. Development evaluation must precede any new held-out confirmation.
+## Infrastructure corrections and exclusions
 
-Cycle 3 validation: 64 agent unit tests passed (one environment-dependent test ignored), all 23 runtime integration tests passed, and workspace Clippy passed without warnings. The new integration test confirms that the model sees the final diagnostic while the complete redacted middle remains retrievable from the journal.
+- Two original main proof attempts (`3YsqxDh`, `74yYYdz`) assumed `/app`, although the official container used `/workspace`. Both made zero provider calls. The adapter now reads `pwd`; replacements both failed.
+- A ready-marker/process-exit race prevented grading three completed native reports: cycle 1 `write-compressor__FUsx9wm`, cycle 2 `sanitize-git-repo__zeZS8N6`, cycle 3 `custom-memory-heap-crash__3jTn3wC`. The adapter checks readiness again after process exit. Same-binary replacements all failed the official verifier. Their original inference costs remain in the total. Waiting for user input alone is not an infrastructure exclusion: a modernization artifact passed despite that runtime state.
+- Missing, null, boolean or non-finite billing remains unknown instead of becoming a zero-cost result. Five transport/billing tests passed.
+- Explicit glibc-loader launches made old internal manifests hash the loader. The external frozen bundle/source protocol has the correct Fénix hash and is authoritative for these runs. A subsequent metadata-only correction records the program hash and both executable paths; historical manifests remain untouched. This correction is not a new benchmark candidate.
 
-## Final-report transport race: pending correction
+## Validation and provenance
 
-A later audit found that an evaluator can write `ready.json` and exit between the adapter's readiness and liveness probes. Two runs had complete reports but were never officially graded: cycle 1 `write-compressor__FUsx9wm` and cycle 2 `sanitize-git-repo__zeZS8N6`. The adapter now checks the final marker again after process exit; four transport tests pass. These two attempts will be replaced using their original frozen binaries/settings. The earlier cycle 1 table is therefore provisional (one ungraded attempt conservatively counted as failed), not the final accepted comparison. Preserve the excluded attempts' provider spend separately; do not treat waiting for user input itself as an infrastructure failure.
+Main passed 239 Rust tests and 13 browser tests; four environment-dependent tests were ignored. Cycle 4 passed **114 agent tests**, including 23 runtime tests and all six planning-review tests; one environment-dependent test was ignored. An earlier broad run hit two unchanged planning-review timeouts under load. Both passed subsequently, and all six passed again in isolation in 9.11 seconds, without changing code or timeouts. Workspace Clippy, formatting and the cycle 4 build passed. Browser code did not change and browser tests were not repeated.
 
-Cycle 2's preliminary development score is 1/5, with Git ungraded pending replacement. Its five initial attempts used 179 provider calls, 2,186,996 input tokens, 294,779 output tokens, $0.10604281 and 856.8 accumulated native seconds. None loaded or searched a skill. The modernization artifact passed even though the runtime requested clarification. No confirmation/adoption is justified by these preliminary results. Cycle 3 is frozen at `f1efd24` and running the same five development tasks.
+Final reporting validation passed all three evaluation unit tests, workspace Clippy and a real loader-launched native smoke test using two local mock responses (zero provider spend). The smoke test matched the program hash and distinguished it from the loader. These reporting-only changes were made after the frozen benchmark binaries; no additional performance claim is made for them. GitHub Actions was blocked by an account billing lock during the study; local checks must not be represented as a remote CI pass.
 
-## Cycle 4 hypothesis: evidence before clarification, basic writes visible
+| Variant | Source | Frozen program SHA-256 |
+|---|---|---|
+| main | `574e390` | `a343bd8a6b1076162ed09928b31c9e3b87504a062799acde52a54df47a10b684` |
+| cycle1 | `ea8b673` | `57b21e22b3093ff88d167632588490e80d30064c1fcb8cf08c17aab14cf8fdc5` |
+| cycle2 | `d95f8c1` | `0700287d8716654d86fe5e676f9da3a957e3b8b733aa9d42c3472a2e0082b9e1` |
+| cycle3 | `f1efd24` | `b468ee1ad82df3eb5c873cb9b434d0c810d83a736d17a2e029a4a669b61c1bec` |
+| cycle4 | `4d4b534` | `43469b49f74a9b4f9b385616adb45132d105cd9a7ea88de9d1125e74199ff3c1` |
 
-Development traces show final questions whose answers are already present in examples or diagnostics, and guessed `file_write` calls without content. A further candidate moves evidence checking into the opening instruction, preserves every genuinely unresolved doubt through `ask_user`, and exposes basic file creation/edit schemas immediately. Advanced tools remain discoverable; authorization, exact-content edits and workspace scope stay unchanged. The environment skill distinguishes a failed diagnostic from a faulty program and permits only authorized local recovery; unmodified shipped copies migrate while owner edits and disabled state survive.
+Configuration SHA-256: `6e124d093eb1d00885682116d7fa635125295d9fb7ae1fefdd0ac86b8b5523ae`. All frozen binary/configuration hashes were retained for verification. Private prompts, artifacts and API traces remain under ignored `.fenix/evaluations/harness-evolution-20260915/`; the CSV exposes only whitelisted metrics and provenance. Later reporting fixes do not change the evaluated binaries.
 
-Prediction: fewer premature question-only endings and fewer schema-discovery detours before producing artifacts. This combines prompt, schema visibility and procedural guidance, so gains cannot be attributed to one component. [Ask or Assume?](https://arxiv.org/html/2603.26233v1) motivates treating clarification as an information need; its simulated user and different model are not evidence that this candidate will work. No oracle, task-specific patch or hidden answer is provided. Tests/evaluation are pending; the cycle 3 binary remains frozen.
+## Research basis
 
-Cycle 4 agent validation passed all 114 tests (one environment-dependent test ignored), including all six planning-review tests and 23 runtime tests. An earlier broader cycle 3 run hit two unchanged planning-review timeouts under concurrent Docker/compile load; neither timeout was expanded and no planning code was changed. Their subsequent pass is recorded rather than hiding the initial failures. Workspace Clippy also passed without warnings. Final build and benchmark evaluation remain pending.
+[AHE](https://arxiv.org/html/2604.25850v4) informed trace-driven hypotheses and held-out checks; [SkillsBench](https://arxiv.org/abs/2602.12670), [SkillRevise](https://arxiv.org/html/2606.01139v3) and [Group of Skills](https://arxiv.org/html/2605.06978v1) informed cautious procedure selection/revision. [Context Compaction Theory](https://arxiv.org/abs/2608.01326) motivates testing information retention, not the chosen byte heuristic. [Ask or Assume?](https://arxiv.org/html/2603.26233v1) studies clarification with a simulated user holding missing information; no such oracle was added here. [SWE-RPG](https://arxiv.org/html/2608.09072v1) informed separating requirement, planning and artifact failures. These sources motivate experiments; none proves a Nemotron/Fénix improvement.

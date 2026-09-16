@@ -1,132 +1,91 @@
-# Evolución del arnés con Nemotron
+# Evolución del arnés con Nemotron — auditoría final
 
-[English](../../en/audits/nemotron-harness-evolution.md)
+[English](../../en/audits/nemotron-harness-evolution.md) · [Evidencia por intento](../../en/audits/nemotron-harness-evolution-results.csv)
+
+**No se alcanzó el objetivo de adopción.** El primer candidato de contexto mejoró la confirmación de **0/20 a 2/20**, ambas repeticiones de una tarea. Tres ciclos posteriores no demostraron una mejora reproducible adicional respecto a ese candidato, por lo que se aplicó la regla de parada acordada. El PR experimental continúa en borrador y no se fusiona automáticamente.
+
+El estudio del 15–16 de septiembre de 2026 ejecutó **70 intentos: 65 válidos y cinco exclusiones explícitas de transporte**. El gasto reportado por el proveedor fue **US$2.13128346**, incluidos **US$0.07315928** de intentos excluidos con inferencia. Incluye comprobaciones de conexión y resúmenes, no costos del equipo ni del desarrollo. Todas las llamadas tienen facturación numérica; los dos fallos de preparación sin llamadas no generaron gasto de inferencia.
 
 ## Protocolo
 
-Referencia: commit `574e390` de main, evaluador nativo Rust real, Terminal-Bench 2.1 en `7131e4375048a0e408a8fb404b5f499d726b695b` y Harbor 0.23.0. Ambas variantes usan RunInfra `nemotron-3-5-lightning-30b`, pensamiento predeterminado del proveedor, la misma configuración y las instrucciones y verificadores oficiales. No se introducen pruebas ocultas ni soluciones de referencia en el contexto del agente. Se ejecutan dos tareas en paralelo; descarga, preparación y verificación se miden por separado del tiempo del agente.
+Referencia: main `574e390`; evaluador nativo Rust real; Terminal-Bench 2.1 en `7131e4375048a0e408a8fb404b5f499d726b695b`; Harbor 0.23.0. Todas las variantes usan RunInfra `nemotron-3-5-lightning-30b`, pensamiento predeterminado del proveedor, la misma configuración e instrucciones/verificadores oficiales. No se entregaron pruebas ocultas ni soluciones de referencia a agentes o skills. Los resultados del verificador se inspeccionaron después, solo para auditoría.
 
-Desarrollo: `custom-memory-heap-crash`, `extract-elf`, `modernize-scientific-stack`, `schemelike-metacircular-eval` y `sanitize-git-repo`. Estos resultados permiten corregir mecanismos generales, pero no demuestran mejora en tareas nuevas.
+Capacidad de contexto configurada: 32.768 tokens; máximo de salida: 16.384; máximo de pasos del modelo: 128, con recuperación acotada. El límite nativo es 900 segundos, incluso cuando la tarea oficial permite más. Se ejecutan como máximo dos intentos en paralelo. Preparación y verificación se separan del tiempo nativo. La carga compartida de compilación/Docker limita comparar velocidades; el ciclo 4 empezó después de compilar. Son resultados de un subconjunto controlado, no una puntuación oficial con el presupuesto completo.
 
-Confirmación: dos grupos preseleccionados de cinco tareas y dos repeticiones por variante. Grupo A: `build-pov-ray`, `prove-plus-comm`, `regex-chess`, `sqlite-with-gcov`, `mailman`. Grupo B: `circuit-fibsqrt`, `make-mips-interpreter`, `write-compressor`, `sparql-university`, `raman-fitting`. Se exige una media de dos aciertos adicionales por diez tareas, mejora positiva en ambas repeticiones y ausencia de regresiones en las pruebas. Tres ciclos consecutivos sin mejora reproducible detienen el bucle. Los fallos del modelo o de herramientas cuentan como fallos; las exclusiones de infraestructura deben declararse.
+Desarrollo utiliza las mismas cinco tareas: `custom-memory-heap-crash`, `extract-elf`, `modernize-scientific-stack`, `schemelike-metacircular-eval`, `sanitize-git-repo`. Confirmación utiliza diez tareas nuevas preseleccionadas, con dos intentos por versión: A — `build-pov-ray`, `prove-plus-comm`, `regex-chess`, `sqlite-with-gcov`, `mailman`; B — `circuit-fibsqrt`, `make-mips-interpreter`, `write-compressor`, `sparql-university`, `raman-fitting`.
 
-Se congelan los hashes del binario y de la configuración. El coste procede del proveedor; si falta, queda como desconocido. Las trazas privadas permanecen en `.fenix/evaluations/harness-evolution-20260915/`, ignorado por Git. La rama experimental se revisa por separado y no se fusiona automáticamente.
+Se exigían **dos aciertos adicionales por cada diez tareas en promedio**, mejora positiva en ambas repeticiones y pruebas de regresión aprobadas. Las ganancias reales fueron **+1/10 y +1/10**. La reserva adicional de tareas nuevas no se utilizó: los candidatos posteriores no mejoraron el desarrollo del ciclo 1. La muestra pequeña, las tareas repetidas y las respuestas estocásticas no establecen superioridad estadística general.
 
-## Fundamento
+## Resultados de desarrollo
 
-[Agentic Harness Engineering](https://arxiv.org/html/2604.25850v4) motiva registrar la predicción de cada cambio y comprobar regresiones por tarea. [SkillsBench](https://arxiv.org/abs/2602.12670) respalda estudiar procedimientos curados y concisos, pero también registra tareas perjudicadas: ampliar el catálogo no garantiza mejores resultados. Son hipótesis de investigación, no evidencia de mejora de esta implementación.
+| Variante / commit | Aciertos | Llamadas | Tokens entrada | Tokens salida | USD | Segundos nativos |
+|---|---:|---:|---:|---:|---:|---:|
+| main / `574e390` | 0/5 | 78 | 626,763 | 188,884 | 0.05044451 | 535.0 |
+| cycle1 / `ea8b673` | 2/5 | 306 | 3,871,562 | 621,873 | 0.20582481 | 1,689.5 |
+| cycle2 / `d95f8c1` | 1/5 | 158 | 1,906,808 | 253,367 | 0.09269777 | 748.0 |
+| cycle3 / `f1efd24` | 1/5 | 328 | 4,293,553 | 633,872 | 0.21906277 | 2,149.7 |
+| cycle4 / `4d4b534` | 2/5 | 402 | 5,304,397 | 768,083 | 0.26310238 | 2,499.1 |
 
-## Validación e infraestructura
+Cada fila contiene cinco intentos válidos, incluidos los reemplazos declarados; el gasto excluido se informa por separado. Los segundos se suman: no son el tiempo de reloj de la ejecución concurrente. Los ciclos 1 y 4 aprobaron extracción y modernización. Los ciclos 2 y 3 aprobaron solo modernización. El ciclo 4 igualó la mejor puntuación con mayor gasto y tiempo nativo acumulado.
 
-La referencia pasó 239 pruebas Rust y 13 de navegador; cuatro pruebas Rust dependientes del entorno quedaron omitidas. Clippy, formato y documentación pasaron. Como `/tmp` estaba lleno, se utilizó un directorio temporal privado en el disco principal. GitHub Actions no comenzó por un bloqueo de facturación de la cuenta: no equivale a una aprobación de CI.
+No hubo llamadas a `skill_search` ni `skill_load` en los **25 intentos válidos de desarrollo**, aunque catálogo y esquemas estaban disponibles. Esto demuestra falta de uso en esta muestra, no que los textos de las skills sean ineficaces. Hubo una búsqueda en la confirmación de main, sin cargar una skill. Ampliar el catálogo por sí solo no demostró beneficio.
 
-## Resultados
+## Resultados de confirmación
 
-Referencia: **0/5**. Totales del proveedor: 78 llamadas, 626.763 tokens de entrada, 188.884 de salida, **US$0,05044451**. Tres fallos de compactación sin cola y dos agotamientos de recuperación por falta de progreso. Los segundos nativos no incluyen descarga ni preparación. La evaluación de desarrollo aparece abajo; falta la confirmación con tareas nuevas.
-| Task | Main pass | Native seconds | Input tokens | Output tokens | USD |
-|---|---:|---:|---:|---:|---:|
-| custom-memory-heap-crash | 0 | 64.1 | 95111 | 24587 | 0.007225 |
-| extract-elf | 0 | 208.1 | 203788 | 66755 | 0.016982 |
-| modernize-scientific-stack | 0 | 48.1 | 66619 | 20857 | 0.005850 |
-| sanitize-git-repo | 0 | 112.0 | 173451 | 40970 | 0.011685 |
-| schemelike-metacircular-eval | 0 | 102.6 | 87794 | 35715 | 0.008702 |
-
-
-## Ciclo 1: admisión de contexto
-
-Antes de evaluar la variante: las dos primeras tareas de referencia fallaron (0/2). La extracción terminó con `No completed batch to compact`; la reparación C++ repitió lecturas después de compactar y agotó la recuperación. La variante reserva hasta 8.192 tokens para salida al decidir cuándo compactar; mantiene el máximo configurado y limita cada solicitud a la capacidad disponible. También admite un corte completo si no cabe una cola reciente y pide un resumen conciso. Predicción: menos compactaciones y lecturas repetidas, sin fallo de cola vacía. Riesgo: puede aumentar el truncamiento si queda menos espacio para salida. No se cambia proveedor, modelo, capacidad configurada ni máximo de salida.
-
-Contraste bibliográfico: [ARC](https://arxiv.org/abs/2607.25066) separa observaciones archivadas del contexto activo, pero evalúa preguntas de contexto largo, no este benchmark de programación. [Context Compaction Theory](https://arxiv.org/abs/2608.01326) formaliza selección y resumen; no prescribe reservar 8.192 tokens. Ese valor es una hipótesis de ingeniería que se prueba aquí. El antecedente de 2025 [The Complexity Trap](https://arxiv.org/abs/2508.21433) motiva comparar el enmascarado con resúmenes costosos sin asumir que resumir es mejor.
-
-## Resultados de desarrollo del ciclo 1
-
-La variante resolvió **2/5**, frente a **0/5** de main. Totales: 306 llamadas al proveedor, 3.871.562 tokens de entrada, 621.873 de salida y **US$0,20582481**. El tiempo nativo acumulado fue 1.689,5 segundos frente a 535,0. Los intentos más largos cuestan más que fallos tempranos del arnés; no es una mejora global de velocidad.
-
-| Task | Candidate pass | Native seconds | Input tokens | Output tokens | USD |
-|---|---:|---:|---:|---:|---:|
-| custom-memory-heap-crash | 0 | 576.1 | 1250914 | 187942 | 0.062188 |
-| extract-elf | 1 | 454.2 | 903475 | 163516 | 0.052119 |
-| modernize-scientific-stack | 1 | 14.8 | 80982 | 2585 | 0.002783 |
-| sanitize-git-repo | 0 | 588.1 | 1400213 | 251774 | 0.079315 |
-| schemelike-metacircular-eval | 0 | 56.3 | 235978 | 16056 | 0.009420 |
-
-Fallos restantes: C++ compiló, pero falló en ejecución release y memoria; la tarea del intérprete terminó pidiendo una aclaración equivocada sin crear el archivo solicitado; la limpieza Git agotó la recuperación por falta de progreso. La revisión de código también encontró que `command_run` cuenta como efecto aunque su código de salida sea distinto de cero; esta limitación no se cambió en la variante congelada. No se incorporó contenido oculto del verificador a prompts ni skills.
-
-El límite nativo configurado es de 900 segundos por tarea en ambas variantes, incluso cuando la tarea oficial permite más tiempo. Las puntuaciones corresponden a esta configuración y subconjunto, no a un resultado oficial con todo el presupuesto. El equipo es compartido, por lo que los tiempos son descriptivos. Los archivos congelados `source.json` vinculan cada hash de binario con el commit real de su código, separado del checkout del ejecutor.
-
-## Corrección de transporte durante la confirmación
-
-`prove-plus-comm` usa `/workspace`, no `/app`. El adaptador inicial falló antes de realizar ninguna solicitud al proveedor. Ahora obtiene el directorio oficial del contenedor mediante `pwd`, sin crear ni modificar archivos de la tarea. Pasaron dos pruebas del adaptador. Esos fallos de preparación sin inferencia requieren intentos de reemplazo y no deben contarse como fallos del modelo ni como evidencia de mejora. Se mantienen los hashes de binarios y los parámetros de inferencia.
-
-## Auditoría de skills
-
-El usuario incluyó explícitamente la mejora de skills en el alcance experimental. En las diez ejecuciones de desarrollo (cinco por versión), los registros nativos no contienen llamadas a `skill_search` ni `skill_load`. Las solicitudes de inferencia confirman que estaban disponibles ambos esquemas y el catálogo manual. Esto demuestra falta de uso en esta muestra, no que el contenido de los skills sea ineficaz. Ampliar el catálogo por sí solo no demuestra una mejora si no se carga ninguno.
-
-Una versión posterior podrá probar criterios de selección más claros, recomendaciones relevantes y breves, o revisiones de procedimientos justificadas por la ejecución. Deberá preservar los skills editados por el usuario, la carga bajo demanda y datos nuevos para la confirmación. Los binarios y skills de la confirmación actual siguen congelados. [SkillRevise](https://arxiv.org/html/2606.01139v3) propone diagnosticar si un fallo es atribuible al skill antes de modificarlo y validar la revisión ejecutándolo. [Group of Skills](https://arxiv.org/html/2605.06978v1) motiva explicitar el procedimiento de entrada y sus comprobaciones de apoyo. Ninguno demuestra una mejora para Fénix o Nemotron; no se incorporarán soluciones específicas del benchmark a los skills.
-
-## Candidato del ciclo 2: selección y procedimientos de skills
-
-Preparado a partir de trazas de desarrollo mientras la confirmación del ciclo 1 sigue congelada: hasta dos sugerencias léxicas de metadatos por tarea, conservando los textos bajo demanda; un procedimiento de implementación centrado en el entregable ejecutable solicitado; mejoras en reparación de fallos de memoria y en la distinción entre archivos actuales e historial de Git. Hipótesis: más cargas pertinentes de skills, menos observaciones repetidas y menos entregables ausentes. Riesgos: sugerencias irrelevantes, costo adicional de contexto/herramientas y regresiones. Es una intervención conjunta: no permite aislar selección y contenido.
-
-Los skills originales de reparación y Git se actualizan solo si su contenido coincide exactamente; se conservan ediciones personales y el estado desactivado. El validador genérico de Codex rechaza las extensiones existentes de Fénix `version` y `required_tools`, por lo que no se considera una validación aprobada; las pruebas del parser y de migración de Fénix cubren su formato nativo. Los binarios y configuraciones de la confirmación actual no cambian. Los resultados del benchmark para este candidato están pendientes.
-
-Una prueba de recuperación detectó que palabras genéricas de la descripción desplazaban un término específico del contenido. El candidato ahora satura conjuntamente la frecuencia ponderada y aplica frecuencia inversa de documento y normalización por longitud. La recuperación es léxica y determinista, sin embeddings ni inferencia adicional. Las compilaciones locales concurrentes en el servidor compartido también pueden afectar la latencia; los tiempos son descriptivos, no una demostración de mayor velocidad.
-
-Validación del candidato: 60 pruebas unitarias del agente aprobadas (una dependiente del entorno omitida), 22 pruebas de integración del motor aprobadas y Clippy del workspace sin advertencias. Las cinco pruebas finales de skills, incluidas consultas Unicode acotadas y skills desactivados o personalizados, pasaron tras el último ajuste. La interfaz no cambió y sus pruebas no se repitieron para este candidato.
-
-## Auditoría de aclaraciones
-
-Algunas ejecuciones de confirmación del ciclo 1 terminaron con preguntas en texto, sin el entregable solicitado; el motor marcó esos turnos como completados, pero el verificador rechazó el resultado. Una pregunta mediante herramienta produjo `requires_user_input`, también sin resolver en este benchmark desatendido. Son casos distintos de los fallos de preparación. Algunas preguntas se refieren a hechos disponibles en los archivos o a decisiones internas de implementación; las dudas reales pendientes sobre requisitos del usuario deben seguir comunicándose.
-
-[Ask or Assume?](https://arxiv.org/html/2603.26233v1) evalúa requisitos ausentes con un usuario simulado que dispone de la información original omitida. Respalda las aclaraciones pertinentes, no la supresión de todas las preguntas, y no valida una solución específica para Nemotron. [SWE-RPG](https://arxiv.org/html/2608.09072v1) motiva diagnosticar requisitos, planificación y entrega de artefactos por separado del acierto final. Una intervención posterior deberá mejorar la investigación y distinguir intención del usuario de dudas técnicas, sin inventar requisitos ni proporcionar respuestas del verificador.
-
-## Resultado de confirmación del ciclo 1
-
-Terminaron los 40 intentos válidos: diez tareas, dos repeticiones por versión. La base resolvió **0/20 (0%)**; el ciclo 1 resolvió **2/20 (10%)**, las dos repeticiones de `prove-plus-comm`. Cada repetición pasó de 0/10 a 1/10. Es una mejora limitada que se repite, pero **no alcanza la meta predefinida de dos aciertos adicionales por cada diez tareas en promedio**. La investigación continúa; el avance de desarrollo de 2/5 no representa rendimiento general. Los dos fallos originales de preparación sin inferencia fueron excluidos y reemplazados; ambos reemplazos fallaron.
-
-| Métrica, 20 intentos válidos por versión | Base | Ciclo 1 |
+| Métrica, 20 intentos válidos | Main | Ciclo 1 |
 |---|---:|---:|
 | Aciertos | 0 | 2 |
-| Llamadas al proveedor | 707 | 1.334 |
-| Tokens de entrada | 6.037.494 | 16.999.044 |
-| Tokens de salida | 1.533.464 | 1.954.413 |
-| Costo registrado del proveedor, USD | 0,42910006 | 0,76266231 |
-| Segundos nativos acumulados | 3.979,4 | 6.603,2 |
+| Llamadas al proveedor | 707 | 1,387 |
+| Tokens de entrada | 6,037,494 | 17,730,132 |
+| Tokens de salida | 1,533,464 | 2,065,696 |
+| Costo reportado, USD | 0.42910006 | 0.79789188 |
+| Segundos nativos acumulados | 3,979.4 | 6,907.5 |
 
-Todas las llamadas registradas tienen costo numérico. Los segundos nativos se suman entre intentos; no son el tiempo de reloj del estudio concurrente. Preparación y verificación se miden aparte. Se comprobaron nuevamente los hashes de los binarios.
+Solo pasó `prove-plus-comm`, en ambas repeticiones del ciclo 1. Eliminar fallos prematuros de compactación permitió avanzar más, pero la mayoría de las tareas siguieron fallando y aumentaron costo y tiempo.
 
-| Categoría de resultado | Base | Ciclo 1 |
+| Resultado | Main | Ciclo 1 |
 |---|---:|---:|
-| Fallo de compactación sin tramo reciente | 9 | 0 |
-| Recuperación agotada por falta de avance | 8 | 2 |
-| Límite de llamadas del agente | 0 | 4 |
+| Fallo de compactación sin cola | 9 | 0 |
+| Recuperación sin progreso agotada | 8 | 2 |
+| Límite de llamadas al modelo | 0 | 4 |
 | Tiempo agotado | 1 | 1 |
-| Requiere respuesta del usuario | 0 | 1 |
-| Turno completado, verificación fallida | 2 | 10 |
-| Verificador oficial aprobado | 0 | 2 |
+| Turno completado, verificador fallido | 2 | 11 |
+| Verificador aprobado | 0 | 2 |
 
-El intento que necesita respuesta cuenta como fallo aunque no tenga recompensa numérica del verificador; no se excluye como infraestructura. Eliminar interrupciones prematuras permitió trabajar más, pero no hizo correctos la mayoría de los resultados y elevó tiempo y costo totales. La evaluación del candidato de skills ya está en marcha sobre las cinco tareas originales de desarrollo.
+## Intervenciones y límites observados
 
-## Candidato del ciclo 3: conservar evidencia y contar una vez la repetición del proveedor
+1. **Admisión de contexto y compactación sin cola (`ea8b673`).** Reservar margen útil de razonamiento sin apartar siempre toda la salida máxima; mantener el límite según capacidad estimada restante. Permitir un corte completo cuando no cabe una cola reciente y solicitar resúmenes breves. Desaparecieron los nueve fallos observados de cola vacía, pero la confirmación quedó bajo el objetivo.
+2. **Selección de skills y procedimientos (`d95f8c1`).** Hasta dos sugerencias léxicas de metadatos, una skill de implementación y revisión de reparación/Git. Los textos siguen bajo demanda. Frecuencia ponderada, frecuencia inversa y normalización por longitud mejoran las pruebas de búsqueda. La migración por coincidencia exacta conserva ediciones personales y desactivaciones. Al no cargarse skills en desarrollo, estas ejecuciones no establecen la calidad de sus procedimientos.
+3. **Evidencia de herramientas y cálculo de contexto (`f1efd24`).** Conservar inicio/final, metadatos de ejecución/salida/cursor, instrucciones del repositorio y acceso a resultados completos redactados. Contar la representación mayor entre contenido normalizado y datos del proveedor, sin sumarlas; conservar razonamiento oculto o firmado. Pasaron las regresiones, pero no mejoró la puntuación. La estimación por bytes no es un tokenizador ni la facturación.
+4. **Evidencia antes de preguntar y escritura básica visible (`4d4b534`).** Consultar instrucciones originales y hechos locales antes de preguntar, manteniendo toda duda no resuelta. Mostrar esquemas de creación/edición básica sin cambiar permisos ni el descubrimiento avanzado. Distinguir un fallo del diagnóstico de un fallo del programa en la skill de entorno. Recuperó 2/5, sin superar el ciclo 1.
 
-La capa de procesos conserva el inicio y el final de una salida, pero el motor volvía a recortar ese resultado por el principio. Así podía ocultar errores finales del compilador o de las pruebas. El candidato conserva ambos extremos, metadatos de ejecución/salida/cursor, las instrucciones completas del repositorio y un enlace al registro íntegro redactado. Las pruebas cubren diagnósticos finales, recuperación del centro omitido, secretos y límites UTF-8.
+Los fallos del ciclo 4 muestran lo pendiente: C++ agotó el tiempo; Scheme agotó la recuperación sin progreso; Git realizó ediciones verificadas y declaró la tarea terminada, pero falló la eliminación y sustitución de secretos, aunque conservó archivos ajenos. El éxito de una herramienta no equivale al de la tarea. La búsqueda informó 531 archivos y un error omitido, con reglas de exclusión activas; el código también aplica un filtro de 1 MiB por archivo. Cero coincidencias no demuestra cobertura completa. Es una limitación de cobertura, no prueba de qué filtro causó el secreto restante.
 
-La estimación del contexto también serializaba el contenido normalizado del asistente junto con los datos opacos del proveedor, aunque los adaptadores envían estos últimos en lugar de ambas representaciones. El candidato cuenta la representación mayor más un margen. Sigue contando y conservando el razonamiento oculto o firmado; sigue siendo una estimación por bytes, no la facturación. Predicción: menos compactaciones innecesarias y menos diagnósticos perdidos. No cambia modelo, tamaño configurado del contexto, límite de salida, permisos ni tiempo máximo. Es una intervención mecánica combinada aún no confirmada.
+Hipótesis posteriores, **no implementadas ni validadas en este estudio**: medir mejor el progreso ante comandos fallidos repetidos (nuevos IDs pueden parecer avance); explicitar cobertura/exclusiones de búsqueda; esperar algo más, de forma acotada, al iniciar comandos para reducir consultas de estado. La espera actual de 100 ms devolvió `running` en 11 de los primeros 19 resultados de comandos de extracción del ciclo 4. No se deben llamar redundantes a esas consultas: los procesos aún figuraban en ejecución.
 
-La iteración basada en trazas sigue [AHE](https://arxiv.org/abs/2604.25850); [Context Compaction Theory](https://arxiv.org/abs/2608.01326) motiva comprobar la conservación de información, no una heurística concreta. Ninguna fuente demuestra que este candidato mejore Nemotron. Primero se evaluará en desarrollo y solo después, si procede, en nuevas tareas reservadas.
+## Correcciones de infraestructura y exclusiones
 
-Validación del ciclo 3: pasaron 64 pruebas unitarias del agente (una dependiente del entorno omitida), las 23 pruebas de integración y Clippy de todo el workspace sin advertencias. La nueva prueba confirma que el modelo recibe el diagnóstico final mientras el centro completo redactado permanece recuperable en el registro.
+- Dos intentos originales de demostración en main (`3YsqxDh`, `74yYYdz`) asumían `/app`, pero el contenedor usaba `/workspace`. No hicieron llamadas al proveedor. El adaptador consulta `pwd`; ambos reemplazos fallaron.
+- Una carrera entre el marcador final y la terminación del proceso impidió calificar tres informes completos: `write-compressor__FUsx9wm` del ciclo 1, `sanitize-git-repo__zeZS8N6` del ciclo 2 y `custom-memory-heap-crash__3jTn3wC` del ciclo 3. El adaptador vuelve a comprobar el marcador después de terminar el proceso. Los reemplazos con los mismos binarios fallaron el verificador. El gasto original sigue incluido. Esperar al usuario no es por sí solo una exclusión: una modernización pasó pese a ese estado.
+- Los costos ausentes, nulos, booleanos o no finitos quedan desconocidos, no como costo cero. Pasaron cinco pruebas de transporte/facturación.
+- Los arranques explícitos mediante glibc hacían que el manifiesto antiguo calculara el hash del cargador. El protocolo externo del binario congelado sí identifica Fénix y es la referencia de estas ejecuciones. Una corrección posterior solo de metadatos registra el hash del programa y ambas rutas; no se reescriben manifiestos históricos. No constituye un candidato nuevo del benchmark.
 
-## Carrera al recoger el informe final: corrección pendiente
+## Validación y procedencia
 
-Una auditoría posterior encontró que el evaluador puede escribir `ready.json` y terminar entre las comprobaciones de disponibilidad y de proceso vivo. Dos ejecuciones tenían informes completos pero nunca recibieron calificación oficial: `write-compressor__FUsx9wm` del ciclo 1 y `sanitize-git-repo__zeZS8N6` del ciclo 2. El adaptador vuelve a comprobar el marcador final después de terminar el proceso; pasaron cuatro pruebas de transporte. Se reemplazarán estos dos intentos con sus binarios y configuraciones originales. Por tanto, la tabla anterior del ciclo 1 es provisional (contaba conservadoramente un intento sin calificar como fallo), no la comparación final aceptada. El gasto de los intentos excluidos se conservará por separado; esperar al usuario no constituye por sí mismo un fallo de infraestructura.
+Main pasó 239 pruebas Rust y 13 de navegador; se omitieron cuatro dependientes del entorno. El ciclo 4 pasó **114 pruebas del agente**, incluidas 23 de ejecución y las seis de revisión de planes; una quedó omitida por el entorno. Una ejecución general anterior agotó dos tiempos de revisión bajo carga. Ambas pasaron posteriormente y las seis pasaron otra vez aisladas en 9,11 segundos, sin cambiar código ni límites. Pasaron Clippy del workspace, formato y compilación del ciclo 4. No cambió la web ni se repitieron sus pruebas.
 
-El resultado preliminar de desarrollo del ciclo 2 es 1/5, con Git pendiente de reemplazo. Sus cinco intentos iniciales consumieron 179 llamadas, 2.186.996 tokens de entrada, 294.779 de salida, US$0,10604281 y 856,8 segundos nativos acumulados. Ninguno buscó ni cargó una skill. La modernización pasó aunque el agente pidió aclaración. Estos datos preliminares no justifican confirmación ni adopción. El ciclo 3 está congelado en `f1efd24` y ejecuta las mismas cinco tareas de desarrollo.
+La validación final del informe pasó las tres pruebas unitarias de evaluación, Clippy del workspace y una prueba nativa real mediante el cargador con dos respuestas simuladas locales (sin gasto de proveedor). La prueba verificó el hash del programa y lo distinguió del cargador. Estos cambios solo del informe son posteriores a los binarios congelados; no se les atribuye una mejora adicional de rendimiento. GitHub Actions estuvo bloqueado por facturación durante el estudio; las pruebas locales no deben presentarse como CI remoto aprobado.
 
-## Hipótesis del ciclo 4: evidencia antes de aclaraciones y escritura básica visible
+| Variante | Fuente | SHA-256 del programa congelado |
+|---|---|---|
+| main | `574e390` | `a343bd8a6b1076162ed09928b31c9e3b87504a062799acde52a54df47a10b684` |
+| cycle1 | `ea8b673` | `57b21e22b3093ff88d167632588490e80d30064c1fcb8cf08c17aab14cf8fdc5` |
+| cycle2 | `d95f8c1` | `0700287d8716654d86fe5e676f9da3a957e3b8b733aa9d42c3472a2e0082b9e1` |
+| cycle3 | `f1efd24` | `b468ee1ad82df3eb5c873cb9b434d0c810d83a736d17a2e029a4a669b61c1bec` |
+| cycle4 | `4d4b534` | `43469b49f74a9b4f9b385616adb45132d105cd9a7ea88de9d1125e74199ff3c1` |
 
-Las trazas de desarrollo muestran preguntas finales cuya respuesta ya está en ejemplos o diagnósticos, y llamadas a `file_write` sin contenido. Otro candidato sitúa la consulta de evidencia al inicio de las instrucciones, conserva toda duda realmente pendiente mediante `ask_user` y muestra desde el principio los esquemas de creación y edición básica. Las herramientas avanzadas siguen bajo demanda; no cambian autorizaciones, edición con coincidencia exacta ni ámbito de archivos. La skill de entorno distingue un diagnóstico que no pudo ejecutarse de un programa incorrecto y limita la recuperación a cambios locales autorizados; la migración conserva ediciones personales y desactivaciones.
+SHA-256 de configuración: `6e124d093eb1d00885682116d7fa635125295d9fb7ae1fefdd0ac86b8b5523ae`. Se conservaron los hashes de todos los binarios/configuraciones para verificarlos. Instrucciones, artefactos y trazas API privadas siguen en `.fenix/evaluations/harness-evolution-20260915/`, ignorado por Git; el CSV solo publica métricas y procedencia seleccionadas. Las correcciones posteriores del informe no cambian los binarios evaluados.
 
-Predicción: menos finales prematuros con preguntas y menos pasos de descubrimiento de esquemas antes de crear artefactos. Se combinan instrucciones, visibilidad y procedimiento: no se podrá atribuir una mejora a un solo componente. [Ask or Assume?](https://arxiv.org/html/2603.26233v1) motiva tratar la aclaración como necesidad de información; su usuario simulado y otro modelo no demuestran que este candidato funcione. No se proporciona un oráculo, parche específico ni respuesta oculta. Pruebas y evaluación pendientes; el binario del ciclo 3 continúa congelado.
+## Base de investigación
 
-La validación del agente del ciclo 4 pasó las 114 pruebas (una dependiente del entorno omitida), incluidas las seis de revisión de planes y las 23 de ejecución. Una ejecución general anterior del ciclo 3 agotó dos tiempos de espera de revisión bajo carga de Docker/compilación; no se ampliaron los tiempos ni se modificó la planificación. Se registra el éxito posterior sin ocultar los fallos iniciales. Clippy de todo el workspace también pasó sin advertencias. Quedan pendientes la compilación final y la evaluación del benchmark.
+[AHE](https://arxiv.org/html/2604.25850v4) orientó hipótesis basadas en trazas y comprobación con tareas nuevas; [SkillsBench](https://arxiv.org/abs/2602.12670), [SkillRevise](https://arxiv.org/html/2606.01139v3) y [Group of Skills](https://arxiv.org/html/2605.06978v1), la selección y revisión prudente de procedimientos. [Context Compaction Theory](https://arxiv.org/abs/2608.01326) motiva comprobar conservación de información, no la heurística concreta por bytes. [Ask or Assume?](https://arxiv.org/html/2603.26233v1) estudia aclaración con un usuario simulado que conoce información ausente; aquí no se añadió ese oráculo. [SWE-RPG](https://arxiv.org/html/2608.09072v1) orientó distinguir fallos de requisitos, planificación y artefactos. Estas fuentes motivan experimentos; ninguna demuestra una mejora de Nemotron/Fénix.

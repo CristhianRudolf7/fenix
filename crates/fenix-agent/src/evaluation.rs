@@ -29,6 +29,25 @@ fn waiting_seconds() -> u64 {
     15
 }
 
+fn evaluated_binary_path() -> Result<PathBuf> {
+    let image = std::env::current_exe()?;
+    if image
+        .file_name()
+        .is_some_and(|name| name.to_string_lossy().starts_with("ld-linux"))
+    {
+        // Explicit glibc-loader launches expose the loader through /proc/self/exe.
+        // argv[0] still identifies the program, as in the read-only helper path.
+        std::fs::canonicalize(
+            std::env::args_os()
+                .next()
+                .context("Evaluated executable path unavailable")?,
+        )
+        .context("Cannot resolve the evaluated executable behind its loader")
+    } else {
+        Ok(image)
+    }
+}
+
 #[derive(Default, Serialize)]
 pub struct EvaluationMetrics {
     pub recorded_model_calls: u64,
@@ -106,7 +125,8 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
     };
     use sha2::{Digest, Sha256};
     use std::io::Read;
-    let mut binary = std::fs::File::open(std::env::current_exe()?)?;
+    let binary_path = evaluated_binary_path()?;
+    let mut binary = std::fs::File::open(&binary_path)?;
     let mut digest = Sha256::new();
     let mut buffer = [0u8; 65536];
     loop {
@@ -116,7 +136,7 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
         }
         digest.update(&buffer[..read]);
     }
-    crate::write_private(&output.join("manifest.json"), &json!({"schema_version":1,"binary_sha256":format!("{:x}",digest.finalize()),"version":env!("CARGO_PKG_VERSION"),"benchmark":config.benchmark,"dataset_revision":config.dataset_revision}).to_string())?;
+    crate::write_private(&output.join("manifest.json"), &json!({"schema_version":1,"binary_sha256":format!("{:x}",digest.finalize()),"binary_path":binary_path,"process_image_path":std::env::current_exe()?,"version":env!("CARGO_PKG_VERSION"),"benchmark":config.benchmark,"dataset_revision":config.dataset_revision}).to_string())?;
     let rt = Runtime::open(&output.join("runtime"), Some(&output.join("skills"))).await?;
     let key = std::fs::read_to_string(&config.api_key_file)
         .context("Cannot read evaluation credential")?;
@@ -288,6 +308,12 @@ fn evaluation_tasks(rt: &Runtime) -> Result<Vec<fenix_storage::Task>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn program_provenance_resolves_direct_and_loader_launches() {
+        let expected = std::fs::canonicalize(std::env::args_os().next().unwrap()).unwrap();
+        assert_eq!(evaluated_binary_path().unwrap(), expected);
+        assert!(expected.is_file());
+    }
     #[tokio::test]
     async fn native_evaluation_exports_an_isolated_ungraded_trace() {
         use wiremock::{

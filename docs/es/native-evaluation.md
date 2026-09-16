@@ -104,3 +104,5 @@ automáticamente efectos del sistema después de reiniciar la aplicación.
 Los extractos y resúmenes pueden omitir información, aunque los originales
 redactados sigan recuperables. Si las instrucciones y el contrato por sí solos
 no caben, se informa del problema y se conserva un checkpoint.
+
+Si se inicia explícitamente mediante el cargador `ld-linux` empaquetado, `binary_sha256` calcula el hash del programa evaluado y no el del cargador. `binary_path` y `process_image_path` registran ambas identidades. Los manifiestos anteriores bajo ese cargador no contienen esta corrección: utiliza el protocolo externo del binario congelado para su hash y no reescribas los informes históricos.
