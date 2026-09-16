@@ -12,6 +12,8 @@ fn essential(name: &str) -> bool {
             | "skill_load"
             | "tool_search"
             | "file_read"
+            | "file_write"
+            | "file_edit"
             | "files_search"
             | "command_run"
             | "command_status"
@@ -184,13 +186,13 @@ mod tests {
         let dir = tempfile::tempdir()?;
         let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
         let task = rt.store.enqueue("Create an artifact", "web", None)?;
-        let receipt = rt.ensure_tool_loaded(&task.id, "file_write")?.unwrap();
+        let receipt = rt.ensure_tool_loaded(&task.id, "file_patch")?.unwrap();
         assert_eq!(receipt["executed"], false);
         assert_eq!(
             receipt["tools"][0]["parameters"]["required"],
-            json!(["path", "content"])
+            json!(["patch"])
         );
-        assert!(rt.ensure_tool_loaded(&task.id, "file_write")?.is_none());
+        assert!(rt.ensure_tool_loaded(&task.id, "file_patch")?.is_none());
         assert!(!dir.path().join("artifact").exists());
         let error = crate::tools::validate(
             "file_edit",
@@ -234,6 +236,9 @@ mod tests {
                 < serde_json::to_vec(&full).unwrap().len() / 2
         );
         assert!(!initial.iter().any(|t| t.name == "file_patch"));
+        for name in ["file_read", "file_write", "file_edit"] {
+            assert!(initial.iter().any(|tool| tool.name == name));
+        }
         let result = runtime
             .search_tools(&task.id, &json!({"names":["file_patch"]}))
             .unwrap();

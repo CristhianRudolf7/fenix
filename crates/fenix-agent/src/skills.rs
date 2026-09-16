@@ -194,6 +194,9 @@ impl Runtime {
                 "test-driven-repair" => Some(include_str!(
                     "../../../resources/skills/test-driven-repair/SKILL.v1.md"
                 )),
+                "environment-and-dependencies" => Some(include_str!(
+                    "../../../resources/skills/environment-and-dependencies/SKILL.v1.md"
+                )),
                 "git-recovery-and-change-management" => Some(include_str!(
                     "../../../resources/skills/git-recovery-and-change-management/SKILL.v1.md"
                 )),
@@ -536,6 +539,12 @@ mod tests {
             include_str!("../../../resources/skills/test-driven-repair/SKILL.v1.md"),
         )?;
         let git = skills.join("git-recovery-and-change-management/SKILL.md");
+        let environment = skills.join("environment-and-dependencies/SKILL.md");
+        fs::write(
+            &environment,
+            include_str!("../../../resources/skills/environment-and-dependencies/SKILL.v1.md"),
+        )?;
+        rt.set_skill_enabled("environment-and-dependencies", false)?;
         let custom =
             "description: Owner customized Git workflow\n\nPreserve these local instructions.\n";
         fs::write(&git, custom)?;
@@ -548,6 +557,17 @@ mod tests {
             include_str!("../../../resources/skills/test-driven-repair/SKILL.md")
         );
         assert_eq!(fs::read_to_string(&git)?, custom);
+        assert_eq!(
+            fs::read_to_string(&environment)?,
+            include_str!("../../../resources/skills/environment-and-dependencies/SKILL.md")
+        );
+        assert!(
+            !rt.skills()?
+                .iter()
+                .find(|skill| skill.name == "environment-and-dependencies")
+                .unwrap()
+                .enabled
+        );
         assert!(
             !rt.skills()?
                 .iter()
