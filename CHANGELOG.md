@@ -2,6 +2,8 @@
 
 ## Unreleased / Sin publicar
 
+- Refine coding instructions and skills to reuse visible tools, batch independent preparation, apply coherent edits, and diagnose test-fixture failures. Upgrade only untouched bundled skill versions. [Evaluation](docs/en/audits/luna-low-skill-efficiency.md). / Mejora las instrucciones y skills de programación para reutilizar herramientas, agrupar preparación independiente, coordinar ediciones y diagnosticar fallos de preparación de pruebas. Actualiza únicamente skills originales sin personalizaciones. [Evaluación](docs/es/audits/luna-low-skill-efficiency.md).
+
 - Serve production frontend files through a separate Caddy/systemd service; Rust no longer embeds web assets. Publish UI updates atomically without recompiling or restarting the agent. [Deployment](docs/en/frontend-deployment.md). / Frontend separado con Caddy/systemd; Rust ya no incluye los archivos web. Publicación de interfaz sin recompilar ni reiniciar el agente. [Despliegue](docs/es/frontend-deployment.md).
 
 - Keep mobile navigation in a dismissible left drawer and make the chat composer compact, preserving desktop routes and keyboard navigation. / Mantiene la navegación móvil en un panel lateral izquierdo y reduce la altura del cuadro de mensaje, conservando las rutas y la navegación por teclado.
