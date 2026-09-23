@@ -157,6 +157,10 @@ async fn master_remains_available_and_child_context_loads_skills_on_demand() {
                 for name in ["subagent_spawn", "subagent_status", "subagent_cancel", "history_search", "history_read"] {
                     assert!(!tools.iter().any(|tool| tool["name"] == name));
                 }
+                if !has_result(&body, "find-skill") {
+                    assert!(!encoded.contains("ONLY_FULL_SKILL_BODY"));
+                    return ResponseTemplate::new(200).set_body_json(call("find-skill", "skill_search", json!({"query":"demand-only delegated fixture"})));
+                }
                 assert!(encoded.contains("demand-only"));
                 if has_result(&body, "load-skill") {
                     assert!(encoded.contains("ONLY_FULL_SKILL_BODY"));
@@ -675,6 +679,59 @@ async fn supervisor_messages_interrupt_stale_actions_and_reuse_finished_context(
             .pending_subagent_inputs(&job.id)
             .unwrap()
             .is_empty()
+    );
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn security_worker_loads_its_catalog_and_cannot_finish_without_a_report() {
+    let (_dir, runtime, server) = fixture().await;
+    Mock::given(method("POST")).and(path("/responses"))
+        .respond_with(move |request: &Request| {
+            let body: Value = serde_json::from_slice(&request.body).unwrap();
+            if !child_request(&body) {
+                return ResponseTemplate::new(200).set_body_json(answer("Security report received"));
+            }
+            let input=body["input"].to_string();
+            assert!(input.contains("Security specialist"));
+            assert!(!body["tools"].as_array().unwrap().iter().any(|t|t["name"]=="subagent_spawn"));
+            if !has_result(&body,"security-skill") {
+                return ResponseTemplate::new(200).set_body_json(call("security-skill","skill_load",json!({"name":"security-finding-validation"})));
+            }
+            assert!(input.contains("Evidence criteria" ) || input.contains("security-finding-validation"));
+            if !has_result(&body,"invalid-finish") {
+                return ResponseTemplate::new(200).set_body_json(call("invalid-finish","subagent_finish",json!({"status":"completed","summary":"No defects"})));
+            }
+            assert!(input.contains("Security report requires nonempty scope"));
+            ResponseTemplate::new(200).set_body_json(call("valid-finish","subagent_finish",json!({
+                "status":"completed","summary":"Fixture audit recorded with an explicit coverage gap",
+                "evidence":"No scanner executed; report schema integration fixture only",
+                "security_report":{"scope":"Synthetic test fixture","coverage":[{"area":"live API","status":"not_tested","evidence":"No live endpoint was provided"}],"findings":[]}
+            })))
+        }).mount(&server).await;
+    let parent = runtime
+        .store
+        .enqueue_bound(
+            "Audit the fixture",
+            "web",
+            None,
+            &fenix_storage::TaskBinding::default(),
+        )
+        .unwrap();
+    runtime.store.claim_next().unwrap();
+    let result=runtime.spawn_subagent(&parent.id,&json!({"profile":"security","objective":"Review a synthetic fixture","expected_output":"Structured coverage and findings","constraints":"Synthetic fixture only; no external effects"})).await.unwrap();
+    runtime
+        .store
+        .set_task_status(&parent.id, "completed", None)
+        .unwrap();
+    let child = result["subagent_id"].as_str().unwrap();
+    let workers = runtime.start();
+    wait_task(&runtime, child, "completed").await;
+    let job = runtime.store.subagent(child).unwrap();
+    assert_eq!(job.spec.profile, "security");
+    assert_eq!(
+        job.result.unwrap()["security_report"]["coverage"][0]["status"],
+        "not_tested"
     );
     stop(&runtime, workers).await;
 }

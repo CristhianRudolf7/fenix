@@ -1,0 +1,915 @@
+{
+  "review_date": "2026-09-19",
+  "generated_at": "2026-09-19T20:15:29.862512+00:00",
+  "status": "research and plan only; no runtime or deployment changes",
+  "catalog": {
+    "path": "/home/Rudy/proyectos/repo/repo.sqlite",
+    "area": "sandbox",
+    "area_id": 26,
+    "repository_count": 7,
+    "access": "read-only"
+  },
+  "method": {
+    "source_pinning": "GitHub commit SHA and Git blob SHA-1 verified for downloaded files; SHA-256 also recorded",
+    "coverage": "README feature inventories and focused security/architecture/API sections; not a complete source audit. Acquisition does not imply full reading.",
+    "upstream_execution": "none",
+    "deployment_validation": "not performed",
+    "performance_validation": "not performed",
+    "local_workspace": "pre-existing uncommitted changes; local hashes describe reviewed files, not clean HEAD",
+    "license_scope": "metadata and documentation observations only; no blanket license characterization or copied upstream implementation"
+  },
+  "local_head": "bf88808075b6e9d9f0c3ffbdd52737b0aaa8601b",
+  "repositories": [
+    {
+      "repo": "daytonaio/daytona",
+      "commit": "ec4c21b2d597091ac09ecc278f3bcc172575a987",
+      "commit_date": "2026-06-25T11:16:13Z",
+      "license": null,
+      "archived": false,
+      "retrieved_at": "2026-09-19T19:54:26.935964+00:00",
+      "truncated": false,
+      "tree_entry_count": 5,
+      "sources": [
+        {
+          "repo": "daytonaio/daytona",
+          "path": "README.md",
+          "commit": "ec4c21b2d597091ac09ecc278f3bcc172575a987",
+          "url": "https://raw.githubusercontent.com/daytonaio/daytona/ec4c21b2d597091ac09ecc278f3bcc172575a987/README.md",
+          "bytes": 11940,
+          "sha256": "7e1a14b044fe1bb8f8af50d6de6d8b306d97507a278809184af58af4b1fb8054",
+          "git_blob_sha": "b1f7aec5eb644b2735ac0106e6a43a0933656f49",
+          "retrieved_at": "2026-09-19T19:54:27.063899+00:00",
+          "inspection": "focused sections or relevant implementation"
+        }
+      ]
+    },
+    {
+      "repo": "firecracker-microvm/firecracker",
+      "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+      "commit_date": "2026-09-17T09:31:37Z",
+      "license": "Apache-2.0",
+      "archived": false,
+      "retrieved_at": "2026-09-19T19:54:27.035858+00:00",
+      "truncated": false,
+      "tree_entry_count": 975,
+      "sources": [
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "README.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/README.md",
+          "bytes": 9107,
+          "sha256": "a89265ce9ed6ee3fdfa8bf52e73c24ee9524e7e95a4e47f45d044c0eb058e36f",
+          "git_blob_sha": "7591f177d5c38b17d07cff575c4358d6bd45422b",
+          "retrieved_at": "2026-09-19T19:54:27.196778+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "SECURITY.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/SECURITY.md",
+          "bytes": 524,
+          "sha256": "32bebfe2b63dc26bd3d905bd920c6802101df03f1ab845cf5ced869223022130",
+          "git_blob_sha": "e940ab7e0f44a3bc4391180a004a043b5e38eaa6",
+          "retrieved_at": "2026-09-19T19:54:27.438460+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "docs/design.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/docs/design.md",
+          "bytes": 9988,
+          "sha256": "58cde9cfa1e9cf7a87b687ead69bed5fd7542b331ac45de18e91059d29b6ace6",
+          "git_blob_sha": "7856084b88fc05e308a121e7f156a4dafc4a4510",
+          "retrieved_at": "2026-09-19T19:56:04.748387+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "docs/jailer.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/docs/jailer.md",
+          "bytes": 17469,
+          "sha256": "079d60d9b8bc401ae733a10287922eacc0f9243b3841f9788e399b850ac84024",
+          "git_blob_sha": "fa5e8b4ee769f64ee83a317dce5902ffd0029a1b",
+          "retrieved_at": "2026-09-19T19:56:04.775601+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "docs/prod-host-setup.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/docs/prod-host-setup.md",
+          "bytes": 21548,
+          "sha256": "19cf9cf9965fb4fdd36c0f55ceb7165e06efd8601629e956827069d9f1a3de16",
+          "git_blob_sha": "8939b56a965963d8df1c44c583dcd38361197347",
+          "retrieved_at": "2026-09-19T19:56:04.792260+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "docs/seccomp.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/docs/seccomp.md",
+          "bytes": 3743,
+          "sha256": "c4c2e91631b01f1bc1e670fb32acd0abf663d86e0dfe667310846ddf5944faef",
+          "git_blob_sha": "9aebdfcbd7b6777a385eccabe3963607504baa06",
+          "retrieved_at": "2026-09-19T19:56:04.768694+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "docs/snapshotting/random-for-clones.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/docs/snapshotting/random-for-clones.md",
+          "bytes": 14024,
+          "sha256": "9b522b488005dd5b7eed29e1feab2bd1a9b154986855dd05c883530cd6681017",
+          "git_blob_sha": "40589be02706b536778a36b433d65f286df6b392",
+          "retrieved_at": "2026-09-19T19:56:04.771725+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "firecracker-microvm/firecracker",
+          "path": "docs/snapshotting/snapshot-support.md",
+          "commit": "23b09b943fa3cd4a04004fe55724f0b5c2410f45",
+          "url": "https://raw.githubusercontent.com/firecracker-microvm/firecracker/23b09b943fa3cd4a04004fe55724f0b5c2410f45/docs/snapshotting/snapshot-support.md",
+          "bytes": 33367,
+          "sha256": "fc716201060779e0164f7625652c026f9edb78b44b98e2892747b550d5aa47e1",
+          "git_blob_sha": "1e0b690dbe416335f4cea7a163506ef53f29c332",
+          "retrieved_at": "2026-09-19T19:56:04.845129+00:00",
+          "inspection": "focused sections or relevant implementation"
+        }
+      ]
+    },
+    {
+      "repo": "sandboxie-plus/Sandboxie",
+      "commit": "e82c55ba4969af79abddcd31155bb1bfe316bee6",
+      "commit_date": "2026-09-19T18:02:02Z",
+      "license": "GPL-3.0",
+      "archived": false,
+      "retrieved_at": "2026-09-19T19:54:27.166432+00:00",
+      "truncated": false,
+      "tree_entry_count": 1734,
+      "sources": [
+        {
+          "repo": "sandboxie-plus/Sandboxie",
+          "path": "README.md",
+          "commit": "e82c55ba4969af79abddcd31155bb1bfe316bee6",
+          "url": "https://raw.githubusercontent.com/sandboxie-plus/Sandboxie/e82c55ba4969af79abddcd31155bb1bfe316bee6/README.md",
+          "bytes": 13696,
+          "sha256": "2e30aa384f58423951372b65375985f9d3f1b245637f92fbb4a36c2397785f98",
+          "git_blob_sha": "00fe4d1119c1da287d0dbb33583db92037b3564d",
+          "retrieved_at": "2026-09-19T19:54:27.415513+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "sandboxie-plus/Sandboxie",
+          "path": "SECURITY.md",
+          "commit": "e82c55ba4969af79abddcd31155bb1bfe316bee6",
+          "url": "https://raw.githubusercontent.com/sandboxie-plus/Sandboxie/e82c55ba4969af79abddcd31155bb1bfe316bee6/SECURITY.md",
+          "bytes": 7345,
+          "sha256": "b4415fdd70ed58acb2254c3c92ec7224cd81b75f5b92ab43b3bcbf38137be236",
+          "git_blob_sha": "c588f9385c7450bc07625cd710c86e37a440252f",
+          "retrieved_at": "2026-09-19T19:54:27.584143+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "sandboxie-plus/Sandboxie",
+          "path": "Sandboxie/ReadMe.md",
+          "commit": "e82c55ba4969af79abddcd31155bb1bfe316bee6",
+          "url": "https://raw.githubusercontent.com/sandboxie-plus/Sandboxie/e82c55ba4969af79abddcd31155bb1bfe316bee6/Sandboxie/ReadMe.md",
+          "bytes": 4505,
+          "sha256": "89eb00e9306c7b37a07691e7fd72ef7a7c169cb0e90a6051c58ee644766eeb09",
+          "git_blob_sha": "d71ad687aa486b2a2cbd2df0c949af38e9d49ee4",
+          "retrieved_at": "2026-09-19T19:56:06.539032+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "sandboxie-plus/Sandboxie",
+          "path": "SandboxiePlus/ReadMe.md",
+          "commit": "e82c55ba4969af79abddcd31155bb1bfe316bee6",
+          "url": "https://raw.githubusercontent.com/sandboxie-plus/Sandboxie/e82c55ba4969af79abddcd31155bb1bfe316bee6/SandboxiePlus/ReadMe.md",
+          "bytes": 3453,
+          "sha256": "55ee96c8b67acf29ccda89ab8b659f36dbd7e1c123fb6c19ae77a0bc9dd5138b",
+          "git_blob_sha": "02d74e3a8b74b70c6c1fa7d6256932fe07d2bb2b",
+          "retrieved_at": "2026-09-19T19:56:06.529320+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        }
+      ]
+    },
+    {
+      "repo": "opensandbox-group/OpenSandbox",
+      "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+      "commit_date": "2026-09-19T07:58:40Z",
+      "license": "Apache-2.0",
+      "archived": false,
+      "retrieved_at": "2026-09-19T19:54:28.021115+00:00",
+      "truncated": false,
+      "tree_entry_count": 3130,
+      "sources": [
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "README.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/README.md",
+          "bytes": 12385,
+          "sha256": "ab78736660038f0f08365302d511c10b01c48af9678d71dd5844abf09e8b026b",
+          "git_blob_sha": "68857200bb903d797bac95a59a0fa5d924fb38e4",
+          "retrieved_at": "2026-09-19T19:54:28.308736+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "SECURITY.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/SECURITY.md",
+          "bytes": 2290,
+          "sha256": "8315f66c728fd35a5328c87082632f08b08bf9c0b86a59e6792fbef9413d732d",
+          "git_blob_sha": "f4e5c605cbd99b98d6e3f3d2fe067a1a2b6b88fb",
+          "retrieved_at": "2026-09-19T19:54:28.495309+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "components/egress/README.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/components/egress/README.md",
+          "bytes": 99,
+          "sha256": "4b4903ae515ac2d10530815dd7df928337c2f04ef07130542f25384f79dfbbf2",
+          "git_blob_sha": "26a2f98801a3a705c3dd23e33c56a65d9f04d12f",
+          "retrieved_at": "2026-09-19T19:56:05.208910+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "components/ingress/README.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/components/ingress/README.md",
+          "bytes": 102,
+          "sha256": "c17a4216eca9e7ba0bb43170de8c6144db26ffee72696e0da77018b42bef1b98",
+          "git_blob_sha": "bf19ee096cc30c435a638d9c3d6c2fce5ccda05d",
+          "retrieved_at": "2026-09-19T19:56:05.198609+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "docs/architecture/network-isolation.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/docs/architecture/network-isolation.md",
+          "bytes": 12402,
+          "sha256": "ba3130df5c3ff06579d4ce5fc975daeee43c991544ed8b3d20d6324618794aaa",
+          "git_blob_sha": "8a77777cc95cc1942decacbc137f8ebd269bf52b",
+          "retrieved_at": "2026-09-19T19:56:04.937541+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "docs/architecture/single-host-network.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/docs/architecture/single-host-network.md",
+          "bytes": 4317,
+          "sha256": "de9ca06b6c35b035b3e129c6406ecde42be63cdc301a5d182df8142a5fa28930",
+          "git_blob_sha": "ac616e9d30eb98813ef90f1b4332382a6159ab03",
+          "retrieved_at": "2026-09-19T19:56:05.001702+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "docs/community/release-verification.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/docs/community/release-verification.md",
+          "bytes": 13109,
+          "sha256": "c5d01352083dc7b439aeae5117410e1c5252df86cbfe1a283bfa6db9c900ba17",
+          "git_blob_sha": "9c4af712dfc542fcb317537c52b8d15dd9f14767",
+          "retrieved_at": "2026-09-19T19:56:05.275123+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "docs/guides/credential-vault.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/docs/guides/credential-vault.md",
+          "bytes": 22482,
+          "sha256": "f89a5b33de2f07e6c4402be4703d4d10403a202a45ae3fd15928345cd2eb54ed",
+          "git_blob_sha": "538324029e116bf9469c554fa19aa79a8aae5c6b",
+          "retrieved_at": "2026-09-19T19:56:05.054986+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "docs/guides/isolation-sessions.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/docs/guides/isolation-sessions.md",
+          "bytes": 21072,
+          "sha256": "f3e7ae0511d7198486a4b7dafde72b5546478668ecc88c88f64d0b8f6ef9d98b",
+          "git_blob_sha": "2383808ac0a19f2e160bcf27ae6f05910bc7ddd9",
+          "retrieved_at": "2026-09-19T19:56:04.983195+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "docs/guides/secure-container.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/docs/guides/secure-container.md",
+          "bytes": 22362,
+          "sha256": "efbf902ca9ac795bcf542fc43afce6a2ad417cadc04aca76d5d0480a758f721b",
+          "git_blob_sha": "769cd247317400ec6fe9859505fbe8fb9161b52d",
+          "retrieved_at": "2026-09-19T19:56:05.044453+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "server/configuration.md",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/server/configuration.md",
+          "bytes": 32080,
+          "sha256": "bc1a9486d1269e6d4f3b5d922330939416fa6d6badf3fd84f56823698eed6678",
+          "git_blob_sha": "ca91d8decdd80fd19f197da566299a39798d2b69",
+          "retrieved_at": "2026-09-19T19:56:05.265005+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "server/opensandbox_server/middleware/auth.py",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/server/opensandbox_server/middleware/auth.py",
+          "bytes": 5785,
+          "sha256": "4231ccd937a9de30ffbe152953d96e8b49922afb4e48c56e372a5287871648d7",
+          "git_blob_sha": "9acfa9567a1900f12195c767eae39421fb946399",
+          "retrieved_at": "2026-09-19T19:56:04.997783+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "server/opensandbox_server/services/endpoint_auth.py",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/server/opensandbox_server/services/endpoint_auth.py",
+          "bytes": 2088,
+          "sha256": "f06cbfb82c00e437f92ffa4ed492471e54ce5f34bfaacc23b994d00bce2cb429",
+          "git_blob_sha": "e18608e744f989e61c0f743e3279950c22d48321",
+          "retrieved_at": "2026-09-19T19:56:05.113845+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "opensandbox-group/OpenSandbox",
+          "path": "server/opensandbox_server/tenants/provider.py",
+          "commit": "ff4d1bc269cf6a9be03592649bed19633bf45222",
+          "url": "https://raw.githubusercontent.com/opensandbox-group/OpenSandbox/ff4d1bc269cf6a9be03592649bed19633bf45222/server/opensandbox_server/tenants/provider.py",
+          "bytes": 2687,
+          "sha256": "0508b38ead63f67b077b92bb3f21d0603a4df7bce785000dea26eef6adecc743",
+          "git_blob_sha": "38bac1e2b11dc7a70e9d0257a7927134851f557d",
+          "retrieved_at": "2026-09-19T20:02:53.012624+00:00",
+          "inspection": "focused sections or relevant implementation"
+        }
+      ]
+    },
+    {
+      "repo": "coder/coder",
+      "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+      "commit_date": "2026-09-19T07:02:55Z",
+      "license": "AGPL-3.0",
+      "archived": false,
+      "retrieved_at": "2026-09-19T19:54:27.939571+00:00",
+      "truncated": false,
+      "tree_entry_count": 13641,
+      "sources": [
+        {
+          "repo": "coder/coder",
+          "path": "README.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/README.md",
+          "bytes": 7843,
+          "sha256": "73cef0dadba0644af80a0c31619000df414fd75222a7e9863d951f304431daa9",
+          "git_blob_sha": "10b465ebe18106acc58c418be52543ee90369ff5",
+          "retrieved_at": "2026-09-19T19:54:28.233827+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "SECURITY.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/SECURITY.md",
+          "bytes": 3856,
+          "sha256": "bfdc887596511f4149d0bc29a06cd92532847c642a03db66344fb79f587339a8",
+          "git_blob_sha": "04be6e417548bdb8884a8a974e462277aeb62a08",
+          "retrieved_at": "2026-09-19T19:54:28.438939+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/admin/security/audit-logs.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/admin/security/audit-logs.md",
+          "bytes": 95801,
+          "sha256": "3fc4d8982c26ef284f8a9e642a8291b3d302bf0850cb1edeed820711e21edb9e",
+          "git_blob_sha": "8bfca3fe8b4da9feaa258cc4b634fd748e2da925",
+          "retrieved_at": "2026-09-19T19:56:05.860882+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/admin/security/database-encryption.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/admin/security/database-encryption.md",
+          "bytes": 7399,
+          "sha256": "4bc233d7159d19b7fdf7e0ffcb5bebea5385a498d6cbaa9772fb3e92192be8fc",
+          "git_blob_sha": "e8a9d77b0fb4645d386b230a3aa7ed995e466a18",
+          "retrieved_at": "2026-09-19T19:56:05.727598+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/admin/security/index.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/admin/security/index.md",
+          "bytes": 491,
+          "sha256": "f09c8cd0df476d4b2905827013fb190a37d1031a2f3142abbd9bd1cafeb3d8b5",
+          "git_blob_sha": "4065b75634747d9a70061412cfd0a06f99685ce0",
+          "retrieved_at": "2026-09-19T19:56:05.344248+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/admin/security/secrets.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/admin/security/secrets.md",
+          "bytes": 4691,
+          "sha256": "a46a5fee39275c1f3fe093095453be69b879f80980b4b73e2a248cad434006ac",
+          "git_blob_sha": "28e69d70ae824fb90b4edefece185da3f6cde76a",
+          "retrieved_at": "2026-09-19T19:56:05.402282+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/admin/templates/template-permissions.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/admin/templates/template-permissions.md",
+          "bytes": 1273,
+          "sha256": "4d322920160b963c5d0bb827ead440693699082d5ef3713ed1a962575863caa9",
+          "git_blob_sha": "c6fc72deb78d54e226a494452feefcc88e0922c5",
+          "retrieved_at": "2026-09-19T19:56:06.034259+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/ai-coder/agents/architecture.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/ai-coder/agents/architecture.md",
+          "bytes": 23195,
+          "sha256": "987008cc160ffde01ee33df33ec5100db894a8669c7eb83d4c17cf5e09c161ae",
+          "git_blob_sha": "3ceae875ba64eaac58c5566f0ebf65618a643420",
+          "retrieved_at": "2026-09-19T19:56:05.844159+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/ai-coder/agents/chat-sharing.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/ai-coder/agents/chat-sharing.md",
+          "bytes": 1562,
+          "sha256": "0dbab4f24f1cb8f182c8e1d4b22fe428b20311b6329bc1b64c421a444099f5f9",
+          "git_blob_sha": "0d05730c98d0a96da44ef6b941c51ccb847e092f",
+          "retrieved_at": "2026-09-19T19:56:06.061339+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/ai-coder/agents/platform-controls/mcp-servers.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/ai-coder/agents/platform-controls/mcp-servers.md",
+          "bytes": 11138,
+          "sha256": "71e0bf08d1adbc2cd3a38396ddc5b95e4d28149dc0e4913f4d87a5275376b5d3",
+          "git_blob_sha": "c13ca0844986ceeb7ea53563b1f85191505b2e86",
+          "retrieved_at": "2026-09-19T19:56:05.836879+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/ai-coder/agents/platform-controls/organizations.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/ai-coder/agents/platform-controls/organizations.md",
+          "bytes": 7374,
+          "sha256": "20190ff1b4057af1f3496e4c28f10f00787b32fde196d9d91d925026943c4d11",
+          "git_blob_sha": "0b4012fe2ff896920f9cd47f8afd5c94d331d451",
+          "retrieved_at": "2026-09-19T19:56:05.721312+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/ai-coder/ai-gateway/auth.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/ai-coder/ai-gateway/auth.md",
+          "bytes": 8878,
+          "sha256": "babdba2e6ff7bb73026dbbc198fff6bbe40a9e00976b109ea0607e80765d2bbb",
+          "git_blob_sha": "742008f4c08a23831058123b2229905fddbdd447",
+          "retrieved_at": "2026-09-19T19:56:05.851137+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "coder/coder",
+          "path": "docs/reference/api/authorization.md",
+          "commit": "a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c",
+          "url": "https://raw.githubusercontent.com/coder/coder/a698b026fef7d1dbc15b4fbf6a4bd4c7c885c17c/docs/reference/api/authorization.md",
+          "bytes": 9689,
+          "sha256": "e05c403ec4d0e816cf268d6975c89a1f7c0829a34a6029c732259a7cba4079ad",
+          "git_blob_sha": "52baefb7da21b48629d2d53416792828be48fd5b",
+          "retrieved_at": "2026-09-19T19:56:06.107171+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        }
+      ]
+    },
+    {
+      "repo": "e2b-dev/E2B",
+      "commit": "ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b",
+      "commit_date": "2026-09-18T12:06:48Z",
+      "license": "Apache-2.0",
+      "archived": false,
+      "retrieved_at": "2026-09-19T19:54:28.140666+00:00",
+      "truncated": false,
+      "tree_entry_count": 1234,
+      "sources": [
+        {
+          "repo": "e2b-dev/E2B",
+          "path": "README.md",
+          "commit": "ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b",
+          "url": "https://raw.githubusercontent.com/e2b-dev/E2B/ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b/README.md",
+          "bytes": 4168,
+          "sha256": "46c32f7888ac56dfe178d489ae878f6e3049fba16745682aa75e61d2ead6e675",
+          "git_blob_sha": "d074a4ef4fd27031505e720f51ae026c268dd03c",
+          "retrieved_at": "2026-09-19T19:54:28.305828+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "e2b-dev/E2B",
+          "path": "packages/js-sdk/src/sandbox/index.ts",
+          "commit": "ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b",
+          "url": "https://raw.githubusercontent.com/e2b-dev/E2B/ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b/packages/js-sdk/src/sandbox/index.ts",
+          "bytes": 26110,
+          "sha256": "c6a49983f90e5ec62769539f857913d78cbd5d2230521a86116dc5eae6d9b227",
+          "git_blob_sha": "f9964e2b16cdb11c271b0cfff3a4c97b874c3342",
+          "retrieved_at": "2026-09-19T19:56:06.112125+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "e2b-dev/E2B",
+          "path": "packages/js-sdk/src/sandbox/network.ts",
+          "commit": "ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b",
+          "url": "https://raw.githubusercontent.com/e2b-dev/E2B/ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b/packages/js-sdk/src/sandbox/network.ts",
+          "bytes": 90,
+          "sha256": "5956578da6664935617a4a31be003beb9eb75762090b0f45caa30a2d7ff502de",
+          "git_blob_sha": "39314f808264c447cfe6dc27ec88179fb6956266",
+          "retrieved_at": "2026-09-19T19:56:06.103326+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "e2b-dev/E2B",
+          "path": "packages/js-sdk/src/sandbox/sandboxApi.ts",
+          "commit": "ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b",
+          "url": "https://raw.githubusercontent.com/e2b-dev/E2B/ccaf9fc0ffe6ac39c7ec786af7608ab1de19467b/packages/js-sdk/src/sandbox/sandboxApi.ts",
+          "bytes": 59925,
+          "sha256": "84e432cc54ea71f470e12ecf718bcb3f117ba54e4ede4698ea37938267e971a5",
+          "git_blob_sha": "c14486353438631ff6d5256b79391f233883f575",
+          "retrieved_at": "2026-09-19T19:56:06.115987+00:00",
+          "inspection": "focused sections or relevant implementation"
+        }
+      ]
+    },
+    {
+      "repo": "TencentCloud/CubeSandbox",
+      "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+      "commit_date": "2026-09-19T13:41:04Z",
+      "license": "NOASSERTION",
+      "archived": false,
+      "retrieved_at": "2026-09-19T19:54:28.390874+00:00",
+      "truncated": false,
+      "tree_entry_count": 4684,
+      "sources": [
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "LICENSE",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/LICENSE",
+          "bytes": 25798,
+          "sha256": "ec4e72bcae6fbd76307517767f046f9c724fbf8aaee735b60310b21e46cd959a",
+          "git_blob_sha": "b6aa16ce9aced301650d0803ecf295ff2d830216",
+          "retrieved_at": "2026-09-19T19:56:06.510583+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "README.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/README.md",
+          "bytes": 23253,
+          "sha256": "6d0f5e98e35b933bd39da054a64a00bbfe13472ded06d2bb00560b009d77b50f",
+          "git_blob_sha": "8217e1002e924ce7bf5e0b4d013230dbbb4d6b79",
+          "retrieved_at": "2026-09-19T19:54:28.630011+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/architecture/overview.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/architecture/overview.md",
+          "bytes": 10915,
+          "sha256": "9758bc6d41363a676b673b330129c2f9b1f8e3882fb09069c5cbf3a3f783a724",
+          "git_blob_sha": "b6e7197decba820c94dad817788d15d9976a1e64",
+          "retrieved_at": "2026-09-19T19:56:06.299786+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/guide/authentication.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/guide/authentication.md",
+          "bytes": 4748,
+          "sha256": "f05d75e1c8089a9d4b41d4c89f419cdaf52a264faebe54b3d5b18f148e1fb5cf",
+          "git_blob_sha": "e7a9f7e43538a2550de382106efba2ea5cd52ac2",
+          "retrieved_at": "2026-09-19T19:56:06.326763+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/guide/network-hardening.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/guide/network-hardening.md",
+          "bytes": 12130,
+          "sha256": "494bb0694a63a460de8df506807f9d5627a94e63b4d5a1833ded0a18ae4bb460",
+          "git_blob_sha": "68f75254beb6ad1fe263691de9a0f6cf83a75c32",
+          "retrieved_at": "2026-09-19T19:56:06.383521+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/guide/network-policy.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/guide/network-policy.md",
+          "bytes": 38854,
+          "sha256": "a12ea505313cb5e1ab1e99657074bc092e6902a0870900fe65abe551e2a0cc18",
+          "git_blob_sha": "4b5e2b70169e241f4a3bc9f9c9096b9e5ea804ab",
+          "retrieved_at": "2026-09-19T19:56:06.364835+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/guide/restrict-public-access.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/guide/restrict-public-access.md",
+          "bytes": 5515,
+          "sha256": "e8aae2546dc30a3183908b25de606a8a0b9bff20816a61dfcd7ad35159ae7593",
+          "git_blob_sha": "b04caaabec9a11684db76308adaaa38bc451047f",
+          "retrieved_at": "2026-09-19T20:02:53.156146+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/guide/route-aware-egress.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/guide/route-aware-egress.md",
+          "bytes": 10958,
+          "sha256": "d9bc2bff91585035ea92d641611f19a248da2a58252bdfdc9780e18e0d736849",
+          "git_blob_sha": "77e1cc99614648d2375346237d7ebfe7d5565d03",
+          "retrieved_at": "2026-09-19T19:56:06.582643+00:00",
+          "inspection": "acquired; no claim of detailed inspection"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/guide/security-proxy.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/guide/security-proxy.md",
+          "bytes": 20925,
+          "sha256": "cadce8533668cb8187481d98c6e85e0b5920c9a1948072ac1fe23f263dba22a1",
+          "git_blob_sha": "c54a52e0801bd25e55b83356790616e036cf6b4d",
+          "retrieved_at": "2026-09-19T19:56:06.376846+00:00",
+          "inspection": "focused sections or relevant implementation"
+        },
+        {
+          "repo": "TencentCloud/CubeSandbox",
+          "path": "docs/guide/snapshot-rollback-clone.md",
+          "commit": "e4e5dc244daaddc0fc706ff67fa4d4e51948cd86",
+          "url": "https://raw.githubusercontent.com/TencentCloud/CubeSandbox/e4e5dc244daaddc0fc706ff67fa4d4e51948cd86/docs/guide/snapshot-rollback-clone.md",
+          "bytes": 6889,
+          "sha256": "96f9568ad3a6c916adb7de65be7f3646b98ee48c496d80d8c0f0fea24a92e217",
+          "git_blob_sha": "d8cbd36ce6704e950a3deb871bf097569b0b6789",
+          "retrieved_at": "2026-09-19T19:56:06.368806+00:00",
+          "inspection": "focused sections or relevant implementation"
+        }
+      ]
+    }
+  ],
+  "local_sources": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "ae6d7e82bca451b868edc9fdbae1006ebd6c452e96ea81321b860c0aaaf1a155",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "apps/server/src/accounts.rs",
+      "sha256": "7b57430f0fd41dc4328e461abf799bea83a6e072fd042d5fd7000e928a42745f",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "apps/server/src/accounts/sessions.rs",
+      "sha256": "4893594925a17960e79dd6ecd911414825c4b8883d9c731c3d3e6ac6d31fc3ec",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "apps/server/src/main.rs",
+      "sha256": "ddc98baae4a5c9912848b62e2e598feb6738f29cd2a594615713e2472f0e97dc",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "apps/server/src/lib.rs",
+      "sha256": "b5438a6bf5e895c87c6db56b7d159d8dcea40e58cd128de084a61bbe3fde318b",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "apps/server/src/skill_guard/mod.rs",
+      "sha256": "17cd90b62774b0bf6c1a672947810b841a8a952b2c57d7fcdfb0a2c68940ad5a",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "apps/server/src/skill_guard/store.rs",
+      "sha256": "baf636379494958131d0197f1a1856c609248bd5dbf2e21019522c8fc1a542a5",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "crates/fenix-agent/src/lib.rs",
+      "sha256": "46e97b39254b0217778e6a994efdfdf7d94ede7c26b525902200d93729590ae3",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "crates/fenix-agent/src/processes.rs",
+      "sha256": "a94a1ceaed4e48638ad79976aacc935a7fa77e72b9e432fe0d94b3048fe51a4b",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "crates/fenix-agent/src/files.rs",
+      "sha256": "f3ba4d7c8580ad4b1465967361d1f23c558664486aa24f16c4e52ec5ec182e17",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "crates/fenix-agent/src/read_only.rs",
+      "sha256": "b2cfb8387fecadd7d5a58d9c498e53f37098b310300b1cb9a98e88d08306303b",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "crates/fenix-agent/src/coding/lsp.rs",
+      "sha256": "0b4bb079ba279e0c9832f2e15ad22276873eb4b86d6820e50d932e9efe8f514e",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "scripts/tenant-container.py",
+      "sha256": "a1e8f42d16f8415777d83e29038dfed50e266e21a75c60b05a8d89e68f23216b",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "scripts/tenant-network-guard.py",
+      "sha256": "944d1ff81a4c805b8ca2d063fa9bcbe19a4fcd4dce5adbdfd0ba0fc12e36efbe",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "packaging/linux/Dockerfile.tenant",
+      "sha256": "de6907eef738af63a0aced204bce2d9b93e7758a28b4d9c7fd542078ebdd0d35",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "packaging/linux/fenix-user@.service",
+      "sha256": "562718be11d496c9d7507af9160cd5865210af9a0e4863b69779e99665e0d08a",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "packaging/linux/fenix-gateway.service",
+      "sha256": "37663edf62fee7da4e0ed178bba8ccced98d3e33bdbde89ed8e4597d07e904ee",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "docs/en/user-isolation.md",
+      "sha256": "1c619f0936abb4d13568b7899a793a72fc9a1d511f7fd51aca536ced18607b15",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    },
+    {
+      "path": "docs/en/remote-access.md",
+      "sha256": "50f44218befa897143cf2d71f95d2a0cd0d8f5f1d90ce00c00fcdfee12c01102",
+      "inspection": "security-relevant source/documentation; scope varies by file"
+    }
+  ],
+  "official_web_sources": [
+    {
+      "url": "https://www.daytona.io/docs/en/network-limits/",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/preview/",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://www.daytona.io/docs/en/secrets/",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://e2b.dev/security",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://e2b.dev/enterprise",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://sandboxie-plus.github.io/sandboxie-docs/PlusContent/privacy-mode/",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://sandboxie-plus.github.io/sandboxie-docs/PlusContent/security-mode/",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://sandboxie-plus.github.io/sandboxie-docs/Content/LockBoxToUser.html",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    },
+    {
+      "url": "https://kubernetes.io/docs/concepts/services-networking/network-policies/",
+      "accessed_on": "2026-09-19",
+      "pinning": "live documentation, not commit-pinned"
+    }
+  ],
+  "unavailable_sources": [
+    {
+      "url": "https://github.com/e2b-dev/infra/blob/main/self-host.md",
+      "result": "web retrieval failed; not treated as inspected infrastructure"
+    }
+  ],
+  "validation": {
+    "accounts_tests": {
+      "command": "cargo test -p fenix-server --lib accounts:: --locked",
+      "environment": {
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0",
+        "CARGO_INCREMENTAL": "0"
+      },
+      "exit_code": 0,
+      "passed": 7,
+      "failed": 0,
+      "full_log": "   Compiling fenix-agent v0.3.0 (/home/Rudy/proyectos/fenix/crates/fenix-agent)\n   Compiling fenix-web v0.3.0 (/home/Rudy/proyectos/fenix/crates/fenix-web)\n   Compiling fenix-browser v0.3.0 (/home/Rudy/proyectos/fenix/crates/fenix-browser)\n   Compiling fenix-server v0.3.0 (/home/Rudy/proyectos/fenix/apps/server)\n    Finished `test` profile [unoptimized] target(s) in 2m 26s\n     Running unittests src/lib.rs (target/debug/deps/fenix_server-92d813db837b7b41)\n\nrunning 7 tests\ntest accounts::sessions::tests::corrupt_session_files_are_not_silently_discarded ... ok\ntest accounts::sessions::tests::fixed_week_survives_reopening_without_sliding_expiration ... ok\ntest accounts::sessions::tests::writes_must_succeed_before_login_or_logout_is_acknowledged ... ok\ntest accounts::marketplace_tests::central_market_uses_authenticated_account_not_supplied_headers ... ok\ntest accounts::tests::persistent_login_survives_restart_and_account_reordering_but_not_logout_or_password_change ... ok\ntest accounts::tests::authentication_and_no_registration ... ok\ntest accounts::tests::sessions_route_only_to_their_own_tenant ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 7.68s\n\n"
+    },
+    "inert_checks": {
+      "existing_chain": {
+        "all_external_commands_mocked": true,
+        "existing_empty_chain_assumed": true,
+        "commands": [
+          [
+            "iptables",
+            "-w",
+            "-nL",
+            "FX123456789abc"
+          ],
+          [
+            "iptables",
+            "-w",
+            "-C",
+            "DOCKER-USER",
+            "-i",
+            "br-123456789abc",
+            "-j",
+            "FX123456789abc"
+          ],
+          [
+            "iptables",
+            "-w",
+            "-C",
+            "INPUT",
+            "-i",
+            "br-123456789abc",
+            "-m",
+            "conntrack",
+            "!",
+            "--ctstate",
+            "ESTABLISHED,RELATED",
+            "-j",
+            "REJECT"
+          ]
+        ],
+        "blocked_destination_rules_inserted": 0
+      },
+      "root_provisioning": {
+        "all_external_commands_mocked": true,
+        "synthetic_registry": true,
+        "container_user": "0:0",
+        "resource_flags_present": []
+      }
+    },
+    "inert_check_method": "Python runpy loaded local main functions without __main__ invocation. unittest.mock replaced subprocess.run/check_output and UID queries. Firewall check simulated existing chains/rules and a loopback DNS resolver. Provisioning used a temporary synthetic registry and root UID; no external commands executed.",
+    "planned_acceptance_scenarios": 33,
+    "planned_scenarios_run": false
+  }
+}

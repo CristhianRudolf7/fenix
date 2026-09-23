@@ -1,5 +1,6 @@
 # Local browser
 
+
 [Español](../es/browser.md)
 
 Fénix controls a locally installed Chromium process through its own Rust CDP
@@ -10,7 +11,7 @@ through your operating system. Its sandbox remains enabled.
 
 ## Start and keep logins
 
-Start Fénix normally, then open **Browser**. Create a named profile such as `personal`,
+Start Fénix normally, then open **[Browser](/browser)**. Create a named profile such as `personal`,
 enter an HTTP(S) URL and click Open. Click the rendered screen and type normally;
 paste, wheel scrolling and navigation keys work too. Complete passwords, QR codes,
 MFA or CAPTCHA yourself. Toggle **Allow agent access** when Fénix should use that
@@ -99,11 +100,15 @@ Do not expose the control server or Chromium debugging port to the public networ
 
 ## Verification
 
+See the [browser regression audit](browser-regression-audit.md) for the adversarial
+matrix, React fixture, responsive checks and reproduction commands.
+
 `cargo test -p fenix-browser` covers encryption and authorization without starting
 Chromium. Run the real-browser fixture explicitly on a sandbox-capable machine:
 
 ```sh
-cargo test -p fenix-browser -- --include-ignored --nocapture
+node apps/web/tests/fixtures/build-browser-controlled.mjs
+cargo test -p fenix-browser -- --include-ignored --nocapture --test-threads=1
 ```
 
 HTTP tests cover same-origin access and credential error privacy. The frontend suite
@@ -122,3 +127,25 @@ was 1165 MiB in one run; this is neither peak nor private memory, and not a What
 or university benchmark. No real account was used. The complete web suite passed
 12 tests, including the Browser panel. Later targeted checks cover owner downloads
 as streamed attachments and the final browser controls.
+
+## Search and rendered browsing
+
+The `/browser` address bar opens an explicit HTTP(S) URL. Request research through
+the conversation: the agent uses `web_search` / `web_read` and can open a result in
+an authorized browser profile when interaction is required. The local search API
+remains `POST /api/web/search`; no external search provider was added.
+See [independent search](web-search.md) for its bounded coverage contract.
+
+## Long downloads
+
+`browser_inspect` includes `downloads.transfers` (ID, state and byte progress) and
+`downloads.files` (completed files and owner links). A `browser_wait` on a download
+can return `passed: false, timed_out: true` while transfer bytes continue to grow.
+Wait on the same ID; do not click again. Canceled transfers return a terminal
+failure state immediately. Completion requires a local finished file. Transfers
+are tracked independently of the 100-event diagnostic history, and completed
+files can be verified after Chromium restarts. The ledger retains at most 128
+transfers; old completed files remain on disk.
+
+See [automation review](browser-automation-review.md) and
+[authenticated workflow audit](browser-workflow-audit.md) for the tests and limits.

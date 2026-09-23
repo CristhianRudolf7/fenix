@@ -1,0 +1,327 @@
+[
+  {
+    "query": "Conduct a systematic review with PRISMA screening counts and exclusion reasons.",
+    "expected": "systematic-review",
+    "kind": "new"
+  },
+  {
+    "query": "Revisión sistemática con criterios de inclusión y registro de cribado.",
+    "expected": "systematic-review",
+    "kind": "new"
+  },
+  {
+    "query": "Recompute the screening ledger and separate reports from studies.",
+    "expected": "systematic-review",
+    "kind": "new"
+  },
+  {
+    "query": "Planifica un metaanálisis y conserva los motivos de exclusión.",
+    "expected": "systematic-review",
+    "kind": "new"
+  },
+  {
+    "query": "Audit whether these manuscript claims are supported by their cited passages.",
+    "expected": "research-evidence-audit",
+    "kind": "new"
+  },
+  {
+    "query": "Comprueba si las citas respaldan las afirmaciones del manuscrito.",
+    "expected": "research-evidence-audit",
+    "kind": "new"
+  },
+  {
+    "query": "Validate the evidence ledger against the current source hashes and quotations.",
+    "expected": "research-evidence-audit",
+    "kind": "new"
+  },
+  {
+    "query": "Audita evidencia científica y resultados que no tienen respaldo.",
+    "expected": "research-evidence-audit",
+    "kind": "new"
+  },
+  {
+    "query": "Implement a GSAP ScrollTrigger timeline and clean it up on navigation.",
+    "expected": "web-animation",
+    "kind": "new"
+  },
+  {
+    "query": "Anima esta sección con GSAP y respeta el movimiento reducido.",
+    "expected": "web-animation",
+    "kind": "new"
+  },
+  {
+    "query": "Fix duplicate GSAP animations after React unmount and remount.",
+    "expected": "web-animation",
+    "kind": "new"
+  },
+  {
+    "query": "Crea parallax con scroll sin romper teclado ni accesibilidad.",
+    "expected": "web-animation",
+    "kind": "new"
+  },
+  {
+    "query": "Create a parametric CAD bracket and export a dimensioned STEP model.",
+    "expected": "parametric-cad",
+    "kind": "new"
+  },
+  {
+    "query": "Diseña una pieza CAD paramétrica con agujeros y exporta STEP.",
+    "expected": "parametric-cad",
+    "kind": "new"
+  },
+  {
+    "query": "Measure the saved STEP solid volume and bounding dimensions.",
+    "expected": "parametric-cad",
+    "kind": "new"
+  },
+  {
+    "query": "Modifica un ensamblaje build123d conservando parámetros editables.",
+    "expected": "parametric-cad",
+    "kind": "new"
+  },
+  {
+    "query": "Create a DXF gasket drawing with separate cut and engraving layers.",
+    "expected": "cad-drawing-and-fabrication",
+    "kind": "new"
+  },
+  {
+    "query": "Prepara un plano DXF para corte láser con unidades en milímetros.",
+    "expected": "cad-drawing-and-fabrication",
+    "kind": "new"
+  },
+  {
+    "query": "Check this SendCutSend DXF against the selected material requirements.",
+    "expected": "cad-drawing-and-fabrication",
+    "kind": "new"
+  },
+  {
+    "query": "Revisa el dibujo 2D: contornos abiertos, escala y capas de fabricación.",
+    "expected": "cad-drawing-and-fabrication",
+    "kind": "new"
+  },
+  {
+    "query": "Validate URDF joint limits, inertias and link topology.",
+    "expected": "robot-description",
+    "kind": "new"
+  },
+  {
+    "query": "Crea un robot URDF con articulaciones y masas verificadas.",
+    "expected": "robot-description",
+    "kind": "new"
+  },
+  {
+    "query": "Check an SRDF MoveIt planning group against its URDF links.",
+    "expected": "robot-description",
+    "kind": "new"
+  },
+  {
+    "query": "Revisa frames y sensores de un mundo SDF para Gazebo.",
+    "expected": "robot-description",
+    "kind": "new"
+  },
+  {
+    "query": "Slice this STL using the actual printer profile and inspect the G-code.",
+    "expected": "3d-printing-preparation",
+    "kind": "new"
+  },
+  {
+    "query": "Prepara impresión 3D en OrcaSlicer con el perfil de mi impresora.",
+    "expected": "3d-printing-preparation",
+    "kind": "new"
+  },
+  {
+    "query": "Check mesh printability and support requirements before FDM slicing.",
+    "expected": "3d-printing-preparation",
+    "kind": "new"
+  },
+  {
+    "query": "Revisa G-code, temperaturas y límites antes de imprimir en Bambu.",
+    "expected": "3d-printing-preparation",
+    "kind": "new"
+  },
+  {
+    "query": "Download selected Hugging Face dataset rows from the correct config and split.",
+    "expected": "huggingface-hub",
+    "kind": "new"
+  },
+  {
+    "query": "Consulta un dataset del Hub de Hugging Face con paginación.",
+    "expected": "huggingface-hub",
+    "kind": "new"
+  },
+  {
+    "query": "Resume monitoring this existing HF Jobs job ID without submitting another job.",
+    "expected": "huggingface-hub",
+    "kind": "new"
+  },
+  {
+    "query": "Sube los archivos autorizados a mi repositorio de Hugging Face.",
+    "expected": "huggingface-hub",
+    "kind": "new"
+  },
+  {
+    "query": "Which local model fits my GPU after accounting for KV cache and runtime memory?",
+    "expected": "model-selection",
+    "kind": "new"
+  },
+  {
+    "query": "Elige un modelo local según VRAM, contexto y licencia.",
+    "expected": "model-selection",
+    "kind": "new"
+  },
+  {
+    "query": "Compare deployable models for this task using current benchmark conditions.",
+    "expected": "model-selection",
+    "kind": "new"
+  },
+  {
+    "query": "Estima la memoria de pesos y caché KV para elegir el modelo.",
+    "expected": "model-selection",
+    "kind": "new"
+  },
+  {
+    "query": "Build a Gradio demo for this LoRA and verify the output artifact.",
+    "expected": "ml-demo-apps",
+    "kind": "new"
+  },
+  {
+    "query": "Crea una demo Gradio para mi modelo en Hugging Face Spaces.",
+    "expected": "ml-demo-apps",
+    "kind": "new"
+  },
+  {
+    "query": "Fix per-user state and GPU execution in this ZeroGPU Space.",
+    "expected": "ml-demo-apps",
+    "kind": "new"
+  },
+  {
+    "query": "Comprueba que el playground de LoRA usa el modelo base correcto.",
+    "expected": "ml-demo-apps",
+    "kind": "new"
+  },
+  {
+    "query": "Run this ONNX model with Transformers.js using WebGPU and a WASM fallback.",
+    "expected": "browser-ml-inference",
+    "kind": "new"
+  },
+  {
+    "query": "Implementa inferencia de modelos en el navegador con Transformers.js.",
+    "expected": "browser-ml-inference",
+    "kind": "new"
+  },
+  {
+    "query": "Dispose JavaScript model sessions when the web worker is replaced.",
+    "expected": "browser-ml-inference",
+    "kind": "new"
+  },
+  {
+    "query": "Verifica que la inferencia WebGPU no bloquea la interfaz.",
+    "expected": "browser-ml-inference",
+    "kind": "new"
+  },
+  {
+    "query": "Review the methodology and controls in this manuscript.",
+    "expected": "peer-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Revisa un archivo BibTeX y corrige referencias duplicadas.",
+    "expected": "bibliography-management",
+    "kind": "existing"
+  },
+  {
+    "query": "Write a scientific manuscript from these actual experiment results.",
+    "expected": "scientific-writing",
+    "kind": "existing"
+  },
+  {
+    "query": "Find and compare papers about retrieval augmented generation.",
+    "expected": "literature-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Improve keyboard focus and labels in this responsive web form.",
+    "expected": "frontend-design-and-accessibility",
+    "kind": "existing"
+  },
+  {
+    "query": "Run SFT and DPO training with held-out data and saved adapters.",
+    "expected": "ml-training",
+    "kind": "existing"
+  },
+  {
+    "query": "Prepara datasets de entrenamiento sin fuga entre train y test.",
+    "expected": "ml-dataset-preparation",
+    "kind": "existing"
+  },
+  {
+    "query": "Deploy the selected model to a SageMaker inference endpoint.",
+    "expected": "ml-inference-deployment",
+    "kind": "existing"
+  },
+  {
+    "query": "Run a reproducible model evaluation with Inspect and LightEval.",
+    "expected": "experiment-and-benchmark-design",
+    "kind": "existing"
+  },
+  {
+    "query": "Create a Word DOCX report.",
+    "expected": "documents-word",
+    "kind": "guard"
+  },
+  {
+    "query": "Crea una hoja de cálculo Excel de gastos.",
+    "expected": "documents-spreadsheets",
+    "kind": "guard"
+  },
+  {
+    "query": "Repair a regression in this Rust parser.",
+    "expected": "test-driven-repair",
+    "kind": "guard"
+  },
+  {
+    "query": "Summarize the decisions from our previous conversation.",
+    "expected": "conversation-recap",
+    "kind": "guard"
+  },
+  {
+    "query": "Crea un diagrama de arquitectura con nodos y conexiones.",
+    "expected": "diagram-authoring",
+    "kind": "guard"
+  },
+  {
+    "query": "Calculate statistics and missing values in this CSV.",
+    "expected": "data-analysis",
+    "kind": "guard"
+  },
+  {
+    "query": "Build a mathematical simulation with stated assumptions.",
+    "expected": "simulation-modeling",
+    "kind": "guard"
+  },
+  {
+    "query": "Create an image illustration with the available image tools.",
+    "expected": "image-workflows",
+    "kind": "guard"
+  },
+  {
+    "query": "Revisa este diff sin cambiar código.",
+    "expected": "code-review",
+    "kind": "guard"
+  },
+  {
+    "query": "Plan a database schema migration.",
+    "expected": "database-migrations",
+    "kind": "guard"
+  },
+  {
+    "query": "Diagnose why the agent repeated a completed task.",
+    "expected": "agent-workflow-diagnosis",
+    "kind": "guard"
+  },
+  {
+    "query": "Comprueba si los documentos entregados cumplen los requisitos.",
+    "expected": "completion-verification",
+    "kind": "guard"
+  }
+]

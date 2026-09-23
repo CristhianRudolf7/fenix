@@ -16,6 +16,18 @@ pub struct Memory {
     pub metadata: MemoryMetadata,
 }
 
+impl Memory {
+    pub(crate) fn safe_for_context(&self) -> bool {
+        !fenix_core::content_trust::instruction_risk(&self.title)
+            && !fenix_core::content_trust::instruction_risk(&self.content)
+            && !self
+                .metadata
+                .evidence
+                .iter()
+                .any(|e| fenix_core::content_trust::instruction_risk(&e.quote))
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct MemoryMetadata {
@@ -176,6 +188,16 @@ impl Store {
         task_id: Option<&str>,
         metadata: Option<MemoryMetadata>,
     ) -> Result<Memory> {
+        static REDACTOR: std::sync::LazyLock<fenix_core::safety::Redactor> =
+            std::sync::LazyLock::new(fenix_core::safety::Redactor::default);
+        let safe_title = REDACTOR.text(title);
+        let safe_content = REDACTOR.text(content);
+        let safe_source = REDACTOR.text(source);
+        let (title, content, source) = (
+            safe_title.as_str(),
+            safe_content.as_str(),
+            safe_source.as_str(),
+        );
         if title.trim().is_empty()
             || content.trim().is_empty()
             || title.len() > 200
@@ -213,13 +235,38 @@ impl Store {
         } else {
             None
         };
-        let metadata = metadata.unwrap_or_else(|| {
+        let mut metadata = metadata.unwrap_or_else(|| {
             previous
                 .as_ref()
                 .map(|m| m.metadata.clone())
                 .unwrap_or_default()
         });
+        for evidence in &mut metadata.evidence {
+            evidence.quote = REDACTOR.text(&evidence.quote);
+        }
         metadata.validate()?;
+        // Suspicious directives remain reviewable data, never durable authority.
+        let instruction_risk = fenix_core::content_trust::instruction_risk(title)
+            || fenix_core::content_trust::instruction_risk(content)
+            || metadata
+                .evidence
+                .iter()
+                .any(|e| fenix_core::content_trust::instruction_risk(&e.quote));
+        if instruction_risk
+            && previous
+                .as_ref()
+                .is_some_and(|m| m.metadata.status == "confirmed" && m.safe_for_context())
+        {
+            bail!(
+                "Risky instruction content cannot replace a confirmed memory; save it separately as a candidate for review"
+            );
+        }
+        if instruction_risk && matches!(metadata.status.as_str(), "candidate" | "confirmed") {
+            metadata.status = "candidate".into();
+            metadata.pinned = false;
+            metadata.supersedes = None;
+        }
+
         if let Some(entity) = &metadata.entity_id {
             super::knowledge::entity_in_scope(&tx, entity, project_id)?;
         }
@@ -255,7 +302,21 @@ impl Store {
             .optional()?
         {
             if memory_id.is_none() {
+                if instruction_risk
+                    && existing.metadata.status == "confirmed"
+                    && existing.safe_for_context()
+                {
+                    bail!(
+                        "Risky evidence cannot alter a confirmed memory; review the source separately"
+                    );
+                }
                 let mut merged = existing.clone();
+                if instruction_risk
+                    && matches!(merged.metadata.status.as_str(), "candidate" | "confirmed")
+                {
+                    merged.metadata.status = "candidate".into();
+                    merged.metadata.pinned = false;
+                }
                 for evidence in &metadata.evidence {
                     tx.execute(
                         "INSERT OR IGNORE INTO memory_observations VALUES (?1,?2)",
@@ -276,14 +337,16 @@ impl Store {
                     [&existing.id],
                     |r| r.get(0),
                 )?;
-                if merged.metadata.status == "candidate"
+                if !instruction_risk
+                    && merged.metadata.status == "candidate"
                     && merged.metadata.assertion != "inferred"
                     && (metadata.status == "confirmed"
                         || (merged.metadata.kind == "preference" && observations >= 3))
                 {
                     merged.metadata.status = "confirmed".into();
                 }
-                if merged.metadata.status == "expired"
+                if !instruction_risk
+                    && merged.metadata.status == "expired"
                     && metadata.status == "confirmed"
                     && metadata.assertion == "explicit"
                     && metadata.active()

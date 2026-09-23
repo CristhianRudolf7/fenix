@@ -6,6 +6,7 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+fenix-execution.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 serde_json.workspace = true

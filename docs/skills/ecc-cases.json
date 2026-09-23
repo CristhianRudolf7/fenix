@@ -1,0 +1,282 @@
+[
+  {
+    "kind": "added",
+    "query": "Qué automatizaciones están configuradas y cuáles funcionan realmente",
+    "expected": "automation-audit"
+  },
+  {
+    "kind": "added",
+    "query": "Audit duplicate automations and scheduled jobs",
+    "expected": "automation-audit"
+  },
+  {
+    "kind": "added",
+    "query": "Revisa si mis tareas duplicadas producen el mismo efecto",
+    "expected": "automation-audit"
+  },
+  {
+    "kind": "added",
+    "query": "Inventory configured hooks and connectors without running them",
+    "expected": "automation-audit"
+  },
+  {
+    "kind": "added",
+    "query": "Reduce el ruido de alertas y las notificaciones duplicadas",
+    "expected": "notification-triage"
+  },
+  {
+    "kind": "added",
+    "query": "Design notification routing and a digest for repeated alerts",
+    "expected": "notification-triage"
+  },
+  {
+    "kind": "added",
+    "query": "Clasifica estas notificaciones por urgencia y destinatario",
+    "expected": "notification-triage"
+  },
+  {
+    "kind": "added",
+    "query": "Deduplicate notifications without hiding incident recurrence",
+    "expected": "notification-triage"
+  },
+  {
+    "kind": "added",
+    "query": "Reduce el gasto LLM sin empeorar los resultados",
+    "expected": "llm-cost-optimization"
+  },
+  {
+    "kind": "added",
+    "query": "Measure LLM cost per successful task including retries",
+    "expected": "llm-cost-optimization"
+  },
+  {
+    "kind": "added",
+    "query": "Audita la factura API de modelos y el consumo de tokens",
+    "expected": "llm-cost-optimization"
+  },
+  {
+    "kind": "added",
+    "query": "Optimize inference spending with prompt caching and quality checks",
+    "expected": "llm-cost-optimization"
+  },
+  {
+    "kind": "added",
+    "query": "Busca antecedentes de patente para esta tecnología",
+    "expected": "patent-research"
+  },
+  {
+    "kind": "added",
+    "query": "Research the patent landscape and official application status",
+    "expected": "patent-research"
+  },
+  {
+    "kind": "added",
+    "query": "Verifica esta publicación en USPTO y su familia de patentes",
+    "expected": "patent-research"
+  },
+  {
+    "kind": "added",
+    "query": "Search prior art by patent classification and publication date",
+    "expected": "patent-research"
+  },
+  {
+    "kind": "added",
+    "query": "Calcula qué inventario reponer por producto y almacén",
+    "expected": "inventory-planning"
+  },
+  {
+    "kind": "added",
+    "query": "Plan inventory replenishment with safety stock and lead times",
+    "expected": "inventory-planning"
+  },
+  {
+    "kind": "added",
+    "query": "Revisa punto de pedido y mínimos de compra de estos SKU",
+    "expected": "inventory-planning"
+  },
+  {
+    "kind": "added",
+    "query": "Estimate stockout dates before incoming inventory arrives",
+    "expected": "inventory-planning"
+  },
+  {
+    "kind": "improved",
+    "query": "Diagnose an agent wrapper regression and context pressure",
+    "expected": "agent-workflow-diagnosis"
+  },
+  {
+    "kind": "improved",
+    "query": "Investiga por qué la respuesta del agente se altera al mostrarse",
+    "expected": "agent-workflow-diagnosis"
+  },
+  {
+    "kind": "improved",
+    "query": "Build a new connector following the provider registration pattern",
+    "expected": "api-integration"
+  },
+  {
+    "kind": "improved",
+    "query": "Crea un conector API con paginación y reintentos seguros",
+    "expected": "api-integration"
+  },
+  {
+    "kind": "improved",
+    "query": "Check consumer contract drift in an event schema",
+    "expected": "api-contract-design"
+  },
+  {
+    "kind": "improved",
+    "query": "Verifica el contrato compartido entre API y consumidores",
+    "expected": "api-contract-design"
+  },
+  {
+    "kind": "improved",
+    "query": "Find a sequential state reset in this browser click path",
+    "expected": "browser-regression-testing"
+  },
+  {
+    "kind": "improved",
+    "query": "Prueba por qué este botón no hace nada tras cambiar la selección",
+    "expected": "browser-regression-testing"
+  },
+  {
+    "kind": "improved",
+    "query": "Design a content hash cache with version and option invalidation",
+    "expected": "cache-design"
+  },
+  {
+    "kind": "improved",
+    "query": "Revisa invalidación de cache por versión y ámbito de usuario",
+    "expected": "cache-design"
+  },
+  {
+    "kind": "improved",
+    "query": "Draft a support reply for a disputed delivery and partial return",
+    "expected": "customer-support"
+  },
+  {
+    "kind": "improved",
+    "query": "Revisa esta reclamación por paquete dañado y devolución",
+    "expected": "customer-support"
+  },
+  {
+    "kind": "improved",
+    "query": "Accelerate ETL backfill throughput while reconciling the live tail",
+    "expected": "data-pipelines"
+  },
+  {
+    "kind": "improved",
+    "query": "Acelera ingestión masiva sin perder filas rechazadas",
+    "expected": "data-pipelines"
+  },
+  {
+    "kind": "improved",
+    "query": "Review project scoped learning and memory contamination",
+    "expected": "memory-and-reminders"
+  },
+  {
+    "kind": "improved",
+    "query": "Corrige una preferencia guardada en la memoria de este proyecto",
+    "expected": "memory-and-reminders"
+  },
+  {
+    "kind": "improved",
+    "query": "Benchmark an optimization loop and measure freshness age",
+    "expected": "performance-diagnosis"
+  },
+  {
+    "kind": "improved",
+    "query": "Mide rendimiento y latencia antes de optimizar el cuello de botella",
+    "expected": "performance-diagnosis"
+  },
+  {
+    "kind": "improved",
+    "query": "Configure recurring work with a bounded automation retry budget",
+    "expected": "scheduled-workflows"
+  },
+  {
+    "kind": "improved",
+    "query": "Configura tareas programadas con horario y solapamiento",
+    "expected": "scheduled-workflows"
+  },
+  {
+    "kind": "improved",
+    "query": "Perform a skill stocktake and library maintenance review",
+    "expected": "skill-authoring"
+  },
+  {
+    "kind": "improved",
+    "query": "Audita el catálogo de skills y mejora habilidades duplicadas",
+    "expected": "skill-authoring"
+  },
+  {
+    "kind": "improved",
+    "query": "Draft a message to an external channel with the right audience",
+    "expected": "team-messaging"
+  },
+  {
+    "kind": "improved",
+    "query": "Envía este mensaje a proveedores en el canal autorizado",
+    "expected": "team-messaging"
+  },
+  {
+    "kind": "improved",
+    "query": "Design an agent evaluation with judge calibration",
+    "expected": "experiment-and-benchmark-design"
+  },
+  {
+    "kind": "improved",
+    "query": "Compara agentes con evaluación pareada y pruebas del evaluador",
+    "expected": "experiment-and-benchmark-design"
+  },
+  {
+    "kind": "guard",
+    "query": "Resume las decisiones de nuestra conversación anterior",
+    "expected": "conversation-recap"
+  },
+  {
+    "kind": "guard",
+    "query": "Review cloud infrastructure bills for idle servers and storage",
+    "expected": "cloud-cost-review"
+  },
+  {
+    "kind": "guard",
+    "query": "Which local model fits my GPU VRAM and license requirements",
+    "expected": "model-selection"
+  },
+  {
+    "kind": "guard",
+    "query": "Forecast this time series with leakage free backtesting",
+    "expected": "time-series-forecasting"
+  },
+  {
+    "kind": "guard",
+    "query": "Compare vendor renewal quotes and contract notice periods",
+    "expected": "procurement-and-vendors"
+  },
+  {
+    "kind": "guard",
+    "query": "Respond to an active production security incident",
+    "expected": "incident-response"
+  },
+  {
+    "kind": "guard",
+    "query": "Draft a reply to this email thread",
+    "expected": "email-workflows"
+  },
+  {
+    "kind": "guard",
+    "query": "Find academic papers for a literature review",
+    "expected": "literature-review"
+  },
+  {
+    "kind": "guard",
+    "query": "Resume este video de YouTube usando sus subtítulos",
+    "expected": "youtube-summary"
+  },
+  {
+    "kind": "guard",
+    "query": "Review this code diff for correctness and regression risks",
+    "expected": "code-review"
+  }
+]

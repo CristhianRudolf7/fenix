@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-20T00:03:20.979772+00:00",
+  "title": "Self-hosted Kata/Cloud Hypervisor execution adapter validation",
+  "title_es": "Validación del adaptador de ejecución Kata/Cloud Hypervisor en servidores propios",
+  "implementation_status": "implemented; not activated or hardware-validated",
+  "runtime": "Kata Containers with Cloud Hypervisor, invoked through Docker/containerd",
+  "subscription_required": false,
+  "paid_provider_calls": 0,
+  "infrastructure_costs": "Operator supplies and maintains compute, storage and backups.",
+  "deployment_changes": {
+    "kata_installed": false,
+    "docker_daemon_reconfigured": false,
+    "production_services_restarted": false,
+    "customer_accounts_migrated": false,
+    "real_microvm_started": false
+  },
+  "host_preflight": {
+    "exit_code": 1,
+    "eligible": false,
+    "checks": {
+      "kvm": {
+        "ok": false,
+        "reason": "MicroVM execution requires usable /dev/kvm; host/container fallback is disabled"
+      },
+      "cgroup_v2": {
+        "ok": true
+      },
+      "docker": {
+        "ok": true
+      },
+      "systemctl": {
+        "ok": true
+      },
+      "iptables": {
+        "ok": true
+      },
+      "mount": {
+        "ok": true
+      },
+      "umount": {
+        "ok": true
+      }
+    },
+    "guest_boot_tested": false,
+    "subscription_required": false
+  },
+  "tests": [
+    {
+      "suite": "Python isolation discovery",
+      "command": "python3 -m unittest discover -s tests/isolation -v",
+      "collected": 58,
+      "passed": 33,
+      "skipped": 25,
+      "failed": 0,
+      "seconds": 2.357,
+      "skip_breakdown": {
+        "microvm_acceptance": 12,
+        "docker_acceptance": 9,
+        "browser_acceptance": 1,
+        "workspace_acceptance": 2,
+        "storage_acceptance": 1
+      }
+    },
+    {
+      "suite": "Focused microVM policy and startup protocol recheck",
+      "command": "python3 -m unittest discover -s tests/isolation -p test_microvm.py -v",
+      "passed": 16,
+      "skipped": 0,
+      "failed": 0,
+      "seconds": 2.099,
+      "note": "Subset of isolation discovery. Does not boot VMs."
+    },
+    {
+      "suite": "Real OCI combined regression",
+      "passed": 11,
+      "failed": 1,
+      "seconds": 122.781,
+      "components": {
+        "docker": {
+          "passed": 9
+        },
+        "persistent_workspace": {
+          "passed": 2
+        },
+        "browser": {
+          "failed": 1
+        }
+      },
+      "failure": "Chromium did not create DevToolsActivePort within the test startup deadline. Rust compilation was concurrent; causation was not established."
+    },
+    {
+      "suite": "Real OCI isolated browser retry",
+      "passed": 1,
+      "failed": 0,
+      "seconds": 23.691,
+      "note": "Added startup diagnostics; production browser policy and timeout were not weakened. This retry does not demonstrate stability under load."
+    },
+    {
+      "suite": "Rust affected libraries",
+      "command": "cargo test -p fenix-execution -p fenix-agent --lib --locked",
+      "passed": 100,
+      "ignored": 1,
+      "failed": 0,
+      "components": {
+        "fenix-agent": {
+          "passed": 95,
+          "ignored": 1
+        },
+        "fenix-execution": {
+          "passed": 5
+        }
+      },
+      "ignored_reason": "Opt-in live Python language server test requires FENIX_TEST_PYLSP."
+    },
+    {
+      "suite": "Real Kata/Cloud Hypervisor acceptance",
+      "implemented_cases": 12,
+      "executed_cases": 0,
+      "status": "not run",
+      "reason": "No usable /dev/kvm and no installed runtime bundle."
+    }
+  ],
+  "static_checks": {
+    "python_compile": "passed",
+    "installer_bash_syntax": "passed",
+    "cargo_fmt_check": "passed",
+    "git_diff_check": "passed",
+    "cargo_clippy": {
+      "command": "cargo clippy -p fenix-agent -p fenix-execution --lib --locked -- -D warnings",
+      "status": "passed"
+    }
+  },
+  "workspace_image": {
+    "base_image": "sha256:99f9b203620b10f491d97934810768ef515ecdb1917d52d2773c396f7cdae2d5",
+    "package_dependency_simulation": "passed with apt-get update and apt-get -s install in a disposable container",
+    "initial_issue_fixed": "Removed unavailable Debian python3-pptx package; LibreOffice Impress remains included.",
+    "full_image_built": false,
+    "reason": "About 1.1 GiB free on development filesystem; full Office/multimedia build deferred.",
+    "temporary_container_removed": true
+  },
+  "covered_behaviors": [
+    "Fail closed when KVM is missing, runtime is unknown, configuration is unsafe or pinned assets change.",
+    "Startup gate blocks user code until host verification and current account authorization.",
+    "Exact account cgroup matching is tested with synthetic process metadata.",
+    "Persistent private tool homes survive real OCI runner replacement; LSP cannot modify saved tool homes.",
+    "VM overhead is reserved in admission; monthly execution duration is reserved, settled and recovered conservatively after restart.",
+    "Existing OCI terminal, private tunnel, revocation and descendant cleanup scenarios still pass."
+  ],
+  "unverified_or_not_implemented": [
+    "Real VM boot and compatibility with the exact installed Kata/Cloud Hypervisor release.",
+    "Actual guest seccomp, virtio-fs read-only behavior, PTY and Chromium inside Kata.",
+    "Actual VM and virtiofsd cgroup accounting, cleanup and multi-account resource pressure.",
+    "Complete workspace image build and document application acceptance inside a VM.",
+    "RAM snapshots, suspended process restoration, live migration, warm pools and replicated storage.",
+    "Windows desktop, GPU support and general unrestricted guest root administration."
+  ],
+  "operator_next_step": "Prepare a dedicated KVM host, install verified upstream runtime assets, build the workspace image, configure real account capacity and run the opt-in VM acceptance suite before customer traffic.",
+  "resumen_es": "Código implementado sin suscripción externa. Pasaron las pruebas de política, 100 pruebas Rust y los casos OCI tras repetir un fallo de arranque del navegador. No se activó en producción ni se arrancaron VM: falta KVM. La imagen completa de documentos y la validación en hardware siguen pendientes.",
+  "implementation_sha256": {
+    "scripts/fenix_execution/microvm.py": "8615f55a97e3c0803922fd6e103db19f3060a118e1e35f5900e336cc3487934c",
+    "scripts/fenix_execution/workspaces.py": "5aec6abcefbb09d5eb295204b106cdd648d3822fe60781b5a50eec3533ba5899",
+    "scripts/fenix_execution/policy.py": "de85bca420bf8936e37da7bf429345e7859ef0a02a9896df3728c3c6010a1b96",
+    "scripts/fenix_execution/docker.py": "b67fa96dc4dfc791fb10973c186a9ed0f54eaf7483ca9d8bd1f6d5ac0e23ebd3",
+    "scripts/fenix_execution/service.py": "5a2b32107520b83b9847cec43aff1ab2047abfd5118fc5c67ab83932a121b0ce",
+    "scripts/execution-service.py": "5e3df2157640e6d9132834e16eb30d780d166d59868224b872f8a486ce3e3b62",
+    "scripts/microvm-gate.py": "08dfeea36d73dd959431d119369d8272c1d8e0b6663a29ef0f925a3a436a72e4",
+    "scripts/microvm-preflight.py": "52aa820c72adf206110caaea33f5ae8405965b4edb7fd19a203eabdce03da7f7",
+    "scripts/prepare-microvm.py": "24e8ce36babe013dd1858c6689e9c514374a3a1d7269e8e4f2f8bcbec96e2277",
+    "scripts/install-isolation.sh": "f84b50ec633a21b905a4658db84aebad56a219801038bf9b52455adecd4ae2b9",
+    "scripts/tenant-preflight.py": "664fba154922a0be29d82218205a17abdc3b25278cc14d2713f49c632177af4d",
+    "packaging/linux/execution.example.json": "ed2dc66bde32b21f4818d3b7c28010b7a9c068460aa6dcbee909ebb3123b5fe3",
+    "packaging/linux/execution.microvm.example.json": "1718886a01c12460699157d30f49e3e41f6fd64435dc8f0008824b540e7b9911",
+    "packaging/linux/Dockerfile.workspace": "b132dbaeb67bb397154510b6ba7a85edb1f0e17d91e7572d3f91170505327ecd",
+    "crates/fenix-agent/src/tools.rs": "c4dad3b971b37494ccb1aeeea577b984dbd9252187eaf8f5039e2badf4e6410c",
+    "tests/isolation/test_microvm.py": "95ed5d904628266c38f8bf994e7c329bffc98da4fb0e1be4aec63eef50cc037b",
+    "tests/isolation/test_microvm_acceptance.py": "153246705e9c89c65b98bcfca87943bc90332171125c6a9f847ca3e22dbcc012",
+    "tests/isolation/test_workspace.py": "de105e1954fee63c5fe3ca782de38baa13e102da77088244e8606707d09cd4f9",
+    "tests/isolation/test_docker.py": "8a89ec6c10265861aa271b156c6bd324d9a1169a2a0e113fc7b1fc4bd778c566",
+    "tests/isolation/test_browser.py": "82e1d97117a12e136e9e848a68aff7efe7db7e77bbef491679141740814b916c"
+  },
+  "local_log_sha256": {
+    "/tmp/fenix-microvm-unit-tests.log": "688cc248f275313b9754e8981ec8d4c7a53d95130a7331188aa5b6996501915c",
+    "/tmp/fenix-microvm-targeted-tests.log": "6672c24da68c92d4d2b3324a781513da374036a447464b361a75442960fa6c78",
+    "/tmp/fenix-microvm-oci-regression.log": "37b612aa50ce3b38c34d99ac0d77e293fbb6dc0db7b577ca44bef52343c3da93",
+    "/tmp/fenix-microvm-browser-recheck.log": "d8c26eb31f5487b0d8775e4ab79b598b412faaf3926f6322206fa815a65f5d37",
+    "/tmp/fenix-workspace-image-dependencies.log": "aee55d31f1b6178f0a03f16d359796ebebdbefb660d0745138caf5361b335cbc"
+  }
+}

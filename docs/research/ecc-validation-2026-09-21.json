@@ -1,0 +1,1484 @@
+{
+  "evaluated_at": "2026-09-21T04:48:27.097398+00:00",
+  "source_revision": "2b6e839771e53096d8451a213d40dc64ec8acac0",
+  "scope": "Original skill instructions and integration; no external ECC execution or model quality benchmark",
+  "catalog": {
+    "before": 181,
+    "after": 186,
+    "added": [
+      "automation-audit",
+      "notification-triage",
+      "llm-cost-optimization",
+      "patent-research",
+      "inventory-planning"
+    ],
+    "revised": [
+      "agent-workflow-diagnosis",
+      "api-contract-design",
+      "api-integration",
+      "browser-regression-testing",
+      "cache-design",
+      "customer-support",
+      "data-pipelines",
+      "experiment-and-benchmark-design",
+      "memory-and-reminders",
+      "performance-diagnosis",
+      "scheduled-workflows",
+      "skill-authoring",
+      "team-messaging"
+    ],
+    "new_references": 8
+  },
+  "checks": {
+    "skill_format": {
+      "passed": 18
+    },
+    "native_skills": {
+      "passed": 35,
+      "failed": 0,
+      "filtered_out": 90,
+      "seconds": 68.75,
+      "command": "TMPDIR=/dev/shm cargo test -p fenix-agent --lib skills:: --locked -- --nocapture"
+    },
+    "migration": {
+      "stock_entrypoints": 13,
+      "owner_customizations_preserved": true,
+      "disabled_state_preserved": true,
+      "custom_references_preserved": true,
+      "traversal_rejected": true
+    },
+    "discovery": {
+      "baseline": {
+        "cases": 56,
+        "top1": 24,
+        "top3": 31,
+        "by_kind": {
+          "added": {
+            "cases": 20,
+            "top3": 0
+          },
+          "improved": {
+            "cases": 26,
+            "top3": 21
+          },
+          "guard": {
+            "cases": 10,
+            "top3": 10
+          }
+        }
+      },
+      "candidate": {
+        "cases": 56,
+        "top1": 55,
+        "top3": 56,
+        "by_kind": {
+          "added": {
+            "cases": 20,
+            "top3": 20
+          },
+          "improved": {
+            "cases": 26,
+            "top3": 26
+          },
+          "guard": {
+            "cases": 10,
+            "top3": 10
+          }
+        }
+      }
+    },
+    "model_behavior": {
+      "status": "not_run",
+      "reason": "No controlled end-to-end model comparison was executed; deterministic checks do not establish a general intelligence gain."
+    },
+    "external_integrations": {
+      "status": "not_run"
+    }
+  },
+  "discovery_records": [
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Qué automatizaciones están configuradas y cuáles funcionan realmente",
+      "rank": null,
+      "results": [
+        "conversation-recap",
+        "youtube-summary",
+        "crm-workflows"
+      ]
+    },
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Audit duplicate automations and scheduled jobs",
+      "rank": null,
+      "results": [
+        "scheduled-workflows",
+        "data-quality-audit",
+        "background-jobs"
+      ]
+    },
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Revisa si mis tareas duplicadas producen el mismo efecto",
+      "rank": null,
+      "results": [
+        "ab-test-analysis",
+        "test-driven-repair",
+        "task-delegation"
+      ]
+    },
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Inventory configured hooks and connectors without running them",
+      "rank": null,
+      "results": [
+        "code-health-review",
+        "knowledge-workspace-connectors",
+        "skill-source-review"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Reduce el ruido de alertas y las notificaciones duplicadas",
+      "rank": null,
+      "results": [
+        "observability-and-slos",
+        "weather-briefing",
+        "process-improvement"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Design notification routing and a digest for repeated alerts",
+      "rank": null,
+      "results": [
+        "feed-monitoring",
+        "weather-briefing",
+        "network-diagnostics"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Clasifica estas notificaciones por urgencia y destinatario",
+      "rank": null,
+      "results": [
+        "calendar-scheduling",
+        "environment-and-dependencies",
+        "web-animation"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Deduplicate notifications without hiding incident recurrence",
+      "rank": null,
+      "results": [
+        "incident-response",
+        "calendar-scheduling",
+        "engineering-retrospective"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Reduce el gasto LLM sin empeorar los resultados",
+      "rank": null,
+      "results": [
+        "structured-llm-output",
+        "cloud-cost-review",
+        "process-improvement"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Measure LLM cost per successful task including retries",
+      "rank": null,
+      "results": [
+        "experiment-and-benchmark-design",
+        "task-delegation",
+        "structured-llm-output"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Audita la factura API de modelos y el consumo de tokens",
+      "rank": null,
+      "results": [
+        "cloud-cost-review",
+        "invoice-and-expense-records",
+        "browser-ml-inference"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Optimize inference spending with prompt caching and quality checks",
+      "rank": null,
+      "results": [
+        "ml-inference-deployment",
+        "security-code-review",
+        "agent-security-evaluation"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Busca antecedentes de patente para esta tecnología",
+      "rank": null,
+      "results": [
+        "issue-tracker-workflows",
+        "software-implementation",
+        "repository-navigation"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Research the patent landscape and official application status",
+      "rank": null,
+      "results": [
+        "cloud-deployment",
+        "travel-planning",
+        "web-research"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Verifica esta publicación en USPTO y su familia de patentes",
+      "rank": null,
+      "results": [
+        "software-implementation",
+        "marketing-content",
+        "git-worktree-coordination"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Search prior art by patent classification and publication date",
+      "rank": null,
+      "results": [
+        "content-calendar",
+        "feed-monitoring",
+        "calendar-scheduling"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Calcula qué inventario reponer por producto y almacén",
+      "rank": null,
+      "results": [
+        "roadmap-prioritization",
+        "purchase-comparison",
+        "ab-test-analysis"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Plan inventory replenishment with safety stock and lead times",
+      "rank": null,
+      "results": [
+        "meal-planning",
+        "content-calendar",
+        "cloud-file-sync"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Revisa punto de pedido y mínimos de compra de estos SKU",
+      "rank": null,
+      "results": [
+        "purchase-comparison",
+        "completion-verification",
+        "test-driven-repair"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "baseline",
+      "query": "Estimate stockout dates before incoming inventory arrives",
+      "rank": null,
+      "results": [
+        "personal-organization",
+        "email-workflows",
+        "model-selection"
+      ]
+    },
+    {
+      "expected": "agent-workflow-diagnosis",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Diagnose an agent wrapper regression and context pressure",
+      "rank": null,
+      "results": [
+        "skill-authoring",
+        "browser-regression-testing",
+        "local-troubleshooting"
+      ]
+    },
+    {
+      "expected": "agent-workflow-diagnosis",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Investiga por qué la respuesta del agente se altera al mostrarse",
+      "rank": 1,
+      "results": [
+        "agent-workflow-diagnosis",
+        "web-research",
+        "diagram-authoring"
+      ]
+    },
+    {
+      "expected": "api-integration",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Build a new connector following the provider registration pattern",
+      "rank": null,
+      "results": [
+        "authentication-integration",
+        "email-workflows",
+        "payment-and-billing"
+      ]
+    },
+    {
+      "expected": "api-integration",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Crea un conector API con paginación y reintentos seguros",
+      "rank": 1,
+      "results": [
+        "api-integration",
+        "mcp-integration",
+        "api-contract-design"
+      ]
+    },
+    {
+      "expected": "api-contract-design",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Check consumer contract drift in an event schema",
+      "rank": 2,
+      "results": [
+        "structured-llm-output",
+        "api-contract-design",
+        "api-integration"
+      ]
+    },
+    {
+      "expected": "api-contract-design",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Verifica el contrato compartido entre API y consumidores",
+      "rank": 2,
+      "results": [
+        "api-security-testing",
+        "api-contract-design",
+        "google-docs"
+      ]
+    },
+    {
+      "expected": "browser-regression-testing",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Find a sequential state reset in this browser click path",
+      "rank": 1,
+      "results": [
+        "browser-regression-testing",
+        "browser-navigation",
+        "game-development"
+      ]
+    },
+    {
+      "expected": "browser-regression-testing",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Prueba por qué este botón no hace nada tras cambiar la selección",
+      "rank": null,
+      "results": [
+        "youtube-summary",
+        "hiring-and-interviews",
+        "database-migrations"
+      ]
+    },
+    {
+      "expected": "cache-design",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Design a content hash cache with version and option invalidation",
+      "rank": 1,
+      "results": [
+        "cache-design",
+        "documents-word",
+        "documents-presentations"
+      ]
+    },
+    {
+      "expected": "cache-design",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Revisa invalidación de cache por versión y ámbito de usuario",
+      "rank": 1,
+      "results": [
+        "cache-design",
+        "database-schema-design",
+        "performance-diagnosis"
+      ]
+    },
+    {
+      "expected": "customer-support",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Draft a support reply for a disputed delivery and partial return",
+      "rank": 1,
+      "results": [
+        "customer-support",
+        "email-workflows",
+        "background-jobs"
+      ]
+    },
+    {
+      "expected": "customer-support",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Revisa esta reclamación por paquete dañado y devolución",
+      "rank": 1,
+      "results": [
+        "customer-support",
+        "package-build-and-install",
+        "release-and-ci"
+      ]
+    },
+    {
+      "expected": "data-pipelines",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Accelerate ETL backfill throughput while reconciling the live tail",
+      "rank": 2,
+      "results": [
+        "performance-diagnosis",
+        "data-pipelines",
+        "load-and-resilience-testing"
+      ]
+    },
+    {
+      "expected": "data-pipelines",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Acelera ingestión masiva sin perder filas rechazadas",
+      "rank": null,
+      "results": [
+        "api-security-testing",
+        "google-sheets",
+        "sql-analysis-and-optimization"
+      ]
+    },
+    {
+      "expected": "memory-and-reminders",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Review project scoped learning and memory contamination",
+      "rank": 1,
+      "results": [
+        "memory-and-reminders",
+        "model-selection",
+        "project-status-review"
+      ]
+    },
+    {
+      "expected": "memory-and-reminders",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Corrige una preferencia guardada en la memoria de este proyecto",
+      "rank": 1,
+      "results": [
+        "memory-and-reminders",
+        "youtube-summary",
+        "project-status-review"
+      ]
+    },
+    {
+      "expected": "performance-diagnosis",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Benchmark an optimization loop and measure freshness age",
+      "rank": null,
+      "results": [
+        "sql-analysis-and-optimization",
+        "cache-design",
+        "vulnerability-management"
+      ]
+    },
+    {
+      "expected": "performance-diagnosis",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Mide rendimiento y latencia antes de optimizar el cuello de botella",
+      "rank": 1,
+      "results": [
+        "performance-diagnosis",
+        "sql-analysis-and-optimization",
+        "conversion-optimization"
+      ]
+    },
+    {
+      "expected": "scheduled-workflows",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Configure recurring work with a bounded automation retry budget",
+      "rank": 1,
+      "results": [
+        "scheduled-workflows",
+        "shell-automation",
+        "desktop-automation"
+      ]
+    },
+    {
+      "expected": "scheduled-workflows",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Configura tareas programadas con horario y solapamiento",
+      "rank": 1,
+      "results": [
+        "scheduled-workflows",
+        "calendar-scheduling",
+        "task-delegation"
+      ]
+    },
+    {
+      "expected": "skill-authoring",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Perform a skill stocktake and library maintenance review",
+      "rank": 2,
+      "results": [
+        "knowledge-base-maintenance",
+        "skill-authoring",
+        "task-delegation"
+      ]
+    },
+    {
+      "expected": "skill-authoring",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Audita el catálogo de skills y mejora habilidades duplicadas",
+      "rank": 1,
+      "results": [
+        "skill-authoring",
+        "web-data-extraction",
+        "skill-source-review"
+      ]
+    },
+    {
+      "expected": "team-messaging",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Draft a message to an external channel with the right audience",
+      "rank": 3,
+      "results": [
+        "marketing-content",
+        "content-calendar",
+        "team-messaging"
+      ]
+    },
+    {
+      "expected": "team-messaging",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Envía este mensaje a proveedores en el canal autorizado",
+      "rank": 1,
+      "results": [
+        "team-messaging",
+        "email-workflows",
+        "youtube-summary"
+      ]
+    },
+    {
+      "expected": "experiment-and-benchmark-design",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Design an agent evaluation with judge calibration",
+      "rank": 2,
+      "results": [
+        "rag-evaluation",
+        "experiment-and-benchmark-design",
+        "agent-security-evaluation"
+      ]
+    },
+    {
+      "expected": "experiment-and-benchmark-design",
+      "kind": "improved",
+      "phase": "baseline",
+      "query": "Compara agentes con evaluación pareada y pruebas del evaluador",
+      "rank": 1,
+      "results": [
+        "experiment-and-benchmark-design",
+        "security-code-review",
+        "model-selection"
+      ]
+    },
+    {
+      "expected": "conversation-recap",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Resume las decisiones de nuestra conversación anterior",
+      "rank": 1,
+      "results": [
+        "conversation-recap",
+        "requirements-and-planning",
+        "procurement-and-vendors"
+      ]
+    },
+    {
+      "expected": "cloud-cost-review",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Review cloud infrastructure bills for idle servers and storage",
+      "rank": 1,
+      "results": [
+        "cloud-cost-review",
+        "cloud-file-sync",
+        "infrastructure-as-code"
+      ]
+    },
+    {
+      "expected": "model-selection",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Which local model fits my GPU VRAM and license requirements",
+      "rank": 1,
+      "results": [
+        "model-selection",
+        "browser-ml-inference",
+        "ml-inference-deployment"
+      ]
+    },
+    {
+      "expected": "time-series-forecasting",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Forecast this time series with leakage free backtesting",
+      "rank": 1,
+      "results": [
+        "time-series-forecasting",
+        "weather-briefing",
+        "calendar-scheduling"
+      ]
+    },
+    {
+      "expected": "procurement-and-vendors",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Compare vendor renewal quotes and contract notice periods",
+      "rank": 1,
+      "results": [
+        "procurement-and-vendors",
+        "network-diagnostics",
+        "contract-review"
+      ]
+    },
+    {
+      "expected": "incident-response",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Respond to an active production security incident",
+      "rank": 1,
+      "results": [
+        "incident-response",
+        "phishing-triage",
+        "detection-engineering"
+      ]
+    },
+    {
+      "expected": "email-workflows",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Draft a reply to this email thread",
+      "rank": 1,
+      "results": [
+        "email-workflows",
+        "phishing-triage",
+        "customer-support"
+      ]
+    },
+    {
+      "expected": "literature-review",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Find academic papers for a literature review",
+      "rank": 1,
+      "results": [
+        "literature-review",
+        "systematic-review",
+        "huggingface-hub"
+      ]
+    },
+    {
+      "expected": "youtube-summary",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Resume este video de YouTube usando sus subtítulos",
+      "rank": 1,
+      "results": [
+        "youtube-summary",
+        "video-editing",
+        "audio-transcription"
+      ]
+    },
+    {
+      "expected": "code-review",
+      "kind": "guard",
+      "phase": "baseline",
+      "query": "Review this code diff for correctness and regression risks",
+      "rank": 2,
+      "results": [
+        "security-change-review",
+        "code-review",
+        "security-code-review"
+      ]
+    },
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Qué automatizaciones están configuradas y cuáles funcionan realmente",
+      "rank": 1,
+      "results": [
+        "automation-audit",
+        "conversation-recap",
+        "youtube-summary"
+      ]
+    },
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Audit duplicate automations and scheduled jobs",
+      "rank": 1,
+      "results": [
+        "automation-audit",
+        "scheduled-workflows",
+        "data-quality-audit"
+      ]
+    },
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Revisa si mis tareas duplicadas producen el mismo efecto",
+      "rank": 1,
+      "results": [
+        "automation-audit",
+        "notification-triage",
+        "scheduled-workflows"
+      ]
+    },
+    {
+      "expected": "automation-audit",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Inventory configured hooks and connectors without running them",
+      "rank": 1,
+      "results": [
+        "automation-audit",
+        "code-health-review",
+        "knowledge-workspace-connectors"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Reduce el ruido de alertas y las notificaciones duplicadas",
+      "rank": 1,
+      "results": [
+        "notification-triage",
+        "automation-audit",
+        "observability-and-slos"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Design notification routing and a digest for repeated alerts",
+      "rank": 1,
+      "results": [
+        "notification-triage",
+        "feed-monitoring",
+        "weather-briefing"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Clasifica estas notificaciones por urgencia y destinatario",
+      "rank": 1,
+      "results": [
+        "notification-triage",
+        "calendar-scheduling",
+        "environment-and-dependencies"
+      ]
+    },
+    {
+      "expected": "notification-triage",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Deduplicate notifications without hiding incident recurrence",
+      "rank": 1,
+      "results": [
+        "notification-triage",
+        "incident-response",
+        "calendar-scheduling"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Reduce el gasto LLM sin empeorar los resultados",
+      "rank": 1,
+      "results": [
+        "llm-cost-optimization",
+        "structured-llm-output",
+        "cloud-cost-review"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Measure LLM cost per successful task including retries",
+      "rank": 1,
+      "results": [
+        "llm-cost-optimization",
+        "experiment-and-benchmark-design",
+        "task-delegation"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Audita la factura API de modelos y el consumo de tokens",
+      "rank": 1,
+      "results": [
+        "llm-cost-optimization",
+        "cloud-cost-review",
+        "developer-experience-review"
+      ]
+    },
+    {
+      "expected": "llm-cost-optimization",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Optimize inference spending with prompt caching and quality checks",
+      "rank": 1,
+      "results": [
+        "llm-cost-optimization",
+        "ml-inference-deployment",
+        "security-code-review"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Busca antecedentes de patente para esta tecnología",
+      "rank": 1,
+      "results": [
+        "patent-research",
+        "issue-tracker-workflows",
+        "software-implementation"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Research the patent landscape and official application status",
+      "rank": 1,
+      "results": [
+        "patent-research",
+        "cloud-deployment",
+        "travel-planning"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Verifica esta publicación en USPTO y su familia de patentes",
+      "rank": 1,
+      "results": [
+        "patent-research",
+        "software-implementation",
+        "marketing-content"
+      ]
+    },
+    {
+      "expected": "patent-research",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Search prior art by patent classification and publication date",
+      "rank": 1,
+      "results": [
+        "patent-research",
+        "content-calendar",
+        "feed-monitoring"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Calcula qué inventario reponer por producto y almacén",
+      "rank": 1,
+      "results": [
+        "inventory-planning",
+        "roadmap-prioritization",
+        "purchase-comparison"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Plan inventory replenishment with safety stock and lead times",
+      "rank": 1,
+      "results": [
+        "inventory-planning",
+        "meal-planning",
+        "content-calendar"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Revisa punto de pedido y mínimos de compra de estos SKU",
+      "rank": 1,
+      "results": [
+        "inventory-planning",
+        "purchase-comparison",
+        "completion-verification"
+      ]
+    },
+    {
+      "expected": "inventory-planning",
+      "kind": "added",
+      "phase": "candidate",
+      "query": "Estimate stockout dates before incoming inventory arrives",
+      "rank": 1,
+      "results": [
+        "inventory-planning",
+        "personal-organization",
+        "email-workflows"
+      ]
+    },
+    {
+      "expected": "agent-workflow-diagnosis",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Diagnose an agent wrapper regression and context pressure",
+      "rank": 1,
+      "results": [
+        "agent-workflow-diagnosis",
+        "skill-authoring",
+        "browser-regression-testing"
+      ]
+    },
+    {
+      "expected": "agent-workflow-diagnosis",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Investiga por qué la respuesta del agente se altera al mostrarse",
+      "rank": 1,
+      "results": [
+        "agent-workflow-diagnosis",
+        "web-research",
+        "diagram-authoring"
+      ]
+    },
+    {
+      "expected": "api-integration",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Build a new connector following the provider registration pattern",
+      "rank": 1,
+      "results": [
+        "api-integration",
+        "email-workflows",
+        "authentication-integration"
+      ]
+    },
+    {
+      "expected": "api-integration",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Crea un conector API con paginación y reintentos seguros",
+      "rank": 1,
+      "results": [
+        "api-integration",
+        "mcp-integration",
+        "api-contract-design"
+      ]
+    },
+    {
+      "expected": "api-contract-design",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Check consumer contract drift in an event schema",
+      "rank": 1,
+      "results": [
+        "api-contract-design",
+        "structured-llm-output",
+        "api-integration"
+      ]
+    },
+    {
+      "expected": "api-contract-design",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Verifica el contrato compartido entre API y consumidores",
+      "rank": 1,
+      "results": [
+        "api-contract-design",
+        "api-security-testing",
+        "google-docs"
+      ]
+    },
+    {
+      "expected": "browser-regression-testing",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Find a sequential state reset in this browser click path",
+      "rank": 1,
+      "results": [
+        "browser-regression-testing",
+        "browser-navigation",
+        "game-development"
+      ]
+    },
+    {
+      "expected": "browser-regression-testing",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Prueba por qué este botón no hace nada tras cambiar la selección",
+      "rank": 1,
+      "results": [
+        "browser-regression-testing",
+        "youtube-summary",
+        "database-migrations"
+      ]
+    },
+    {
+      "expected": "cache-design",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Design a content hash cache with version and option invalidation",
+      "rank": 1,
+      "results": [
+        "cache-design",
+        "llm-cost-optimization",
+        "documents-word"
+      ]
+    },
+    {
+      "expected": "cache-design",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Revisa invalidación de cache por versión y ámbito de usuario",
+      "rank": 1,
+      "results": [
+        "cache-design",
+        "database-schema-design",
+        "performance-diagnosis"
+      ]
+    },
+    {
+      "expected": "customer-support",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Draft a support reply for a disputed delivery and partial return",
+      "rank": 1,
+      "results": [
+        "customer-support",
+        "email-workflows",
+        "background-jobs"
+      ]
+    },
+    {
+      "expected": "customer-support",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Revisa esta reclamación por paquete dañado y devolución",
+      "rank": 1,
+      "results": [
+        "customer-support",
+        "package-build-and-install",
+        "release-and-ci"
+      ]
+    },
+    {
+      "expected": "data-pipelines",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Accelerate ETL backfill throughput while reconciling the live tail",
+      "rank": 1,
+      "results": [
+        "data-pipelines",
+        "performance-diagnosis",
+        "load-and-resilience-testing"
+      ]
+    },
+    {
+      "expected": "data-pipelines",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Acelera ingestión masiva sin perder filas rechazadas",
+      "rank": 1,
+      "results": [
+        "data-pipelines",
+        "api-security-testing",
+        "google-sheets"
+      ]
+    },
+    {
+      "expected": "memory-and-reminders",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Review project scoped learning and memory contamination",
+      "rank": 1,
+      "results": [
+        "memory-and-reminders",
+        "model-selection",
+        "project-status-review"
+      ]
+    },
+    {
+      "expected": "memory-and-reminders",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Corrige una preferencia guardada en la memoria de este proyecto",
+      "rank": 1,
+      "results": [
+        "memory-and-reminders",
+        "youtube-summary",
+        "project-status-review"
+      ]
+    },
+    {
+      "expected": "performance-diagnosis",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Benchmark an optimization loop and measure freshness age",
+      "rank": 1,
+      "results": [
+        "performance-diagnosis",
+        "sql-analysis-and-optimization",
+        "cache-design"
+      ]
+    },
+    {
+      "expected": "performance-diagnosis",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Mide rendimiento y latencia antes de optimizar el cuello de botella",
+      "rank": 1,
+      "results": [
+        "performance-diagnosis",
+        "sql-analysis-and-optimization",
+        "conversion-optimization"
+      ]
+    },
+    {
+      "expected": "scheduled-workflows",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Configure recurring work with a bounded automation retry budget",
+      "rank": 1,
+      "results": [
+        "scheduled-workflows",
+        "shell-automation",
+        "desktop-automation"
+      ]
+    },
+    {
+      "expected": "scheduled-workflows",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Configura tareas programadas con horario y solapamiento",
+      "rank": 1,
+      "results": [
+        "scheduled-workflows",
+        "calendar-scheduling",
+        "content-calendar"
+      ]
+    },
+    {
+      "expected": "skill-authoring",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Perform a skill stocktake and library maintenance review",
+      "rank": 1,
+      "results": [
+        "skill-authoring",
+        "knowledge-base-maintenance",
+        "task-delegation"
+      ]
+    },
+    {
+      "expected": "skill-authoring",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Audita el catálogo de skills y mejora habilidades duplicadas",
+      "rank": 1,
+      "results": [
+        "skill-authoring",
+        "notification-triage",
+        "automation-audit"
+      ]
+    },
+    {
+      "expected": "team-messaging",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Draft a message to an external channel with the right audience",
+      "rank": 1,
+      "results": [
+        "team-messaging",
+        "marketing-content",
+        "content-calendar"
+      ]
+    },
+    {
+      "expected": "team-messaging",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Envía este mensaje a proveedores en el canal autorizado",
+      "rank": 1,
+      "results": [
+        "team-messaging",
+        "email-workflows",
+        "youtube-summary"
+      ]
+    },
+    {
+      "expected": "experiment-and-benchmark-design",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Design an agent evaluation with judge calibration",
+      "rank": 1,
+      "results": [
+        "experiment-and-benchmark-design",
+        "rag-evaluation",
+        "agent-security-evaluation"
+      ]
+    },
+    {
+      "expected": "experiment-and-benchmark-design",
+      "kind": "improved",
+      "phase": "candidate",
+      "query": "Compara agentes con evaluación pareada y pruebas del evaluador",
+      "rank": 1,
+      "results": [
+        "experiment-and-benchmark-design",
+        "security-code-review",
+        "model-selection"
+      ]
+    },
+    {
+      "expected": "conversation-recap",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Resume las decisiones de nuestra conversación anterior",
+      "rank": 1,
+      "results": [
+        "conversation-recap",
+        "requirements-and-planning",
+        "procurement-and-vendors"
+      ]
+    },
+    {
+      "expected": "cloud-cost-review",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Review cloud infrastructure bills for idle servers and storage",
+      "rank": 1,
+      "results": [
+        "cloud-cost-review",
+        "llm-cost-optimization",
+        "cloud-file-sync"
+      ]
+    },
+    {
+      "expected": "model-selection",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Which local model fits my GPU VRAM and license requirements",
+      "rank": 1,
+      "results": [
+        "model-selection",
+        "browser-ml-inference",
+        "ml-inference-deployment"
+      ]
+    },
+    {
+      "expected": "time-series-forecasting",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Forecast this time series with leakage free backtesting",
+      "rank": 1,
+      "results": [
+        "time-series-forecasting",
+        "weather-briefing",
+        "calendar-scheduling"
+      ]
+    },
+    {
+      "expected": "procurement-and-vendors",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Compare vendor renewal quotes and contract notice periods",
+      "rank": 1,
+      "results": [
+        "procurement-and-vendors",
+        "network-diagnostics",
+        "contract-review"
+      ]
+    },
+    {
+      "expected": "incident-response",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Respond to an active production security incident",
+      "rank": 1,
+      "results": [
+        "incident-response",
+        "notification-triage",
+        "phishing-triage"
+      ]
+    },
+    {
+      "expected": "email-workflows",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Draft a reply to this email thread",
+      "rank": 1,
+      "results": [
+        "email-workflows",
+        "phishing-triage",
+        "customer-support"
+      ]
+    },
+    {
+      "expected": "literature-review",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Find academic papers for a literature review",
+      "rank": 1,
+      "results": [
+        "literature-review",
+        "patent-research",
+        "systematic-review"
+      ]
+    },
+    {
+      "expected": "youtube-summary",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Resume este video de YouTube usando sus subtítulos",
+      "rank": 1,
+      "results": [
+        "youtube-summary",
+        "video-editing",
+        "audio-transcription"
+      ]
+    },
+    {
+      "expected": "code-review",
+      "kind": "guard",
+      "phase": "candidate",
+      "query": "Review this code diff for correctness and regression risks",
+      "rank": 2,
+      "results": [
+        "security-change-review",
+        "code-review",
+        "security-code-review"
+      ]
+    }
+  ],
+  "file_sha256": {
+    "resources/skills/agent-workflow-diagnosis/SKILL.md": "27bc942f6c5d65341f57e95a69bd5910f9327cdf672066a3ad22e5a3ed8d914a",
+    "resources/skills/agent-workflow-diagnosis/references/execution-boundaries.md": "4b427a2451195f4e19fdf028c948ddc16e3e82c934db3d7204f5dad78cc7005b",
+    "resources/skills/api-contract-design/SKILL.md": "b129cc6b68954e309285cf28249c03d3a69d296913ec2a92ef32ca5345e10778",
+    "resources/skills/api-contract-design/references/shared-contracts.md": "a1c0fae2ddd8640df1e2d6cbc5d621a003646075c4986836caab8fef337b05c8",
+    "resources/skills/api-integration/SKILL.md": "35c0d3a5790ab24bb1a01ea10ed3401789f97bfb632d413136196ea7e50c4a23",
+    "resources/skills/browser-regression-testing/SKILL.md": "961b47d9f8f5b716f4fd4973e8608a202f73579a11e4a542c8a59cd908d58283",
+    "resources/skills/cache-design/SKILL.md": "79f2ceec2feb48c340bee4cc2aa69f357b63b841126f07f845b57d21539a1858",
+    "resources/skills/customer-support/SKILL.md": "5ab97a38534e4392b159c04e2a8d1f0e6efcc274da329d7f3e05771042f321ef",
+    "resources/skills/customer-support/references/shipping-and-returns.md": "41a820c687e06301ee5467b7a7ba9752d88aa7fc0bf109803f2b92039663be5b",
+    "resources/skills/data-pipelines/SKILL.md": "384f15eac3548eb9f820a3e3cc8ed716374f02b68770105a2be5f42e5ed24636",
+    "resources/skills/data-pipelines/references/throughput-and-accounting.md": "a143785069564ede5dcba024385aa1764ae41df6945079e3d130fe7b3e664227",
+    "resources/skills/experiment-and-benchmark-design/SKILL.md": "d6dcc9733c1076a78e91b5e87b41029020657cbe75d47476519f0b2e18e86c1a",
+    "resources/skills/experiment-and-benchmark-design/references/agent-evaluations.md": "36f602a9a0948d47bcd037ac6dacc4a56b9b3979614f5d3244df430c877c4669",
+    "resources/skills/experiment-and-benchmark-design/references/model-evaluation.md": "dc399461f28daa4d1c139715bee75aedac7f777d7e730e4fcdcab0ec065629a8",
+    "resources/skills/experiment-and-benchmark-design/references/paired-outcomes.md": "2bc0068dbb83410ed2c89e749528bbef2fcd9415272b5f512560b219d271ca53",
+    "resources/skills/experiment-and-benchmark-design/scripts/compare_outcomes.py": "959512524e472c4b195aede6ab9b3bb6b8470715b35d9e8690b56acdb227e807",
+    "resources/skills/memory-and-reminders/SKILL.md": "f818c6c138fe70f89a274adced1143a145a96967373fcee50f207ecb18615491",
+    "resources/skills/performance-diagnosis/SKILL.md": "561a8fbdc4ce7016a5ea99d817014de3ae246082df20db6146cd7d6455c011b6",
+    "resources/skills/scheduled-workflows/SKILL.md": "233d60b8fea9a7b49e0d5231c4f584832e2ce75a7cbdc5ed1126d0b9f83bc7fc",
+    "resources/skills/scheduled-workflows/references/bounded-execution.md": "b2cd0ea1eb10ece5a8ba7590889ff6b81929ab766075141506f2f0a33c1f0296",
+    "resources/skills/skill-authoring/SKILL.md": "b1441908a68d2fb0e1c4f7c0d44ce1210fb4ca9cc789b565b7be611ccba2dfd6",
+    "resources/skills/skill-authoring/references/behavioral-evaluation.md": "c8629f579314fab682bcac35ea57bbbfa3c90a7c0b0e091b0a0246bbbe0c8fa3",
+    "resources/skills/skill-authoring/references/library-maintenance.md": "b15737fb4fa12ed3b518e308b4a1d9f021616458615c4c44410f3127751f2a81",
+    "resources/skills/skill-authoring/references/routing-and-boundaries.md": "f036c778e097288a522076de9b17f7da194c03cdff3beb22561736bb7d88d887",
+    "resources/skills/skill-authoring/references/template.md": "8e6d908fe7d9ff592682fcd9f334c8ad95b12e0ea9fd6ffb3a368c1f2631f1f2",
+    "resources/skills/team-messaging/SKILL.md": "b82ba87eba91614ecedced73421dcc6f26dae54950f3ad0f2d4219365c22b3e8",
+    "resources/skills/automation-audit/SKILL.md": "ca98450d43c32abb5b574e8128c2830fe46a32dda16cbeeec7cb4dd9e2e644d5",
+    "resources/skills/notification-triage/SKILL.md": "7d6cc888f1884b3c9a0d78ee58d1e865a5e0b065dcbe8888a5a8fdc49f30565a",
+    "resources/skills/llm-cost-optimization/SKILL.md": "ac156b4667432419b7ee3def29f76ebe3ee38062f2ab16565c35f564dda8a075",
+    "resources/skills/patent-research/SKILL.md": "2d43224aaff96ed8f3c9cae015286ff6c09da2d32967f686e9e5c48aeb8bd96b",
+    "resources/skills/patent-research/references/record-handling.md": "28df8cac7d2aadae0306ef4ada52ead13b1a8a998b675ed652e132721203097f",
+    "resources/skills/inventory-planning/SKILL.md": "1795e76687e20dcce051ba46811964a013b013c00d0cf04ae271a873e4f0cef4"
+  },
+  "limits": [
+    "Development queries assess lexical retrieval, not task success.",
+    "27 upstream canonical entrypoints were read in full; the complete 292-entry catalog was screened, not all implementation code.",
+    "No services, providers, automatic memory observers, account connections or paid subscriptions were installed.",
+    "No production application restart or deployment was performed."
+  ]
+}

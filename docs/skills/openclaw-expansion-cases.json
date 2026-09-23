@@ -1,0 +1,272 @@
+[
+  {
+    "kind": "new",
+    "expected": "feed-monitoring",
+    "query": "Check these RSS feeds for new posts without marking them read."
+  },
+  {
+    "kind": "new",
+    "expected": "feed-monitoring",
+    "query": "Revisa novedades de mis feeds Atom y prepara un resumen."
+  },
+  {
+    "kind": "new",
+    "expected": "feed-monitoring",
+    "query": "Compare the RSS snapshot with the previous item identifiers."
+  },
+  {
+    "kind": "new",
+    "expected": "feed-monitoring",
+    "query": "Detecta artículos actualizados sin perder el estado de lectura."
+  },
+  {
+    "kind": "new",
+    "expected": "web-data-extraction",
+    "query": "Extract product records from these paginated pages into a sourced CSV."
+  },
+  {
+    "kind": "new",
+    "expected": "web-data-extraction",
+    "query": "Extrae datos estructurados de estas páginas con paginación."
+  },
+  {
+    "kind": "new",
+    "expected": "web-data-extraction",
+    "query": "Scrape this authorized catalog with row provenance and missing fields."
+  },
+  {
+    "kind": "new",
+    "expected": "web-data-extraction",
+    "query": "Recopila los anuncios de esta web y detecta páginas repetidas."
+  },
+  {
+    "kind": "new",
+    "expected": "desktop-automation",
+    "query": "Use the desktop application to export this file through its dialog."
+  },
+  {
+    "kind": "new",
+    "expected": "desktop-automation",
+    "query": "Automatiza esta aplicación de escritorio comprobando la ventana activa."
+  },
+  {
+    "kind": "new",
+    "expected": "desktop-automation",
+    "query": "Click the save button in the native desktop app using fresh screen evidence."
+  },
+  {
+    "kind": "new",
+    "expected": "desktop-automation",
+    "query": "Controla el ratón y teclado de una aplicación nativa de Linux."
+  },
+  {
+    "kind": "new",
+    "expected": "smart-home-control",
+    "query": "Set the living room lights to 30 percent in Home Assistant."
+  },
+  {
+    "kind": "new",
+    "expected": "smart-home-control",
+    "query": "Cambia el termostato de la casa y verifica su estado real."
+  },
+  {
+    "kind": "new",
+    "expected": "smart-home-control",
+    "query": "Check which Homey device matches this room before running a scene."
+  },
+  {
+    "kind": "new",
+    "expected": "smart-home-control",
+    "query": "Controla las bombillas inteligentes usando el dispositivo exacto."
+  },
+  {
+    "kind": "new",
+    "expected": "audio-production",
+    "query": "Generate a narrated audio file from this script with the available TTS engine."
+  },
+  {
+    "kind": "new",
+    "expected": "audio-production",
+    "query": "Crea una narración de voz y mezcla la música sin tapar el diálogo."
+  },
+  {
+    "kind": "new",
+    "expected": "audio-production",
+    "query": "Produce a podcast audio track and verify the actual exported duration."
+  },
+  {
+    "kind": "new",
+    "expected": "audio-production",
+    "query": "Convierte este texto a voz en un archivo de audio."
+  },
+  {
+    "kind": "new",
+    "expected": "weather-briefing",
+    "query": "What is the hourly rain forecast for Lima tomorrow?"
+  },
+  {
+    "kind": "new",
+    "expected": "weather-briefing",
+    "query": "Consulta el pronóstico de viento y lluvia para este fin de semana."
+  },
+  {
+    "kind": "new",
+    "expected": "weather-briefing",
+    "query": "Compare current weather observations with the forecast for this location."
+  },
+  {
+    "kind": "new",
+    "expected": "weather-briefing",
+    "query": "Resume las alertas meteorológicas vigentes de esta zona."
+  },
+  {
+    "kind": "new",
+    "expected": "game-development",
+    "query": "Build a playable game with a stable physics loop and restart state."
+  },
+  {
+    "kind": "new",
+    "expected": "game-development",
+    "query": "Crea un videojuego en Godot con colisiones y controles táctiles."
+  },
+  {
+    "kind": "new",
+    "expected": "game-development",
+    "query": "Fix the game physics changing with frame rate."
+  },
+  {
+    "kind": "new",
+    "expected": "game-development",
+    "query": "Implementa un juego Canvas con pausa, puntuación y reinicio."
+  },
+  {
+    "kind": "new",
+    "expected": "wearable-data-analysis",
+    "query": "Summarize sleep and activity from this Fitbit export with missing-day coverage."
+  },
+  {
+    "kind": "new",
+    "expected": "wearable-data-analysis",
+    "query": "Analiza mis registros de Oura sin duplicar las sesiones de sueño."
+  },
+  {
+    "kind": "new",
+    "expected": "wearable-data-analysis",
+    "query": "Compare wearable step totals from two devices without double counting."
+  },
+  {
+    "kind": "new",
+    "expected": "wearable-data-analysis",
+    "query": "Resume datos de Garmin indicando días incompletos y unidades."
+  },
+  {
+    "kind": "existing",
+    "expected": "calendar-scheduling",
+    "query": "Schedule a meeting across daylight saving time and check ambiguous local times."
+  },
+  {
+    "kind": "existing",
+    "expected": "calendar-scheduling",
+    "query": "Prepara un evento CalDAV sin sincronizar cambios ajenos."
+  },
+  {
+    "kind": "existing",
+    "expected": "learning-and-tutoring",
+    "query": "Create Anki flashcards from my notes without duplicate cards."
+  },
+  {
+    "kind": "existing",
+    "expected": "learning-and-tutoring",
+    "query": "Prepara tarjetas de repaso para estudiar con repetición espaciada."
+  },
+  {
+    "kind": "existing",
+    "expected": "audio-transcription",
+    "query": "Transcribe a long recording in chunks with global subtitle timestamps."
+  },
+  {
+    "kind": "existing",
+    "expected": "audio-transcription",
+    "query": "Comprueba un archivo SRT y marca solapamientos de subtítulos."
+  },
+  {
+    "kind": "existing",
+    "expected": "invoice-and-expense-records",
+    "query": "Reconcile this bank statement against receipts without treating transfers as expenses."
+  },
+  {
+    "kind": "existing",
+    "expected": "invoice-and-expense-records",
+    "query": "Concilia los movimientos bancarios y conserva pagos parciales."
+  },
+  {
+    "kind": "existing",
+    "expected": "skill-source-review",
+    "query": "Review this community skill and distinguish its index listing from source evidence."
+  },
+  {
+    "kind": "existing",
+    "expected": "skill-source-review",
+    "query": "Revisa una skill y sus dependencias sin ejecutar sus instaladores."
+  },
+  {
+    "kind": "guard",
+    "expected": "web-research",
+    "query": "Busca fuentes originales sobre esta noticia reciente."
+  },
+  {
+    "kind": "guard",
+    "expected": "browser-navigation",
+    "query": "Open this website and fill the requested form."
+  },
+  {
+    "kind": "guard",
+    "expected": "financial-modeling",
+    "query": "Build a cash-flow forecast with base and downside scenarios."
+  },
+  {
+    "kind": "guard",
+    "expected": "memory-and-reminders",
+    "query": "Guarda esta preferencia en la memoria del proyecto."
+  },
+  {
+    "kind": "guard",
+    "expected": "scheduled-workflows",
+    "query": "Configura una tarea recurrente con zona horaria y política de solapamiento."
+  },
+  {
+    "kind": "guard",
+    "expected": "video-editing",
+    "query": "Trim this video and preserve its audio stream."
+  },
+  {
+    "kind": "guard",
+    "expected": "frontend-design-and-accessibility",
+    "query": "Improve keyboard focus and labels in this responsive web form."
+  },
+  {
+    "kind": "guard",
+    "expected": "ml-training",
+    "query": "Run SFT and DPO training with held-out data and saved adapters."
+  },
+  {
+    "kind": "guard",
+    "expected": "parametric-cad",
+    "query": "Create a dimensioned STEP part and verify its volume."
+  },
+  {
+    "kind": "guard",
+    "expected": "systematic-review",
+    "query": "Revisa estudios con un protocolo de revisión sistemática."
+  },
+  {
+    "kind": "guard",
+    "expected": "code-review",
+    "query": "Revisa este diff sin cambiar código."
+  },
+  {
+    "kind": "guard",
+    "expected": "agent-workflow-diagnosis",
+    "query": "Diagnose why the agent repeated a completed task."
+  }
+]

@@ -30,15 +30,22 @@ impl Browser {
         } else if action == "reload" {
             s.cdp.call(Some(session), "Page.reload", json!({})).await?;
         } else if action == "dialog" {
+            let prompt = text(args, "text", "");
+            if prompt.len() > 16000 {
+                bail!("Prompt text exceeds 16000 bytes");
+            }
             s.cdp
                 .call(
                     Some(session),
                     "Page.handleJavaScriptDialog",
-                    json!({"accept":args["accept"].as_bool().unwrap_or(false)}),
+                    json!({"accept":args["accept"].as_bool().unwrap_or(false),"promptText":prompt}),
                 )
                 .await?;
         } else {
             let targeted = args.get("ref").is_some() || args.get("selector").is_some();
+            if let Some(frame) = frame {
+                self.scroll_frame(s, session, frame).await?;
+            }
             let script=include_str!("target.js").replace("TARGET", &json!({"ref":args["ref"],"selector":args["selector"],"scroll":targeted && !matches!(action,"scroll"|"upload")}).to_string());
             let mut target = self.eval(s, session, frame, script.clone()).await?;
             if targeted && !matches!(action, "scroll" | "upload") {
@@ -75,26 +82,15 @@ impl Browser {
             let mut x = number(args, "x", number(&target, "x", s.width as f64 / 2.));
             let mut y = number(args, "y", number(&target, "y", s.height as f64 / 2.));
             if let Some(frame) = frame {
-                let tree = s
-                    .cdp
-                    .call(Some(session), "Page.getFrameTree", json!({}))
+                (x, y) = self
+                    .frame_point(
+                        s,
+                        session,
+                        frame,
+                        (x, y),
+                        targeted && !matches!(action, "upload" | "scroll"),
+                    )
                     .await?;
-                if tree["frameTree"]["frame"]["id"] != frame {
-                    let owner = s
-                        .cdp
-                        .call(Some(session), "DOM.getFrameOwner", json!({"frameId":frame}))
-                        .await?;
-                    let model = s
-                        .cdp
-                        .call(
-                            Some(session),
-                            "DOM.getBoxModel",
-                            json!({"backendNodeId":owner["backendNodeId"]}),
-                        )
-                        .await?;
-                    x += model["model"]["content"][0].as_f64().unwrap_or(0.);
-                    y += model["model"]["content"][1].as_f64().unwrap_or(0.);
-                }
             }
             let mouse = |kind: &str, extra: Value| {
                 let mut value = json!({"type":kind,"x":x,"y":y});
@@ -108,6 +104,12 @@ impl Browser {
                 "click" | "double_click" | "check" | "uncheck" => {
                     let perform = if matches!(action, "check" | "uncheck") {
                         let checked=self.eval(s,session,frame,"(()=>{const e=window.__fenixTarget;if(!e.matches('input[type=checkbox],input[type=radio]'))throw Error();return e.checked})()".into()).await?;
+                        if action == "uncheck" && target["inputType"] == "radio" && checked == true
+                        {
+                            bail!(
+                                "A radio button cannot be unchecked by clicking it; select another option"
+                            );
+                        }
                         checked.as_bool() != Some(action == "check")
                     } else {
                         true
@@ -123,6 +125,14 @@ impl Browser {
                                     )
                                     .await?;
                             }
+                        }
+                    }
+                    if matches!(action, "check" | "uncheck") {
+                        let checked=self.eval(s,session,frame,"Boolean(window.__fenixTarget?.isConnected && window.__fenixTarget.checked)".into()).await?;
+                        if checked.as_bool() != Some(action == "check") {
+                            bail!(
+                                "Page prevented the requested checked state; inspect before retrying"
+                            );
                         }
                     }
                 }
@@ -158,21 +168,55 @@ impl Browser {
                     if value.len() > 16000 {
                         bail!("Input text exceeds 16000 bytes");
                     }
-                    self.eval(s,session,frame,if action=="fill" {"(()=>{let e=window.__fenixTarget;e.focus();if(e.select)e.select();else {let r=document.createRange();r.selectNodeContents(e);let s=getSelection();s.removeAllRanges();s.addRange(r)}})()"} else {"window.__fenixTarget.focus()"}.into()).await?;
-                    if value.is_empty() && action == "fill" {
-                        send_key(s, session, "Backspace").await?;
-                    } else {
-                        s.cdp
-                            .call(Some(session), "Input.insertText", json!({"text":value}))
-                            .await?;
+                    let prepared = self
+                        .eval(
+                            s,
+                            session,
+                            frame,
+                            include_str!("prepare_input.js").replace(
+                                "INPUT",
+                                &json!({"action":action,"text":value}).to_string(),
+                            ),
+                        )
+                        .await?;
+                    if let Some(error) = prepared["error"].as_str() {
+                        bail!("{error}");
+                    }
+                    if prepared["native"] == true {
+                        if value.is_empty() && action == "fill" {
+                            send_key(s, session, "Backspace").await?;
+                        } else {
+                            s.cdp
+                                .call(Some(session), "Input.insertText", json!({"text":value}))
+                                .await?;
+                        }
+                    }
+                    if action == "fill" {
+                        let expected = json!(value);
+                        let accepted=self.eval(s,session,frame,format!("(()=>{{const e=window.__fenixTarget;if(!e?.isConnected)return false;let expected={expected};if(e instanceof HTMLInputElement){{const p=document.createElement('input');p.type=e.type;p.value=expected;expected=p.value;}}else if(e instanceof HTMLTextAreaElement)expected=expected.replace(/\\r\\n?/g,'\\n');return (e.isContentEditable?(expected===''&&e.textContent===''?'':e.innerText):e.value)===expected;}})()")).await?;
+                        if accepted != true {
+                            bail!(
+                                "Page changed or rejected the entered value; inspect before retrying"
+                            );
+                        }
                     }
                 }
+
                 "key" => {
+                    if targeted {
+                        let focused=self.eval(s,session,frame,"(()=>{const e=window.__fenixTarget;e.focus();return e.isConnected && window.__fenixDOM.contains(e,window.__fenixDOM.active());})()".into()).await?;
+                        if focused != true {
+                            bail!("Requested key target could not receive focus");
+                        }
+                    }
                     send_key(s, session, text(args, "key", "Enter")).await?;
                 }
                 "select" => {
                     let value = json!(text(args, "value", ""));
-                    self.eval(s,session,frame,format!("(()=>{{const e=window.__fenixTarget;if(e.tagName!=='SELECT')throw Error();if(![...e.options].some(o=>o.value==={value}))throw Error();e.value={value};e.dispatchEvent(new Event('input',{{bubbles:true}}));e.dispatchEvent(new Event('change',{{bubbles:true}}));return true}})()")).await?;
+                    let selected=self.eval(s,session,frame,format!("(()=>{{const e=window.__fenixTarget;if(e.tagName!=='SELECT')throw Error();const option=[...e.options].find(o=>o.value==={value});if(!option||option.matches(':disabled'))return {{error:'Option is missing or disabled'}};e.value={value};e.dispatchEvent(new Event('input',{{bubbles:true}}));e.dispatchEvent(new Event('change',{{bubbles:true}}));return true}})()")).await?;
+                    if let Some(error) = selected["error"].as_str() {
+                        bail!("{error}");
+                    }
                 }
                 "upload" => {
                     let path = Path::new(text(args, "path", ""));
@@ -182,29 +226,47 @@ impl Browser {
                     {
                         bail!("Upload requires an authorized regular file of at most 100 MiB");
                     }
-                    let tree = s
-                        .cdp
-                        .call(Some(session), "Page.getFrameTree", json!({}))
-                        .await?;
-                    let frame = frame
-                        .unwrap_or_else(|| tree["frameTree"]["frame"]["id"].as_str().unwrap_or(""));
-                    let world = s
+                    let staged;
+                    let path = if s.execution.is_some() {
+                        let bytes = fenix_execution::fs::read(path, 100 * 1024 * 1024)?;
+                        staged = s
+                            .directory
+                            .join("uploads")
+                            .join(uuid::Uuid::new_v4().to_string())
+                            .join(path.file_name().context("Missing upload name")?);
+                        fenix_execution::fs::create(&staged, &bytes)?;
+                        staged.as_path()
+                    } else {
+                        path
+                    };
+                    let world = self.world(s, session, frame).await?;
+                    let object = s
                         .cdp
                         .call(
-                            Some(session),
-                            "Page.createIsolatedWorld",
-                            json!({"frameId":frame,"worldName":"fenix-browser"}),
+                            Some(&world.session),
+                            "Runtime.evaluate",
+                            json!({"contextId":world.id,"expression":"window.__fenixTarget"}),
                         )
                         .await?;
-                    let object=s.cdp.call(Some(session),"Runtime.evaluate",json!({"contextId":world["executionContextId"],"expression":"window.__fenixTarget"})).await?;
-                    s.cdp
+                    let result = s
+                        .cdp
                         .call(
-                            Some(session),
+                            Some(&world.session),
                             "DOM.setFileInputFiles",
                             json!({"objectId":object["result"]["objectId"],"files":[path]}),
                         )
-                        .await?;
+                        .await;
+                    let _ = s
+                        .cdp
+                        .call(
+                            Some(&world.session),
+                            "Runtime.releaseObject",
+                            json!({"objectId":object["result"]["objectId"]}),
+                        )
+                        .await;
+                    result?;
                 }
+
                 _ => bail!("Unknown browser action"),
             }
         }
@@ -236,7 +298,8 @@ impl Browser {
         let s = sessions
             .get_mut(&profile)
             .context("Open the personal profile first")?;
-        let session = s.tabs.get(&s.active).context("Select a tab first")?.clone();
+        let tab = text(&args, "tab", &s.active).to_owned();
+        let session = self.attach(s, &tab).await?;
         let origin = self
             .eval(s, &session, None, "location.origin".into())
             .await?;
@@ -286,17 +349,24 @@ impl Browser {
     }
 }
 async fn send_key(s: &Session, session: &str, value: &str) -> Result<()> {
-    let parts = value.split('+').collect::<Vec<_>>();
-    let key = *parts.last().unwrap_or(&"Enter");
+    let mut key = value;
     let mut modifiers = 0;
-    for part in &parts[..parts.len() - 1] {
-        modifiers |= match *part {
-            "Alt" => 1,
-            "Control" | "Ctrl" => 2,
-            "Meta" => 4,
-            "Shift" => 8,
-            _ => bail!("Unsupported key modifier"),
-        };
+    loop {
+        let found = [
+            ("Control+", 2),
+            ("Ctrl+", 2),
+            ("Alt+", 1),
+            ("Meta+", 4),
+            ("Shift+", 8),
+        ]
+        .into_iter()
+        .find(|(prefix, _)| key.starts_with(prefix));
+        if let Some((prefix, flag)) = found {
+            modifiers |= flag;
+            key = &key[prefix.len()..];
+        } else {
+            break;
+        }
     }
     let code = match key {
         "Enter" => 13,
@@ -313,16 +383,35 @@ async fn send_key(s: &Session, session: &str, value: &str) -> Result<()> {
         "PageUp" => 33,
         "PageDown" => 34,
         " " => 32,
-        k if k.len() == 1 => k.as_bytes()[0].to_ascii_uppercase() as u32,
+        k if k.chars().count() == 1 => {
+            if k.is_ascii() {
+                k.as_bytes()[0].to_ascii_uppercase() as u32
+            } else {
+                0
+            }
+        }
         _ => bail!("Unsupported key"),
     };
+    let text = if modifiers & (1 | 2 | 4) == 0 {
+        if key == "Enter" {
+            "\r"
+        } else if key.chars().count() == 1 {
+            key
+        } else {
+            ""
+        }
+    } else {
+        ""
+    };
     for kind in ["keyDown", "keyUp"] {
+        let mut params =
+            json!({"type":kind,"key":key,"windowsVirtualKeyCode":code,"modifiers":modifiers});
+        if kind == "keyDown" && !text.is_empty() {
+            params["text"] = json!(text);
+            params["unmodifiedText"] = json!(text);
+        }
         s.cdp
-            .call(
-                Some(session),
-                "Input.dispatchKeyEvent",
-                json!({"type":kind,"key":key,"windowsVirtualKeyCode":code,"modifiers":modifiers}),
-            )
+            .call(Some(session), "Input.dispatchKeyEvent", params)
             .await?;
     }
     Ok(())

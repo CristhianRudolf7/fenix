@@ -6,6 +6,10 @@
 
 ## Start and configure
 
+First install Node 22.12+ and pnpm 10.34.5, then build the frontend with
+`pnpm --dir apps/web install --frozen-lockfile` and `pnpm --dir apps/web build`.
+See [browser voice and Live](live.md) for development and voice configuration.
+
 From the clone, run `cargo run --locked -p fenix-server --bin fenix` and open
 http://127.0.0.1:4173. The default data directory is `.fenix/` relative to the
 working directory. `--data-dir`, `--skills-dir` and `--port` provide explicit
@@ -133,7 +137,7 @@ instances; skill enablement remains local to each runtime database. The installe
 starts it and opens the web. No administrator privileges are needed. The service
 follows the user's login session and is not configured to run while logged out.
 Updating through the installer stops an existing Fénix user service before replacing
-the binary; unfinished tasks will be marked interrupted when it restarts.
+the binary; safe task boundaries can resume, while uncertain work remains interrupted.
 
 For diagnostics: `systemctl --user status fenix` and
 `journalctl --user -u fenix`. Stop it with `systemctl --user stop fenix`.
@@ -151,8 +155,9 @@ WAL writes are pending. Runtime data, personal skills and `apuntes.md` are ignor
 by Git. No credential is included in the binary or desktop package.
 
 Closing a browser tab does not stop Fénix. Shutdown cancels managed processes.
-On restart, previous running/waiting/queued tasks are marked interrupted. Original
-history and schedules persist, but missed schedule runs and task effects are not
-replayed. There is no automatic rollback or process restoration in this version.
+On restart, safe task boundaries may resume; uncertain work remains interrupted.
+History and schedules persist, but missed schedule runs and saved tool effects are
+not replayed. Managed file history supports explicit restoration; process state is
+not restored. See [continuity and restoration](harness-continuity.md).
 
 [Local browser / Navegador local](browser.md)

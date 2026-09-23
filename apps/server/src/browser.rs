@@ -2,15 +2,6 @@ use super::*;
 
 pub(crate) fn routes() -> Router<Arc<Runtime>> {
     Router::new()
-        .route(
-            "/browser.js",
-            get(|| async {
-                (
-                    [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-                    include_str!("../../web/browser.js"),
-                )
-            }),
-        )
         .route("/api/browser/status", get(status))
         .route("/api/browser/profiles", post(profile))
         .route("/api/browser/command", post(command))
@@ -86,7 +77,9 @@ async fn download(
     Path((profile, id)): Path<(String, String)>,
 ) -> Result<Response, ApiError> {
     use tokio::io::AsyncReadExt;
-    let file = tokio::fs::File::open(r.browser.download_path(&profile, &id)?).await?;
+    let file = tokio::fs::File::from_std(fenix_execution::fs::open(
+        &r.browser.download_path(&profile, &id)?,
+    )?);
     let stream = futures_util::stream::try_unfold(file, |mut file| async move {
         let mut buffer = vec![0; 65536];
         let n = file.read(&mut buffer).await?;

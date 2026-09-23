@@ -1,5 +1,6 @@
 //! Bounded, lazy stdio LSP sessions, isolated by canonical workspace and server.
 //! Config comes from the owner settings, never executable repository instructions.
+use super::symbols;
 use crate::files::read_text;
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
@@ -7,7 +8,8 @@ use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, HashMap},
     path::{Path, PathBuf},
-    time::Duration,
+    sync::Arc,
+    time::{Duration, Instant},
 };
 use tokio::{
     io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
@@ -51,11 +53,20 @@ impl ServerConfig {
 }
 #[derive(Default)]
 pub(crate) struct LanguageServers {
-    sessions: Mutex<BTreeMap<String, Session>>,
+    sessions: Mutex<BTreeMap<String, SessionSlot>>,
+}
+struct SessionSlot {
+    session: Arc<Mutex<Option<Session>>>,
+    last_used: Instant,
+    stopped: CancellationToken,
 }
 impl LanguageServers {
     pub async fn shutdown(&self) {
-        self.sessions.lock().await.clear();
+        let mut sessions = self.sessions.lock().await;
+        for entry in sessions.values() {
+            entry.stopped.cancel();
+        }
+        sessions.clear();
     }
     pub async fn query(
         &self,
@@ -68,33 +79,88 @@ impl LanguageServers {
         let extension = path.extension().and_then(|e| e.to_str()).unwrap_or("");
         let config=configs.iter().find(|c|c.extensions.iter().any(|e|e==extension)).context("No configured language server for this file extension. Configure an installed stdio server in Settings > Coding; nothing was installed or started.")?;
         config.validate()?;
-        let text = read_text(path)?;
         let workspace = std::fs::canonicalize(workspace)?;
-        let key = format!("{}:{}", workspace.display(), serde_json::to_string(config)?);
-        // Waiting for another query is cancellable and bounded as well.
-        let mut sessions = tokio::select! {
-            _=cancel.cancelled()=>bail!("Language query cancelled"),
-            result=tokio::time::timeout(Duration::from_secs(30), self.sessions.lock())=>result.context("Language server pool busy")?,
-        };
-        if !sessions.contains_key(&key) {
-            if sessions.len() >= 4 {
-                sessions.pop_first();
-            }
-            let start =
-                tokio::time::timeout(Duration::from_secs(30), Session::start(config, &workspace));
-            let session = tokio::select! {_=cancel.cancelled()=>bail!("Language server startup cancelled"),r=start=>r.context("Language server initialization timed out")??};
-            sessions.insert(key.clone(), session);
+        if !path.starts_with(&workspace) {
+            bail!("Language query path is outside its workspace");
         }
-        let result = {
-            let session = sessions.get_mut(&key).unwrap();
-            tokio::select! {
-                _=cancel.cancelled()=>Err(anyhow::anyhow!("Language query cancelled")),
-                result=tokio::time::timeout(Duration::from_secs(20),session.query(path,&text,args))=>result.context("Language query timed out").and_then(|r|r),
+        let key = format!("{}:{}", workspace.display(), serde_json::to_string(config)?);
+        // The pool lock only manages slots. Each workspace/server has its own
+        // transport lock; unrelated worktrees can query concurrently.
+        let (slot, stopped) = {
+            let mut sessions = self.sessions.lock().await;
+            if cancel.is_cancelled() {
+                bail!("Language query cancelled");
             }
+            if !sessions.contains_key(&key) && sessions.len() >= 4 {
+                let oldest = sessions
+                    .iter()
+                    .filter(|(_, slot)| Arc::strong_count(&slot.session) == 1)
+                    .min_by_key(|(_, slot)| slot.last_used)
+                    .map(|(key, _)| key.clone());
+                if let Some(oldest) = oldest {
+                    sessions.remove(&oldest);
+                } else {
+                    bail!(
+                        "All language server sessions are busy; retry after an active query finishes"
+                    );
+                }
+            }
+            let entry = sessions.entry(key.clone()).or_insert_with(|| SessionSlot {
+                session: Arc::new(Mutex::new(None)),
+                last_used: Instant::now(),
+                stopped: CancellationToken::new(),
+            });
+            entry.last_used = Instant::now();
+            (entry.session.clone(), entry.stopped.clone())
         };
-        // Drop failed streams rather than reusing a transport with unread replies.
+        let mut guard = tokio::select! {
+            _=cancel.cancelled()=>bail!("Language query cancelled"),
+            _=stopped.cancelled()=>bail!("Language servers stopped"),
+            result=tokio::time::timeout(Duration::from_secs(30), slot.lock())=>result.context("Language server busy")?,
+        };
+        let execute = async {
+            if guard.is_none() {
+                *guard = Some(
+                    tokio::time::timeout(
+                        Duration::from_secs(30),
+                        Session::start(config, &workspace),
+                    )
+                    .await
+                    .context("Language server initialization timed out")??,
+                );
+            }
+            // Read after acquiring the session, not before waiting behind another
+            // query. A queued request must not restore an obsolete document.
+            let text = read_text(path)?;
+            let result = tokio::time::timeout(
+                Duration::from_secs(20),
+                guard.as_mut().unwrap().query(path, &text, args),
+            )
+            .await
+            .context("Language query timed out")??;
+            if read_text(path)? != text {
+                bail!("File changed during the language query; retry against the current version");
+            }
+            Ok(result)
+        };
+        let result = tokio::select! {
+            _=cancel.cancelled()=>Err(anyhow::anyhow!("Language query cancelled")),
+            _=stopped.cancelled()=>Err(anyhow::anyhow!("Language servers stopped")),
+            result=execute=>result,
+        };
+        // Failed streams may have unread replies. Drop the process; queued users
+        // retain this slot and lazily start a fresh session under the same lock.
         if result.is_err() {
-            sessions.remove(&key);
+            *guard = None;
+        }
+        let mut sessions = self.sessions.lock().await;
+        if let Some(entry) = sessions.get_mut(&key)
+            && Arc::ptr_eq(&entry.session, &slot)
+        {
+            entry.last_used = Instant::now();
+            if result.is_err() && Arc::strong_count(&slot) == 2 {
+                sessions.remove(&key);
+            }
         }
         result
     }
@@ -108,7 +174,9 @@ struct Session {
     capabilities: Value,
     documents: HashMap<String, (i64, String)>,
     diagnostics: HashMap<String, Value>,
+    symbols: HashMap<String, Value>,
     workspace: PathBuf,
+    _execution: Option<fenix_execution::Lease>,
 }
 impl Drop for Session {
     fn drop(&mut self) {
@@ -124,9 +192,33 @@ impl Drop for Session {
 }
 impl Session {
     async fn start(config: &ServerConfig, workspace: &Path) -> Result<Self> {
-        let mut command = Command::new(&config.command[0]);
+        let execution = if let Some(executor) = fenix_execution::Executor::from_environment()? {
+            Some(
+                executor
+                    .create(fenix_execution::Specification::new(
+                        "language-server",
+                        "language_server",
+                        config.command.clone(),
+                        workspace,
+                        workspace,
+                        3600,
+                    ))
+                    .await?,
+            )
+        } else {
+            None
+        };
+        let mut command = if let Some(lease) = &execution {
+            lease.command()?
+        } else {
+            let mut command = Command::new(&config.command[0]);
+            command
+                .args(&config.command[1..])
+                .env_clear()
+                .envs(fenix_execution::local_environment(workspace));
+            command
+        };
         command
-            .args(&config.command[1..])
             .current_dir(workspace)
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
@@ -157,11 +249,19 @@ impl Session {
             capabilities: Value::Null,
             documents: HashMap::new(),
             diagnostics: HashMap::new(),
+            symbols: HashMap::new(),
             workspace: workspace.into(),
+            _execution: execution,
         };
         let uri = file_uri(workspace)?;
-        let result=session.request("initialize",json!({"processId":std::process::id(),"rootUri":uri,"workspaceFolders":[{"uri":uri,"name":workspace.file_name().unwrap_or_default().to_string_lossy()}],"capabilities":{"general":{"positionEncodings":["utf-16"]},"textDocument":{"publishDiagnostics":{"versionSupport":true},"diagnostic":{},"synchronization":{"didSave":true}},"workspace":{"configuration":true,"applyEdit":false}},"initializationOptions":config.initialization_options})).await?;
+        let result=session.request("initialize",json!({"processId":std::process::id(),"rootUri":uri,"workspaceFolders":[{"uri":uri,"name":workspace.file_name().unwrap_or_default().to_string_lossy()}],"capabilities":{"general":{"positionEncodings":["utf-16"]},"textDocument":{"documentSymbol":{"hierarchicalDocumentSymbolSupport":true},"publishDiagnostics":{"versionSupport":true},"diagnostic":{},"synchronization":{"didSave":true}},"workspace":{"configuration":true,"applyEdit":false}},"initializationOptions":config.initialization_options})).await?;
         session.capabilities = result["capabilities"].clone();
+        if session.capabilities["positionEncoding"]
+            .as_str()
+            .is_some_and(|encoding| encoding != "utf-16")
+        {
+            bail!("Language server selected an unsupported position encoding");
+        }
         session
             .send(json!({"jsonrpc":"2.0","method":"initialized","params":{}}))
             .await?;
@@ -270,6 +370,7 @@ impl Session {
         }
         self.documents.insert(uri.clone(), (version, text.into()));
         self.diagnostics.remove(&uri);
+        self.symbols.clear();
         self.send(json!({"jsonrpc":"2.0","method":method,"params":params}))
             .await?;
         // Bound server document state and send didClose when evicting.
@@ -282,10 +383,111 @@ impl Session {
         }
         Ok(uri)
     }
+    async fn close_document(&mut self, uri: &str) -> Result<()> {
+        self.send(json!({"jsonrpc":"2.0","method":"textDocument/didClose","params":{"textDocument":{"uri":uri}}})).await?;
+        self.documents.remove(uri);
+        self.diagnostics.remove(uri);
+        self.symbols.clear();
+        Ok(())
+    }
+    /// Refresh only the bounded set of open documents. Language servers retain
+    /// responsibility for indexing unopened files; this is not a repository scan.
+    async fn refresh_documents(&mut self, requested: &Path) -> Result<Vec<String>> {
+        let uris: Vec<_> = self.documents.keys().cloned().collect();
+        let mut unavailable = Vec::new();
+        let mut changes = Vec::new();
+        for uri in uris {
+            let path = url::Url::parse(&uri)?
+                .to_file_path()
+                .map_err(|_| anyhow::anyhow!("Invalid open document URI"))?;
+            if path == requested {
+                continue;
+            }
+            // read_text uses descriptor-based no-symlink access. A file replaced
+            // by an escape, deleted, oversized or made binary must not remain as
+            // an apparently current open buffer.
+            let text = if path.starts_with(&self.workspace) {
+                read_text(&path).ok()
+            } else {
+                None
+            };
+            if let Some(text) = text {
+                if self
+                    .documents
+                    .get(&uri)
+                    .is_some_and(|(_, old)| old != &text)
+                {
+                    self.sync(&path, &text).await?;
+                    changes.push(json!({"uri":uri,"type":2}));
+                }
+            } else {
+                self.close_document(&uri).await?;
+                if !path.exists() {
+                    changes.push(json!({"uri":uri,"type":3}));
+                }
+                unavailable.push(uri);
+            }
+        }
+        if !changes.is_empty() {
+            self.send(json!({"jsonrpc":"2.0","method":"workspace/didChangeWatchedFiles","params":{"changes":changes}})).await?;
+        }
+        Ok(unavailable)
+    }
+    async fn document_symbols(&mut self, uri: &str) -> Result<Value> {
+        if let Some(cached) = self.symbols.get(uri) {
+            return Ok(cached.clone());
+        }
+        if self.capabilities["documentSymbolProvider"] == false {
+            bail!(
+                "This language server does not support document symbols; use files_search instead"
+            );
+        }
+        let result = self
+            .request(
+                "textDocument/documentSymbol",
+                json!({"textDocument":{"uri":uri}}),
+            )
+            .await?;
+        // Eight entries of at most 128 KiB: keep the cache small per session.
+        if serde_json::to_vec(&result)?.len() <= 128 * 1024 {
+            if self.symbols.len() >= 8 {
+                self.symbols.clear();
+            }
+            self.symbols.insert(uri.into(), result.clone());
+        }
+        Ok(result)
+    }
     async fn query(&mut self, path: &Path, text: &str, args: &Value) -> Result<Value> {
+        let unavailable = self.refresh_documents(path).await?;
+        if !unavailable.is_empty() {
+            // Make loss of dependency buffers explicit rather than silently
+            // treating an incomplete query as authoritative.
+            bail!(
+                "Previously open documents are unavailable; retry after checking these paths: {}",
+                unavailable.join(", ")
+            );
+        }
         let uri = self.sync(path, text).await?;
         let operation = args["operation"].as_str().unwrap_or("diagnostics");
-        let position = json!({"line":args["line"].as_u64().unwrap_or(1).saturating_sub(1),"character":args["character"].as_u64().unwrap_or(1).saturating_sub(1)});
+        if matches!(operation, "symbol_outline" | "find_symbol" | "read_symbol") {
+            let raw = self.document_symbols(&uri).await?;
+            let result = symbols::response(&raw, &uri, text, args)?;
+            return Ok(
+                json!({"path":path,"operation":operation,"version":self.documents[&uri].0,
+                "position_encoding":"utf-16","range_base":0,"result":result}),
+            );
+        }
+        let position = if args["name_path"].is_string()
+            && matches!(
+                operation,
+                "definition" | "references" | "hover" | "implementation"
+            ) {
+            let raw = self.document_symbols(&uri).await?;
+            let symbols = symbols::flatten(&raw, &uri);
+            symbols::selection(symbols::unique(&symbols, args)?, text)?
+        } else {
+            json!({"line":args["line"].as_u64().unwrap_or(1).saturating_sub(1),"character":args["character"].as_u64().unwrap_or(1).saturating_sub(1)})
+        };
         let mut params = json!({"textDocument":{"uri":uri},"position":position});
         let method = match operation {
             "definition" => "textDocument/definition",
@@ -296,8 +498,10 @@ impl Session {
             "hover" => "textDocument/hover",
             "implementation" => "textDocument/implementation",
             "symbols" => {
-                params = json!({"textDocument":{"uri":uri}});
-                "textDocument/documentSymbol"
+                let result = self.document_symbols(&uri).await?;
+                return Ok(
+                    json!({"path":path,"operation":operation,"position_encoding":"utf-16","result":result}),
+                );
             }
             "diagnostics" => {
                 if self.capabilities["diagnosticProvider"].is_object() {
@@ -395,6 +599,340 @@ mod tests {
             extensions: vec!["rs".into()],
             initialization_options: Value::Null,
         }]
+    }
+    #[tokio::test]
+    async fn independent_workspaces_do_not_wait_for_slow_queries() {
+        let slow_dir = tempfile::tempdir().unwrap();
+        let fast_dir = tempfile::tempdir().unwrap();
+        let slow = slow_dir.path().join("slow.rs");
+        let fast = fast_dir.path().join("fast.rs");
+        std::fs::write(&slow, "SLOW").unwrap();
+        std::fs::write(&fast, "fast").unwrap();
+        let pool = Arc::new(LanguageServers::default());
+        let cancel = CancellationToken::new();
+        let worker_pool = pool.clone();
+        let worker_cancel = cancel.clone();
+        let slow_workspace = slow_dir.path().to_owned();
+        let worker = tokio::spawn(async move {
+            worker_pool
+                .query(
+                    &slow_workspace,
+                    &slow,
+                    &json!({"operation":"hover"}),
+                    &fixture_config(),
+                    &worker_cancel,
+                )
+                .await
+        });
+        // Observe the actual request in the fixture, not a guessed startup delay.
+        tokio::time::timeout(Duration::from_secs(5), async {
+            while !slow_dir.path().join("slow-started").exists() {
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+        let result = tokio::time::timeout(
+            Duration::from_secs(3),
+            pool.query(
+                fast_dir.path(),
+                &fast,
+                &json!({"operation":"hover"}),
+                &fixture_config(),
+                &CancellationToken::new(),
+            ),
+        )
+        .await;
+        cancel.cancel();
+        assert!(worker.await.unwrap().is_err());
+        assert_eq!(result.unwrap().unwrap()["result"]["contents"], "fast");
+        pool.shutdown().await;
+    }
+    #[tokio::test]
+    async fn queued_query_reads_latest_file_after_cancelled_predecessor() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("a.rs");
+        std::fs::write(&file, "SLOW").unwrap();
+        let pool = Arc::new(LanguageServers::default());
+        let first_cancel = CancellationToken::new();
+        let spawn_query = |token: CancellationToken| {
+            let pool = pool.clone();
+            let path = file.clone();
+            let workspace = dir.path().to_owned();
+            tokio::spawn(async move {
+                pool.query(
+                    &workspace,
+                    &path,
+                    &json!({"operation":"hover"}),
+                    &fixture_config(),
+                    &token,
+                )
+                .await
+            })
+        };
+        let first = spawn_query(first_cancel.clone());
+        tokio::time::timeout(Duration::from_secs(5), async {
+            while !dir.path().join("slow-started").exists() {
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+        let second = spawn_query(CancellationToken::new());
+        tokio::time::timeout(Duration::from_secs(5), async {
+            loop {
+                if pool
+                    .sessions
+                    .lock()
+                    .await
+                    .values()
+                    .any(|slot| Arc::strong_count(&slot.session) >= 3)
+                {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+        std::fs::write(&file, "updated while waiting").unwrap();
+        first_cancel.cancel();
+        assert!(first.await.unwrap().is_err());
+        let result = tokio::time::timeout(Duration::from_secs(3), second)
+            .await
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        assert_eq!(result["result"]["contents"], "updated while waiting");
+        pool.shutdown().await;
+    }
+    #[tokio::test]
+    async fn symbol_cache_named_queries_and_external_dependency_refresh() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("a.rs");
+        let dependency = dir.path().join("b.rs");
+        std::fs::write(&file, "fn run() { 1 }\n").unwrap();
+        std::fs::write(&dependency, "old").unwrap();
+        let pool = LanguageServers::default();
+        let configs = fixture_config();
+        let cancel = CancellationToken::new();
+        let outline = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"symbol_outline","limit":1}),
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert_eq!(outline["result"]["total"], 2);
+        assert_eq!(outline["result"]["next_offset"], 1);
+        let body = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"read_symbol","name_path":"Module/run"}),
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert_eq!(body["result"]["body"], "fn run() { 1 }");
+        let hover = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"hover","name_path":"run"}),
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert_eq!(hover["result"]["position"]["character"], 3);
+        assert_eq!(hover["result"]["symbol_requests"], 1);
+        pool.query(
+            dir.path(),
+            &dependency,
+            &json!({"operation":"hover"}),
+            &configs,
+            &cancel,
+        )
+        .await
+        .unwrap();
+        // Same-length writes and changes to a different open file are detected.
+        std::fs::write(&dependency, "new").unwrap();
+        std::fs::write(&file, "fn run() { 2 }\n").unwrap();
+        let changed = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"read_symbol","name_path":"run"}),
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert_eq!(changed["result"]["body"], "fn run() { 2 }");
+        assert_ne!(
+            body["result"]["file_sha256"],
+            changed["result"]["file_sha256"]
+        );
+        let hover = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"hover"}),
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert_eq!(
+            hover["result"]["documents"][file_uri(&dependency).unwrap()],
+            "new"
+        );
+        assert_eq!(hover["result"]["symbol_requests"], 2);
+        std::fs::remove_file(&dependency).unwrap();
+        let removed = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"hover"}),
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap_err();
+        assert!(removed.to_string().contains("unavailable"));
+        let fresh = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"hover"}),
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert!(
+            fresh["result"]["documents"]
+                .get(file_uri(&dependency).unwrap())
+                .is_none()
+        );
+        pool.shutdown().await;
+    }
+    #[tokio::test]
+    async fn pool_evicts_least_recently_used_idle_session() {
+        let dirs: Vec<_> = (0..5).map(|_| tempfile::tempdir().unwrap()).collect();
+        let pool = LanguageServers::default();
+        let configs = fixture_config();
+        let cancel = CancellationToken::new();
+        let query = json!({"operation":"hover"});
+        let mut pids = Vec::new();
+        for dir in &dirs[..4] {
+            let file = dir.path().join("a.rs");
+            std::fs::write(&file, "ok").unwrap();
+            pids.push(
+                pool.query(dir.path(), &file, &query, &configs, &cancel)
+                    .await
+                    .unwrap()["result"]["pid"]
+                    .clone(),
+            );
+        }
+        let first = &dirs[0];
+        pool.query(
+            first.path(),
+            &first.path().join("a.rs"),
+            &query,
+            &configs,
+            &cancel,
+        )
+        .await
+        .unwrap();
+        std::fs::write(dirs[4].path().join("a.rs"), "ok").unwrap();
+        pool.query(
+            dirs[4].path(),
+            &dirs[4].path().join("a.rs"),
+            &query,
+            &configs,
+            &cancel,
+        )
+        .await
+        .unwrap();
+        assert_eq!(pool.sessions.lock().await.len(), 4);
+        let reused = pool
+            .query(
+                first.path(),
+                &first.path().join("a.rs"),
+                &query,
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert_eq!(reused["result"]["pid"], pids[0]);
+        let replaced = pool
+            .query(
+                dirs[1].path(),
+                &dirs[1].path().join("a.rs"),
+                &query,
+                &configs,
+                &cancel,
+            )
+            .await
+            .unwrap();
+        assert_ne!(replaced["result"]["pid"], pids[1]);
+        pool.shutdown().await;
+    }
+    #[tokio::test]
+    async fn shutdown_interrupts_active_queries_and_allows_new_configuration() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("a.rs");
+        std::fs::write(&file, "SLOW").unwrap();
+        let pool = Arc::new(LanguageServers::default());
+        let worker_pool = pool.clone();
+        let workspace = dir.path().to_owned();
+        let path = file.clone();
+        let worker = tokio::spawn(async move {
+            worker_pool
+                .query(
+                    &workspace,
+                    &path,
+                    &json!({"operation":"hover"}),
+                    &fixture_config(),
+                    &CancellationToken::new(),
+                )
+                .await
+        });
+        tokio::time::timeout(Duration::from_secs(5), async {
+            while !dir.path().join("slow-started").exists() {
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+        pool.shutdown().await;
+        assert!(
+            tokio::time::timeout(Duration::from_secs(2), worker)
+                .await
+                .unwrap()
+                .unwrap()
+                .is_err()
+        );
+        std::fs::write(&file, "new configuration").unwrap();
+        let result = pool
+            .query(
+                dir.path(),
+                &file,
+                &json!({"operation":"hover"}),
+                &fixture_config(),
+                &CancellationToken::new(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(result["result"]["contents"], "new configuration");
+        pool.shutdown().await;
     }
     #[tokio::test]
     async fn stdio_lifecycle_sync_diagnostics_and_project_isolation() {

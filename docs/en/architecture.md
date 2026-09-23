@@ -97,7 +97,7 @@ limited to its own ID; master inspection must respect its resolved read scopes.
 A separate worker claims child jobs independently of the conversation dispatcher. SQLite stores
 parent links, attempt counts, isolated transcripts and completion reports. A child
 starts with its scoped handoff, project brief, stable instructions, applicable
-project/general explicit memories and complete skill metadata. It does not receive
+project/general explicit memories and bounded task-local skill candidates. It does not receive
 the main conversation transcript. Memory tools retain the same scope checks. Finished reports are
 persisted and queued back to the master for integration; detailed tool evidence
 remains in the child's task journal.
@@ -165,10 +165,12 @@ Startup first copies legacy `<data-dir>/skills` resources into the selected libr
 skipping symlinks and existing destinations and retaining originals. Migration has
 file, total-byte, entry and depth limits; see [local operation](local-operation.md).
 
-Master and children receive the complete valid metadata catalog, including disabled
-skills. Descriptions are bounded to 512 bytes and versions to 80, with truncation
-marked; no entries are removed to enforce an arbitrary catalog count. Full enabled
-instructions are loaded only through `skill_load`, with a 32 KB body limit.
+Master and children discover the full library through `skill_search` and paginated
+`skill_list`; only up to two task-local candidates enter the initial context.
+Descriptions are bounded to 512 bytes and versions to 80. `skill_load` reads selected
+enabled instructions or linked references up to 32,000 bytes. A persisted incremental
+lexical index keeps unchanged entrypoints from being reread and parsed. See
+[scalable skills and native documents](skills-and-documents.md).
 
 At a task boundary, history for the current scope above approximately 64 KB
 triggers an attempt to summarize older complete tasks while retaining recent tasks.
@@ -249,3 +251,7 @@ textual answer, retrying and reconnecting. The provisional bubble is replaced by
 the durable message. No verification-contract feature is introduced by this work.
 
 Protocol reference: [OpenAI streaming responses](https://developers.openai.com/api/docs/guides/streaming-responses).
+
+## Document evidence
+
+The private [document library](document-library.md) stores versioned originals and searchable evidence separately from memory. Native extraction, isolated PDF/OCR jobs, OpenAI `text-embedding-3-small`, scoped hybrid retrieval and source citations share the existing account runtime and conversation.

@@ -1,0 +1,15 @@
+[Unit]
+Description=Cloudflare Tunnel for Fenix
+After=network-online.target fenix.service
+Wants=network-online.target fenix.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/cloudflared tunnel --no-autoupdate run --token-file %h/.config/fenix/cloudflared.token
+UMask=0077
+Restart=always
+RestartSec=5
+TimeoutStopSec=30
+
+[Install]
+WantedBy=default.target

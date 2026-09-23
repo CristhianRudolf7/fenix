@@ -1,16 +1,21 @@
 //! Local web discovery and reading: a bounded public corpus, no search provider.
 mod concurrency;
 mod config;
+mod discovery;
 mod extract;
 mod fetch;
 mod index;
+mod search;
+mod sources;
 
 use anyhow::{Context, Result, bail};
 use chrono::Utc;
 pub use config::Config;
+pub use discovery::DiscoveryReport;
 pub use index::Coverage;
 use index::{Index, Page};
 use reqwest::{Url, header};
+pub use search::SearchRequest;
 use serde::Serialize;
 use std::{
     fs::{self, OpenOptions},
@@ -38,6 +43,7 @@ pub struct Web {
     operations: Semaphore,
     queued_operations: AtomicUsize,
     refreshes: concurrency::Entries<SharedRefresh>,
+    crawl_wake: tokio::sync::Notify,
 }
 
 #[derive(Debug, Serialize)]
@@ -45,6 +51,8 @@ pub struct Status {
     pub enabled: bool,
     pub crawler_running: bool,
     pub max_concurrent_searches: usize,
+    pub requests_per_day: usize,
+    pub crawler_request_budget: usize,
     pub active_operations: usize,
     pub queued_operations: usize,
     pub active_downloads: usize,
@@ -59,7 +67,27 @@ pub struct SearchResult {
     pub queue_wait_ms: u64,
     pub coverage: Coverage,
     pub results: Vec<Hit>,
+    pub source_reads: Vec<SourceRead>,
+    pub discovery: DiscoveryReport,
     pub warnings: Vec<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct SourceRead {
+    pub url: String,
+    pub status: &'static str,
+    pub indexed: bool,
+    pub discovered_urls: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub resolved_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub failure_kind: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retrieved_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<&'static str>,
 }
 
 #[derive(Debug, Serialize)]
@@ -68,6 +96,7 @@ pub struct Hit {
     pub title: String,
     pub snippet: String,
     pub indexed_at: String,
+    pub published_at: Option<String>,
     pub read_status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page: Option<ReadResult>,
@@ -81,6 +110,7 @@ pub struct ReadResult {
     pub title: String,
     pub passage: String,
     pub retrieved_at: String,
+    pub published_at: Option<String>,
     pub source: &'static str,
     pub queue_wait_ms: u64,
     pub content_hash: String,
@@ -135,6 +165,7 @@ impl Web {
             operations: Semaphore::new(config.max_concurrent_searches),
             queued_operations: AtomicUsize::new(0),
             refreshes: concurrency::Entries::default(),
+            crawl_wake: tokio::sync::Notify::new(),
             config,
             index,
             network,
@@ -149,6 +180,8 @@ impl Web {
             enabled: self.config.enabled,
             crawler_running: self.running.load(Ordering::Relaxed),
             max_concurrent_searches: self.config.max_concurrent_searches,
+            requests_per_day: self.config.requests_per_day,
+            crawler_request_budget: self.config.crawler_request_budget(),
             active_operations: self.config.max_concurrent_searches
                 - self.operations.available_permits(),
             queued_operations: self.queued_operations.load(Ordering::Relaxed),
@@ -189,6 +222,7 @@ impl Web {
             }
             tokio::select! {
                 _ = stop.cancelled() => break,
+                _ = self.crawl_wake.notified() => {},
                 _ = tokio::time::sleep(if idle { Duration::from_secs(15) } else { Duration::from_millis(self.config.request_interval_ms) }) => {}
             }
         }
@@ -202,17 +236,17 @@ impl Web {
         {
             return Ok(false);
         }
-        if self.index.coverage().await?.requests_today >= self.config.requests_per_day {
+        // Foreground reads can use the entire daily budget. The crawler stops
+        // starting new work earlier so it cannot routinely starve user requests.
+        // An in-flight crawl can use additional requests for robots/redirects;
+        // this is a best-effort reserve, not a second hard network quota.
+        if self.index.coverage().await?.requests_today >= self.config.crawler_request_budget() {
             return Ok(false);
         }
         let Some((url, depth)) = self.index.next().await? else {
             return Ok(false);
         };
-        let result = self.refresh(&url, depth).await;
-        self.index
-            .finish(&url, result.as_ref().err().map(ToString::to_string))
-            .await?;
-        result?;
+        self.refresh(&url, depth).await?;
         Ok(true)
     }
 
@@ -223,50 +257,240 @@ impl Web {
         read_pages: usize,
         cancel: &CancellationToken,
     ) -> Result<SearchResult> {
+        self.search_with(
+            SearchRequest {
+                query: query.into(),
+                limit,
+                read_pages,
+                ..SearchRequest::default()
+            },
+            cancel,
+        )
+        .await
+    }
+
+    pub async fn search_with(
+        &self,
+        mut request: SearchRequest,
+        cancel: &CancellationToken,
+    ) -> Result<SearchResult> {
         self.check_enabled()?;
-        let query = query.trim();
-        if query.is_empty()
-            || query.chars().count() > 400
-            || !(1..=10).contains(&limit)
-            || read_pages > 3
-        {
-            bail!("Use a query of 1–400 characters, limit 1–10 and read_pages 0–3");
-        }
+        request.validate()?;
+        let query = request.query.as_str();
         let queue_start = tokio::time::Instant::now();
         let _operation = self.admit(cancel).await?;
         let queue_wait_ms = queue_start.elapsed().as_millis() as u64;
-        let pages = tokio::select! {
+        let budget = if request.discover || !request.source_urls.is_empty() {
+            100
+        } else {
+            35
+        };
+        let deadline = tokio::time::Instant::now() + Duration::from_secs(budget);
+        // Explicit source URLs are fetched before searching, without inventing
+        // provider endpoints or interpreting a source read as a global search.
+        let source_reads = tokio::select! {
             biased;
             _ = cancel.cancelled() => bail!("Web search cancelled"),
-            pages = self.index.search(query, limit) => pages?,
+            reads = futures_util::future::join_all(request.source_urls.iter().map(|url| self.read_source(url, deadline, request.fresh))) => reads,
         };
-        let mut warnings = vec!["Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Search is lexical; terms may be broadened when exact matches are sparse.".into()];
-        if pages.is_empty() {
-            warnings.push("No matching indexed pages yet. The background crawler builds coverage gradually; do not invent results or repeatedly poll.".into());
+        let discovery = tokio::select! {
+            biased;
+            _ = cancel.cancelled() => bail!("Web search cancelled"),
+            report = self.discover(&request, deadline) => report?,
+        };
+        let selection = tokio::select! {
+            biased;
+            _ = cancel.cancelled() => bail!("Web search cancelled"),
+            pages = self.index.search_with(&request) => pages?,
+        };
+        let pages = selection.pages;
+        let mut warnings = vec!["Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.".into()];
+        if request.discover {
+            warnings.push("Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.".into());
         }
-        let deadline = tokio::time::Instant::now() + Duration::from_secs(35);
+        warnings.push(format!("Identical indexed content is deduplicated. At most {} results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than {} results.", request.max_per_domain, request.limit));
+        if selection.broadened {
+            warnings.push("Exact lexical matches were sparse; additional results passed topical term coverage and proximity filters. Lexical support is not a factual confidence score.".into());
+        }
+        if selection.candidates_truncated {
+            warnings.push("Search examined at most 1000 ranked candidates per lexical pass. Additional matching pages may exist beyond that bound, including other sources omitted by the diversity cap.".into());
+        }
+        if request.days.is_some() {
+            warnings.push("The date window uses declared publication metadata only. Pages with unknown, invalid or future publication dates are excluded; indexed_at is not a publication date.".into());
+        }
+        if pages.is_empty() {
+            warnings.push("No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll.".into());
+        }
+        if source_reads.iter().any(|source| source.status == "failed") {
+            warnings.push("Some explicit source URLs could not be read. Inspect source_reads; their failure does not invalidate other indexed results.".into());
+        }
         // Futures are owned by this call: cancellation drops pending reads instead
         // of detaching network workers. join_all preserves ranked result order.
-        let reads = pages
-            .into_iter()
-            .enumerate()
-            .map(|(i, page)| self.read_hit(page, query, i < read_pages, deadline));
-        let results = tokio::select! {
+        let checked: std::collections::HashMap<_, _> = source_reads
+            .iter()
+            .chain(discovery.sources.iter())
+            .filter_map(|source| {
+                if source.status == "failed" {
+                    Some((
+                        source.url.clone(),
+                        Err(source
+                            .error
+                            .clone()
+                            .unwrap_or_else(|| "Source read failed".into())),
+                    ))
+                } else {
+                    let provenance = source.source?;
+                    // A navigation-cache hit is a locator, not current evidence.
+                    if request.fresh && provenance == "cache" {
+                        return None;
+                    }
+                    Some((source.resolved_url.clone()?, Ok(provenance)))
+                }
+            })
+            .collect();
+        let reads = pages.into_iter().enumerate().map(|(i, page)| {
+            let checked_source = checked.get(&page.document.url).cloned();
+            self.read_hit(
+                page,
+                query,
+                i < request.read_pages,
+                deadline,
+                request.fresh,
+                checked_source,
+            )
+        });
+        let mut results = tokio::select! {
             biased;
             _ = cancel.cancelled() => bail!("Web search cancelled"),
             results = futures_util::future::join_all(reads) => results,
         };
+        // A refresh can redirect or revise publication metadata after index
+        // selection. Keep output within the requested scope and date window.
+        let mut irrelevant = std::collections::HashSet::new();
+        for hit in &results {
+            if hit.page.is_some()
+                && let Some(page) = self.index.get(&hit.url).await?
+                && !search::relevant(
+                    &page.document.title,
+                    &page.document.url,
+                    &page.document.text,
+                    query,
+                )
+            {
+                irrelevant.insert(hit.url.clone());
+            }
+        }
+        let before_refresh_filter = results.len();
+        results.retain(|hit| {
+            let domain_matches = request.domains.is_empty()
+                || Url::parse(&hit.url).is_ok_and(|url| {
+                    url.host_str().is_some_and(|host| {
+                        request
+                            .domains
+                            .iter()
+                            .any(|domain| host == domain || host.ends_with(&format!(".{domain}")))
+                    })
+                });
+            let date_matches = request.days.is_none_or(|days| {
+                hit.published_at
+                    .as_ref()
+                    .and_then(|value| chrono::DateTime::parse_from_rfc3339(value).ok())
+                    .is_some_and(|date| {
+                        let now = Utc::now().timestamp();
+                        (now - i64::from(days) * 86_400..=now).contains(&date.timestamp())
+                    })
+            });
+            domain_matches && date_matches && !irrelevant.contains(&hit.url)
+        });
+        if results.len() < before_refresh_filter {
+            warnings.push("Some refreshed pages changed publication date or relevance, or redirected outside the requested domains and were excluded. Fewer results may remain after current verification.".into());
+        }
         if results.iter().any(|hit| hit.read_status == "failed") {
             warnings.push("Some pages could not be read. Their indexed snippets are older evidence, not a successful current verification.".into());
         }
-        Ok(SearchResult {
+        let result = SearchResult {
             query: query.into(),
             backend: "local_fts5",
             queue_wait_ms,
             coverage: self.index.coverage().await?,
             results,
+            source_reads,
+            discovery,
             warnings,
+        };
+        drop(_operation);
+        self.crawl_wake.notify_one();
+        Ok(result)
+    }
+
+    async fn read_source(
+        &self,
+        url: &str,
+        deadline: tokio::time::Instant,
+        fresh: bool,
+    ) -> SourceRead {
+        let mut report = SourceRead {
+            url: url.into(),
+            status: "failed",
+            indexed: false,
+            discovered_urls: 0,
+            resolved_url: None,
+            error: None,
+            failure_kind: None,
+            retrieved_at: None,
+            source: None,
+        };
+        let result = tokio::time::timeout_at(deadline, async {
+            let cached = self.index.get(url).await?;
+            let (page, source) = match cached {
+                Some(page)
+                    if !fresh
+                        && Utc::now().timestamp() - page.fetched_at
+                            < self.config.cache_minutes as i64 * 60 =>
+                {
+                    (page, "cache")
+                }
+                _ => self.refresh(url, 0).await?,
+            };
+            let indexed = self.index.get(&page.document.url).await?.is_some();
+            Ok::<_, anyhow::Error>((page, indexed, source))
         })
+        .await;
+        match result {
+            Ok(Ok((page, indexed, source))) => {
+                report.retrieved_at = Some(timestamp(page.fetched_at));
+                report.source = Some(source);
+                report.status = if page.document.indexable {
+                    "read"
+                } else {
+                    "discovered"
+                };
+                report.indexed = indexed;
+                report.discovered_urls = page.document.links.len();
+                report.resolved_url = Some(page.document.url);
+            }
+            result => report.error = Some(match result {
+                Ok(Err(error)) => extract::clipped(&error.to_string(), 250),
+                _ => "Search source reading budget exhausted; includes robots pacing and result reads"
+                    .into(),
+            }),
+        }
+        if let Some(error) = &report.error {
+            report.failure_kind = Some(
+                if error.contains("budget exhausted") || error.contains("timed out") {
+                    "timeout"
+                } else if error.contains("robots")
+                    || error.contains("HTTP 403")
+                    || error.contains("HTTP 401")
+                    || error.contains("HTTP 429")
+                {
+                    "blocked"
+                } else {
+                    "unavailable"
+                },
+            );
+        }
+        report
     }
 
     async fn read_hit(
@@ -275,21 +499,35 @@ impl Web {
         query: &str,
         read: bool,
         deadline: tokio::time::Instant,
+        fresh: bool,
+        checked_source: Option<std::result::Result<&'static str, String>>,
     ) -> Hit {
         let mut hit = Hit {
             url: page.document.url.clone(),
             title: page.document.title.clone(),
             snippet: extract::passage(&page.document.text, query, 350),
             indexed_at: timestamp(page.fetched_at),
+            published_at: page.document.published_at.map(timestamp),
             read_status: "not_requested".into(),
             page: None,
             read_error: None,
         };
         if read {
-            match tokio::time::timeout_at(deadline, self.read_inner(&hit.url, query, 2400)).await {
+            match tokio::time::timeout_at(deadline, async {
+                if let Some(source) = checked_source {
+                    Self::page_result(page, query, 6000, source.map_err(anyhow::Error::msg)?)
+                } else {
+                    self.read_inner_policy(&hit.url, query, 6000, fresh).await
+                }
+            })
+            .await
+            {
                 Ok(Ok(page)) => {
+                    hit.snippet = extract::passage(&page.passage, query, 350);
+                    hit.indexed_at = page.retrieved_at.clone();
                     hit.url = page.url.clone();
                     hit.title = page.title.clone();
+                    hit.published_at = page.published_at.clone();
                     hit.read_status = page.source.into();
                     hit.page = Some(page);
                 }
@@ -331,6 +569,16 @@ impl Web {
         query: &str,
         cancel: &CancellationToken,
     ) -> Result<ReadResult> {
+        self.read_with_fresh(url, query, false, cancel).await
+    }
+
+    pub async fn read_with_fresh(
+        &self,
+        url: &str,
+        query: &str,
+        fresh: bool,
+        cancel: &CancellationToken,
+    ) -> Result<ReadResult> {
         self.check_enabled()?;
         if query.chars().count() > 400 {
             bail!("Passage query exceeds 400 characters");
@@ -342,9 +590,11 @@ impl Web {
         let mut page = tokio::select! {
             biased;
             _ = cancel.cancelled() => bail!("Web reading cancelled"),
-            result = tokio::time::timeout(Duration::from_secs(35), self.read_inner(url,query,6000)) => result.context("Web reading budget exhausted (35 seconds)")??,
+            result = tokio::time::timeout(Duration::from_secs(100), self.read_inner_policy(url,query,6000,fresh)) => result.context("Web reading budget exhausted (100 seconds including origin pacing)")??,
         };
         page.queue_wait_ms = queue_wait_ms;
+        drop(_operation);
+        self.crawl_wake.notify_one();
         Ok(page)
     }
 
@@ -355,20 +605,38 @@ impl Web {
         Ok(())
     }
 
-    async fn read_inner(&self, value: &str, query: &str, limit: usize) -> Result<ReadResult> {
+    async fn read_inner_policy(
+        &self,
+        value: &str,
+        query: &str,
+        limit: usize,
+        fresh: bool,
+    ) -> Result<ReadResult> {
         let url = fetch::public_url(value)?.to_string();
         let cached = self.index.get(&url).await?;
         let (page, source) = match cached {
             Some(page)
-                if Utc::now().timestamp() - page.fetched_at
-                    < self.config.cache_minutes as i64 * 60 =>
+                if !fresh
+                    && Utc::now().timestamp() - page.fetched_at
+                        < self.config.cache_minutes as i64 * 60 =>
             {
                 (page, "cache")
             }
             _ => self.refresh(&url, 0).await?,
         };
+        Self::page_result(page, query, limit, source)
+    }
+
+    fn page_result(
+        page: Page,
+        query: &str,
+        limit: usize,
+        source: &'static str,
+    ) -> Result<ReadResult> {
         if !page.document.indexable {
-            bail!("This page opts out of indexing or is a sitemap; no article text is available");
+            bail!(
+                "This page opts out of indexing or is a discovery feed/sitemap; no article text is available"
+            );
         }
         if page.document.text.trim().is_empty() {
             bail!(
@@ -380,6 +648,7 @@ impl Web {
             title: page.document.title,
             passage: extract::passage(&page.document.text, query, limit),
             retrieved_at: timestamp(page.fetched_at),
+            published_at: page.document.published_at.map(timestamp),
             source,
             queue_wait_ms: 0,
             content_hash: page.document.content_hash,
@@ -402,6 +671,16 @@ impl Web {
         // Cancellation drops the empty guard. A surviving waiter can take over;
         // no detached download survives the last interested caller.
         let result = self.refresh_once(&url, depth).await;
+        // Foreground fetches also satisfy crawl work. Otherwise the background
+        // worker immediately redownloads the same page after a live search.
+        self.index
+            .finish(&url, result.as_ref().err().map(ToString::to_string))
+            .await?;
+        if let Ok((page, _)) = &result
+            && page.document.url != url
+        {
+            self.index.finish(&page.document.url, None).await?;
+        }
         *shared = Some(
             result
                 .as_ref()
@@ -493,6 +772,12 @@ impl Web {
         self.index
             .enqueue(document.links.clone(), depth.saturating_add(1))
             .await?;
+        if !no_follow {
+            self.index
+                .record_edges(&document.url, document.links.clone())
+                .await?;
+            self.index.label_links(document.link_labels.clone()).await?;
+        }
         let page = Page {
             document,
             fetched_at: Utc::now().timestamp(),
@@ -523,3 +808,9 @@ fn timestamp(seconds: i64) -> String {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod retrieval_tests;
+
+#[cfg(test)]
+mod optimization_tests;

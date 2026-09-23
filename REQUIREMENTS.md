@@ -5,13 +5,13 @@
 ## Current scope decisions / Decisiones de alcance actuales
 
 - Maintain one continuous conversation for the owner. Telegram support ships initially, but its token and activation are optional. Do not expose separate chats, conversation creation, session switching, or resets as the normal workflow. Internal task IDs and context compaction must preserve that continuity.
-- Initially accept text only; document, file, image, audio, and video attachments are outside scope.
+- Keep Telegram text-only. The web Design workspace accepts supported visual file imports and shows task results in the continuous chat; general chat attachments and audio-file import remain outside this delivery. / Telegram conserva texto; Design admite archivos visuales y muestra resultados en el mismo chat.
 - Independent web search and bounded public HTTP reading are in scope: a background crawler, a local disk index and `web_search`/`web_read` agent tools without external search providers. Local Chromium navigation, persistent profiles and responsive testing are also in scope; generic HTTP actions remain in the roadmap. See [the web search contract](docs/en/web-search.md).
 - Use `America/Lima` initially. Automatic resumption of interrupted tasks and catch-up of missed scheduled executions remain future work; keeping history and schedules does not imply replaying their actions.
 - Initially support Linux and one owner per installation. The project must be clonable and run locally, with its web interface bound to loopback by default; routine use must not require a terminal.
 - On first visit without configuration, show a welcome/setup screen. Require at least one provider API key and a successful real inference request to the selected provider/model before completing setup, with provider-dependent selectors and fields covering all 17 integrated providers. Telegram setup can be skipped and completed later.
 - The web must include chat and manage provider credentials, Telegram, explicit memory, skills, scheduled tasks, reminders, and their states. Web and optional Telegram use the same continuous conversation and queue.
-- Use a minimal black-and-white visual design inspired by Vercel, with neutral grays and light/dark themes. The first visit must use light mode with a white background, regardless of the operating-system theme. Persist an explicit user theme selection for later visits.
+- Use a warm visual identity: ivory canvas, white surfaces, charcoal text, terracotta actions and teal status accents, with legible typography and clear hierarchy. The first visit uses light mode regardless of the operating-system theme. Persist explicit theme and language selections across the login and application. See `docs/en/interface.md`.
 - Planning, execution and conversation are asynchronous. Textual replies and plan edits bypass ordinary queued work; plans and deliveries are persisted and versioned. See section 1.17 and the planning documentation.
 - La planificación, ejecución y conversación son asíncronas. Las respuestas y ediciones textuales de planes no esperan la cola ordinaria; los planes y entregas se guardan con versiones. Véase la sección 1.17.
 - Store manually installed skills at `~/.fenix/skills/<skill-name>/SKILL.md`, shared under the current user home independently of runtime data, with `--skills-dir` as an explicit override. Keep personal runtime data out of Git.
@@ -29,7 +29,7 @@ Este documento define el alcance actual de Fénix: un asistente personal funcion
 - Uso personal: un propietario autorizado por instalación. Cualquier persona debe poder clonar el proyecto y ejecutar su propia instalación local, con datos y credenciales independientes.
 - Soportar inicialmente Linux. Incluir una web en localhost, vinculada por defecto sólo a loopback, con bienvenida, configuración de proveedores y Telegram, memoria, skills, programaciones y estados. El uso habitual no debe requerir terminal; no se requiere una plataforma SaaS ni multiusuario compartida.
 - La búsqueda y lectura web propias, la navegación local con Chromium, los perfiles persistentes y las pruebas responsivas forman parte del alcance actual. La herramienta HTTP genérica queda para el roadmap. La conexión con modelos y el canal opcional de Telegram siguen dentro del alcance.
-- El heartbeat, la memoria avanzada, la autonomía prolongada, la voz en tiempo real y el resto de ampliaciones se conservan en [ROADMAP.md](ROADMAP.md).
+- El heartbeat y el resto de ampliaciones se conservan en [ROADMAP.md](ROADMAP.md). El alcance actual de voz se documenta en [Live](docs/es/live.md).
 - Este documento describe requisitos y criterios de cierre; no implica que las funciones ya estén implementadas.
 - Las referencias de OpenClaw, ZeroClaw y NullClaw sirven para definir el conjunto básico de capacidades y se mantienen como antecedentes de diseño.
 
@@ -185,9 +185,9 @@ Referencia: [Detección de bucles de OpenClaw](https://docs.openclaw.ai/tools/lo
 
 ### 1.13. Diseño visual y temas
 
-- Usar una estética minimalista inspirada en Vercel: blanco, negro y grises neutros, tipografía legible, bordes discretos y espaciado claro.
+- Usar una identidad cálida: fondo marfil, superficies blancas, texto carbón, acciones terracota y acentos verde petróleo, con tipografía legible y jerarquía clara. Véase `docs/es/interface.md`.
 - Ofrecer modo claro y modo oscuro con un selector de tema accesible desde la interfaz.
-- La primera visita debe usar modo claro, con fondo blanco y texto oscuro, incluso si el sistema operativo está en modo oscuro.
+- La primera visita debe usar modo claro, con fondo marfil y texto oscuro, incluso si el sistema operativo está en modo oscuro. El tema y el idioma elegidos se conservan en el login y en la aplicación.
 - Guardar la elección explícita del usuario y recuperarla en visitas posteriores. Sin elección guardada, usar siempre modo claro; evitar un destello oscuro antes de aplicar el tema.
 - Mantener legibilidad, contraste y estados de foco en ambos temas; comunicar errores y estados también mediante texto o iconos, sin depender únicamente del color.
 
@@ -262,6 +262,12 @@ Volver a habilitar una programación pausada activa sus ejecuciones futuras; no 
 
 Details / Detalles: [English](docs/en/projects.md), [Español](docs/es/projects.md).
 
+Persistent project contracts / Contratos persistentes por proyecto:
+
+- Keep stable, versioned behavior requirements separate from task plans and execution evidence. Workers propose sourced add/modify/remove deltas; only the scoped master consolidates or discards them. / Conservar requisitos versionados separados de los planes y evidencias. Los subagentes proponen cambios con procedencia; el maestro del proyecto consolida o descarta.
+- Detect stale revisions and overlapping requirement IDs transactionally, including before integrating declared worktree changes. Load requirements on demand; do not require proposals for routine actions or claim semantic conflict detection. / Detectar revisiones obsoletas y solapamientos de IDs, también antes de integrar cambios declarados en worktrees. Consultar bajo demanda, sin propuestas obligatorias para acciones rutinarias ni prometer detección semántica.
+- Implementation details / Detalles: [English](docs/en/project-contracts.md), [Español](docs/es/project-contracts.md).
+
 ### 1.17. Editable planning and asynchronous events / Planificación editable y eventos asíncronos
 
 - Persist plans with an objective, explicit milestone outcomes, dependencies and versions. Dispatch ready milestones through one-level subagents with the complete on-demand skill catalog.
@@ -282,9 +288,11 @@ Details / Detalles: [English](docs/en/planning.md), [Español](docs/es/planning.
 
 - Provide query-only `web_search` to master and children, with optional result/read limits, and `web_read` for a known public URL. Use a background crawler, persistent URL frontier and separate SQLite FTS5 public corpus; no external search provider or search API key.
 - Bootstrap from configurable seeds and follow permitted links across origins. Accept arbitrary topics while explicitly reporting bounded, initially empty coverage. Read source pages by HTTP, cache and conditionally refresh them, return URLs, excerpts, hashes and retrieval times, and distinguish failed reads from verified evidence.
-- Bound network/parser concurrency, downloaded bytes, stored text, corpus/frontier size and daily attempts. Honor robots and indexing policies, validate public DNS and redirects, reject credentials and private addresses, and propagate shutdown/task cancellation. Do not execute JavaScript or browser actions in this phase.
+- Bound network/parser concurrency, downloaded bytes, stored text, corpus/frontier size and daily attempts. Honor robots and indexing policies, validate public DNS and redirects, reject credentials and private addresses, and propagate shutdown/task cancellation. HTTP indexing does not execute JavaScript; interactive rendering uses the separate local browser.
 - Ofrecer `web_search` y `web_read` al principal y a los hijos, con índice público separado en disco y rastreo en segundo plano. Las semillas son puntos de partida ampliables mediante enlaces, sin proveedores externos de búsqueda.
-- Mostrar cobertura real, fuentes, caché y fallos de lectura; acotar memoria de trabajo, tráfico y almacenamiento. Respetar políticas de rastreo, comprobar DNS y redirecciones y tratar el contenido web como datos no confiables. La navegación interactiva y las pruebas de diseño quedan para otra fase.
+- Mostrar cobertura real, fuentes, caché y fallos de lectura; acotar memoria de trabajo, tráfico y almacenamiento. Respetar políticas de rastreo, comprobar DNS y redirecciones y tratar el contenido web como datos no confiables. La navegación interactiva usa el navegador local separado.
+
+- Expose our authenticated `POST /api/web/search` and integrate it in the Browser address bar. Add domain/date filters, bounded source ingestion, duplicate removal and domain diversity; publication dates must come from explicit source metadata. Do not add external search services or metasearch fallback. / Exponer una API propia e integrarla en la barra del navegador, con filtros, fuentes conocidas, duplicados y diversidad, sin proveedores externos ni metabuscadores.
 
 Details / Detalles: [English](docs/en/web-search.md), [Español](docs/es/web-search.md).
 
@@ -332,6 +340,7 @@ El asistente debe poder ejecutarse localmente en Linux para un propietario, ofre
 - Implement regex/glob search and exact-context multi-file patches with existing approval, project and effect controls.
 - Load workspace and nested AGENTS.md guidance before mutations; do not inherit unrelated project rules.
 - Provide explicitly configured, lazy stdio LSP queries and diagnostics, with bounded sessions and cancellation.
+- Support file-scoped symbol outlines, exact/suffix name-path lookup, selective symbol bodies and optional permission-checked reference excerpts. Cache bounded symbol responses, refresh open buffers and allow independent workspace/worktree LSP sessions to query concurrently. Keep edits on the existing approved file-tool path. / Consultar símbolos por nombre y leer solo el cuerpo necesario, con referencias contextualizadas, caché acotada, actualización de documentos abiertos y consultas paralelas entre proyectos; conservar las herramientas de edición y aprobaciones actuales.
 - Compact active master and worker contexts at complete tool boundaries, preserving durable originals, task/session IDs and recent context. Summaries must not replay effects or reset execution limits.
 - Expose coding configuration in the local web and document capabilities and limits in [English](docs/en/coding-harness.md) and [Spanish](docs/es/coding-harness.md).
 
@@ -343,7 +352,7 @@ Implemented: interactive PTY/stdin, explicitly persistent services, cursor-based
 
 Implementado: PTY/entrada interactiva, servicios persistentes explícitos, registros redactados con cursor, límites configurables, seguimientos de subagentes con el mismo contexto y descubrimiento determinista de herramientas bajo demanda. Ver [Español](docs/es/execution-harness.md).
 
-Automatic crash recovery, isolated parallel worktrees, MCP and programmatic tool composition remain separate future work. La recuperación automática tras reinicios, worktrees paralelos aislados, MCP y composición programática de herramientas siguen siendo trabajo futuro separado.
+Parallel Git worktrees with serialized local integration are implemented: [English](docs/en/parallel-worktrees.md) / [Español](docs/es/parallel-worktrees.md). Automatic crash recovery, MCP and programmatic tool composition remain future work. / Los worktrees de Git y la integración local serializada están implementados; la recuperación automática tras reinicios, MCP y la composición programática de herramientas siguen pendientes.
 
 
 ## Local browser / Navegador local
@@ -354,6 +363,35 @@ El navegador local incluye controles manuales, perfiles personales persistentes 
 
 ## Procedural coding and recovery / Procedimientos y recuperación
 
+Derive a bounded, deterministic operational snapshot from existing plans/contracts for long work and relevant failure recovery. Persist deduplicated failed-tool observations and sourced agent hypotheses in the existing task contract; carry only authorized predecessor/prior-generation evidence to replacement workers. Reserve snapshot space during compaction, invalidate stale next-step notes after plan/owner changes, and avoid duplicate conversation entries or extra summary-model calls. / Generar un resumen operativo acotado desde los planes y contratos existentes; conservar fallos e hipótesis con procedencia, aislar la información entre tareas y actualizar el siguiente paso sin duplicar planes ni acumular mensajes.
+
+Search saved, redacted tool outputs through `task_inspect(query)` using local lexical retrieval, exact source offsets and existing task permissions. Report incomplete indexing explicitly; retain the authoritative journal and exclude inspection results from the index. / Buscar salidas guardadas con búsqueda léxica local, fragmentos exactos y permisos por tarea; señalar cobertura incompleta, conservar los originales y evitar indexación recursiva.
+
 Provide fourteen curated manual skills, lexical field-aware skill discovery, selective loading of authorized tool schemas, actionable argument errors, bounded failure-specific recovery and checkpoint-backed context reduction. Allow independent file writes alongside Linux-enforced read-only commands with explicit inputs; preserve ordinary command policies and conservative handling of unknown effects. Reuse editable plans, nonblocking supervision and one-level delegation. See [English](docs/en/harness-recovery.md) / [Español](docs/es/harness-recovery.md).
 
 Incluir catorce skills manuales, selección léxica, esquemas bajo demanda, errores accionables y recuperación limitada según la causa. Conservar estado y procedencia al compactar. Permitir escrituras independientes durante lecturas restringidas por Linux sin ampliar permisos ni crear delegación anidada.
+
+## Browser voice and Live / Voz del navegador y Live
+
+- Build the web with Vite, React, TypeScript, Tailwind and pnpm; Rust/Axum serves the compiled assets without a Node server. / Compilar la web con Vite, React, TypeScript, Tailwind y pnpm; Rust/Axum sirve los archivos sin servidor Node.
+- Keep existing administration, chat, project, memory, skill, scheduling and browser features. / Mantener las funciones existentes de administración, chat, proyectos, memoria, skills, programaciones y navegador.
+- Dictation fills a reviewable draft. Live uses browser STT/TTS and a separately configured conversational model, defaulting to Nemotron. / El dictado llena un borrador revisable. Live usa STT/TTS del navegador y un modelo conversacional independiente, Nemotron por defecto.
+- Group observable progress into natural updates; automatic narration cannot authorize actions. Explicit user requests reach the master's normal APIs with the original wording. / Agrupar el progreso observable en novedades naturales; la narración automática no autoriza acciones. Las instrucciones explícitas llegan a las APIs normales del maestro con el texto original.
+- Preserve one shared conversation. Navigation and hanging up must not cancel master tasks, plans or subagents. / Conservar una conversación compartida. Navegar y colgar no deben cancelar tareas, planes ni subagentes.
+- Unsupported recognition keeps text chat usable. Microphone permission, echo cancellation and interruption behavior need real-device verification. / Si el reconocimiento no está disponible, el chat escrito sigue funcionando. Los permisos, la cancelación de eco y las interrupciones requieren verificación en dispositivos reales.
+
+## Design and visual results / Design y resultados visuales
+
+- Provide Templates, Favorites, My designs and Brand identity, with an initial catalog of 64 original examples. / Ofrecer Plantillas, Favoritos, Mis diseños e Identidad visual, con 64 ejemplos propios.
+- Display diagrams, web interfaces, presentations, charts, documents, tables, images and video in a desktop side panel and a mobile fullscreen view. / Mostrar los ocho formatos en un panel lateral o a pantalla completa en móvil.
+- Let the agent discover templates, present ordered choices and publish or import project-scoped results; preserve the same conversation. / El agente puede ofrecer opciones y publicar resultados asociados a proyectos sin crear conversaciones separadas.
+- Persist favorites, branding, artifacts and optimistic revisions per user. Preserve previous revisions when restoring. / Persistir preferencias, identidad, resultados y versiones por usuario; restaurar crea otra versión.
+- Document actual format limitations, including Office content extraction and disabled scripts/network in HTML previews. / Documentar límites reales, incluida la extracción Office y el aislamiento de HTML.
+- Implementation contract: [English](docs/en/design.md) · [Español](docs/es/design.md).
+
+## Engine security boundaries / Protección en el motor
+
+- Redact registered and recognizable secrets before provider requests, streamed previews and durable memory; keep API authentication separate and reject unsafe opaque replay without rewriting signatures. / Ocultar secretos antes de enviarlos al modelo, mostrarlos o guardarlos en memoria; separar autenticación y rechazar continuidad opaca insegura sin modificar firmas.
+- Allow operator-owned destination lists per execution profile/account and exact host lists for the native web reader, checking redirects and preserving private-network denial. / Admitir destinos configurados por perfil/usuario y listas de hosts en el lector web, comprobando redirecciones y manteniendo el bloqueo de redes privadas.
+- Screen protected instruction writes and loads; preserve suspicious research content as reference data and prevent its automatic promotion to confirmed memory or instruction context. / Revisar escrituras y cargas de instrucciones; conservar referencias sospechosas sin promocionarlas automáticamente a memoria confirmada o instrucciones.
+- Configuration, enforcement limits and validation: [English](docs/en/security-boundaries.md) · [Español](docs/es/security-boundaries.md).

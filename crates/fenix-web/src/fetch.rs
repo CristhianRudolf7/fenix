@@ -7,12 +7,49 @@ use reqwest::{
     header::{self, HeaderMap},
 };
 use std::{
+    collections::HashMap,
     net::{IpAddr, SocketAddr},
-    time::Duration,
+    sync::Mutex,
+    time::{Duration, Instant},
 };
 use tokio::sync::Semaphore;
 
 pub(crate) const AGENT: &str = "FenixBot";
+
+/// Keep recognized search services out of the public corpus, including links
+/// discovered by crawling. This complements the absence of provider adapters;
+/// it is not an exhaustive classification of every service on the internet.
+fn external_search_url(url: &Url) -> bool {
+    let host = url.host_str().unwrap_or_default().trim_end_matches('.');
+    let within = |domain: &str| host == domain || host.ends_with(&format!(".{domain}"));
+    if [
+        "search.brave.com",
+        "bing.com",
+        "duckduckgo.com",
+        "search.yahoo.com",
+        "hn.algolia.com",
+        "serpapi.com",
+        "serper.dev",
+        "tavily.com",
+        "api.exa.ai",
+        "searchapi.io",
+    ]
+    .iter()
+    .any(|domain| within(domain))
+    {
+        return true;
+    }
+    let bare = host.strip_prefix("www.").unwrap_or(host);
+    if bare.starts_with("google.") {
+        return true;
+    }
+    let path = url.path().trim_end_matches('/');
+    (within("github.com") && (path == "/search" || path.starts_with("/search/")))
+        || (within("reddit.com")
+            && (path.ends_with("/search")
+                || path.ends_with("/search.rss")
+                || path.ends_with("/search.json")))
+}
 
 pub(crate) fn public_ip(ip: IpAddr) -> bool {
     match ip {
@@ -58,6 +95,11 @@ pub(crate) fn public_url(value: &str) -> Result<Url> {
     }
     if !matches!(url.port_or_known_default(), Some(80 | 443)) {
         bail!("Only public web ports 80 and 443 are allowed");
+    }
+    if external_search_url(&url) {
+        bail!(
+            "External search services are not supported; use Fenix's own index or an original source URL"
+        );
     }
     match url.host().context("URL requires a host")? {
         url::Host::Ipv4(ip) if !public_ip(IpAddr::V4(ip)) => {
@@ -111,8 +153,15 @@ pub(crate) struct Network {
     downloads: Semaphore,
     origins: Entries<()>,
     robots_loads: Entries<()>,
+    clients: Mutex<HashMap<String, PinnedClient>>,
     #[cfg(test)]
     pub(crate) test_address: Option<SocketAddr>,
+}
+
+struct PinnedClient {
+    addresses: Vec<SocketAddr>,
+    client: reqwest::Client,
+    used_at: Instant,
 }
 
 impl Network {
@@ -123,6 +172,7 @@ impl Network {
             config,
             origins: Entries::default(),
             robots_loads: Entries::default(),
+            clients: Mutex::new(HashMap::new()),
             #[cfg(test)]
             test_address: None,
         }
@@ -134,7 +184,9 @@ impl Network {
         etag: Option<&str>,
         modified: Option<&str>,
     ) -> Result<Response> {
-        tokio::time::timeout(Duration::from_secs(30), async {
+        // Each actual request has its own 12s timeout in once(). Allow a
+        // separate bounded window for robots pacing and redirect traversal.
+        tokio::time::timeout(Duration::from_secs(100), async {
             let mut current = url;
             for hop in 0..=5 {
                 let robots = self.robots(&current).await?;
@@ -172,7 +224,7 @@ impl Network {
             bail!("Too many redirects");
         })
         .await
-        .context("Web fetch timed out (30 seconds)")?
+        .context("Web fetch timed out (100 seconds including origin pacing)")?
     }
 
     async fn robots(&self, url: &Url) -> Result<String> {
@@ -266,6 +318,8 @@ impl Network {
         etag: Option<&str>,
         modified: Option<&str>,
     ) -> Result<Response> {
+        // Includes robots and every redirect hop, before DNS, quotas or sockets.
+        self.config.authorize_url(&url)?;
         let origin = url.origin().ascii_serialization();
         // Wait for this site's lane and rate limit before acquiring scarce global
         // capacity. A slow/throttled origin cannot occupy all download permits.
@@ -300,18 +354,18 @@ impl Network {
         if addresses.is_empty() || addresses.iter().any(|a| !public_ip(a.ip())) {
             bail!("Web host resolves to a private, local or reserved address");
         }
-        let builder = reqwest::Client::builder()
-            .user_agent("FenixBot/0.2 (+https://github.com/CristhianRudolf7/fenix)")
-            .no_proxy()
-            .redirect(reqwest::redirect::Policy::none())
-            .referer(false)
-            .connect_timeout(Duration::from_secs(5))
-            .timeout(Duration::from_secs(12))
-            .pool_max_idle_per_host(0)
-            .resolve_to_addrs(host, &addresses);
+        // DNS is still validated before EVERY request, including pool reuse.
+        // Changed addresses replace the pinned client; a rebinding to a private
+        // address is rejected above and can never use an old connection.
+        let client = self.client(&origin, host, addresses)?;
         #[cfg(test)]
         let request_url = if let Some(address) = self.test_address {
             let mut local = url.clone();
+            // Wiremock is plain HTTP, even when the logical public URL uses
+            // HTTPS. This override exists only in unit-test builds.
+            local
+                .set_scheme("http")
+                .map_err(|_| anyhow::anyhow!("Test scheme"))?;
             local.set_host(Some(&address.ip().to_string()))?;
             local
                 .set_port(Some(address.port()))
@@ -322,7 +376,6 @@ impl Network {
         };
         #[cfg(not(test))]
         let request_url = url.clone();
-        let client = builder.build()?;
         let mut request = client.get(request_url).header(
             header::ACCEPT,
             "text/html,application/xhtml+xml,text/plain,application/xml,text/xml;q=0.9",
@@ -363,6 +416,60 @@ impl Network {
         })
     }
 
+    fn client(
+        &self,
+        origin: &str,
+        host: &str,
+        mut addresses: Vec<SocketAddr>,
+    ) -> Result<reqwest::Client> {
+        addresses.sort_unstable();
+        let mut clients = self
+            .clients
+            .lock()
+            .map_err(|_| anyhow::anyhow!("HTTP client pool lock poisoned"))?;
+        clients.retain(|_, entry| entry.used_at.elapsed() < Duration::from_secs(60));
+        if let Some(entry) = clients.get_mut(origin)
+            && entry.addresses == addresses
+        {
+            entry.used_at = Instant::now();
+            return Ok(entry.client.clone());
+        }
+        let client = reqwest::Client::builder()
+            .user_agent("FenixBot/0.2 (+https://github.com/CristhianRudolf7/fenix)")
+            .no_proxy()
+            .redirect(reqwest::redirect::Policy::none())
+            .referer(false)
+            .connect_timeout(Duration::from_secs(5))
+            .timeout(Duration::from_secs(12))
+            .pool_max_idle_per_host(1)
+            .pool_idle_timeout(Duration::from_secs(30))
+            .resolve_to_addrs(host, &addresses)
+            .build()?;
+        if clients.len() >= 32
+            && !clients.contains_key(origin)
+            && let Some(oldest) = clients
+                .iter()
+                .min_by_key(|(_, entry)| entry.used_at)
+                .map(|(key, _)| key.clone())
+        {
+            clients.remove(&oldest);
+        }
+        clients.insert(
+            origin.to_owned(),
+            PinnedClient {
+                addresses,
+                client: client.clone(),
+                used_at: Instant::now(),
+            },
+        );
+        Ok(client)
+    }
+
+    #[cfg(test)]
+    pub(crate) fn pooled_origins(&self) -> usize {
+        self.clients.lock().unwrap().len()
+    }
+
     pub(crate) fn active_downloads(&self) -> usize {
         self.config.max_concurrent_searches - self.downloads.available_permits()
     }
@@ -394,4 +501,36 @@ fn crawl_delay(robots: &str) -> u64 {
         })
         .max()
         .unwrap_or(0)
+}
+
+#[cfg(test)]
+mod search_policy_tests {
+    use super::public_url;
+
+    #[test]
+    fn search_services_cannot_enter_sources_or_crawl_frontier() {
+        for value in [
+            "https://search.brave.com/search?q=rust",
+            "https://api.search.brave.com/res/v1/web/search?q=rust",
+            "https://www.google.com.pe/search?q=rust",
+            "https://www.bing.com/search?q=rust",
+            "https://html.duckduckgo.com/html/?q=rust",
+            "https://hn.algolia.com/api/v1/search?query=rust",
+            "https://api.github.com/search/repositories?q=rust",
+            "https://www.reddit.com/search.rss?q=rust",
+            "https://www.reddit.com/r/rust/search/?q=rust",
+        ] {
+            assert!(public_url(value).is_err(), "{value}");
+        }
+        for value in [
+            "https://news.ycombinator.com/item?id=123",
+            "https://www.reddit.com/r/rust/comments/123/example/",
+            "https://github.com/rust-lang/rust",
+            "https://developer.chrome.com/docs",
+            "https://docs.google.com/document/d/example",
+            "https://example.org/search-design",
+        ] {
+            assert!(public_url(value).is_ok(), "{value}");
+        }
+    }
 }

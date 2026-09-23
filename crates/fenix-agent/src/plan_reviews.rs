@@ -8,6 +8,12 @@ use serde_json::{Value, json};
 
 impl Runtime {
     pub(crate) fn review_tool_allowed(&self, task: &str, name: &str, args: &Value) -> Result<bool> {
+        if self.store.completion_audit_for_worker(task)?.is_some() {
+            return self.completion_audit_tool_allowed(task, name, args);
+        }
+        if !self.completion_audit_tool_allowed(task, name, args)? {
+            return Ok(false);
+        }
         let reviewer = self.store.review_for_worker(task)?.is_some();
         let coordinator = self.store.get::<String>("review_edits", task)?.is_some();
         if !reviewer && !coordinator {
@@ -17,12 +23,17 @@ impl Runtime {
             name,
             "tool_search"
                 | "files_list"
+                | "document_read"
+                | "design_read"
+                | "design_list"
+                | "design_templates"
                 | "file_read"
                 | "files_search"
                 | "files_glob"
                 | "code_query"
                 | "memory_search"
                 | "memory_context"
+                | "skill_list"
                 | "skill_search"
                 | "skill_load"
                 | "task_inspect"
@@ -30,7 +41,9 @@ impl Runtime {
                 | "web_search"
                 | "web_read"
                 | "plan_review_read"
-        ) || reviewer && name == "subagent_finish"
+        ) || name == "project_spec"
+            && matches!(args["action"].as_str(), Some("get" | "changes"))
+            || reviewer && name == "subagent_finish"
             || coordinator
                 && name == "plan_manage"
                 && matches!(
@@ -132,6 +145,41 @@ impl Runtime {
         };
         brief.validate()?;
         self.store.put("plan_briefs", &plan.id, &brief)?;
+        let saved = self.store.plan_evidence(&plan.id, plan.version)?;
+        for (section, kind, values) in [
+            (
+                "requirement",
+                fenix_storage::EvidenceKind::Requirement,
+                &brief.requirements,
+            ),
+            (
+                "observation",
+                fenix_storage::EvidenceKind::Fact,
+                &brief.observations,
+            ),
+            (
+                "assumption",
+                fenix_storage::EvidenceKind::Fact,
+                &brief.assumptions,
+            ),
+            (
+                "question",
+                fenix_storage::EvidenceKind::Fact,
+                &brief.open_questions,
+            ),
+        ] {
+            for (index, statement) in values.iter().enumerate() {
+                let id = format!("note:brief:{section}:{index}");
+                if saved.iter().any(|e| e.input.id == id) {
+                    continue;
+                }
+                self.store.record_plan_evidence(&plan.id, plan.version, &plan.task_id, fenix_storage::EvidenceInput {
+                    id, kind: kind.clone(), state: if matches!(section, "assumption" | "question") { fenix_storage::EvidenceState::Doubtful } else { fenix_storage::EvidenceState::Pending },
+                    statement:statement.clone(), source:"Agent-authored plan brief; check against the original request and explicit answers".into(), node_id:None,
+                    question: (section == "question").then(||statement.clone()),
+                })?;
+            }
+        }
         let reason = args["review_reason"].as_str().unwrap_or("");
         let complex =
             plan.nodes.len() >= 3 || plan.nodes.iter().any(|n| !n.spec.depends_on.is_empty());
@@ -292,6 +340,7 @@ impl Runtime {
                     }
                     let _active = self.subagents.active.lock().await;
                     let spec = SubagentSpec {
+                        profile: self.profile_for_skills(&assignment.request.skills)?,
                         objective: format!("Review plan {} v{}: {}",plan.id,plan.version,assignment.request.specialty),
                         expected_output:"An evidence-backed structured review using subagent_finish.review, not execution of the milestones".into(),
                         context:json!({"review_id":review.id,"role":assignment.role,"round":review.round,"question":assignment.request.question,"skills":assignment.request.skills,"instruction":"Use plan_review_read to obtain the original request, brief and relevant milestones; consult evidence for existing answers."}).to_string(),
@@ -345,6 +394,7 @@ impl Runtime {
         }
         // One review per failed execution, with downstream gating. No automatic
         // retry of effects. A revised plan is required before a failed node reruns.
+        let audits = self.store.completion_audits(&plan.id)?;
         let reviews = self.store.plan_reviews(&plan.id)?;
         if reviews.iter().any(|r| {
             r.version == plan.version && !matches!(r.status.as_str(), "passed" | "superseded")
@@ -359,6 +409,11 @@ impl Runtime {
         let mut nodes = vec![];
         let mut workers = vec![];
         for node in blocked {
+            if audits.iter().any(|a| {
+                a.version == plan.version && a.node_id == node.spec.id && a.status == "blocked"
+            }) {
+                continue;
+            }
             let worker = node.worker_id.as_ref().unwrap();
             if self
                 .store

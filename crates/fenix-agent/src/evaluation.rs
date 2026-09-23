@@ -84,7 +84,9 @@ impl EvaluationMetrics {
 
 /// Refuse reused state: evaluations must not inherit personal memory or credentials.
 pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: bool) -> Result<()> {
-    if config.timeout_seconds == 0 || config.waiting_seconds == 0 {
+    if (config.timeout_seconds == 0 && !config.settings.execution.externally_supervised)
+        || config.waiting_seconds == 0
+    {
         bail!("Evaluation timeouts must be positive");
     }
     std::fs::create_dir(output).context("Evaluation output must be a new directory")?;
@@ -171,7 +173,7 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
             // export it once after inference stops instead of rewriting all logs per poll.
             crate::write_private(&output.join("progress.partial"), &json!({"elapsed_seconds":started.elapsed().as_secs_f64(),"tasks":tasks,"plans":plans}).to_string())?;
             std::fs::rename(output.join("progress.partial"),output.join("progress.json"))?;
-            if started.elapsed() >= Duration::from_secs(config.timeout_seconds) {
+            if config.timeout_seconds != 0 && started.elapsed() >= Duration::from_secs(config.timeout_seconds) {
                 break Ok("timeout".into());
             }
             if running {

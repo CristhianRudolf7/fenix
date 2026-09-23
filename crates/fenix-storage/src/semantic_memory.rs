@@ -3,7 +3,10 @@ impl Store {
     pub fn pending_memory_embeddings(&self, model: &str, limit: usize) -> Result<Vec<Memory>> {
         let db = self.db()?;
         let rows=db.prepare("SELECT m.id,m.title,m.content,m.source,m.created_at,m.updated_at,m.project_id,m.task_id,m.metadata FROM memories m LEFT JOIN memory_embeddings e ON e.memory_id=m.id WHERE (e.memory_id IS NULL OR e.model!=?1 OR e.content!=m.content) AND coalesce(json_extract(m.metadata,'$.status'),'confirmed')='confirmed' AND (json_extract(m.metadata,'$.valid_from') IS NULL OR julianday(json_extract(m.metadata,'$.valid_from'))<=julianday('now')) AND (json_extract(m.metadata,'$.valid_until') IS NULL OR julianday(json_extract(m.metadata,'$.valid_until'))>julianday('now')) ORDER BY m.updated_at,m.id LIMIT ?2")?.query_map(params![model,limit.min(32)],memory::memory_row)?.collect::<rusqlite::Result<Vec<_>>>()?;
-        Ok(rows.into_iter().filter(|m| m.metadata.active()).collect())
+        Ok(rows
+            .into_iter()
+            .filter(|m| m.metadata.active() && m.safe_for_context())
+            .collect())
     }
     pub fn save_memory_embedding(
         &self,
@@ -33,7 +36,7 @@ impl Store {
         let qnorm = query.iter().map(|x| x * x).sum::<f64>().sqrt();
         for row in rows {
             let (m, raw) = row?;
-            if !m.metadata.active() {
+            if !m.metadata.active() || !m.safe_for_context() {
                 continue;
             }
             let vector: Vec<f64> = serde_json::from_str(&raw)?;

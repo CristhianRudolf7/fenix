@@ -361,6 +361,15 @@ fn describe_action(action: &Value) -> String {
     let args = &action["arguments"];
     let text = |name: &str| args[name].as_str().unwrap_or_default();
     match action["tool"].as_str() {
+        Some("library_export") => format!("Copiar documento de biblioteca a {}", text("path")),
+        Some("document_create") => {
+            format!("Crear documento {}", args["path"].as_str().unwrap_or(""))
+        }
+        Some("document_edit") => format!(
+            "Editar documento {} ({})",
+            args["path"].as_str().unwrap_or(""),
+            args["operation"]["action"].as_str().unwrap_or("")
+        ),
         Some("file_write") => format!(
             "\n\nCrear archivo: {}\n\nContenido:\n{}",
             text("path"),

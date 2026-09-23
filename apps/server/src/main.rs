@@ -25,6 +25,15 @@ fn main() -> Result<()> {
 }
 
 async fn run() -> Result<()> {
+    if std::env::args().nth(1).as_deref() == Some("internal-runner") {
+        std::process::exit(fenix_execution::relay().await?);
+    }
+    if std::env::args().nth(1).as_deref() == Some("accounts") {
+        return fenix_server::accounts::admin();
+    }
+    if std::env::args().nth(1).as_deref() == Some("gateway") {
+        return fenix_server::accounts::serve().await;
+    }
     if std::env::args().nth(1).as_deref() == Some("eval") {
         let mut args = std::env::args().skip(2);
         let config = args.next().ok_or_else(|| {
@@ -79,7 +88,13 @@ async fn run() -> Result<()> {
         }
     }
     let runtime = Runtime::open(&data_dir, skills_dir.as_deref()).await?;
-    let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
+    // Container listeners are explicitly enabled by the operator, never by a model.
+    let ip = if std::env::var("FENIX_CONTAINER").as_deref() == Ok("1") {
+        Ipv4Addr::UNSPECIFIED
+    } else {
+        Ipv4Addr::LOCALHOST
+    };
+    let address = SocketAddr::new(IpAddr::V4(ip), port);
     let listener = tokio::net::TcpListener::bind(address).await?;
     let port = listener.local_addr()?.port();
     let mut workers = runtime.start();
@@ -89,7 +104,32 @@ async fn run() -> Result<()> {
         runtime.data_dir.display(),
         runtime.skills_dir.display()
     );
-    let app = fenix_server::router(runtime.clone(), port);
+    let public_origin = std::env::var("FENIX_PUBLIC_ORIGIN").ok();
+    let mut app =
+        fenix_server::router_with_public_origin(runtime.clone(), port, public_origin.as_deref())?;
+    if let Ok(token) = std::env::var("FENIX_UPSTREAM_TOKEN") {
+        anyhow::ensure!(token.len() >= 32, "Invalid upstream token");
+        app = app.layer(axum::middleware::from_fn(
+            move |request: axum::extract::Request, next: axum::middleware::Next| {
+                let valid = request
+                    .headers()
+                    .get("x-fenix-upstream")
+                    .and_then(|v| v.to_str().ok())
+                    == Some(token.as_str());
+                async move {
+                    if valid {
+                        next.run(request).await
+                    } else {
+                        axum::response::IntoResponse::into_response(
+                            axum::http::StatusCode::UNAUTHORIZED,
+                        )
+                    }
+                }
+            },
+        ));
+    } else if std::env::var("FENIX_CONTAINER").as_deref() == Ok("1") {
+        bail!("Container mode requires an upstream token");
+    }
     let shutdown = runtime.clone();
     axum::serve(listener, app)
         .with_graceful_shutdown(async move {

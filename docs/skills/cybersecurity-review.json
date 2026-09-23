@@ -1,0 +1,2902 @@
+{
+  "date": "2026-09-20",
+  "repository": "mukul975/Anthropic-Cybersecurity-Skills",
+  "commit": "54a798831d2266a3ca61ce68a7acb80b81160d57",
+  "upstream_code_executed": false,
+  "coverage": {
+    "inventoried_skills": 818,
+    "read_files": 38,
+    "full_skill_files": 18,
+    "partial_skill_files": 12,
+    "full_helpers": 6,
+    "partial_helpers": 2
+  },
+  "reads": [
+    {
+      "path": "skills/securing-agentic-ai-tool-invocation/SKILL.md",
+      "sha256": "9bc5fbdd43961c9d02212b11d11ac9f3029bdd51d2bcbe40b41b174169a3278d",
+      "total_lines": 269,
+      "ranges_read": [
+        [
+          1,
+          269
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/securing-agentic-ai-tool-invocation/SKILL.md"
+    },
+    {
+      "path": "skills/testing-prompt-injection-in-rag-pipelines/SKILL.md",
+      "sha256": "a67bd9fa2545a18c89b19e4c0805ad8c265b6042f20a0e5ccc0e73b5a4bc5ae0",
+      "total_lines": 274,
+      "ranges_read": [
+        [
+          1,
+          274
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/testing-prompt-injection-in-rag-pipelines/SKILL.md"
+    },
+    {
+      "path": "skills/assessing-vector-and-embedding-weaknesses/SKILL.md",
+      "sha256": "645db88420e8c49ca0f556de974fa21e8c7cfd41422452b908e8da203a4d8d31",
+      "total_lines": 236,
+      "ranges_read": [
+        [
+          1,
+          236
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/assessing-vector-and-embedding-weaknesses/SKILL.md"
+    },
+    {
+      "path": "skills/triaging-vulnerabilities-with-ssvc-framework/SKILL.md",
+      "sha256": "7ca9a3eae6dfe62746476dbd6104202951829e273714cb18411e9a13a33378de",
+      "total_lines": 217,
+      "ranges_read": [
+        [
+          1,
+          217
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/triaging-vulnerabilities-with-ssvc-framework/SKILL.md"
+    },
+    {
+      "path": "skills/performing-cve-prioritization-with-kev-catalog/SKILL.md",
+      "sha256": "f10d6c7999fc0749549758236def738d64a6f471826a6cecd82c32b04acd2287",
+      "total_lines": 272,
+      "ranges_read": [
+        [
+          80,
+          245
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/performing-cve-prioritization-with-kev-catalog/SKILL.md"
+    },
+    {
+      "path": "skills/building-vulnerability-exception-tracking-system/SKILL.md",
+      "sha256": "2a040338e3ecad6af340cda982cbf352985e696b1702bb7ba677d408abe797b5",
+      "total_lines": 183,
+      "ranges_read": [
+        [
+          1,
+          183
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/building-vulnerability-exception-tracking-system/SKILL.md"
+    },
+    {
+      "path": "skills/testing-api-for-broken-object-level-authorization/SKILL.md",
+      "sha256": "ba403342c7cae18411a0b12fde05ce3a9441dcfaf341cd845d00537c99250886",
+      "total_lines": 392,
+      "ranges_read": [
+        [
+          60,
+          190
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/testing-api-for-broken-object-level-authorization/SKILL.md"
+    },
+    {
+      "path": "skills/testing-api-for-mass-assignment-vulnerability/SKILL.md",
+      "sha256": "6d1409c3f163e16cdb89be446bb4db3fb73357abfc89e478cecb1d59c336ca7b",
+      "total_lines": 359,
+      "ranges_read": [
+        [
+          65,
+          188
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/testing-api-for-mass-assignment-vulnerability/SKILL.md"
+    },
+    {
+      "path": "skills/testing-websocket-api-security/SKILL.md",
+      "sha256": "18aaa89cb98ea9e3abbfe72862c8af19bf3ee2ab5e8d37d3c997e6484d14368f",
+      "total_lines": 446,
+      "ranges_read": [
+        [
+          1,
+          446
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/testing-websocket-api-security/SKILL.md"
+    },
+    {
+      "path": "skills/verifying-build-provenance-with-slsa-sigstore/SKILL.md",
+      "sha256": "9dc7aebed09d72cc50a757db2194dd0e8a822756f6c8b6a4dc44932e75f98c38",
+      "total_lines": 196,
+      "ranges_read": [
+        [
+          1,
+          196
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/verifying-build-provenance-with-slsa-sigstore/SKILL.md"
+    },
+    {
+      "path": "skills/analyzing-malicious-pdf-with-peepdf/SKILL.md",
+      "sha256": "7cdd9a208444d5b51eca2ee1a7a9d231557c4adc7d941e11d81f2174b9871065",
+      "total_lines": 96,
+      "ranges_read": [
+        [
+          1,
+          96
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/analyzing-malicious-pdf-with-peepdf/SKILL.md"
+    },
+    {
+      "path": "skills/implementing-immutable-backup-with-restic/SKILL.md",
+      "sha256": "8f4b2921bca81b695c103a3bcfd273e7d34cc0f9e893920b7842bfeb8509a390",
+      "total_lines": 110,
+      "ranges_read": [
+        [
+          1,
+          110
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/implementing-immutable-backup-with-restic/SKILL.md"
+    },
+    {
+      "path": "skills/validating-backup-integrity-for-recovery/SKILL.md",
+      "sha256": "81bba3e34a6c091117440392ca3bca25d8c22abafdaa22e59ea71dd021c9b41b",
+      "total_lines": 212,
+      "ranges_read": [
+        [
+          1,
+          212
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/validating-backup-integrity-for-recovery/SKILL.md"
+    },
+    {
+      "path": "skills/performing-container-image-hardening/SKILL.md",
+      "sha256": "8e54b13b8cc1f0ef8bfc2c51c335cf1cd3dea49ca1aac28851157844ee2ea6f7",
+      "total_lines": 265,
+      "ranges_read": [
+        [
+          55,
+          188
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/performing-container-image-hardening/SKILL.md"
+    },
+    {
+      "path": "skills/auditing-kubernetes-rbac-privilege-escalation/SKILL.md",
+      "sha256": "a378f61cbf38eff15580308606299b2e98beead60f5c0c98cf8821ae5b6ad1a6",
+      "total_lines": 268,
+      "ranges_read": [
+        [
+          40,
+          174
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/auditing-kubernetes-rbac-privilege-escalation/SKILL.md"
+    },
+    {
+      "path": "skills/detecting-business-email-compromise/SKILL.md",
+      "sha256": "910d3b03a382e3ae4274a5d72328ba332cb29af405c1ade32acf7a144c1b514f",
+      "total_lines": 150,
+      "ranges_read": [
+        [
+          1,
+          150
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/detecting-business-email-compromise/SKILL.md"
+    },
+    {
+      "path": "skills/detecting-suspicious-oauth-application-consent/SKILL.md",
+      "sha256": "00cbfe6cbce69e95668318733bae69462d7d79ceec26ef178ac748aa422463e6",
+      "total_lines": 65,
+      "ranges_read": [
+        [
+          1,
+          65
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/detecting-suspicious-oauth-application-consent/SKILL.md"
+    },
+    {
+      "path": "skills/implementing-jwt-signing-and-verification/SKILL.md",
+      "sha256": "da06a0dec6f73fdfdc340f6842197510c18720c4dec7e301b22c307b03e04df6",
+      "total_lines": 95,
+      "ranges_read": [
+        [
+          1,
+          95
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/implementing-jwt-signing-and-verification/SKILL.md"
+    },
+    {
+      "path": "skills/performing-ssl-tls-security-assessment/SKILL.md",
+      "sha256": "5429b42e2974be1e744f20107228c316d490024bd6c7eef62c21e370b240d66e",
+      "total_lines": 71,
+      "ranges_read": [
+        [
+          1,
+          71
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/performing-ssl-tls-security-assessment/SKILL.md"
+    },
+    {
+      "path": "skills/performing-cryptographic-audit-of-application/SKILL.md",
+      "sha256": "c39ca781b08e121cb8f439090078bacff3cfb629cbe524c40e2de203aa4f86f9",
+      "total_lines": 111,
+      "ranges_read": [
+        [
+          1,
+          111
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/performing-cryptographic-audit-of-application/SKILL.md"
+    },
+    {
+      "path": "skills/performing-ssl-certificate-lifecycle-management/SKILL.md",
+      "sha256": "1db13b2ce9e3da9ab7c27b4d74a18d41b38aff14cdbe89da0400145354ad2be3",
+      "total_lines": 97,
+      "ranges_read": [
+        [
+          1,
+          97
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/performing-ssl-certificate-lifecycle-management/SKILL.md"
+    },
+    {
+      "path": "skills/performing-container-escape-detection/SKILL.md",
+      "sha256": "33ed84ec7de93d4aa9f0037dcaee9718e3e97dda97477f5d5be62f77f22fa345",
+      "total_lines": 86,
+      "ranges_read": [
+        [
+          1,
+          86
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/performing-container-escape-detection/SKILL.md"
+    },
+    {
+      "path": "skills/verifying-build-provenance-with-slsa-sigstore/scripts/agent.py",
+      "sha256": "82a817d59e5d343a78ccdaad9fd0e4b24145d148a1a08054a46cd4fe2fafe696",
+      "total_lines": 135,
+      "ranges_read": [
+        [
+          1,
+          135
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/verifying-build-provenance-with-slsa-sigstore/scripts/agent.py"
+    },
+    {
+      "path": "skills/testing-prompt-injection-in-rag-pipelines/scripts/agent.py",
+      "sha256": "b1f65cd649947a5feeb97f50701b1de272240f3acf9e2c046a8717379689430c",
+      "total_lines": 137,
+      "ranges_read": [
+        [
+          1,
+          137
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/testing-prompt-injection-in-rag-pipelines/scripts/agent.py"
+    },
+    {
+      "path": "skills/securing-agentic-ai-tool-invocation/scripts/agent.py",
+      "sha256": "4f59d9b26e33205df66eeac19a97d2a9feca0fab85ae5450d00d9516b7777e8d",
+      "total_lines": 149,
+      "ranges_read": [
+        [
+          1,
+          149
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/securing-agentic-ai-tool-invocation/scripts/agent.py"
+    },
+    {
+      "path": "skills/auditing-mcp-servers-for-tool-poisoning/scripts/agent.py",
+      "sha256": "3e169d38eaca33482126ad056ca23a563b4cc443df38662a593b2caf3e1623be",
+      "total_lines": 155,
+      "ranges_read": [
+        [
+          1,
+          155
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/auditing-mcp-servers-for-tool-poisoning/scripts/agent.py"
+    },
+    {
+      "path": "skills/securing-github-actions-workflows/SKILL.md",
+      "sha256": "acf26e90270d574cd95561509317df36b2175c3b3b99a7d16636d07ad55a06e4",
+      "total_lines": 263,
+      "ranges_read": [
+        [
+          50,
+          220
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/securing-github-actions-workflows/SKILL.md"
+    },
+    {
+      "path": "skills/analyzing-sbom-for-supply-chain-vulnerabilities/SKILL.md",
+      "sha256": "678b62009723856d3371e714d140c8a1720c85d08c91c43792d3565236da0873",
+      "total_lines": 309,
+      "ranges_read": [
+        [
+          60,
+          215
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/analyzing-sbom-for-supply-chain-vulnerabilities/SKILL.md"
+    },
+    {
+      "path": "skills/conducting-cloud-incident-response/SKILL.md",
+      "sha256": "801ed8e81767d3eb88539c70960834009ee3b1735324c0f04c58d9aedceeaafc",
+      "total_lines": 289,
+      "ranges_read": [
+        [
+          60,
+          190
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/conducting-cloud-incident-response/SKILL.md"
+    },
+    {
+      "path": "skills/analyzing-macro-malware-in-office-documents/SKILL.md",
+      "sha256": "f63202e005d9b10280c6a8517a073322945a70454a617ff6ef37bcb48506e51a",
+      "total_lines": 345,
+      "ranges_read": [
+        [
+          65,
+          170
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/analyzing-macro-malware-in-office-documents/SKILL.md"
+    },
+    {
+      "path": "skills/triaging-vulnerabilities-with-ssvc-framework/scripts/agent.py",
+      "sha256": "5656ec497a3eb372c98745983a7e49415943cda78f1a74f83f6cb94f5331ab1c",
+      "total_lines": 219,
+      "ranges_read": [
+        [
+          1,
+          219
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/triaging-vulnerabilities-with-ssvc-framework/scripts/agent.py"
+    },
+    {
+      "path": "skills/validating-backup-integrity-for-recovery/scripts/agent.py",
+      "sha256": "052dfd4b91473c23d42a4f608b015566aa5be70fe9adb90086e4fb69bcbfee5d",
+      "total_lines": 323,
+      "ranges_read": [
+        [
+          1,
+          323
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/validating-backup-integrity-for-recovery/scripts/agent.py"
+    },
+    {
+      "path": "skills/analyzing-network-traffic-for-incidents/SKILL.md",
+      "sha256": "b5467621b7bfea98bc9cbf2d7e952d88be2cfe1a0d1b6558235e7331d48f4ac7",
+      "total_lines": 266,
+      "ranges_read": [
+        [
+          45,
+          135
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/analyzing-network-traffic-for-incidents/SKILL.md"
+    },
+    {
+      "path": "skills/building-threat-hunt-hypothesis-framework/SKILL.md",
+      "sha256": "839804d8a8f524f558f2909f7901c2de03a8f85f929307a21409c867bec295fb",
+      "total_lines": 95,
+      "ranges_read": [
+        [
+          1,
+          95
+        ]
+      ],
+      "review_depth": "full-text",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/building-threat-hunt-hypothesis-framework/SKILL.md"
+    },
+    {
+      "path": "skills/building-vulnerability-aging-and-sla-tracking/SKILL.md",
+      "sha256": "69ced18e0b2b70dc703d1803da3d234b970d1bee9f6d1bf01fc33ff86b80df58",
+      "total_lines": 291,
+      "ranges_read": [
+        [
+          55,
+          138
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/building-vulnerability-aging-and-sla-tracking/SKILL.md"
+    },
+    {
+      "path": "skills/performing-service-account-credential-rotation/SKILL.md",
+      "sha256": "2311b5ccc3dcf621c2228709278801d5f0d1e0d4fb20e98576ae3cc6936d9c8b",
+      "total_lines": 305,
+      "ranges_read": [
+        [
+          50,
+          140
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/performing-service-account-credential-rotation/SKILL.md"
+    },
+    {
+      "path": "skills/analyzing-sbom-for-supply-chain-vulnerabilities/scripts/agent.py",
+      "sha256": "8a0adf58eb52036a6b9b7d44176e8bd313b37d5f83f5eb01794b668a4f6c9732",
+      "total_lines": 770,
+      "ranges_read": [
+        [
+          100,
+          290
+        ],
+        [
+          325,
+          412
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/analyzing-sbom-for-supply-chain-vulnerabilities/scripts/agent.py"
+    },
+    {
+      "path": "skills/triaging-vulnerabilities-with-ssvc-framework/scripts/process.py",
+      "sha256": "6bc8db23a4936ab887288798f565a5b61b9adb4afc13328266044856e7b2d7e3",
+      "total_lines": 346,
+      "ranges_read": [
+        [
+          40,
+          155
+        ]
+      ],
+      "review_depth": "selected-sections",
+      "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills/blob/54a798831d2266a3ca61ce68a7acb80b81160d57/skills/triaging-vulnerabilities-with-ssvc-framework/scripts/process.py"
+    }
+  ],
+  "fenix_changes": {
+    "new_skills": [
+      "agent-security-evaluation",
+      "api-security-testing",
+      "vulnerability-management",
+      "security-artifact-triage"
+    ],
+    "updated_skills": [
+      "authentication-integration",
+      "backup-and-restore",
+      "container-workflows",
+      "dependency-and-secret-audit",
+      "detection-engineering",
+      "identity-access-review",
+      "incident-response",
+      "kubernetes-operations",
+      "network-diagnostics",
+      "phishing-triage",
+      "rag-evaluation",
+      "release-and-ci",
+      "security-code-review"
+    ],
+    "total_skills": 171,
+    "new_references": 14,
+    "new_helpers": 1,
+    "migration_snapshots": 13,
+    "artifacts": [
+      {
+        "path": "resources/skills/agent-security-evaluation/SKILL.md",
+        "sha256": "cd9260413be9c24cd04738862c77f8cd39c96d098a1536955c20f7775463589e"
+      },
+      {
+        "path": "resources/skills/agent-security-evaluation/references/security-scenarios.md",
+        "sha256": "97f978ce0489c82f79cc0602221b528740b939f6bd11e6b20fec3c6a7d35e5e0"
+      },
+      {
+        "path": "resources/skills/api-security-testing/SKILL.md",
+        "sha256": "a8d773bc8c9c47b2e90b605160e1ea9b0e52246b548ec1aba6b20b2307646113"
+      },
+      {
+        "path": "resources/skills/authentication-integration/SKILL.md",
+        "sha256": "d5fa4065b271b242bd6a446452209163332f5f10c5c030d0f1dd0640519a0c42"
+      },
+      {
+        "path": "resources/skills/authentication-integration/references/token-boundaries.md",
+        "sha256": "050a8c8159f01e830f13761d20890e7509119ab6fac741718e3492a3ab34b24f"
+      },
+      {
+        "path": "resources/skills/backup-and-restore/SKILL.md",
+        "sha256": "66fb375be9bcd7daf352bf46537d6d8e1216115aee532eaefca0bd8d709692ce"
+      },
+      {
+        "path": "resources/skills/backup-and-restore/references/recovery-evidence.md",
+        "sha256": "e980cd4cd43834c9fffd7923367c997027a4a3a716aba221288a37d0c87c7f82"
+      },
+      {
+        "path": "resources/skills/backup-and-restore/scripts/compare_manifests.py",
+        "sha256": "76d1880659faa0589709022767b3c7fb8c163915ef4cfc234503eb8c3ca5cf7b"
+      },
+      {
+        "path": "resources/skills/container-workflows/SKILL.md",
+        "sha256": "989d7a824ec845baf1f10d4610b9d62f5a5f45217a58f7edc125d530c20afb38"
+      },
+      {
+        "path": "resources/skills/container-workflows/references/runtime-isolation.md",
+        "sha256": "b7b60a060672d8b5d415d2f170fc04a7fd219f2ee86af78530445522bacefaf3"
+      },
+      {
+        "path": "resources/skills/dependency-and-secret-audit/SKILL.md",
+        "sha256": "42f233a289e9522655c01420f1975458fcd34dafa1226ac79cd688c1148eb02b"
+      },
+      {
+        "path": "resources/skills/dependency-and-secret-audit/references/supply-chain-evidence.md",
+        "sha256": "76f5927cbf24816e8408180869b4d31cf7c067ee8d51681a461666b0a3959022"
+      },
+      {
+        "path": "resources/skills/detection-engineering/SKILL.md",
+        "sha256": "5796f96e6365897ca3795a4d4412952b82a155544c54e66ac7ac6010bbaab7bf"
+      },
+      {
+        "path": "resources/skills/detection-engineering/references/hypothesis-driven-hunting.md",
+        "sha256": "9bb739be382bff804faa179e29150209e9666a28c563b9bf8eb896cc50acf567"
+      },
+      {
+        "path": "resources/skills/identity-access-review/SKILL.md",
+        "sha256": "cb5e87d69aca81fc6206a93f3714cfd57b534d13d7f5e95c4e51ae2c27b5aaf2"
+      },
+      {
+        "path": "resources/skills/identity-access-review/references/credential-lifecycle.md",
+        "sha256": "df5e2a641baf26889cc07a17eb15100cb87b9cefc5b250f0a5c501371fa2c5b6"
+      },
+      {
+        "path": "resources/skills/incident-response/SKILL.md",
+        "sha256": "64a4bb2aae8eec81b99c7b8ab59d6f46291be4f03dfcbc449960a9bce6a2c22d"
+      },
+      {
+        "path": "resources/skills/incident-response/references/cloud-and-network-evidence.md",
+        "sha256": "b931b8a656a79a1e94b3108c32ba33ccc72d3b47b7c22caf5614d7f493dfb624"
+      },
+      {
+        "path": "resources/skills/incident-response/references/forensic-evidence.md",
+        "sha256": "2eae2d6e77d49dbc4830b4531d4b327e1df8c01f3c83b9154e6e64a4ce01ca3c"
+      },
+      {
+        "path": "resources/skills/kubernetes-operations/SKILL.md",
+        "sha256": "44ad4a728df45053d9334d34316e20664732c0ba078bb876ae79e069cd7dbe7e"
+      },
+      {
+        "path": "resources/skills/kubernetes-operations/references/cluster-security.md",
+        "sha256": "3b8a12c0fd995e2431b563bf9edbc43358429d2eb580051c96de39784c744701"
+      },
+      {
+        "path": "resources/skills/network-diagnostics/SKILL.md",
+        "sha256": "f08f404f1fc311a711c088f06604d19d4ad332a9022c8dead28c3571f353f308"
+      },
+      {
+        "path": "resources/skills/network-diagnostics/references/tls-evidence.md",
+        "sha256": "41c35c08849bfbc38874c3f373780c0b30ae208c96663d9fe49b3f0c315e2884"
+      },
+      {
+        "path": "resources/skills/phishing-triage/SKILL.md",
+        "sha256": "b7230191c83bfada4d03d9e067ff4f77d7c6fdf9922664f5be9d1db9833966bd"
+      },
+      {
+        "path": "resources/skills/phishing-triage/references/mail-evidence.md",
+        "sha256": "33b8af1bc608e4d9a4c275f9e4ad50bf8e33d51f732343c8e8e05020dd0e9e38"
+      },
+      {
+        "path": "resources/skills/rag-evaluation/SKILL.md",
+        "sha256": "8dab2efd6cd4dd00e7c3bd0ef3ed5869962e4d4a184d2a47034eff649c9d1e4b"
+      },
+      {
+        "path": "resources/skills/release-and-ci/SKILL.md",
+        "sha256": "f6c08eb008aa5787bcc7aaa0333cbe68254873c2c55c3ea99334ccb8afb843e9"
+      },
+      {
+        "path": "resources/skills/release-and-ci/references/ci-trust-boundaries.md",
+        "sha256": "a751dc4f04938d51cf32f205d964ff28d751adac3e4d789048b588e3e9b7dbbf"
+      },
+      {
+        "path": "resources/skills/security-artifact-triage/SKILL.md",
+        "sha256": "212a2ab5449d2643ce5559a718ad62da810838567b6e0dfd8efa80d53d12e8e6"
+      },
+      {
+        "path": "resources/skills/security-artifact-triage/references/artifact-checks.md",
+        "sha256": "5e328acd755ff5033ae24afc81edf32a7ae06ab749b95f598cb16eb1ca5bb3f0"
+      },
+      {
+        "path": "resources/skills/security-code-review/SKILL.md",
+        "sha256": "7f9f132602a587586cd0132bbfa516a9de5afce976f176fb81daa539af38a24e"
+      },
+      {
+        "path": "resources/skills/security-code-review/references/agent-boundaries.md",
+        "sha256": "e231cf8b5bf931bd90f48e08d2da8b2a340014d4dcc5f55a6c2860b6699c8fd0"
+      },
+      {
+        "path": "resources/skills/security-code-review/references/cryptographic-boundaries.md",
+        "sha256": "4fb729cd1ada2099b80b7d0f7baab70fdcbc4ace49b2da4d137656f11d77ed34"
+      },
+      {
+        "path": "resources/skills/vulnerability-management/SKILL.md",
+        "sha256": "fafa9ce32b04d7c7f0cfd9b08ac9f45179529389adc237cfe3d9f910f30c3f1b"
+      }
+    ]
+  },
+  "validation": {
+    "first_candidate": {
+      "native_summary": [
+        "test result: FAILED. 27 passed; 2 failed; 0 ignored; 0 measured; 72 filtered out; finished in 74.85s"
+      ],
+      "discovery": [
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Evaluate indirect prompt injection through retrieved documents and tool results",
+          "rank": null,
+          "results": [
+            "security-code-review",
+            "skill-source-review",
+            "load-and-resilience-testing"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prueba la seguridad del agente frente a inyección de instrucciones y memoria contaminada",
+          "rank": null,
+          "results": [
+            "security-code-review",
+            "skill-source-review",
+            "agent-workflow-diagnosis"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Test agent approval replay and cross tenant memory leakage",
+          "rank": null,
+          "results": [
+            "cache-design",
+            "security-code-review",
+            "rag-evaluation"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Test BOLA IDOR and mass assignment using two API accounts",
+          "rank": null,
+          "results": [
+            "ab-test-analysis",
+            "cloud-cost-review",
+            "authentication-integration"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prueba autorización de API entre usuarios y campos protegidos",
+          "rank": null,
+          "results": [
+            "authentication-integration",
+            "security-code-review",
+            "test-driven-repair"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Evaluate WebSocket authorization after session revocation",
+          "rank": null,
+          "results": [
+            "authentication-integration",
+            "realtime-protocols",
+            "identity-access-review"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prioritize CVEs using KEV EPSS and asset exposure",
+          "rank": null,
+          "results": [
+            "security-code-review",
+            "image-workflows",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prioriza vulnerabilidades y registra excepciones con vencimiento",
+          "rank": null,
+          "results": [
+            "contract-review",
+            "threat-modeling",
+            "ml-training"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Track vulnerability remediation aging and verified closure",
+          "rank": null,
+          "results": [
+            "audio-transcription",
+            "project-status-review",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Inspect a suspicious PDF attachment without executing embedded code",
+          "rank": null,
+          "results": [
+            "pdf-workflows",
+            "phishing-triage",
+            "latex-authoring"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Analiza un archivo sospechoso con macros VBA sin ejecutarlo",
+          "rank": null,
+          "results": [
+            "phishing-triage",
+            "skill-source-review",
+            "git-recovery-and-change-management"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Triage suspicious archives and extracted indicators offline",
+          "rank": null,
+          "results": [
+            "phishing-triage",
+            "storage-and-archive-work",
+            "customer-support"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Verify restored backup manifests with missing files and read errors",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "dependency-and-secret-audit",
+            "repository-navigation"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Verifica restauración de backups e integridad sin confundir errores con éxito",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "knowledge-base-maintenance",
+            "test-driven-repair"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review SBOM component identities and signed build provenance",
+          "rank": null,
+          "results": [
+            "parametric-cad",
+            "database-schema-design",
+            "frontend-design-and-accessibility"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Audita dependencias SBOM y procedencia de artefactos",
+          "rank": 3,
+          "results": [
+            "environment-and-dependencies",
+            "skill-source-review",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Implement JWT issuer audience verification and key rotation",
+          "rank": null,
+          "results": [
+            "mobile-app-development",
+            "analytics-instrumentation",
+            "web-presentations"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Implementa OAuth PKCE y validación de tokens JWT",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "data-quality-audit",
+            "google-drive"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Harden container mounts capabilities and runtime isolation",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-inference-deployment",
+            "mcp-integration"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Endurece contenedores y comprueba aislamiento sin romper herramientas",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "git-worktree-coordination",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "kubernetes-operations",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review Kubernetes RBAC pod security and network policies",
+          "rank": 2,
+          "results": [
+            "identity-access-review",
+            "kubernetes-operations",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "identity-access-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review OAuth consent grants and service account credential rotation",
+          "rank": 1,
+          "results": [
+            "identity-access-review",
+            "authentication-integration",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "phishing-triage",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Investigate business email compromise and changed bank details",
+          "rank": null,
+          "results": [
+            "incident-response",
+            "email-workflows",
+            "invoice-and-expense-records"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Diagnose TLS certificate chain and renewal failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "procurement-and-vendors",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "release-and-ci",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Harden GitHub Actions workflow permissions and untrusted artifacts",
+          "rank": null,
+          "results": [
+            "web-research",
+            "issue-tracker-workflows",
+            "completion-verification"
+          ]
+        },
+        {
+          "expected": "detection-engineering",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Develop a threat hunting hypothesis with positive and benign telemetry",
+          "rank": 1,
+          "results": [
+            "detection-engineering",
+            "threat-modeling",
+            "feature-rollouts"
+          ]
+        },
+        {
+          "expected": "incident-response",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Investigate cloud incident logs and credential containment",
+          "rank": 1,
+          "results": [
+            "incident-response",
+            "detection-engineering",
+            "phishing-triage"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review cryptographic key management and nonce reuse in application code",
+          "rank": 1,
+          "results": [
+            "security-code-review",
+            "process-and-service-management",
+            "bibliography-management"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Evaluate RAG retrieval ranking without inferring inversion from cosine similarity",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "skill-authoring",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "documents-word",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Edit a Word document and preserve its headings",
+          "rank": 1,
+          "results": [
+            "documents-word",
+            "google-docs",
+            "document-comparison"
+          ]
+        },
+        {
+          "expected": "pdf-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Create a PDF report from my notes",
+          "rank": 3,
+          "results": [
+            "latex-authoring",
+            "documents-presentations",
+            "pdf-workflows"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Implement login for existing users",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "python-development",
+            "mobile-app-development"
+          ]
+        },
+        {
+          "expected": "api-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Integrate an external REST API with retries",
+          "rank": 1,
+          "results": [
+            "api-integration",
+            "api-contract-design",
+            "smart-home-control"
+          ]
+        },
+        {
+          "expected": "reverse-engineering",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Compare compiled ELF binaries",
+          "rank": 1,
+          "results": [
+            "reverse-engineering",
+            "purchase-comparison",
+            "procurement-and-vendors"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Review this source diff for SQL injection",
+          "rank": 1,
+          "results": [
+            "security-code-review",
+            "sql-analysis-and-optimization",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "threat-modeling",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Plan assets and trust boundaries for a new service",
+          "rank": 2,
+          "results": [
+            "security-code-review",
+            "threat-modeling",
+            "content-calendar"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Diagnose DNS connection failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "local-troubleshooting",
+            "cache-design"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Create a Docker image for a Python app",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-demo-apps",
+            "image-workflows"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Compare RAG retrieval quality on held out questions",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "experiment-and-benchmark-design",
+            "ml-training"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Evaluate indirect prompt injection through retrieved documents and tool results",
+          "rank": 1,
+          "results": [
+            "agent-security-evaluation",
+            "rag-evaluation",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prueba la seguridad del agente frente a inyección de instrucciones y memoria contaminada",
+          "rank": 1,
+          "results": [
+            "agent-security-evaluation",
+            "security-code-review",
+            "skill-authoring"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Test agent approval replay and cross tenant memory leakage",
+          "rank": 1,
+          "results": [
+            "agent-security-evaluation",
+            "rag-evaluation",
+            "cache-design"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Test BOLA IDOR and mass assignment using two API accounts",
+          "rank": 1,
+          "results": [
+            "api-security-testing",
+            "ab-test-analysis",
+            "cloud-cost-review"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prueba autorización de API entre usuarios y campos protegidos",
+          "rank": 1,
+          "results": [
+            "api-security-testing",
+            "authentication-integration",
+            "agent-security-evaluation"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Evaluate WebSocket authorization after session revocation",
+          "rank": 1,
+          "results": [
+            "api-security-testing",
+            "authentication-integration",
+            "realtime-protocols"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prioritize CVEs using KEV EPSS and asset exposure",
+          "rank": 1,
+          "results": [
+            "vulnerability-management",
+            "dependency-and-secret-audit",
+            "image-workflows"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prioriza vulnerabilidades y registra excepciones con vencimiento",
+          "rank": 1,
+          "results": [
+            "vulnerability-management",
+            "contract-review",
+            "threat-modeling"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Track vulnerability remediation aging and verified closure",
+          "rank": 1,
+          "results": [
+            "vulnerability-management",
+            "dependency-and-secret-audit",
+            "audio-transcription"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Inspect a suspicious PDF attachment without executing embedded code",
+          "rank": 1,
+          "results": [
+            "security-artifact-triage",
+            "phishing-triage",
+            "pdf-workflows"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Analiza un archivo sospechoso con macros VBA sin ejecutarlo",
+          "rank": 1,
+          "results": [
+            "security-artifact-triage",
+            "phishing-triage",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Triage suspicious archives and extracted indicators offline",
+          "rank": 1,
+          "results": [
+            "security-artifact-triage",
+            "phishing-triage",
+            "storage-and-archive-work"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Verify restored backup manifests with missing files and read errors",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "dependency-and-secret-audit",
+            "repository-navigation"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Verifica restauración de backups e integridad sin confundir errores con éxito",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "knowledge-base-maintenance",
+            "mobile-app-development"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review SBOM component identities and signed build provenance",
+          "rank": 1,
+          "results": [
+            "dependency-and-secret-audit",
+            "parametric-cad",
+            "identity-access-review"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Audita dependencias SBOM y procedencia de artefactos",
+          "rank": 1,
+          "results": [
+            "dependency-and-secret-audit",
+            "environment-and-dependencies",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Implement JWT issuer audience verification and key rotation",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "mobile-app-development",
+            "identity-access-review"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Implementa OAuth PKCE y validación de tokens JWT",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "identity-access-review",
+            "data-quality-audit"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Harden container mounts capabilities and runtime isolation",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-inference-deployment",
+            "mcp-integration"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Endurece contenedores y comprueba aislamiento sin romper herramientas",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "git-worktree-coordination",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "kubernetes-operations",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review Kubernetes RBAC pod security and network policies",
+          "rank": 1,
+          "results": [
+            "kubernetes-operations",
+            "identity-access-review",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "identity-access-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review OAuth consent grants and service account credential rotation",
+          "rank": 1,
+          "results": [
+            "identity-access-review",
+            "authentication-integration",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "phishing-triage",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Investigate business email compromise and changed bank details",
+          "rank": 1,
+          "results": [
+            "phishing-triage",
+            "incident-response",
+            "invoice-and-expense-records"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Diagnose TLS certificate chain and renewal failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "procurement-and-vendors",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "release-and-ci",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Harden GitHub Actions workflow permissions and untrusted artifacts",
+          "rank": 1,
+          "results": [
+            "release-and-ci",
+            "web-research",
+            "completion-verification"
+          ]
+        },
+        {
+          "expected": "detection-engineering",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Develop a threat hunting hypothesis with positive and benign telemetry",
+          "rank": 1,
+          "results": [
+            "detection-engineering",
+            "threat-modeling",
+            "agent-security-evaluation"
+          ]
+        },
+        {
+          "expected": "incident-response",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Investigate cloud incident logs and credential containment",
+          "rank": 1,
+          "results": [
+            "incident-response",
+            "identity-access-review",
+            "detection-engineering"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review cryptographic key management and nonce reuse in application code",
+          "rank": 1,
+          "results": [
+            "security-code-review",
+            "process-and-service-management",
+            "bibliography-management"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Evaluate RAG retrieval ranking without inferring inversion from cosine similarity",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "agent-security-evaluation",
+            "skill-authoring"
+          ]
+        },
+        {
+          "expected": "documents-word",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Edit a Word document and preserve its headings",
+          "rank": 1,
+          "results": [
+            "documents-word",
+            "google-docs",
+            "document-comparison"
+          ]
+        },
+        {
+          "expected": "pdf-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Create a PDF report from my notes",
+          "rank": null,
+          "results": [
+            "latex-authoring",
+            "documents-presentations",
+            "security-artifact-triage"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Implement login for existing users",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "python-development",
+            "mobile-app-development"
+          ]
+        },
+        {
+          "expected": "api-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Integrate an external REST API with retries",
+          "rank": 1,
+          "results": [
+            "api-integration",
+            "api-contract-design",
+            "smart-home-control"
+          ]
+        },
+        {
+          "expected": "reverse-engineering",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Compare compiled ELF binaries",
+          "rank": 1,
+          "results": [
+            "reverse-engineering",
+            "purchase-comparison",
+            "procurement-and-vendors"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Review this source diff for SQL injection",
+          "rank": 1,
+          "results": [
+            "security-code-review",
+            "sql-analysis-and-optimization",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "threat-modeling",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Plan assets and trust boundaries for a new service",
+          "rank": 1,
+          "results": [
+            "threat-modeling",
+            "security-code-review",
+            "content-calendar"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Diagnose DNS connection failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "local-troubleshooting",
+            "cache-design"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Create a Docker image for a Python app",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-demo-apps",
+            "image-workflows"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Compare RAG retrieval quality on held out questions",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "experiment-and-benchmark-design",
+            "ml-training"
+          ]
+        }
+      ],
+      "failures": [
+        "New artifact skill displaced pdf-workflows from top three for ordinary PDF creation",
+        "New agent skill/body-length changes displaced security-code-review from top three for a Spanish trust-boundary review query"
+      ],
+      "correction": "Narrow artifact description to suspicious inputs; add natural trust-boundary audit aliases to existing source-review skill. Queries unchanged."
+    },
+    "package_validation": {
+      "affected_packages": 17,
+      "creator_validator": "passed",
+      "local_resource_links": "passed",
+      "bilingual_resources": "passed"
+    },
+    "live_model_evaluation": false,
+    "external_scanners": false,
+    "production_deployment": false,
+    "python_helpers": {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/skills -p 'test_*.py' -v",
+      "tests": 80,
+      "passed": 80,
+      "failed": 0,
+      "new_comparator_tests": 11,
+      "seconds": 156.816
+    },
+    "final_candidate": {
+      "command": "cargo test -p fenix-agent --lib skills:: -- --nocapture",
+      "native_summary": "test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 72 filtered out; finished in 50.25s",
+      "tests": 29,
+      "passed": 29,
+      "failed": 0,
+      "summary": {
+        "baseline": {
+          "all_queries": 39,
+          "available_queries": 27,
+          "available_top3": 23,
+          "top3": 23,
+          "top1": 19,
+          "new_top3": 0,
+          "guards_top3": 10
+        },
+        "candidate": {
+          "all_queries": 39,
+          "available_queries": 39,
+          "available_top3": 39,
+          "top3": 39,
+          "top1": 37,
+          "new_top3": 12,
+          "guards_top3": 10
+        }
+      },
+      "discovery": [
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Evaluate indirect prompt injection through retrieved documents and tool results",
+          "rank": null,
+          "results": [
+            "security-code-review",
+            "skill-source-review",
+            "load-and-resilience-testing"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prueba la seguridad del agente frente a inyección de instrucciones y memoria contaminada",
+          "rank": null,
+          "results": [
+            "security-code-review",
+            "skill-source-review",
+            "agent-workflow-diagnosis"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Test agent approval replay and cross tenant memory leakage",
+          "rank": null,
+          "results": [
+            "cache-design",
+            "security-code-review",
+            "rag-evaluation"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Test BOLA IDOR and mass assignment using two API accounts",
+          "rank": null,
+          "results": [
+            "ab-test-analysis",
+            "cloud-cost-review",
+            "authentication-integration"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prueba autorización de API entre usuarios y campos protegidos",
+          "rank": null,
+          "results": [
+            "authentication-integration",
+            "security-code-review",
+            "test-driven-repair"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Evaluate WebSocket authorization after session revocation",
+          "rank": null,
+          "results": [
+            "authentication-integration",
+            "realtime-protocols",
+            "identity-access-review"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prioritize CVEs using KEV EPSS and asset exposure",
+          "rank": null,
+          "results": [
+            "security-code-review",
+            "image-workflows",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Prioriza vulnerabilidades y registra excepciones con vencimiento",
+          "rank": null,
+          "results": [
+            "contract-review",
+            "threat-modeling",
+            "ml-training"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Track vulnerability remediation aging and verified closure",
+          "rank": null,
+          "results": [
+            "audio-transcription",
+            "project-status-review",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Inspect a suspicious PDF attachment without executing embedded code",
+          "rank": null,
+          "results": [
+            "pdf-workflows",
+            "phishing-triage",
+            "latex-authoring"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Analiza un archivo sospechoso con macros VBA sin ejecutarlo",
+          "rank": null,
+          "results": [
+            "phishing-triage",
+            "skill-source-review",
+            "git-recovery-and-change-management"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": false,
+          "kind": "new",
+          "phase": "baseline",
+          "query": "Triage suspicious archives and extracted indicators offline",
+          "rank": null,
+          "results": [
+            "phishing-triage",
+            "storage-and-archive-work",
+            "customer-support"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Verify restored backup manifests with missing files and read errors",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "dependency-and-secret-audit",
+            "repository-navigation"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Verifica restauración de backups e integridad sin confundir errores con éxito",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "knowledge-base-maintenance",
+            "test-driven-repair"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review SBOM component identities and signed build provenance",
+          "rank": null,
+          "results": [
+            "parametric-cad",
+            "database-schema-design",
+            "frontend-design-and-accessibility"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Audita dependencias SBOM y procedencia de artefactos",
+          "rank": 3,
+          "results": [
+            "environment-and-dependencies",
+            "skill-source-review",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Implement JWT issuer audience verification and key rotation",
+          "rank": null,
+          "results": [
+            "mobile-app-development",
+            "analytics-instrumentation",
+            "web-presentations"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Implementa OAuth PKCE y validación de tokens JWT",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "data-quality-audit",
+            "google-drive"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Harden container mounts capabilities and runtime isolation",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-inference-deployment",
+            "mcp-integration"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Endurece contenedores y comprueba aislamiento sin romper herramientas",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "git-worktree-coordination",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "kubernetes-operations",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review Kubernetes RBAC pod security and network policies",
+          "rank": 2,
+          "results": [
+            "identity-access-review",
+            "kubernetes-operations",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "identity-access-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review OAuth consent grants and service account credential rotation",
+          "rank": 1,
+          "results": [
+            "identity-access-review",
+            "authentication-integration",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "phishing-triage",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Investigate business email compromise and changed bank details",
+          "rank": null,
+          "results": [
+            "incident-response",
+            "email-workflows",
+            "invoice-and-expense-records"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Diagnose TLS certificate chain and renewal failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "procurement-and-vendors",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "release-and-ci",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Harden GitHub Actions workflow permissions and untrusted artifacts",
+          "rank": null,
+          "results": [
+            "web-research",
+            "issue-tracker-workflows",
+            "completion-verification"
+          ]
+        },
+        {
+          "expected": "detection-engineering",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Develop a threat hunting hypothesis with positive and benign telemetry",
+          "rank": 1,
+          "results": [
+            "detection-engineering",
+            "threat-modeling",
+            "feature-rollouts"
+          ]
+        },
+        {
+          "expected": "incident-response",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Investigate cloud incident logs and credential containment",
+          "rank": 1,
+          "results": [
+            "incident-response",
+            "detection-engineering",
+            "phishing-triage"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Review cryptographic key management and nonce reuse in application code",
+          "rank": 1,
+          "results": [
+            "security-code-review",
+            "process-and-service-management",
+            "bibliography-management"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "baseline",
+          "query": "Evaluate RAG retrieval ranking without inferring inversion from cosine similarity",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "skill-authoring",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "documents-word",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Edit a Word document and preserve its headings",
+          "rank": 1,
+          "results": [
+            "documents-word",
+            "google-docs",
+            "document-comparison"
+          ]
+        },
+        {
+          "expected": "pdf-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Create a PDF report from my notes",
+          "rank": 3,
+          "results": [
+            "latex-authoring",
+            "documents-presentations",
+            "pdf-workflows"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Implement login for existing users",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "python-development",
+            "mobile-app-development"
+          ]
+        },
+        {
+          "expected": "api-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Integrate an external REST API with retries",
+          "rank": 1,
+          "results": [
+            "api-integration",
+            "api-contract-design",
+            "smart-home-control"
+          ]
+        },
+        {
+          "expected": "reverse-engineering",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Compare compiled ELF binaries",
+          "rank": 1,
+          "results": [
+            "reverse-engineering",
+            "purchase-comparison",
+            "procurement-and-vendors"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Review this source diff for SQL injection",
+          "rank": 1,
+          "results": [
+            "security-code-review",
+            "sql-analysis-and-optimization",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "threat-modeling",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Plan assets and trust boundaries for a new service",
+          "rank": 2,
+          "results": [
+            "security-code-review",
+            "threat-modeling",
+            "content-calendar"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Diagnose DNS connection failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "local-troubleshooting",
+            "cache-design"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Create a Docker image for a Python app",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-demo-apps",
+            "image-workflows"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "baseline",
+          "query": "Compare RAG retrieval quality on held out questions",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "experiment-and-benchmark-design",
+            "ml-training"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Evaluate indirect prompt injection through retrieved documents and tool results",
+          "rank": 1,
+          "results": [
+            "agent-security-evaluation",
+            "rag-evaluation",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prueba la seguridad del agente frente a inyección de instrucciones y memoria contaminada",
+          "rank": 1,
+          "results": [
+            "agent-security-evaluation",
+            "security-code-review",
+            "skill-authoring"
+          ]
+        },
+        {
+          "expected": "agent-security-evaluation",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Test agent approval replay and cross tenant memory leakage",
+          "rank": 1,
+          "results": [
+            "agent-security-evaluation",
+            "rag-evaluation",
+            "cache-design"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Test BOLA IDOR and mass assignment using two API accounts",
+          "rank": 1,
+          "results": [
+            "api-security-testing",
+            "ab-test-analysis",
+            "cloud-cost-review"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prueba autorización de API entre usuarios y campos protegidos",
+          "rank": 1,
+          "results": [
+            "api-security-testing",
+            "authentication-integration",
+            "agent-security-evaluation"
+          ]
+        },
+        {
+          "expected": "api-security-testing",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Evaluate WebSocket authorization after session revocation",
+          "rank": 1,
+          "results": [
+            "api-security-testing",
+            "authentication-integration",
+            "realtime-protocols"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prioritize CVEs using KEV EPSS and asset exposure",
+          "rank": 1,
+          "results": [
+            "vulnerability-management",
+            "dependency-and-secret-audit",
+            "image-workflows"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Prioriza vulnerabilidades y registra excepciones con vencimiento",
+          "rank": 1,
+          "results": [
+            "vulnerability-management",
+            "contract-review",
+            "threat-modeling"
+          ]
+        },
+        {
+          "expected": "vulnerability-management",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Track vulnerability remediation aging and verified closure",
+          "rank": 1,
+          "results": [
+            "vulnerability-management",
+            "dependency-and-secret-audit",
+            "audio-transcription"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Inspect a suspicious PDF attachment without executing embedded code",
+          "rank": 1,
+          "results": [
+            "security-artifact-triage",
+            "phishing-triage",
+            "pdf-workflows"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Analiza un archivo sospechoso con macros VBA sin ejecutarlo",
+          "rank": 1,
+          "results": [
+            "security-artifact-triage",
+            "phishing-triage",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "security-artifact-triage",
+          "expected_available": true,
+          "kind": "new",
+          "phase": "candidate",
+          "query": "Triage suspicious archives and extracted indicators offline",
+          "rank": 1,
+          "results": [
+            "security-artifact-triage",
+            "phishing-triage",
+            "storage-and-archive-work"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Verify restored backup manifests with missing files and read errors",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "dependency-and-secret-audit",
+            "repository-navigation"
+          ]
+        },
+        {
+          "expected": "backup-and-restore",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Verifica restauración de backups e integridad sin confundir errores con éxito",
+          "rank": 1,
+          "results": [
+            "backup-and-restore",
+            "knowledge-base-maintenance",
+            "mobile-app-development"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review SBOM component identities and signed build provenance",
+          "rank": 1,
+          "results": [
+            "dependency-and-secret-audit",
+            "parametric-cad",
+            "identity-access-review"
+          ]
+        },
+        {
+          "expected": "dependency-and-secret-audit",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Audita dependencias SBOM y procedencia de artefactos",
+          "rank": 1,
+          "results": [
+            "dependency-and-secret-audit",
+            "environment-and-dependencies",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Implement JWT issuer audience verification and key rotation",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "mobile-app-development",
+            "identity-access-review"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Implementa OAuth PKCE y validación de tokens JWT",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "identity-access-review",
+            "data-quality-audit"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Harden container mounts capabilities and runtime isolation",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-inference-deployment",
+            "mcp-integration"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Endurece contenedores y comprueba aislamiento sin romper herramientas",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "security-code-review",
+            "git-worktree-coordination"
+          ]
+        },
+        {
+          "expected": "kubernetes-operations",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review Kubernetes RBAC pod security and network policies",
+          "rank": 1,
+          "results": [
+            "kubernetes-operations",
+            "identity-access-review",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "identity-access-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review OAuth consent grants and service account credential rotation",
+          "rank": 1,
+          "results": [
+            "identity-access-review",
+            "authentication-integration",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "phishing-triage",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Investigate business email compromise and changed bank details",
+          "rank": 1,
+          "results": [
+            "phishing-triage",
+            "incident-response",
+            "invoice-and-expense-records"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Diagnose TLS certificate chain and renewal failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "procurement-and-vendors",
+            "dependency-and-secret-audit"
+          ]
+        },
+        {
+          "expected": "release-and-ci",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Harden GitHub Actions workflow permissions and untrusted artifacts",
+          "rank": 1,
+          "results": [
+            "release-and-ci",
+            "web-research",
+            "completion-verification"
+          ]
+        },
+        {
+          "expected": "detection-engineering",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Develop a threat hunting hypothesis with positive and benign telemetry",
+          "rank": 1,
+          "results": [
+            "detection-engineering",
+            "threat-modeling",
+            "agent-security-evaluation"
+          ]
+        },
+        {
+          "expected": "incident-response",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Investigate cloud incident logs and credential containment",
+          "rank": 1,
+          "results": [
+            "incident-response",
+            "identity-access-review",
+            "detection-engineering"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Review cryptographic key management and nonce reuse in application code",
+          "rank": 1,
+          "results": [
+            "security-code-review",
+            "process-and-service-management",
+            "bibliography-management"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "updated",
+          "phase": "candidate",
+          "query": "Evaluate RAG retrieval ranking without inferring inversion from cosine similarity",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "agent-security-evaluation",
+            "skill-authoring"
+          ]
+        },
+        {
+          "expected": "documents-word",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Edit a Word document and preserve its headings",
+          "rank": 1,
+          "results": [
+            "documents-word",
+            "google-docs",
+            "document-comparison"
+          ]
+        },
+        {
+          "expected": "pdf-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Create a PDF report from my notes",
+          "rank": 3,
+          "results": [
+            "latex-authoring",
+            "documents-presentations",
+            "pdf-workflows"
+          ]
+        },
+        {
+          "expected": "authentication-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Implement login for existing users",
+          "rank": 1,
+          "results": [
+            "authentication-integration",
+            "python-development",
+            "mobile-app-development"
+          ]
+        },
+        {
+          "expected": "api-integration",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Integrate an external REST API with retries",
+          "rank": 1,
+          "results": [
+            "api-integration",
+            "api-contract-design",
+            "smart-home-control"
+          ]
+        },
+        {
+          "expected": "reverse-engineering",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Compare compiled ELF binaries",
+          "rank": 1,
+          "results": [
+            "reverse-engineering",
+            "purchase-comparison",
+            "procurement-and-vendors"
+          ]
+        },
+        {
+          "expected": "security-code-review",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Review this source diff for SQL injection",
+          "rank": 2,
+          "results": [
+            "sql-analysis-and-optimization",
+            "security-code-review",
+            "skill-source-review"
+          ]
+        },
+        {
+          "expected": "threat-modeling",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Plan assets and trust boundaries for a new service",
+          "rank": 1,
+          "results": [
+            "threat-modeling",
+            "security-code-review",
+            "content-calendar"
+          ]
+        },
+        {
+          "expected": "network-diagnostics",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Diagnose DNS connection failure",
+          "rank": 1,
+          "results": [
+            "network-diagnostics",
+            "local-troubleshooting",
+            "cache-design"
+          ]
+        },
+        {
+          "expected": "container-workflows",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Create a Docker image for a Python app",
+          "rank": 1,
+          "results": [
+            "container-workflows",
+            "ml-demo-apps",
+            "image-workflows"
+          ]
+        },
+        {
+          "expected": "rag-evaluation",
+          "expected_available": true,
+          "kind": "guard",
+          "phase": "candidate",
+          "query": "Compare RAG retrieval quality on held out questions",
+          "rank": 1,
+          "results": [
+            "rag-evaluation",
+            "experiment-and-benchmark-design",
+            "ml-training"
+          ]
+        }
+      ],
+      "log_sha256": "5bd266daf6509ca22b099d79204decf06767080c9532045e58bd4f71d8143096"
+    }
+  },
+  "findings": [
+    {
+      "id": "CYBER-01",
+      "source": "skills/testing-prompt-injection-in-rag-pipelines/scripts/agent.py",
+      "lines": [
+        [
+          40,
+          56
+        ],
+        [
+          69,
+          78
+        ],
+        [
+          94,
+          109
+        ]
+      ],
+      "observation": "Direct message probes, word-match verdicts and cosine threshold do not establish indirect retrieval exposure or protected effects.",
+      "adaptation": "agent-security-evaluation"
+    },
+    {
+      "id": "CYBER-02",
+      "source": "skills/testing-websocket-api-security/SKILL.md",
+      "lines": [
+        [
+          136,
+          145
+        ]
+      ],
+      "observation": "Expired-token example classifies general exceptions as SECURE.",
+      "adaptation": "api-security-testing"
+    },
+    {
+      "id": "CYBER-03",
+      "source": "skills/triaging-vulnerabilities-with-ssvc-framework/scripts/agent.py",
+      "lines": [
+        [
+          72,
+          95
+        ],
+        [
+          115,
+          125
+        ]
+      ],
+      "observation": "HTTP failures can appear as absent KEV membership; EPSS threshold is converted into PoC evidence.",
+      "adaptation": "vulnerability-management"
+    },
+    {
+      "id": "CYBER-04",
+      "source": "skills/verifying-build-provenance-with-slsa-sigstore/scripts/agent.py",
+      "lines": [
+        [
+          76,
+          87
+        ]
+      ],
+      "observation": "Decoding failure still emits verified true; expected provenance policy is not established by that output.",
+      "adaptation": "dependency-and-secret-audit"
+    },
+    {
+      "id": "CYBER-05",
+      "source": "skills/analyzing-sbom-for-supply-chain-vulnerabilities/scripts/agent.py",
+      "lines": [
+        [
+          100,
+          146
+        ],
+        [
+          231,
+          270
+        ],
+        [
+          325,
+          374
+        ],
+        [
+          384,
+          408
+        ]
+      ],
+      "observation": "CycloneDX component identity drops bom-ref; lookup errors return empty lists; candidates can become findings without applicability verification.",
+      "adaptation": "dependency-and-secret-audit"
+    },
+    {
+      "id": "CYBER-06",
+      "source": "skills/validating-backup-integrity-for-recovery/scripts/agent.py",
+      "lines": [
+        [
+          34,
+          70
+        ],
+        [
+          74,
+          110
+        ],
+        [
+          219,
+          247
+        ]
+      ],
+      "observation": "Equal error strings can compare equal, absent baseline defaults to passing integrity, temporary manifest is written into restored data.",
+      "adaptation": "backup-and-restore"
+    },
+    {
+      "id": "CYBER-07",
+      "source": "skills/assessing-vector-and-embedding-weaknesses/SKILL.md",
+      "lines": [
+        [
+          98,
+          139
+        ],
+        [
+          142,
+          163
+        ]
+      ],
+      "observation": "Candidate text already containing secret facts and similarity gaps do not independently demonstrate inversion/membership; direct database identity must be distinguished from the user API.",
+      "adaptation": "rag-evaluation"
+    },
+    {
+      "id": "CYBER-08",
+      "source": "skills/performing-container-image-hardening/SKILL.md",
+      "lines": [
+        [
+          108,
+          134
+        ]
+      ],
+      "observation": "Removing shells/package managers indiscriminately is unsuitable for coding assistant workspaces.",
+      "adaptation": "container-workflows"
+    }
+  ]
+}

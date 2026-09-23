@@ -48,6 +48,8 @@ fn both_agent_roles_receive_validated_public_web_tools() {
 #[tokio::test]
 async fn agent_dispatches_query_only_search_and_receives_honest_empty_coverage() {
     let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("data")).unwrap();
+    std::fs::write(dir.path().join("data/web-search.json"), r#"{"seeds":[]}"#).unwrap();
     let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
         .await
         .unwrap();
@@ -73,6 +75,8 @@ async fn agent_dispatches_query_only_search_and_receives_honest_empty_coverage()
                 assert!(output.contains("local_fts5"));
                 assert!(output.contains("No matching indexed pages"));
                 assert!(output.contains("indexed_pages"));
+                let value: Value = serde_json::from_str(output).unwrap();
+                assert_eq!(value["discovery"]["enabled"], true);
                 return ResponseTemplate::new(200).set_body_json(answer("The local index has no matching evidence yet."));
             }
             if !input.iter().any(|v| v["type"] == "function_call_output" && v["call_id"] == "discover-search") {
@@ -140,6 +144,8 @@ async fn web_batch_preserves_validation_and_prior_denials_without_aborting_sibli
 
 async fn verify_web_batch(with_rejections: bool) {
     let dir = tempfile::tempdir().unwrap();
+    std::fs::create_dir_all(dir.path().join("data")).unwrap();
+    std::fs::write(dir.path().join("data/web-search.json"), r#"{"seeds":[]}"#).unwrap();
     let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
         .await
         .unwrap();
@@ -171,7 +177,8 @@ async fn verify_web_batch(with_rejections: bool) {
                         assert_eq!(result["denied"], true);
                         assert_eq!(result["executed"], false);
                     } else {
-                        assert_eq!(result["backend"], "local_fts5");
+                        assert_eq!(result["backend"], "local_fts5", "batch {i} output: {result}");
+                        assert_eq!(result["discovery"]["enabled"], i != 9);
                     }
                 }
                 return ResponseTemplate::new(200).set_body_json(answer("Ten searches completed with explicit empty coverage."));
@@ -182,7 +189,8 @@ async fn verify_web_batch(with_rejections: bool) {
                 } else if with_rejections && i == 1 {
                     ("web_search", json!({"query":""}))
                 } else {
-                    ("web_search", json!({"query":format!("topic{i}")}))
+                    ("web_search", if i == 9 { json!({"query":format!("topic{i}"), "discover":false}) }
+                        else { json!({"query":format!("topic{i}")}) })
                 };
                 json!({"type":"function_call","call_id":format!("batch-{i}"),"name":name,"arguments":args.to_string()})
             }).collect();

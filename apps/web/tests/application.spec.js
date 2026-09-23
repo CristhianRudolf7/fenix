@@ -5,6 +5,9 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 
+const appPort = process.env.FENIX_TEST_APP_PORT || "4189";
+const appURL = `http://127.0.0.1:${appPort}`;
+test.use({ baseURL: appURL });
 let directory, service, modelServer, modelURL;
 let releasePreview;
 let streamRequests = 0;
@@ -36,6 +39,38 @@ test.beforeAll(async () => {
     if (request.headers.authorization === "Bearer bad-key") {
       response.statusCode = 401;
       response.end(JSON.stringify({ error: "Private provider diagnostic" }));
+      return;
+    }
+    if (body.model === "chat-test") {
+      response.end(
+        JSON.stringify(
+          completion(
+            body.input.length > 1
+              ? JSON.stringify({
+                  reply: "Request received.",
+                  action: "delegate",
+                  task_id: null,
+                })
+              : "OK",
+          ),
+        ),
+      );
+      return;
+    }
+    if (body.model === "voice-test") {
+      response.end(
+        JSON.stringify(
+          completion(
+            body.input.length > 1
+              ? JSON.stringify({
+                  reply: "Estoy aquí. El maestro sigue disponible.",
+                  action: "observe",
+                  task_id: null,
+                })
+              : "OK",
+          ),
+        ),
+      );
       return;
     }
     if (body.model !== "gpt-5.6-luna" || body.reasoning?.effort !== "low") {
@@ -103,10 +138,10 @@ test.beforeAll(async () => {
   await new Promise((resolve) => modelServer.listen(0, "127.0.0.1", resolve));
   modelURL = `http://127.0.0.1:${modelServer.address().port}`;
   service = spawn(
-    resolve("../../target/debug/fenix"),
+    process.env.FENIX_TEST_BINARY || resolve("../../target/debug/fenix"),
     [
       "--port",
-      "4189",
+      appPort,
       "--data-dir",
       join(directory, "data"),
       "--skills-dir",
@@ -126,7 +161,7 @@ test.beforeAll(async () => {
       async () => {
         if (service.exitCode !== null) throw new Error(logs);
         try {
-          return (await fetch("http://127.0.0.1:4189/api/status")).status;
+          return (await fetch(`${appURL}/api/status`)).status;
         } catch {
           return 0;
         }
@@ -144,7 +179,7 @@ test.afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
-test("welcome validates inference, lists all providers and defaults to white even on a dark OS", async ({
+test("welcome validates inference, lists all providers and defaults to warm light even on a dark OS", async ({
   page,
 }, testInfo) => {
   await page.emulateMedia({ colorScheme: "dark" });
@@ -158,7 +193,7 @@ test("welcome validates inference, lists all providers and defaults to white eve
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.locator("body")).toHaveCSS(
     "background-color",
-    "rgb(255, 255, 255)",
+    "rgb(247, 246, 242)",
   );
   await page.screenshot({
     path: testInfo.outputPath("welcome-light.png"),
@@ -176,10 +211,149 @@ test("welcome validates inference, lists all providers and defaults to white eve
   await page.locator("#workspace").fill(directory);
   await page.getByRole("button", { name: "Verificar y comenzar" }).click();
   await expect(page.locator("#chat-input")).toBeVisible();
+  // Chat and Live share an interlocutor; the master alone no longer handles chat directly.
+  const interlocutor = await page.request.post("/api/live/settings", {
+    data: {
+      provider: "openai",
+      model: "chat-test",
+      base_url: modelURL,
+      api_key: "chat-test-key",
+    },
+  });
+  expect(interlocutor.ok()).toBe(true);
   expect(
     JSON.stringify(await (await page.request.get("/api/status")).json()),
   ).not.toContain("fake-browser-key");
   expect(errors).toEqual([]);
+});
+
+test("navigation can collapse without losing routes or preferences", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/");
+  await expect(page.locator("#chat-input")).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("chat-welcome-light.png"),
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Colapsar menú", exact: true })
+    .click();
+  await expect(page.locator(".shell")).toHaveClass(/is-collapsed/);
+  await page.locator('[data-page="memory"]').click();
+  await expect(page.locator("#memory-form")).toBeVisible();
+  await page.reload();
+  await expect(page.locator(".shell")).toHaveClass(/is-collapsed/);
+  await page
+    .getByRole("button", { name: "Expandir menú", exact: true })
+    .click();
+  await expect(page.locator(".shell")).not.toHaveClass(/is-collapsed/);
+  await expect(page.locator("#memory-form")).toBeVisible();
+  await expect(page).toHaveURL(/\/memory$/);
+});
+
+test("compact composer and left drawer work across screen sizes", async ({
+  page,
+}, testInfo) => {
+  for (const width of [320, 390, 620, 768, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.goto("/chat");
+    await expect(page.locator("#chat-input")).toBeVisible();
+    const input = await page.locator("#chat-input").boundingBox();
+    expect(input.height).toBeLessThanOrEqual(40);
+    if (width === 390 || width === 1440)
+      await page.screenshot({ path: testInfo.outputPath(`chat-${width}.png`) });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    if (width <= 620) {
+      await expect(page.locator("#main-sidebar")).toBeHidden();
+      await page.locator(".sidebar-toggle").click();
+      await expect(page.locator("#main-sidebar")).toBeVisible();
+      await expect
+        .poll(async () =>
+          Math.round((await page.locator("#main-sidebar").boundingBox()).x),
+        )
+        .toBe(0);
+      const sidebar = await page.locator("#main-sidebar").boundingBox();
+      expect(sidebar.x).toBeCloseTo(0, 0);
+      expect(sidebar.height).toBe(844);
+      if (width === 390)
+        await page.screenshot({
+          path: testInfo.outputPath("left-drawer-390.png"),
+        });
+      await page.keyboard.press("Escape");
+      await expect(page.locator("#main-sidebar")).toBeHidden();
+      await expect(page.locator(".sidebar-toggle")).toBeFocused();
+      await page.locator(".sidebar-toggle").click();
+      await page.locator('[data-page="settings"]').click();
+      await expect(page).toHaveURL(/settings$/);
+      await expect(page.locator("#main-sidebar")).toBeHidden();
+    }
+  }
+});
+
+test("section URLs survive reload and history with accessible loading", async ({
+  page,
+}) => {
+  await page.goto("/chat");
+  await expect(page.locator("#chat-input")).toBeVisible();
+  await expect(page.locator('[data-page="browser"]')).toHaveCount(1);
+  await page.locator('[data-page="projects"]').click();
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page.locator("#project-list")).toBeVisible();
+  await page.locator('[data-page="memory"]').click();
+  await expect(page).toHaveURL(/\/memory$/);
+  await page.reload();
+  await expect(page.locator('[data-page="memory"]')).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await page.goBack();
+  await expect(page).toHaveURL(/\/projects$/);
+  await expect(page.locator("#project-list")).toBeVisible();
+  await page.goForward();
+  await expect(page).toHaveURL(/\/memory$/);
+  let release;
+  const delayed = new Promise((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/skills", async (route) => {
+    await delayed;
+    await route.continue();
+  });
+  await page.locator('[data-page="skills"]').click();
+  await expect(page.locator(".loading-state")).toBeVisible();
+  await expect(page.locator(".loading-state")).toHaveAttribute(
+    "role",
+    "status",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  expect(
+    await page
+      .locator(".loading-emblem")
+      .evaluate((e) => getComputedStyle(e).animationName),
+  ).toBe("none");
+  release();
+  await expect(page.locator(".loading-state")).toHaveCount(0);
+  for (const section of [
+    "schedules",
+    "activity",
+    "settings",
+    "design",
+    "chat",
+  ]) {
+    await page.goto("/" + section);
+    await expect(page.locator(`[data-page="${section}"]`)).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  }
+  expect((await page.request.get("/api/browser/status")).ok()).toBe(true);
+  expect((await page.request.get("/browser")).status()).toBe(200);
+  expect((await page.request.get("/api/does-not-exist")).status()).toBe(404);
 });
 
 test("chat stays available while an exact textual approval is pending", async ({
@@ -261,7 +435,8 @@ test("memory CRUD, skill states, schedules and activity work through the real lo
     "Aún no hay recuerdos",
   );
   await page.locator('[data-page="skills"]').click();
-  await expect(page.locator("[data-skill]")).toHaveCount(13);
+  const skills = await (await page.request.get("/api/skills")).json();
+  await expect(page.locator("[data-skill]")).toHaveCount(skills.length);
   await page.locator('[data-skill="conversation-recap"]').uncheck();
   await expect(
     page.locator('[data-read-skill="conversation-recap"]'),
@@ -292,7 +467,10 @@ test("theme is an explicit persistent choice and the interface fits a phone", as
 }, testInfo) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
+  await page.locator(".sidebar-toggle").click();
   await page.locator('.mobile-brand [data-action="theme"]').click();
+  if (await page.locator(".mobile-menu-close").isVisible())
+    await page.locator(".mobile-menu-close").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
@@ -305,10 +483,15 @@ test("theme is an explicit persistent choice and the interface fits a phone", as
     path: testInfo.outputPath("conversation-mobile-dark.png"),
     fullPage: true,
   });
+  if ((page.viewportSize()?.width || 1000) <= 620)
+    await page.locator(".sidebar-toggle").click();
   await page.locator('[data-page="settings"]').click();
   await expect(page.locator("#telegram-form")).toBeVisible();
   await expect(page.locator("#api_key")).toHaveValue("");
+  await page.locator(".sidebar-toggle").click();
   await page.locator('.mobile-brand [data-action="language"]').click();
+  if (await page.locator(".mobile-menu-close").isVisible())
+    await page.locator(".mobile-menu-close").click();
   await expect(page.locator("#telegram-form")).toContainText("Optional");
 });
 
@@ -450,7 +633,10 @@ test("background tasks and simultaneous textual requests update without leaving 
     fullPage: true,
   });
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator(".sidebar-toggle").click();
   await page.locator('.mobile-brand [data-action="theme"]').click();
+  if (await page.locator(".mobile-menu-close").isVisible())
+    await page.locator(".mobile-menu-close").click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   expect(
     await page.evaluate(
@@ -468,7 +654,10 @@ test("background tasks and simultaneous textual requests update without leaving 
   await panel.locator("summary").click();
   await expect(panel.locator("pre")).toContainText("file.txt:2");
   await expect(panel.locator("report")).toHaveCount(0);
+  await page.locator(".sidebar-toggle").click();
   await page.locator('.mobile-brand [data-action="language"]').click();
+  if (await page.locator(".mobile-menu-close").isVisible())
+    await page.locator(".mobile-menu-close").click();
   await expect(page.locator("#background-title")).toHaveText(
     "Background tasks",
   );
@@ -807,112 +996,6 @@ test("coding settings persist language servers and context budgets through the w
   ).toEqual([{ ...servers[0], initialization_options: null }]);
 });
 
-test("local browser controls preserve profiles and resize the rendered page", async ({
-  page,
-}) => {
-  test.setTimeout(120_000);
-  const status = await (await page.request.get("/api/browser/status")).json();
-  test.skip(!status.available, "Requires installed sandbox-capable Chromium");
-  const fixture = createServer((_request, response) => {
-    response.setHeader("content-type", "text/html");
-    response.end(
-      '<!doctype html><meta name="viewport" content="width=device-width"><style>body{margin:0}</style><h1>Local browser fixture</h1><input aria-label="Name" id="name"><button onclick="document.querySelector(\'h1\').textContent=document.querySelector(\'input\').value">Apply</button>',
-    );
-  });
-  await new Promise((resolve) => fixture.listen(0, "127.0.0.1", resolve));
-  try {
-    await page.goto("/");
-    await page.locator('[data-page="browser"]').click();
-    await page.locator("#browser-create input").fill("ui-personal");
-    await page.locator("#browser-create button").click();
-    await expect(page.locator("#browser-profile")).toHaveValue("ui-personal");
-    await page
-      .locator("#browser-open input")
-      .fill(`http://127.0.0.1:${fixture.address().port}/`);
-    // Chromium startup may use the runtime's 45-second cold-start budget.
-    // Check its response before waiting for the first rendered screenshot.
-    const opened = page.waitForResponse(
-      (response) =>
-        response.url().endsWith("/api/browser/command") &&
-        response.request().method() === "POST" &&
-        response.request().postDataJSON()?.tool === "browser_open",
-      { timeout: 65_000 },
-    );
-    await page.locator("#browser-open button").last().click();
-    const openResponse = await opened;
-    expect(openResponse.ok(), await openResponse.text()).toBe(true);
-    await expect
-      .poll(
-        () => page.locator("#browser-screen").evaluate((e) => e.naturalWidth),
-        { timeout: 20_000 },
-      )
-      .toBe(1280);
-    await page.locator("#browser-preset").selectOption("390,844");
-    await page.locator("#browser-resize").click();
-    await expect
-      .poll(() =>
-        page.locator("#browser-screen").evaluate((e) => e.naturalWidth),
-      )
-      .toBe(390);
-    const observation = await (
-      await page.request.post("/api/browser/command", {
-        data: { tool: "browser_observe", args: { profile: "ui-personal" } },
-      })
-    ).json();
-    const screen = page.locator("#browser-screen");
-    const box = await screen.boundingBox();
-    const clickElement = async (name) => {
-      const e = observation.elements.find((e) => e.name === name);
-      await screen.click({
-        position: {
-          x: ((e.rect.x + e.rect.width / 2) * box.width) / 390,
-          y: ((e.rect.y + e.rect.height / 2) * box.width) / 390,
-        },
-      });
-    };
-    await clickElement("Name");
-    await page.keyboard.type("Owner");
-    await clickElement("Apply");
-    await expect
-      .poll(
-        async () =>
-          (
-            await (
-              await page.request.post("/api/browser/command", {
-                data: {
-                  tool: "browser_check",
-                  args: {
-                    profile: "ui-personal",
-                    condition: "text",
-                    text: "Owner",
-                  },
-                },
-              })
-            ).json()
-          ).passed,
-      )
-      .toBe(true);
-    await page.locator("#browser-agent").check();
-    await expect
-      .poll(
-        async () =>
-          (
-            await (await page.request.get("/api/browser/status")).json()
-          ).profiles.find((p) => p.name === "ui-personal").allow_agent,
-      )
-      .toBe(true);
-    await page.locator("#browser-control").click();
-    await expect(page.locator("#browser-agent")).not.toBeChecked();
-    await page.locator("#browser-close").click();
-    await expect(page.locator("#browser-screen")).toBeHidden();
-    await page.reload();
-    await page.locator('[data-page="browser"]').click();
-    await expect(page.locator("#browser-profile")).toHaveValue("ui-personal");
-  } finally {
-    await new Promise((resolve) => fixture.close(resolve));
-  }
-});
-
 test("a late skill update does not replace the page selected by the owner", async ({
   page,
 }) => {
@@ -942,4 +1025,799 @@ test("a late skill update does not replace the page selected by the owner", asyn
     "aria-current",
     "page",
   );
+});
+
+async function mockSpeech(page) {
+  await page.addInitScript(() => {
+    window.__stoppedTracks = 0;
+    window.__cancelledSpeech = 0;
+    class Recognition {
+      start() {
+        window.__recognition = this;
+      }
+      abort() {
+        setTimeout(() => this.onend?.(), 0);
+      }
+    }
+    window.SpeechRecognition = Recognition;
+    Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
+      value: async () => {
+        if (window.__denyMicrophone)
+          throw new DOMException(
+            "Microphone permission denied",
+            "NotAllowedError",
+          );
+        return {
+          getTracks: () => [
+            {
+              stop() {
+                window.__stoppedTracks++;
+              },
+            },
+          ],
+        };
+      },
+    });
+    window.AudioContext = class {
+      async resume() {}
+      async close() {}
+      createMediaStreamSource() {
+        return { connect() {}, disconnect() {} };
+      }
+      createAnalyser() {
+        return {
+          fftSize: 1024,
+          getFloatTimeDomainData(values) {
+            values.fill(0);
+          },
+        };
+      }
+    };
+    window.SpeechSynthesisUtterance = class {
+      constructor(text) {
+        this.text = text;
+      }
+    };
+    Object.defineProperty(window, "speechSynthesis", {
+      value: {
+        getVoices: () => [],
+        cancel() {
+          window.__cancelledSpeech++;
+        },
+        speak(utterance) {
+          setTimeout(() => utterance.onend?.(), 20);
+        },
+      },
+    });
+  });
+}
+
+test("dictation fills the draft and never submits it automatically", async ({
+  page,
+}) => {
+  await mockSpeech(page);
+  await page.goto("/");
+  const before = (await (await page.request.get("/api/tasks")).json()).length;
+  await page
+    .getByRole("button", { name: "Dictar mensaje", exact: true })
+    .click();
+  await page.evaluate(() =>
+    window.__recognition.onresult({
+      resultIndex: 0,
+      results: [{ isFinal: true, 0: { transcript: "Una nota dictada" } }],
+    }),
+  );
+  await expect(page.locator("#chat-input")).toHaveValue("Una nota dictada");
+  expect((await (await page.request.get("/api/tasks")).json()).length).toBe(
+    before,
+  );
+  await page
+    .getByRole("button", { name: "Dictar mensaje", exact: true })
+    .click();
+});
+
+test("Live shares history, survives navigation, and hangup leaves master tasks intact", async ({
+  page,
+}, testInfo) => {
+  await mockSpeech(page);
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Configuración de conversación", exact: true })
+    .click();
+  const settings = page.getByRole("dialog", {
+    name: "Configuración de conversación",
+  });
+  await settings.locator('[name="provider"]').selectOption("openai");
+  await settings.locator('[name="model"]').fill("voice-test");
+  await settings.locator('[name="base_url"]').fill(modelURL);
+  await settings.locator('[name="api_key"]').fill("voice-test-key");
+  await settings.getByRole("button", { name: "Verificar y guardar" }).click();
+  await expect(settings).toHaveCount(0);
+  const before = (await (await page.request.get("/api/tasks")).json()).map(
+    (t) => t.id,
+  );
+  await page.getByRole("button", { name: "Iniciar o cerrar Live" }).click();
+  await expect(
+    page.getByRole("region", { name: "Llamada Live" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Silenciar", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Llamada Live" }).getByRole("status"),
+  ).toContainText("Escuchando");
+  await page.evaluate(() =>
+    window.__recognition.onresult({
+      resultIndex: 0,
+      results: [{ isFinal: true, 0: { transcript: "Hola, ¿cómo estás?" } }],
+    }),
+  );
+  await expect(page.locator(".voice-caption")).toContainText(
+    "El maestro sigue disponible",
+  );
+  await page.getByRole("button", { name: "Silenciar", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Activar micrófono", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page
+    .getByRole("button", { name: "Activar micrófono", exact: true })
+    .click();
+  await page.screenshot({
+    path: testInfo.outputPath("live-call.png"),
+    fullPage: true,
+  });
+  await page.locator('[data-page="memory"]').click();
+  await expect(
+    page.getByRole("region", { name: "Llamada Live" }),
+  ).toBeVisible();
+  await page.locator('[data-page="chat"]').click();
+  await expect(page.locator("#message-list")).toContainText(
+    "Hola, ¿cómo estás?",
+  );
+  await page.getByRole("button", { name: "Colgar", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Llamada Live" })).toHaveCount(
+    0,
+  );
+  await expect.poll(() => page.evaluate(() => window.__stoppedTracks)).toBe(1);
+  const after = (await (await page.request.get("/api/tasks")).json()).map(
+    (t) => t.id,
+  );
+  expect(after).toEqual(before);
+});
+
+test("missing browser recognition leaves text chat usable", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    window.SpeechRecognition = undefined;
+    window.webkitSpeechRecognition = undefined;
+  });
+  await page.goto("/");
+  await expect(
+    page.getByRole("button", { name: "Iniciar o cerrar Live" }),
+  ).toBeDisabled();
+  await expect(page.locator("#chat-input")).toBeEnabled();
+  await expect(
+    page.getByText(
+      "La voz no está disponible en este navegador. Puedes usar el chat escrito.",
+    ),
+  ).toBeVisible();
+});
+
+test("denied microphone permission is visible and leaves chat available", async ({
+  page,
+}) => {
+  await mockSpeech(page);
+  await page.goto("/");
+  await page.evaluate(() => {
+    window.__denyMicrophone = true;
+  });
+  await page.getByRole("button", { name: "Iniciar o cerrar Live" }).click();
+  await expect(page.getByRole("alert")).toContainText(
+    "Microphone permission denied",
+  );
+  await expect(page.getByRole("region", { name: "Llamada Live" })).toHaveCount(
+    0,
+  );
+  await expect(page.locator("#chat-input")).toBeEnabled();
+  await page
+    .getByRole("alert")
+    .getByRole("button", { name: "Cerrar", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("agent-authored diagrams support exploration and preserve the last valid view", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(90_000);
+  const response = await page.request.post("/api/design/artifacts", {
+    data: {
+      title: "Purchasing approval",
+      kind: "diagram",
+      content: {
+        graph: {
+          version: 1,
+          direction: "LR",
+          groups: [{ id: "office", label: "Office" }],
+          nodes: [
+            {
+              id: "request",
+              label: 'Request "A" <B>',
+              group: "office",
+              fill: "#e8f2ec",
+              stroke: "#2f7250",
+              detail: "Employee provides the purchase amount.",
+              references: ["Purchasing policy, section 2"],
+            },
+            { id: "threshold", label: "Over S/5,000?", shape: "diamond" },
+            { id: "manager", label: "Manager approval", shape: "rectangle" },
+            { id: "archive", label: "Records", shape: "database" },
+            { id: "done", label: "Approved", shape: "circle" },
+          ],
+          edges: [
+            { id: "submit", from: "request", to: "threshold" },
+            { id: "escalate", from: "threshold", to: "manager", label: "Yes" },
+            {
+              id: "normal",
+              from: "threshold",
+              to: "archive",
+              label: "No",
+              style: "dashed",
+            },
+            { id: "record", from: "manager", to: "archive" },
+            { id: "finish", from: "archive", to: "done" },
+          ],
+        },
+      },
+    },
+  });
+  expect(response.ok()).toBe(true);
+  const diagram = await response.json();
+  const path = `/api/design/artifacts/${diagram.id}`;
+  const archive = join(
+    directory,
+    "data",
+    "diagrams",
+    diagram.id,
+    "v000001.json",
+  );
+  expect(
+    JSON.parse(await readFile(archive, "utf8")).content.graph.nodes,
+  ).toHaveLength(5);
+  await page.goto("/design");
+  await page.getByRole("button", { name: "Mis diseños", exact: true }).click();
+  await page
+    .locator(".design-card-open")
+    .filter({ hasText: "Purchasing approval" })
+    .click();
+  const panel = page.getByRole("dialog", { name: "Vista del diseño" });
+  const image = panel.locator(".diagram-viewport img");
+  await expect(image).toBeVisible({ timeout: 20_000 });
+  await expect(image).toHaveJSProperty("complete", true);
+  await expect(panel.getByRole("alert")).toHaveCount(0);
+  const labels = await image.evaluate((img) => {
+    const svg = decodeURIComponent(img.src.slice(img.src.indexOf(",") + 1));
+    return [
+      ...new DOMParser()
+        .parseFromString(svg, "image/svg+xml")
+        .querySelectorAll("text"),
+    ]
+      .map((n) => n.textContent)
+      .join(" ");
+  });
+  expect(labels).toContain('"A"');
+  expect(labels).toContain("<B>");
+  expect(labels).not.toContain("&#34;");
+  const zoom = panel.getByLabel("Zoom", { exact: true });
+  const previous = await zoom.textContent();
+  await panel.getByRole("button", { name: "Acercar", exact: true }).click();
+  await expect(zoom).not.toHaveText(previous);
+  const viewport = panel.locator(".diagram-viewport");
+  const box = await viewport.boundingBox();
+  const before = await image.getAttribute("style");
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(
+    box.x + box.width / 2 + 50,
+    box.y + box.height / 2 + 25,
+  );
+  await page.mouse.up();
+  await expect(image).not.toHaveAttribute("style", before);
+  expect((await (await page.request.get(path)).json()).content).toEqual(
+    diagram.content,
+  );
+  await panel.getByRole("button", { name: "Ajustar", exact: true }).click();
+  await panel
+    .getByRole("button", { name: "Pantalla completa", exact: true })
+    .click();
+  await expect(
+    panel.getByRole("button", {
+      name: "Salir de pantalla completa",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await panel
+    .getByRole("button", { name: "Salir de pantalla completa", exact: true })
+    .click();
+  await panel.getByLabel("Buscar elementos del diagrama").fill("Employee");
+  await expect(panel.locator(".diagram-node-list button")).toHaveCount(1);
+  await panel.locator(".diagram-node-list button").click();
+  await expect(panel.locator(".diagram-node-detail")).toContainText(
+    "Purchasing policy, section 2",
+  );
+  const downloaded = page.waitForEvent("download");
+  await panel.getByRole("button", { name: "SVG", exact: true }).click();
+  expect((await downloaded).suggestedFilename()).toMatch(/\.svg$/);
+  await panel.getByRole("button", { name: "Contenido", exact: true }).click();
+  await expect(panel.locator("textarea")).toHaveAttribute("readonly", "");
+  await expect(
+    panel.getByRole("button", { name: "Guardar una nueva versión" }),
+  ).toHaveCount(0);
+  expect(
+    (
+      await page.request.put(path, {
+        data: { ...diagram, expected_revision: 1 },
+      })
+    ).status(),
+  ).toBe(400);
+  await panel
+    .getByRole("button", { name: "Vista previa", exact: true })
+    .click();
+  await expect(image).toBeVisible();
+  const original = await image.getAttribute("src");
+  // Simulate an incoming agent revision. An invalid render must retain the prior image.
+  const broken = {
+    ...diagram,
+    revision: 2,
+    task_id: "agent-revision",
+    content: { source: "flowchart LR\n A[broken" },
+  };
+  await page.route(`**${path}`, (route) => route.fulfill({ json: broken }));
+  await page.route("**/api/design/artifacts", (route) =>
+    route.fulfill({ json: { designs: [broken], next_offset: null } }),
+  );
+  await expect(panel.getByRole("alert")).toContainText(
+    "último diagrama válido",
+    { timeout: 25_000 },
+  );
+  await expect(image).toHaveAttribute("src", original);
+  await page.screenshot({
+    path: testInfo.outputPath("diagram-read-only-desktop.png"),
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobile = await panel.boundingBox();
+  expect(mobile.x).toBe(0);
+  expect(mobile.width).toBe(390);
+  await expect(
+    panel.getByRole("button", { name: "Pedir cambios en el chat" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("diagram-read-only-mobile.png"),
+  });
+  await panel.getByRole("button", { name: "Pedir cambios en el chat" }).click();
+  await expect(page.locator("#chat-input")).toHaveValue(new RegExp(diagram.id));
+});
+
+test("Design previews all eight formats, keeps favorites and versions, and fits a phone", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(120_000);
+  const errors = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await page.locator('[data-page="design"]').click();
+  await expect(
+    page.getByRole("heading", { name: "Dale forma a tus ideas." }),
+  ).toBeVisible();
+  await expect(page.locator(".design-card")).toHaveCount(24);
+  await page
+    .getByRole("button", { name: "Favorito: Lanzamiento SaaS", exact: true })
+    .click();
+  await page.getByRole("button", { name: /^Favoritos/ }).click();
+  await expect(page.locator(".design-card")).toHaveCount(1);
+  await page.reload();
+  await page.locator('[data-page="design"]').click();
+  await page.getByRole("button", { name: /^Favoritos/ }).click();
+  await expect(page.locator(".design-card")).toHaveCount(1);
+  await page.getByRole("button", { name: "Plantillas", exact: true }).click();
+  const cases = [
+    ["diagram", "Flujo de decisiones", ".diagram-canvas img"],
+    ["web", "Lanzamiento SaaS", "iframe"],
+    ["presentation", "Resultados de investigación", ".slide"],
+    ["chart", "Ventas semanales", ".chart-view svg"],
+    ["document", "Informe ejecutivo", ".template-document"],
+    ["spreadsheet", "Presupuesto de proyecto", ".data-grid table"],
+    ["image", "Cartel de evento", ".image-preview"],
+    ["video", "Introducción animada", "video"],
+  ];
+  for (const [kind, title, selector] of cases) {
+    await page.getByLabel("Categoría de diseño").selectOption(kind);
+    await page
+      .locator(".design-card-open")
+      .filter({ has: page.getByRole("heading", { name: title, exact: true }) })
+      .click();
+    const panel = page.getByRole("dialog", { name: "Vista del diseño" });
+    await expect(panel.locator(selector)).toBeVisible({ timeout: 20000 });
+    await expect(page.locator(".sidebar")).toBeHidden();
+    expect((await page.locator(".main").boundingBox()).x).toBeLessThan(2);
+    if (kind === "diagram")
+      await expect(panel.locator("img")).toHaveJSProperty("complete", true);
+    if (kind === "web")
+      await expect(
+        panel.frameLocator("iframe").getByRole("heading", {
+          name: /A little less busy.*A lot more possible/,
+        }),
+      ).toBeVisible();
+    if (kind === "video")
+      await expect
+        .poll(() => panel.locator("video").evaluate((v) => v.readyState))
+        .toBeGreaterThan(0);
+
+    await page
+      .getByRole("button", { name: "Volver al chat / cerrar vista" })
+      .click();
+  }
+  await expect(page.locator(".sidebar")).toBeVisible();
+  await page.getByLabel("Categoría de diseño").selectOption("diagram");
+  await page
+    .locator(".design-card-open")
+    .filter({
+      has: page.getByRole("heading", {
+        name: "Flujo de decisiones",
+        exact: true,
+      }),
+    })
+    .click();
+  await page.getByRole("button", { name: "Usar esta plantilla" }).click();
+  await expect(
+    page.getByRole("button", { name: "Pedir cambios en el chat" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Contenido", exact: true }).click();
+  await expect(page.locator(".design-source")).toHaveAttribute("readonly", "");
+  await expect(
+    page.getByRole("button", { name: "Guardar una nueva versión" }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Pedir cambios en el chat" }).click();
+  await expect(page.locator("#chat-input")).toHaveValue(/design_id:/);
+  await page
+    .locator(".chat-design-results button")
+    .filter({ hasText: "Decision flow" })
+    .first()
+    .click();
+  await expect(
+    page.getByRole("dialog", { name: "Vista del diseño" }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: testInfo.outputPath("design-chat-desktop.png"),
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const box = await page.locator(".design-panel").boundingBox();
+  expect(box.x).toBe(0);
+  expect(box.width).toBe(390);
+  await page.screenshot({
+    path: testInfo.outputPath("design-mobile.png"),
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Volver al chat / cerrar vista" })
+    .click();
+  await expect(page.locator("#chat-input")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test("Design import and branding work and untrusted HTML cannot access the app", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator('[data-page="design"]').click();
+  await page
+    .getByRole("button", { name: "Identidad visual", exact: true })
+    .click();
+  await page.getByLabel("Nombre de marca").fill("Research Studio");
+  await page.getByRole("button", { name: "Guardar identidad" }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Identidad guardada" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Mis diseños", exact: true }).click();
+  await page.locator(".design-upload input").setInputFiles({
+    name: "table.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from("Name,Value\nAlpha,10\nBeta,20\n"),
+  });
+  await expect(page.locator(".design-panel table")).toContainText("Alpha");
+  await page
+    .getByRole("button", { name: "Volver al chat / cerrar vista" })
+    .click();
+  const response = await page.request.post("/api/design/artifacts", {
+    data: {
+      title: "Isolation check",
+      kind: "web",
+      content: {
+        html: '<h1>Safe preview</h1><script>parent.document.body.dataset.compromised="yes"</script><img src="https://external.invalid/pixel"><a href="https://external.invalid">External</a>',
+      },
+    },
+  });
+  expect(response.ok()).toBeTruthy();
+  await page.reload();
+  await page.locator('[data-page="design"]').click();
+  await page.getByRole("button", { name: "Mis diseños", exact: true }).click();
+  await page
+    .locator(".design-card-open")
+    .filter({ hasText: "Isolation check" })
+    .click();
+  await expect(
+    page
+      .frameLocator(".design-panel iframe")
+      .getByRole("heading", { name: "Safe preview" }),
+  ).toBeVisible();
+  expect(
+    await page.locator("body").getAttribute("data-compromised"),
+  ).toBeNull();
+  await expect(
+    page.frameLocator(".design-panel iframe").locator("a"),
+  ).not.toHaveAttribute("href", /external/);
+});
+
+test("Design catalog renders every template and can regenerate real thumbnails", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(720_000);
+  await page.goto("/");
+  await page.locator('[data-page="design"]').click();
+  let entries = [];
+  let offset = 0;
+  do {
+    const p = await (
+      await page.request.get(`/api/design/templates?offset=${offset}`)
+    ).json();
+    entries.push(...p.templates);
+    offset = p.next_offset;
+  } while (offset !== null);
+  expect(entries).toHaveLength(72);
+  const output = process.env.UPDATE_DESIGN_THUMBNAILS
+    ? resolve("public/assets/design-thumbnails")
+    : testInfo.outputPath("thumbnails");
+  await mkdir(output, { recursive: true });
+  const selectedKinds = new Set(
+    (process.env.DESIGN_TEMPLATE_KINDS || "").split(",").filter(Boolean),
+  );
+  for (const entry of entries.filter(
+    (entry) => !selectedKinds.size || selectedKinds.has(entry.kind),
+  )) {
+    await page.getByLabel("Buscar diseños", { exact: true }).fill(entry.title);
+    const card = page.locator(".design-card-open").filter({
+      has: page.getByRole("heading", { name: entry.title_es, exact: true }),
+    });
+    await card.click();
+    const panel = page.getByRole("dialog", { name: "Vista del diseño" });
+    await expect(
+      panel.getByRole("heading", { name: entry.title_es, exact: true }),
+    ).toBeVisible();
+    if (entry.kind === "diagram") {
+      await expect(panel.locator(".diagram-canvas img")).toBeVisible({
+        timeout: 20000,
+      });
+      await expect
+        .poll(() =>
+          panel.locator(".diagram-canvas img").evaluate((n) => n.naturalWidth),
+        )
+        .toBeGreaterThan(0);
+      const diagramText = await panel
+        .locator(".diagram-canvas img")
+        .evaluate((n) => {
+          const svg = decodeURIComponent(n.src.split(",").slice(1).join(","));
+          return [
+            ...new DOMParser()
+              .parseFromString(svg, "image/svg+xml")
+              .querySelectorAll("text"),
+          ]
+            .map((node) => node.textContent)
+            .join(" ");
+        });
+      expect(diagramText.trim().length).toBeGreaterThan(10);
+      if (entry.id === "decision-flow")
+        expect(diagramText).toContain("New request");
+    }
+    if (entry.kind === "web")
+      await expect(panel.frameLocator("iframe").locator("h1")).toBeVisible();
+    if (entry.kind === "video") {
+      await expect
+        .poll(() => panel.locator("video").evaluate((n) => n.readyState))
+        .toBeGreaterThan(0);
+      await panel.locator("video").evaluate((n) => {
+        n.currentTime = 1.5;
+      });
+    }
+    if (entry.kind === "image")
+      await expect
+        .poll(() =>
+          panel.locator(".image-preview").evaluate((n) => n.naturalWidth),
+        )
+        .toBeGreaterThan(0);
+    await expect(panel.locator('[role="alert"]')).toHaveCount(0);
+    if (entry.kind === "chart" || entry.kind === "diagram") {
+      await expect(panel.locator(".template-frame")).toHaveCSS(
+        "background-color",
+        "rgb(255, 255, 255)",
+      );
+    }
+    if (entry.id === "pitch-deck") {
+      await expect(panel.locator(".designed-slide")).toHaveCSS(
+        "background-color",
+        "rgb(24, 27, 48)",
+      );
+      await expect(panel.locator(".designed-slide")).toHaveCSS(
+        "color",
+        "rgb(246, 243, 255)",
+      );
+    }
+    if (entry.kind === "presentation") {
+      const template = await (
+        await page.request.get(`/api/design/templates/${entry.id}`)
+      ).json();
+      for (const slide of template.content.slides) {
+        await panel
+          .getByRole("button", { name: slide.title, exact: true })
+          .click();
+        await expect(panel.locator(".designed-slide h2")).toHaveText(
+          slide.title,
+        );
+        expect(
+          await panel
+            .locator(".designed-slide")
+            .evaluate((node) => node.scrollWidth <= node.clientWidth + 2),
+          `${entry.id}: ${slide.title}`,
+        ).toBe(true);
+      }
+      await panel
+        .getByRole("button", {
+          name: template.content.slides[0].title,
+          exact: true,
+        })
+        .click();
+      await page.setViewportSize({ width: 390, height: 844 });
+      await expect(panel.locator(".designed-slide h2")).toBeVisible();
+      expect(
+        await panel
+          .locator(".designed-slide")
+          .evaluate((node) => node.scrollWidth <= node.clientWidth + 2),
+      ).toBe(true);
+      await page.screenshot({
+        path: testInfo.outputPath(`${entry.id}-mobile.png`),
+      });
+      await page.setViewportSize({ width: 1280, height: 720 });
+    }
+    // Render the real template at a consistent canvas size. Only screenshot framing
+    // changes; template markup, content and styles remain the production renderer.
+    // Chart covers show the data marks without the viewer's table controls.
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    const framing = await page.addStyleTag({
+      content: `
+      .design-panel { width: 1000px !important; }
+      .design-preview-content { width: 960px !important; height: 600px !important; min-height: 0 !important; overflow: hidden; }
+      .design-frame { height: 600px !important; min-height: 0 !important; }
+      .designed-slide { min-height: 600px !important; }
+      .template-chart { min-height: 600px !important; }
+      .template-chart .data-grid { display: none !important; }
+    `,
+    });
+    // Fit tall documents and data canvases as complete compositions rather than
+    // cutting off diagram nodes, table rows or document sections in the cover.
+    await panel.locator(".design-preview-content").evaluate((canvas) => {
+      canvas.scrollTop = 0;
+      const paper = canvas.querySelector(
+        ".template-frame, .template-document, .composed-slide",
+      );
+      if (!paper) return;
+      const height = paper.getBoundingClientRect().height;
+      if (height <= 600) return;
+      const scale = 600 / height;
+      canvas.style.position = "relative";
+      canvas.style.background = getComputedStyle(paper).backgroundColor;
+      Object.assign(paper.style, {
+        width: "960px",
+        position: "absolute",
+        top: "0",
+        left: `${(960 - 960 * scale) / 2}px`,
+        transform: `scale(${scale})`,
+        transformOrigin: "top left",
+      });
+    });
+    await page.evaluate(
+      () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        ),
+    );
+    const canvas = await panel.locator(".design-preview-content").boundingBox();
+    await page.screenshot({
+      path: join(output, `${entry.id}.png`),
+      clip: {
+        x: Math.floor(canvas.x),
+        y: Math.floor(canvas.y),
+        width: 960,
+        height: 600,
+      },
+    });
+    await framing.evaluate((node) => node.remove());
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page
+      .getByRole("button", { name: "Volver al chat / cerrar vista" })
+      .click();
+  }
+});
+
+test("Template gallery shows real covers on desktop and mobile", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  await page.locator('[data-page="design"]').click();
+  await expect(page.locator(".design-card")).toHaveCount(24);
+  for (const thumbnail of await page
+    .locator(".design-card .design-thumbnail")
+    .all()) {
+    await thumbnail.scrollIntoViewIfNeeded();
+    await expect(thumbnail).toHaveJSProperty("naturalWidth", 960);
+    await expect(thumbnail).toHaveJSProperty("naturalHeight", 600);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.locator(".design-heading").scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: testInfo.outputPath("templates-gallery-desktop.png"),
+    fullPage: true,
+  });
+  await page.getByLabel("Categoría de diseño").selectOption("chart");
+  await expect(page.locator(".design-card")).toHaveCount(8);
+  for (const thumbnail of await page.locator(".design-thumbnail").all()) {
+    await thumbnail.scrollIntoViewIfNeeded();
+    await expect(thumbnail).toHaveJSProperty("naturalWidth", 960);
+  }
+  await page.locator(".design-heading").scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: testInfo.outputPath("templates-charts-white.png"),
+    fullPage: true,
+  });
+  await page.getByLabel("Categoría de diseño").selectOption("presentation");
+  await expect(page.locator(".design-card")).toHaveCount(10);
+  for (const thumbnail of await page.locator(".design-thumbnail").all()) {
+    await thumbnail.scrollIntoViewIfNeeded();
+    await expect(thumbnail).toHaveJSProperty("naturalWidth", 960);
+  }
+  await page.locator(".design-heading").scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: testInfo.outputPath("templates-presentations.png"),
+    fullPage: true,
+  });
+  await page
+    .locator(".design-card-open")
+    .filter({
+      has: page.getByRole("heading", {
+        name: "Presentación de proyecto",
+        exact: true,
+      }),
+    })
+    .click();
+  await expect(page.locator(".designed-slide")).toHaveCSS(
+    "background-color",
+    "rgb(24, 27, 48)",
+  );
+  await page.screenshot({
+    path: testInfo.outputPath("template-presentation-desktop.png"),
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({
+    path: testInfo.outputPath("template-presentation-mobile.png"),
+  });
+  await page
+    .getByRole("button", { name: "Volver al chat / cerrar vista" })
+    .click();
+  await page.locator(".design-heading").scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: testInfo.outputPath("templates-gallery-mobile.png"),
+    fullPage: true,
+  });
 });

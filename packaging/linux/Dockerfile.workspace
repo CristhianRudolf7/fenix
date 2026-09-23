@@ -1,0 +1,16 @@
+# Pass a local tenant image tag or a named registry digest (image@sha256:...).
+ARG FENIX_TENANT_IMAGE
+FROM ${FENIX_TENANT_IMAGE}
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pip python3-docx python3-openpyxl python3-pil \
+    libreoffice-writer libreoffice-calc libreoffice-impress \
+    poppler-utils pandoc ffmpeg fonts-dejavu fonts-liberation \
+    unzip zip sqlite3 && rm -rf /var/lib/apt/lists/*
+COPY resources/skills/youtube-summary/scripts/requirements.txt /opt/fenix-youtube-requirements.txt
+RUN python3 -m venv /opt/fenix-youtube \
+    && /opt/fenix-youtube/bin/pip install --no-cache-dir -r /opt/fenix-youtube-requirements.txt \
+    && chmod -R a+rX,go-w /opt/fenix-youtube
+# System tools belong to this operator-controlled image. User-level packages,
+# virtualenvs, npm prefixes and project files live in per-workspace storage.
+# Runtime UID, mounts, filesystem protections and limits are set by Fenix.

@@ -6,7 +6,11 @@ rust-version.workspace = true
 publish.workspace = true
 
 [dependencies]
+fenix-connectors.workspace = true
+fenix-execution.workspace = true
 fenix-core.workspace = true
+fenix-documents.workspace = true
+tempfile.workspace = true
 fenix-credentials.workspace = true
 fenix-providers.workspace = true
 fenix-storage.workspace = true
@@ -16,6 +20,8 @@ futures-util = "0.3"
 anyhow.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+csv = "1.4"
+serde_yaml_ng = "0.10"
 chrono.workspace = true
 chrono-tz.workspace = true
 cron.workspace = true
@@ -29,14 +35,14 @@ url = "2"
 reqwest.workspace = true
 fs2 = "0.4"
 walkdir = "2"
-nix = { version = "0.30", features = ["signal", "process"] }
+nix = { version = "0.30", features = ["signal", "process", "fs"] }
 pty-process = { version = "0.5.3", features = ["async"] }
 landlock = "0.4.7"
 seccompiler = "0.5.0"
 
 [dev-dependencies]
-tempfile.workspace = true
 wiremock.workspace = true
+rusqlite.workspace = true
 
 [lints]
 workspace = true

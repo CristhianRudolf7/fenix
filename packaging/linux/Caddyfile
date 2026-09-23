@@ -1,0 +1,39 @@
+{
+	admin off
+	auto_https off
+}
+
+(frontend_headers) {
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+	}
+}
+
+:{$FENIX_WEB_PORT:4173} {
+	bind 127.0.0.1
+	root * {$FENIX_WEB_ROOT}
+	encode gzip
+
+	@api path /api /api/*
+	handle @api {
+		reverse_proxy {$FENIX_API_UPSTREAM:127.0.0.1:4174} {
+			flush_interval -1
+		}
+	}
+
+	# Missing assets must return 404, never the SPA HTML.
+	handle /assets/* {
+		import frontend_headers
+		header Cache-Control "public, max-age=0, must-revalidate"
+		file_server
+	}
+
+	handle {
+		import frontend_headers
+		try_files {path} /index.html
+		header Cache-Control "no-cache"
+		file_server
+	}
+}

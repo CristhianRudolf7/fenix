@@ -236,7 +236,12 @@ impl Store {
         }
         let existing:Option<String>=tx.query_row("SELECT id FROM knowledge_relations WHERE scope=?1 AND source_id=?2 AND target_id=?3 AND predicate=?4 AND json_extract(body,'$.evidence_memory_id')=?5",params![scope(project),input.source_id,input.target_id,input.predicate,input.evidence_memory_id],|r|r.get(0)).optional()?;
         let id = existing.unwrap_or_else(id);
-        let body = json!({"id":id,"schema_version":version,"source_id":input.source_id,"target_id":input.target_id,"predicate":input.predicate,"evidence_memory_id":input.evidence_memory_id,"status":input.status});
+        let evidence_revision: i64 = tx.query_row(
+            "SELECT max(seq) FROM memory_revisions WHERE memory_id=?1",
+            [&input.evidence_memory_id],
+            |r| r.get(0),
+        )?;
+        let body = json!({"id":id,"evidence_revision":evidence_revision,"schema_version":version,"source_id":input.source_id,"target_id":input.target_id,"predicate":input.predicate,"evidence_memory_id":input.evidence_memory_id,"status":input.status});
         tx.execute("INSERT INTO knowledge_relations VALUES (?1,?2,?3,?4,?5,?6) ON CONFLICT(id) DO UPDATE SET body=excluded.body",params![id,scope(project),input.source_id,input.target_id,input.predicate,body.to_string()])?;
         tx.commit()?;
         Ok(body)
@@ -261,7 +266,7 @@ impl Store {
             if path.len() >= depth.min(3) {
                 continue;
             }
-            let raw=db.prepare("SELECT r.body,m.metadata FROM knowledge_relations r JOIN memories m ON m.id=json_extract(r.body,'$.evidence_memory_id') WHERE r.scope=?1 AND (r.source_id=?2 OR r.target_id=?2) AND json_extract(r.body,'$.status')='confirmed' AND EXISTS(SELECT 1 FROM knowledge_schemas s WHERE s.scope=r.scope AND s.name=r.predicate AND s.version=(SELECT max(version) FROM knowledge_schemas v WHERE v.scope=s.scope AND v.name=s.name) AND json_extract(s.body,'$.status')='active' AND s.version=json_extract(r.body,'$.schema_version')) ORDER BY r.id LIMIT 100")?.query_map(params![scope(project),node],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
+            let raw=db.prepare("SELECT r.body,m.metadata FROM knowledge_relations r JOIN memories m ON m.id=json_extract(r.body,'$.evidence_memory_id') WHERE r.scope=?1 AND (r.source_id=?2 OR r.target_id=?2) AND json_extract(r.body,'$.status')='confirmed' AND json_extract(r.body,'$.evidence_revision')=(SELECT max(seq) FROM memory_revisions WHERE memory_id=m.id) AND EXISTS(SELECT 1 FROM knowledge_schemas s WHERE s.scope=r.scope AND s.name=r.predicate AND s.version=(SELECT max(version) FROM knowledge_schemas v WHERE v.scope=s.scope AND v.name=s.name) AND json_extract(s.body,'$.status')='active' AND s.version=json_extract(r.body,'$.schema_version')) ORDER BY r.id LIMIT 100")?.query_map(params![scope(project),node],|r|Ok((r.get::<_,String>(0)?,r.get::<_,String>(1)?)))?.collect::<rusqlite::Result<Vec<_>>>()?;
             for (raw, meta) in raw {
                 if !serde_json::from_str::<MemoryMetadata>(&meta)?.active() {
                     continue;
@@ -411,41 +416,58 @@ impl Store {
                 m.metadata.pinned
                     || ["constraint", "preference", "decision"].contains(&m.metadata.kind.as_str())
             })
-            .chain(self.memory_recall(query, project, true, 40, None, None)?)
         {
-            if seen.insert(m.id.clone()) {
+            if m.safe_for_context() && seen.insert(m.id.clone()) {
                 items.push(json!({"type":"memory","value":m}));
             }
         }
-        let normalized = format!(
-            " {} ",
-            query
-                .split(|c: char| !c.is_alphanumeric())
-                .filter(|s| !s.is_empty())
-                .collect::<Vec<_>>()
-                .join(" ")
-                .to_lowercase()
-        );
-        for entity in self.entities(project)? {
-            if std::iter::once(&entity.input.name)
-                .chain(entity.input.aliases.iter())
-                .any(|a| {
-                    normalized.contains(&format!(
-                        " {} ",
-                        a.split(|c: char| !c.is_alphanumeric())
-                            .filter(|s| !s.is_empty())
-                            .collect::<Vec<_>>()
-                            .join(" ")
-                            .to_lowercase()
-                    ))
-                })
-            {
-                items.push(json!({"type":"entity","value":self.memory_card(&entity.id,project)?}));
+        let priority_count = items.len();
+        let mut retrieval = self.search_memory_evidence(
+            query,
+            project,
+            &MemorySearchOptions {
+                limit: 40,
+                ..Default::default()
+            },
+            vec![],
+        )?;
+        // Preserve explicit general context without traversing relationships across projects.
+        if project.is_some() {
+            let general = self.search_memory_evidence(
+                query,
+                None,
+                &MemorySearchOptions {
+                    limit: 20,
+                    graph: false,
+                    ..Default::default()
+                },
+                vec![],
+            )?;
+            retrieval.results.extend(general.results);
+            retrieval.reviews.extend(general.reviews);
+        }
+        for hit in retrieval.results {
+            if hit.memory.safe_for_context() && seen.insert(hit.memory.id.clone()) {
+                items.push(json!({"type":"memory","value":hit.memory,"retrieval":{"evidence":hit.evidence,"branches":hit.branches,"freshness":hit.freshness}}));
             }
+        }
+        for notice in retrieval.reviews.into_iter().take(3) {
+            items.insert(
+                priority_count,
+                json!({"type":"memory_review","value":notice}),
+            );
+        }
+        let (entities, _) = self.memory_query_entities(query, project)?;
+        for entity in entities {
+            items.push(json!({"type":"entity","value":self.memory_card(&entity.id,project)?}));
         }
         let mut included = vec![];
         let mut dropped = 0;
         for item in items {
+            if fenix_core::content_trust::instruction_risk(&serde_json::to_string(&item)?) {
+                dropped += 1;
+                continue;
+            }
             included.push(item);
             if serde_json::to_string(&included)?.len().div_ceil(3) > budget {
                 included.pop();
@@ -454,7 +476,7 @@ impl Store {
         }
         let text = serde_json::to_string(&included)?;
         Ok(
-            json!({"items":included,"text":text,"estimated_tokens":text.len().div_ceil(3),"budget_tokens":budget,"dropped_count":dropped}),
+            json!({"items":included,"text":text,"estimated_tokens":text.len().div_ceil(3),"budget_tokens":budget,"dropped_count":dropped,"retrieval_warnings":retrieval.warnings}),
         )
     }
     pub fn memory_history(&self, id: &str, project: Option<&str>) -> Result<Vec<Value>> {
@@ -521,6 +543,7 @@ impl Store {
         Ok(())
     }
     pub fn memory_maintenance(&self) -> Result<Value> {
+        let repaired = self.repair_memory_lexical_index()?;
         let db = self.db()?;
         let expired=db.execute("UPDATE memories SET metadata=json_set(metadata,'$.status','expired'),updated_at=?1 WHERE coalesce(json_extract(metadata,'$.status'),'confirmed') IN ('confirmed','candidate') AND julianday(json_extract(metadata,'$.valid_until'))<=julianday(?1)",[now()])?;
         let candidates: i64 = db.query_row(
@@ -533,7 +556,9 @@ impl Store {
             [],
             |r| r.get(0),
         )?;
-        Ok(json!({"expired":expired,"candidates":candidates,"failed_jobs":failed}))
+        Ok(
+            json!({"expired":expired,"candidates":candidates,"failed_jobs":failed,"lexical_entries_repaired":repaired}),
+        )
     }
     /// Incremental overlap discovery is a review hint, never an automatic contradiction verdict.
     pub fn review_memory_overlaps(&self) -> Result<usize> {
@@ -568,13 +593,26 @@ impl Store {
                     for other in candidates {
                         let b = words(&other.content);
                         let union = a.union(&b).count();
-                        if union > 0 && a.intersection(&b).count() as f64 / union as f64 >= 0.65 {
+                        if union > 0
+                            && (a.intersection(&b).count() as f64 / union as f64 >= 0.35
+                                || memory_retrieval::words(&current.title)
+                                    == memory_retrieval::words(&other.title))
+                        {
                             let (first, second) = if current.id < other.id {
                                 (&current.id, &other.id)
                             } else {
                                 (&other.id, &current.id)
                             };
-                            found+=tx.execute("INSERT OR IGNORE INTO memory_review_pairs(first_id,second_id,reason) VALUES (?1,?2,'lexical_overlap: may be complementary, duplicate or conflicting; requires review')",params![first,second])?;
+                            let revision = |id: &str| -> Result<i64> {
+                                Ok(tx.query_row(
+                                    "SELECT max(seq) FROM memory_revisions WHERE memory_id=?1",
+                                    [id],
+                                    |r| r.get(0),
+                                )?)
+                            };
+                            let assessment =
+                                super::memory_health::local_assessment(&current, &other);
+                            found+=tx.execute("INSERT INTO memory_review_pairs(first_id,second_id,reason,first_revision,second_revision,assessment) VALUES (?1,?2,'text_overlap: verify sources and validity intervals',?3,?4,?5) ON CONFLICT(first_id,second_id) DO UPDATE SET first_revision=excluded.first_revision,second_revision=excluded.second_revision,assessment=excluded.assessment,attempts=0,review_after=NULL,status='pending' WHERE memory_review_pairs.first_revision!=excluded.first_revision OR memory_review_pairs.second_revision!=excluded.second_revision",params![first,second,revision(first)?,revision(second)?,assessment.to_string()])?;
                         }
                     }
                 }
@@ -588,9 +626,7 @@ impl Store {
         Ok(found)
     }
     pub fn memory_review_pairs(&self, project: Option<&str>) -> Result<Vec<Value>> {
-        let db = self.db()?;
-        let result=db.prepare("SELECT p.first_id,p.second_id,p.reason FROM memory_review_pairs p JOIN memories a ON a.id=p.first_id JOIN memories b ON b.id=p.second_id WHERE a.project_id IS ?1 AND b.project_id IS ?1 AND p.status='pending' AND coalesce(json_extract(a.metadata,'$.status'),'confirmed') IN ('confirmed','candidate') AND coalesce(json_extract(b.metadata,'$.status'),'confirmed') IN ('confirmed','candidate') LIMIT 100")?.query_map([project],|r|Ok(json!({"first_id":r.get::<_,String>(0)?,"second_id":r.get::<_,String>(1)?,"reason":r.get::<_,String>(2)?})))?.collect::<rusqlite::Result<Vec<_>>>()?;
-        Ok(result)
+        self.memory_review_details(project)
     }
     pub fn resolve_memory_pair(
         &self,
@@ -599,12 +635,33 @@ impl Store {
         second: &str,
         decision: &str,
     ) -> Result<()> {
-        if !["complementary", "duplicate", "conflicting", "dismissed"].contains(&decision) {
+        let (a,b) = self.db()?.query_row("SELECT first_revision,second_revision FROM memory_review_pairs WHERE first_id=?1 AND second_id=?2", params![first,second], |r|Ok((r.get::<_,i64>(0)?,r.get::<_,i64>(1)?)))?;
+        self.resolve_memory_pair_at(project, first, second, decision, a, b)
+    }
+    pub fn resolve_memory_pair_at(
+        &self,
+        project: Option<&str>,
+        first: &str,
+        second: &str,
+        decision: &str,
+        first_revision: i64,
+        second_revision: i64,
+    ) -> Result<()> {
+        if ![
+            "complementary",
+            "duplicate",
+            "conflicting",
+            "temporal_change",
+            "ambiguous",
+            "dismissed",
+        ]
+        .contains(&decision)
+        {
             bail!("Invalid memory review decision");
         }
-        let changed=self.db()?.execute("UPDATE memory_review_pairs SET status=?4 WHERE first_id=?2 AND second_id=?3 AND EXISTS(SELECT 1 FROM memories a WHERE a.id=?2 AND a.project_id IS ?1) AND EXISTS(SELECT 1 FROM memories b WHERE b.id=?3 AND b.project_id IS ?1)",params![project,first,second,decision])?;
+        let changed=self.db()?.execute("UPDATE memory_review_pairs SET status=?4 WHERE first_id=?2 AND second_id=?3 AND first_revision=?5 AND second_revision=?6 AND first_revision=(SELECT max(seq) FROM memory_revisions WHERE memory_id=?2) AND second_revision=(SELECT max(seq) FROM memory_revisions WHERE memory_id=?3) AND EXISTS(SELECT 1 FROM memories a WHERE a.id=?2 AND a.project_id IS ?1) AND EXISTS(SELECT 1 FROM memories b WHERE b.id=?3 AND b.project_id IS ?1)",params![project,first,second,decision,first_revision,second_revision])?;
         if changed == 0 {
-            bail!("Memory review pair not found in scope");
+            bail!("Memory review pair not found in scope or revisions changed; read reviews again");
         }
         Ok(())
     }

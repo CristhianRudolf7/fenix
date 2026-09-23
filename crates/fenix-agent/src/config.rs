@@ -24,6 +24,8 @@ pub struct Settings {
     pub project: Option<String>,
     #[serde(default)]
     pub reasoning_effort: Option<ReasoningEffort>,
+    #[serde(default)]
+    pub flex_processing: bool,
     pub workspace: PathBuf,
     #[serde(default = "default_approval")]
     pub command_policy: ActionPolicy,
@@ -38,20 +40,26 @@ pub struct Settings {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ExecutionSettings {
+    /// Opt-in external supervision: no model-step, task, or HTTP request deadline.
+    pub externally_supervised: bool,
     pub max_model_steps: usize,
     pub task_timeout_seconds: u64,
     pub subagent_timeout_seconds: u64,
     pub command_timeout_seconds: u64,
+    /// Initial foreground wait; recent short commands may extend it up to 10 seconds.
+    pub command_yield_ms: u64,
     pub service_timeout_seconds: u64,
     pub max_output_tokens: u32,
 }
 impl Default for ExecutionSettings {
     fn default() -> Self {
         Self {
+            externally_supervised: false,
             max_model_steps: 128,
             task_timeout_seconds: 14_400,
             subagent_timeout_seconds: 3_600,
             command_timeout_seconds: 1_800,
+            command_yield_ms: 1_000,
             service_timeout_seconds: 86_400,
             max_output_tokens: 16_384,
         }
@@ -62,9 +70,10 @@ impl ExecutionSettings {
         if !(8..=4096).contains(&self.max_model_steps)
             || !(60..=604_800).contains(&self.task_timeout_seconds)
             || !(60..=604_800).contains(&self.subagent_timeout_seconds)
+            || self.command_yield_ms > 30_000
             || !(1..=604_800).contains(&self.command_timeout_seconds)
             || !(1..=604_800).contains(&self.service_timeout_seconds)
-            || !(1024..=131_072).contains(&self.max_output_tokens)
+            || !(1024..=1_048_576).contains(&self.max_output_tokens)
         {
             bail!("Invalid execution limits; timeouts must not exceed seven days");
         }
@@ -136,6 +145,7 @@ impl Settings {
             organization: None,
             project: None,
             reasoning_effort: Some(ReasoningEffort::Low),
+            flex_processing: false,
             workspace,
             command_policy: ActionPolicy::Ask,
             file_write_policy: ActionPolicy::Ask,
@@ -148,6 +158,7 @@ impl Settings {
         request.max_output_tokens = self.execution.max_output_tokens;
         if self.provider == ProviderId::OpenAi {
             request.reasoning_effort = self.reasoning_effort;
+            request.flex_processing = self.flex_processing;
         }
         request
     }
@@ -186,8 +197,15 @@ impl Runtime {
             store.set_default(settings.provider, credential);
         }
         Ok(ModelConnection {
+            client: ProviderClient::with_options(
+                store,
+                fenix_providers::ClientOptions {
+                    disable_request_timeout: settings.execution.externally_supervised,
+                    ..Default::default()
+                },
+            )?
+            .with_redactor(self.redactor.clone()),
             settings,
-            client: ProviderClient::new(store)?,
         })
     }
 
@@ -213,6 +231,7 @@ impl Runtime {
             bail!("Enter a model identifier");
         }
         settings.workspace = std::fs::canonicalize(&settings.workspace)?;
+        self.validate_user_workspace(&settings.workspace)?;
         if !settings.workspace.is_dir() {
             bail!("Workspace must be an existing directory");
         }

@@ -1,0 +1,18 @@
+# Build from repository root. Supply an immutable approved tenant/workspace image.
+ARG FENIX_TENANT_IMAGE
+FROM ${FENIX_TENANT_IMAGE}
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-venv libgomp1 libglib2.0-0 libgl1 fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+COPY scripts/ocr/ /usr/local/lib/fenix-ocr/
+COPY resources/skills/pdf-workflows/scripts/requirements.txt /opt/fenix-pdf-requirements.txt
+RUN python3 -m venv /opt/fenix-ocr \
+    && /opt/fenix-ocr/bin/pip install --no-cache-dir -r /usr/local/lib/fenix-ocr/requirements.lock.txt \
+    && /opt/fenix-ocr/bin/pip install --no-cache-dir -r /opt/fenix-pdf-requirements.txt \
+    && ln -s /opt/fenix-ocr /opt/fenix-pdf \
+    && /opt/fenix-ocr/bin/pip freeze > /opt/fenix-ocr/installed-packages.txt \
+    && /opt/fenix-ocr/bin/python /usr/local/lib/fenix-ocr/fetch_models.py /opt/fenix-ocr/models \
+    && chmod -R a+rX,go-w /opt/fenix-ocr /usr/local/lib/fenix-ocr
+# Runtime identity, offline networking and budgets are set by the execution broker.
+# No CUDA packages, API key, runtime model downloads or public OCR endpoint.

@@ -1,0 +1,433 @@
+{
+  "elapsed_ms": 10600,
+  "final": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 494,
+      "indexed_origins": 7,
+      "indexed_pages": 7,
+      "known_urls": 494,
+      "last_fetch_at": 1789822217,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 16
+    },
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0
+  },
+  "initial": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 0,
+      "indexed_origins": 0,
+      "indexed_pages": 0,
+      "known_urls": 0,
+      "last_fetch_at": null,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 0
+    },
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0
+  },
+  "method": "Eight explicit known original-source URLs, temporary empty corpus, no crawler, no LLM, no external search provider. This checks ingestion and local retrieval, not global coverage or answer correctness. Blocked sources remain reported as failures.",
+  "offline_http_attempts": 0,
+  "offline_queries": [
+    {
+      "case": "Rust ownership",
+      "elapsed_us": 2905,
+      "matching_results": 1
+    },
+    {
+      "case": "Python concurrency",
+      "elapsed_us": 6590,
+      "matching_results": 1
+    },
+    {
+      "case": "SQLite durability",
+      "elapsed_us": 2505,
+      "matching_results": 1
+    },
+    {
+      "case": "Web layout",
+      "elapsed_us": 1580,
+      "matching_results": 1
+    },
+    {
+      "case": "Astronomy",
+      "elapsed_us": 4289,
+      "matching_results": 1
+    },
+    {
+      "case": "Public health",
+      "elapsed_us": 1973,
+      "matching_results": 1
+    },
+    {
+      "case": "Community front page",
+      "elapsed_us": 6490,
+      "matching_results": 1
+    },
+    {
+      "case": "Public Reddit page",
+      "elapsed_us": 1228,
+      "matching_results": 0
+    }
+  ],
+  "performed_at": "2026-09-19T12:50:17.333690744+00:00",
+  "source_queries": [
+    {
+      "case": "Rust ownership",
+      "elapsed_ms": 2915,
+      "matching_results": 1,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 49,
+          "indexed_origins": 2,
+          "indexed_pages": 2,
+          "known_urls": 49,
+          "last_fetch_at": 1789822209,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "ownership",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T12:50:09+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "snippet": "What Is Ownership? Ownership is a set of rules that govern how a Rust program manages memory. All programs have to manage the way they use a computer’s memory while running. Some languages have garbage collection that regularly looks for no-longer-used memory as the program runs; in other languages, the programmer must explicitly allocate and free ",
+            "title": "What is Ownership? - The Rust Programming Language",
+            "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 11,
+            "indexed": true,
+            "resolved_url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html",
+            "status": "read",
+            "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "url": "https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html"
+    },
+    {
+      "case": "Python concurrency",
+      "elapsed_ms": 2850,
+      "matching_results": 1,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 38,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 38,
+          "last_fetch_at": 1789822209,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "asyncio",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T12:50:09+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "snippet": "Coroutines and tasks ¶ This section outlines high-level asyncio APIs to work with coroutines and Tasks. Coroutines ¶ Source code: Lib/asyncio/coroutines.py Coroutines declared with the async/await syntax is the preferred way of writing asyncio applications. For example, the following snippet of code prints “hello”, waits 1 second, and then prints “",
+            "title": "Coroutines and tasks — Python 3.14.7 documentation",
+            "url": "https://docs.python.org/3/library/asyncio-task.html"
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 36,
+            "indexed": true,
+            "resolved_url": "https://docs.python.org/3/library/asyncio-task.html",
+            "status": "read",
+            "url": "https://docs.python.org/3/library/asyncio-task.html"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "url": "https://docs.python.org/3/library/asyncio-task.html"
+    },
+    {
+      "case": "SQLite durability",
+      "elapsed_ms": 2981,
+      "matching_results": 1,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 92,
+          "indexed_origins": 3,
+          "indexed_pages": 3,
+          "known_urls": 92,
+          "last_fetch_at": 1789822209,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "WAL",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T12:50:09+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "snippet": "Small. Fast. Reliable. Choose any three. Home Menu About Documentation Download License Support Purchase Search About Documentation Download Support Purchase Write-Ahead Logging Table Of Contents 1. Overview 2. How WAL Works 2.1. Checkpointing 2.2. Concurrency 2.3. Performance Considerations 3. Activating And Configuring WAL Mode 3.1. Automatic Che",
+            "title": "Write-Ahead Logging",
+            "url": "https://www.sqlite.org/wal.html"
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 43,
+            "indexed": true,
+            "resolved_url": "https://www.sqlite.org/wal.html",
+            "status": "read",
+            "url": "https://www.sqlite.org/wal.html"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "url": "https://www.sqlite.org/wal.html"
+    },
+    {
+      "case": "Web layout",
+      "elapsed_ms": 4999,
+      "matching_results": 1,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 394,
+          "indexed_origins": 6,
+          "indexed_pages": 6,
+          "known_urls": 394,
+          "last_fetch_at": 1789822214,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 13
+        },
+        "query": "grid",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T12:50:14+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "snippet": "CSS grid layout The CSS grid layout module excels at dividing a page into major regions or defining the relationship in terms of size, position, and layering between parts of a control built from HTML primitives. Like tables, grid layout enables an author to align elements into columns and rows. However, many more layouts are either possible or eas",
+            "title": "CSS grid layout - CSS | MDN",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout"
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 100,
+            "indexed": true,
+            "resolved_url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout",
+            "status": "read",
+            "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_grid_layout"
+    },
+    {
+      "case": "Astronomy",
+      "elapsed_ms": 2999,
+      "matching_results": 1,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 294,
+          "indexed_origins": 5,
+          "indexed_pages": 5,
+          "known_urls": 294,
+          "last_fetch_at": 1789822212,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 12
+        },
+        "query": "exoplanets",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T12:50:12+00:00",
+            "published_at": "2023-06-08T01:16:36+00:00",
+            "read_status": "not_requested",
+            "snippet": "Explore This Section Exoplanets An exoplanet is any planet beyond our solar system. Most of them orbit other stars, but some free-floating exoplanets, called rogue planets, are untethered to any star. We’ve confirmed more than 6,000 exoplanets, out of the billions that we believe exist. Unable to render the provided source 6K, and counting... 6,000",
+            "title": "Exoplanets - NASA Science",
+            "url": "https://science.nasa.gov/exoplanets/"
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 100,
+            "indexed": true,
+            "resolved_url": "https://science.nasa.gov/exoplanets/",
+            "status": "read",
+            "url": "https://science.nasa.gov/exoplanets/"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "url": "https://science.nasa.gov/exoplanets/"
+    },
+    {
+      "case": "Public health",
+      "elapsed_ms": 2419,
+      "matching_results": 1,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 194,
+          "indexed_origins": 4,
+          "indexed_pages": 4,
+          "known_urls": 194,
+          "last_fetch_at": 1789822212,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 12
+        },
+        "query": "malaria",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T12:50:12+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "snippet": "PAHO © Credits Malaria 4 December 2025 Reading time: Key facts Globally in 2024, there were an estimated 282 million malaria cases and 610 000 malaria deaths in 80 countries. The WHO African Region carries a disproportionately high share of the global malaria burden. In 2024, the WHO African Region was home to 95% of malaria cases (265 million) and",
+            "title": "Malaria",
+            "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 100,
+            "indexed": true,
+            "resolved_url": "https://www.who.int/news-room/fact-sheets/detail/malaria",
+            "status": "read",
+            "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "url": "https://www.who.int/news-room/fact-sheets/detail/malaria"
+    },
+    {
+      "case": "Community front page",
+      "elapsed_ms": 2588,
+      "matching_results": 1,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 494,
+          "indexed_origins": 7,
+          "indexed_pages": 7,
+          "known_urls": 494,
+          "last_fetch_at": 1789822217,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 16
+        },
+        "query": "Show HN",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T12:50:17+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "snippet": "Hacker News new | past | comments | ask | show | jobs | submit login 1. AI-generated posters don’t have to be horrible ( john.hartnup.uk ) 346 points by ereiamjh 3 hours ago | hide | 219 comments 2. Laya the open source version of Jev ( convaiinnovations.com ) 72 points by nandakishor_ml 2 hours ago | hide | 12 comments 3. Human brain is two separa",
+            "title": "Hacker News",
+            "url": "https://news.ycombinator.com/"
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 100,
+            "indexed": true,
+            "resolved_url": "https://news.ycombinator.com/",
+            "status": "read",
+            "url": "https://news.ycombinator.com/"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "url": "https://news.ycombinator.com/"
+    },
+    {
+      "case": "Public Reddit page",
+      "elapsed_ms": 169,
+      "matching_results": 0,
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 394,
+          "indexed_origins": 6,
+          "indexed_pages": 6,
+          "known_urls": 394,
+          "last_fetch_at": 1789822214,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 15
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 0,
+            "error": "robots.txt does not permit reading this URL",
+            "indexed": false,
+            "status": "failed",
+            "url": "https://www.reddit.com/r/rust/"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll.",
+          "Some explicit source URLs could not be read. Inspect source_reads; their failure does not invalidate other indexed results."
+        ]
+      },
+      "url": "https://www.reddit.com/r/rust/"
+    }
+  ]
+}

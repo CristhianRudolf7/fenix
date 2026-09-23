@@ -196,7 +196,7 @@ impl Runtime {
                     .transpose()?
                     .flatten();
                 let result = self
-                    .submit_referenced(text, "telegram", reference.as_deref())
+                    .conversation_turn(text, "telegram", reference.as_deref())
                     .await?;
                 if let (Some(task), Some(id)) =
                     (result["task_id"].as_str(), message["message_id"].as_i64())

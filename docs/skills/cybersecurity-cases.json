@@ -1,0 +1,197 @@
+[
+  {
+    "query": "Evaluate indirect prompt injection through retrieved documents and tool results",
+    "expected": "agent-security-evaluation",
+    "kind": "new"
+  },
+  {
+    "query": "Prueba la seguridad del agente frente a inyección de instrucciones y memoria contaminada",
+    "expected": "agent-security-evaluation",
+    "kind": "new"
+  },
+  {
+    "query": "Test agent approval replay and cross tenant memory leakage",
+    "expected": "agent-security-evaluation",
+    "kind": "new"
+  },
+  {
+    "query": "Test BOLA IDOR and mass assignment using two API accounts",
+    "expected": "api-security-testing",
+    "kind": "new"
+  },
+  {
+    "query": "Prueba autorización de API entre usuarios y campos protegidos",
+    "expected": "api-security-testing",
+    "kind": "new"
+  },
+  {
+    "query": "Evaluate WebSocket authorization after session revocation",
+    "expected": "api-security-testing",
+    "kind": "new"
+  },
+  {
+    "query": "Prioritize CVEs using KEV EPSS and asset exposure",
+    "expected": "vulnerability-management",
+    "kind": "new"
+  },
+  {
+    "query": "Prioriza vulnerabilidades y registra excepciones con vencimiento",
+    "expected": "vulnerability-management",
+    "kind": "new"
+  },
+  {
+    "query": "Track vulnerability remediation aging and verified closure",
+    "expected": "vulnerability-management",
+    "kind": "new"
+  },
+  {
+    "query": "Inspect a suspicious PDF attachment without executing embedded code",
+    "expected": "security-artifact-triage",
+    "kind": "new"
+  },
+  {
+    "query": "Analiza un archivo sospechoso con macros VBA sin ejecutarlo",
+    "expected": "security-artifact-triage",
+    "kind": "new"
+  },
+  {
+    "query": "Triage suspicious archives and extracted indicators offline",
+    "expected": "security-artifact-triage",
+    "kind": "new"
+  },
+  {
+    "query": "Verify restored backup manifests with missing files and read errors",
+    "expected": "backup-and-restore",
+    "kind": "updated"
+  },
+  {
+    "query": "Verifica restauración de backups e integridad sin confundir errores con éxito",
+    "expected": "backup-and-restore",
+    "kind": "updated"
+  },
+  {
+    "query": "Review SBOM component identities and signed build provenance",
+    "expected": "dependency-and-secret-audit",
+    "kind": "updated"
+  },
+  {
+    "query": "Audita dependencias SBOM y procedencia de artefactos",
+    "expected": "dependency-and-secret-audit",
+    "kind": "updated"
+  },
+  {
+    "query": "Implement JWT issuer audience verification and key rotation",
+    "expected": "authentication-integration",
+    "kind": "updated"
+  },
+  {
+    "query": "Implementa OAuth PKCE y validación de tokens JWT",
+    "expected": "authentication-integration",
+    "kind": "updated"
+  },
+  {
+    "query": "Harden container mounts capabilities and runtime isolation",
+    "expected": "container-workflows",
+    "kind": "updated"
+  },
+  {
+    "query": "Endurece contenedores y comprueba aislamiento sin romper herramientas",
+    "expected": "container-workflows",
+    "kind": "updated"
+  },
+  {
+    "query": "Review Kubernetes RBAC pod security and network policies",
+    "expected": "kubernetes-operations",
+    "kind": "updated"
+  },
+  {
+    "query": "Review OAuth consent grants and service account credential rotation",
+    "expected": "identity-access-review",
+    "kind": "updated"
+  },
+  {
+    "query": "Investigate business email compromise and changed bank details",
+    "expected": "phishing-triage",
+    "kind": "updated"
+  },
+  {
+    "query": "Diagnose TLS certificate chain and renewal failure",
+    "expected": "network-diagnostics",
+    "kind": "updated"
+  },
+  {
+    "query": "Harden GitHub Actions workflow permissions and untrusted artifacts",
+    "expected": "release-and-ci",
+    "kind": "updated"
+  },
+  {
+    "query": "Develop a threat hunting hypothesis with positive and benign telemetry",
+    "expected": "detection-engineering",
+    "kind": "updated"
+  },
+  {
+    "query": "Investigate cloud incident logs and credential containment",
+    "expected": "incident-response",
+    "kind": "updated"
+  },
+  {
+    "query": "Review cryptographic key management and nonce reuse in application code",
+    "expected": "security-code-review",
+    "kind": "updated"
+  },
+  {
+    "query": "Evaluate RAG retrieval ranking without inferring inversion from cosine similarity",
+    "expected": "rag-evaluation",
+    "kind": "updated"
+  },
+  {
+    "query": "Edit a Word document and preserve its headings",
+    "expected": "documents-word",
+    "kind": "guard"
+  },
+  {
+    "query": "Create a PDF report from my notes",
+    "expected": "pdf-workflows",
+    "kind": "guard"
+  },
+  {
+    "query": "Implement login for existing users",
+    "expected": "authentication-integration",
+    "kind": "guard"
+  },
+  {
+    "query": "Integrate an external REST API with retries",
+    "expected": "api-integration",
+    "kind": "guard"
+  },
+  {
+    "query": "Compare compiled ELF binaries",
+    "expected": "reverse-engineering",
+    "kind": "guard"
+  },
+  {
+    "query": "Review this source diff for SQL injection",
+    "expected": "security-code-review",
+    "kind": "guard"
+  },
+  {
+    "query": "Plan assets and trust boundaries for a new service",
+    "expected": "threat-modeling",
+    "kind": "guard"
+  },
+  {
+    "query": "Diagnose DNS connection failure",
+    "expected": "network-diagnostics",
+    "kind": "guard"
+  },
+  {
+    "query": "Create a Docker image for a Python app",
+    "expected": "container-workflows",
+    "kind": "guard"
+  },
+  {
+    "query": "Compare RAG retrieval quality on held out questions",
+    "expected": "rag-evaluation",
+    "kind": "guard"
+  }
+]

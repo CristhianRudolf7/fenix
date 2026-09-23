@@ -1,0 +1,328 @@
+{
+  "git-recovery-and-change-management": [
+    "8b4e028b85ddb6c72156ed98123aa81201bfc6bc19d253f6edd06f6d20230409"
+  ],
+  "package-build-and-install": [
+    "2ad8c8fe36b878ffa5fc78a44c8bccb579ce40d5f686b5f4d79af6c236a4cb33"
+  ],
+  "conversation-recap": [
+    "7cd416cd5bf0fe3a8d7209baa0018fa984a8ddef3e83d9bce23191dd21de2961"
+  ],
+  "repository-navigation": [
+    "fb61593371104867e82fd0ef97e1aed2d78ba79fb3323e00a02af796f0496651",
+    "cacaef712bb322994148e2ef7d04d7e118752f1b676a291890212d6c2c802dce"
+  ],
+  "process-and-service-management": [
+    "586e641269e635fb4ee0e8deb43cef67d295e901e5e64361a5796ea54fd397cc"
+  ],
+  "text-processing-and-parsing": [
+    "eb63e6c198d491edac9b181111ecfb9ee738094aeb62cf97c347eedae5e25415"
+  ],
+  "documents-spreadsheets": [
+    "8c348176f996edd8e348015a1ef161a0f780d13cfb90a2075c41ed7d47595fcb",
+    "1a1240182e873eaea1d1e67c1e098bd9e6821289ed3ed52ee2dd783a51843a84"
+  ],
+  "environment-and-dependencies": [
+    "64f2fb602392c9a1eaeb5c5c5ca39a53efee942849a53f30877838af36454eaa"
+  ],
+  "sql-analysis-and-optimization": [
+    "e4878773dc9f82c9c409b583982f7790ec38b907284e84c7d41fb7604dfb616b"
+  ],
+  "memory-and-reminders": [
+    "d86190e20d67f91fde4363ffae175007d9f057904d57564d9215a201e1fd4246",
+    "ec0fe0c70255ea482802848ef74fa9843220e92ee81301c66541ece40fa07384",
+    "6d4ddd363d05cc85c885d3315b1188ff162e60c7e13fb35f0cad34aebbb8d53b"
+  ],
+  "test-driven-repair": [
+    "1e36091f59aae78ff3dce69c0d0449aa09c3fc3317af9565dc60056e55b24312",
+    "a8c9a7d4072ba59a40d7156bed0c0f0089be7f6a65cf9ac9ee7b64df4c4c5098"
+  ],
+  "documents-word": [
+    "8877f0c67f12f5c35b55652b73682b107b3ee982d27ac4985679692f9e512294",
+    "2b88ac5d51eadddf7b252e0017e716dca622364f169b73d6c403c1fd23648ddc"
+  ],
+  "documents-presentations": [
+    "55305fdd2ec38e267bbf619f45adb80cdd2ae9090b65c5fe5d610a8e4d72ce76",
+    "b2030787c459c21ab9b9d28a19f0eaad5b852583ffb602ca97b4392bfedf9b9a"
+  ],
+  "software-implementation": [
+    "20ad07ebd18b6c1a020476ec5f39d4717850bd2221766b3d0c12f5854acb7d7c",
+    "119b83a673d1c5264cc0828c2610fd9b6aa659af1dd3f5adc2e049713e9426af",
+    "7d8e3faa8106bf4c1b60c227d00629c61b23de3745b3d2654187d4a8737e9d35",
+    "edc1c2e1f19aabbb2ff66c049f707dc98e2ae0f85075c150f585561ddd41c54e",
+    "d0c7b88738b010a610bf31bf4c32bbc59854a7139ef72c539990446e8f1bab0c",
+    "e5429afbbbcbeb3594c3dc6b98b168ea33913c0937301116de6212540da18173"
+  ],
+  "local-troubleshooting": [
+    "9e8e0eb78339d9cc087129ed170cd7a6c725164283a42c993b61bf84470fbff1",
+    "415df843ff7a0d7965a1d10b2ea244865e943684bda668b5d4e4d1a0a3ce04c8",
+    "5ed876733a1039c1d2c496e0e59326a6ec81821f3ed7cf75174a1decc725cb84"
+  ],
+  "local-file-work": [
+    "d16fa27486080bc064f05fd067ab366c8bc977cb6bccb94078e0def2dae8ba28"
+  ],
+  "browser-navigation": [
+    "f6df7649f15be6fb3478557545de61ae60b503f76d13f5035fd9ebaf8f328b92",
+    "d67d2424535d0809dbc4f7bc555eb4b26047bbc86f4a7217c68cd4e79ce3f37e",
+    "003693241903827b61c32403eb6913ff82435f84d7f08d4f0373bafaf7a9e038",
+    "9d679805604766fada82874ac8c4159e0ef360f593ec6e73c2766fcd7a538698",
+    "f265c898d36acee1a6ef97e47a9ac9d7e596341ac55b43561d6091a81f226792"
+  ],
+  "data-analysis": [
+    "eef228a0dfa070e44b92d0bd0b86d8ce30c09850b268bb9f69146bfa28184c68",
+    "52c6c0e688b007d806e2a3896f709675a4c08bdfb83cc1b7180d56d46ba557cd"
+  ],
+  "professional-writing": [
+    "5caed943f768bc9ba547e5e821976cfa8ea780db53c4be93eca771cf33c75ff7"
+  ],
+  "skill-authoring": [
+    "a6bc71b5d31df1b08c2f8966c495405e933419e79bff639e1db137a6a5a43b7c",
+    "9ad5db1dd6f9c34211c0609b0a4758a915e451c83d619505b11a92b4ea5ab78a",
+    "62b48049463a324a7cea343a70094a3cd4da1b9f4a84b69590599f2c9d699f91",
+    "6e79cba7256922bad3921544eafcfce25dce679bdaf3660ad36820a573507394",
+    "1b84917eaff0f15c9fede3fe92cfbc6e517f201f921410e2400c25a7430d7d7e"
+  ],
+  "diagram-authoring": [
+    "e9b3319127884065246f9cc08f010041ebb648c4c556db9b22b9378b51c7b214",
+    "d668872633bfee99c3d885fe9fe68619b7cc7f328bf79c6e9adb56d0ce8455e4"
+  ],
+  "frontend-design-and-accessibility": [
+    "a15187d192c5c1f1cd5a2bfbd0e7fe9935509e306d3d32ac672d8c4e6434ee5d",
+    "6214c1595d5702587bd1190a00eb48097c9a5c4bae4c3abf8d6dda9827262610",
+    "3924bc96e3dd48d36003d1ae717d82f790f8ae7d9ae68e6965a4799195c0cac1",
+    "fa706779c9f44a77df682652dc152af35363bafb8aeedf4398f9cc13a39dd7b0"
+  ],
+  "web-presentations": [
+    "1799f71bbc69458190614318660af30ad426c86e06fc5b8e0ee1678172305f49"
+  ],
+  "scientific-figures": [
+    "42385c6e23528ffa2908451cee01255a2be0b2de3f189d8ec2578e7f3ca4b0ae"
+  ],
+  "dashboard-design": [
+    "274b162314dad896a318d5bf94a5e6431ff25fa6c0bbc9e3208fe29dfd08c699"
+  ],
+  "pdf-workflows": [
+    "b72643816be2bfecaa5b63931d0af1186c320fbd46adc0557cdbfbfd649f651c",
+    "611896427d8c8e2557563b6bbbdfed64af7ca886dc8e560b52832b953e4db009",
+    "74e3f1dcf0d077f046a8a6f1a4bf701d0f22b291b59789c1f189f66a848bd614",
+    "b92d49655f65b93d0f1136b52f7ba337bce0ad037eecf5306ab018a9c2c17f05"
+  ],
+  "image-workflows": [
+    "90fa5386453536068ad2126d82c8245eada91a5f2f4b8d8a6232bfe9e3551e12"
+  ],
+  "video-editing": [
+    "9a15bff36381561ccc580f39377d61b0b1482f6d0f62e84af09895072fb4f384",
+    "77ab183e9ee52ebcfbd7908213481c78cf2cf39196e4d8dac1481a0f5b7307f5"
+  ],
+  "latex-authoring": [
+    "30f7ab111e88f89525d0b92770011da2142b64015d9144e2eab3d69fe11ccd0b"
+  ],
+  "web-research": [
+    "d11e32c254b2d58034ff990387b467f578edb610b5910a388cd123a42b2645ad",
+    "c8adb961f56f8bef145a59b648f34ea3101c9680ab6e5fa0f3b6c17a696b6d5e",
+    "875086e7fc32b79941550003e43c80cb4712d903b2ec34610de843e7e85871da",
+    "ad8b2bc684f0c325bfa8ea9268d40b9c25e183df891460f63f7d2d95f89262af",
+    "dce1cb472da5bc2468bb1c23f21f7d760008c5eb9fc8f9893cd90245a22e5a20",
+    "11dffccce2ee722388be898519c967eb29329f6df3ef6765e4ea268fd5308359",
+    "a26b765f53d5b01533acf5de595f22e26987437ef11a4147952300b70f7fc06d"
+  ],
+  "code-review": [
+    "ce1b5572b4bcb28d0c7f7e123168abab86b93036cf814d3f52eb7fc11a24c6ea",
+    "d7ee281ee863e9e87e4b5de5472136f8491dc594c90a673d4f642dcbcbcd191d",
+    "a1b3602c4f1b816f7cb1be969f87c2e8921acf00e15fb4f8130e92c45df25944"
+  ],
+  "git-worktree-coordination": [
+    "91e4c1c171594373e3f6e6bf7fc2a99718f55dfb7ea004d6470fb7318585eecc"
+  ],
+  "requirements-and-planning": [
+    "13f3466f3a7f8d5b67664be94f7654d48eb2405c3f8fafb7703924b99eafb07c",
+    "5bdcd6b3df37a2d12023372666f71c4e9ee6aa20197b5e3a28ca37fb2e3408bf",
+    "c60426c55143e8c55289d762f18437b2fb9f82ab897c75606ffc288474f4b0d0"
+  ],
+  "task-delegation": [
+    "ebe69333ec245ceeb2fc6b7104c05f2589d7d9db6e0d41320fd7d952bf146f8c"
+  ],
+  "test-strategy": [
+    "d7889ae8a8cc5fc6cd4db9161eabcee810fcbef5b9d9450c2b5932df7f9ddda7"
+  ],
+  "literature-review": [
+    "12b7fe0ab7998cf324f4ba24e27bd01711e8c56b592b348f5408b69354c75f36"
+  ],
+  "scientific-writing": [
+    "4c0129b682f81cbb82ad0e5099e15648d8c3e10b51a5cae4405dd7e43bb85306"
+  ],
+  "peer-review": [
+    "695c825fc99d7079961079ffaadbaf3befa0e846daf4c37955b960b7444cfa10"
+  ],
+  "bibliography-management": [
+    "ec1b6044a4e7d5ac1698a0d7c81a8052a1f044c21150f4dec58180d57bd5e31b"
+  ],
+  "ml-training": [
+    "56166d36f1d24a9210b39553903744da91bcd7d5dff12a3eedbf27813fa630c6"
+  ],
+  "ml-dataset-preparation": [
+    "4d13e4db00c37b64d74b91ff9fd5c41f849aa923bdf8efff41c0d7b9cc7afa90"
+  ],
+  "ml-inference-deployment": [
+    "4aa7a281a9375a799c1d3dec2896589dd045fb2639cef8186d5a8726323ba6a3"
+  ],
+  "experiment-and-benchmark-design": [
+    "71722fe87af8de86cdc289d63758b00a6044e0cba7f409a6d7023bbd9123d3e8",
+    "e3400148c205e03796ba311ae5b803d248aef47df6f3eccbcb8a3a62d1f8f01c",
+    "3d309c8e08ad60185da8f73b798a844777483081c339b550afd6847325801aad"
+  ],
+  "calendar-scheduling": [
+    "f5e17215b49dd5c5c5edda0b56868ed5a1a62192d0f205d2e48dc1525a357ea8",
+    "56c09d615cb00b40d0f8737049cff1bba73a7387e8603eeca07aff3cfb38423f",
+    "c788b652e7c38353b0ad3a694b1f00d955d5f6acc3f5493a8a3d3cb63d16e282"
+  ],
+  "learning-and-tutoring": [
+    "1febe7711fb78d4067ce6b8b37a72e9b8ae42159d00481bc7d9da6a161ec3b9a"
+  ],
+  "audio-transcription": [
+    "314c7beb3be573a06e7b6627da6bac330b4f79ac398506657f8ff7f48381e9df"
+  ],
+  "invoice-and-expense-records": [
+    "fab561344ef60df2d4557a8c67d9b4d47477675e3bd6ac1f24b94891af4af0fc"
+  ],
+  "skill-source-review": [
+    "d7c082a9fefa2bb70430f91e3eabdbcc21348d10e8421cf2de1999428691d449",
+    "e731400e592b8649383eda76644b9c41a523f4b9fe4dbc3970ab3fa8af26d3d7",
+    "f582c3b6adc6ffec75de9ee174e022fbe6687b69c3fe49b57d0caebbf56049fd"
+  ],
+  "scheduled-workflows": [
+    "e0e7edc5f88aa124cbca17ee5a2c570a9ea59ae3c507f4f21773b113a2f154ab",
+    "c3b17d945f4299ff1e57b14d0b8274216e7e6b2e99aa86e61532f187837b9a46"
+  ],
+  "browser-regression-testing": [
+    "462ff42495809cd33a953e28ed524f8b2364212e18c905e18d9e9b8c9dd579de",
+    "94e641744ee20be01a4f7854fd3540761a1839d3d9b284c56bf79efbea090020",
+    "75736497e906bd37db6d6954bde73dece807e9fa63f381a85672374785c58b75"
+  ],
+  "product-discovery": [
+    "a3b1c49108ccee6341c70aed7dbd6b685743af93130909b49fe929e556dd0b65"
+  ],
+  "marketing-content": [
+    "f26c2670348e8d0694d6a1a7271e4b3ac0767932af1363382835e097780c6a87"
+  ],
+  "seo-review": [
+    "c0c660f75eafcbc65dd6d25e027fa9399c62ef6dc94a6919ca76c46ceeca0890"
+  ],
+  "cloud-deployment": [
+    "a68be5b1268f5f7dd2a02b1f365d49bd90d8e427196c645b6a25d7a12c7a681f"
+  ],
+  "identity-access-review": [
+    "1e7c4da5632ae2729b77687816d367bb639ca54e4606b7f3a894c70896d3dfd1",
+    "e16fa668981550805b1ce517d685226bdf77f06a636103d52e52278857d45572"
+  ],
+  "mcp-integration": [
+    "2b4f8264355b25db5a45c706c801ae5919190da5bb7111f1050886ea7d8d4e9f"
+  ],
+  "api-integration": [
+    "25cf9d02b348d725dac4da4dbf3f4e4f7dac98da27a67eba7781c5a9d18481f4",
+    "daca9e6bd665c861c10cbeb6c1d86b0388db2c09d3e0c6255c3c9ea69fcb4fa4"
+  ],
+  "crm-workflows": [
+    "21f10317dda7628244a37a1527f01916c10cefd0074674eaf71bf1e0b2c1d4a0"
+  ],
+  "incident-response": [
+    "468305db37286b9584565cb3f8ddbbc8eceb3e7e8253815beb5fa29399c57295",
+    "530cfd62c2b376cdadad758460a2e20e01b30b38234f5de24dcfde1f24e5fe47"
+  ],
+  "security-code-review": [
+    "768b6a835b777d98ffbf4e8e2f4081bad9ac4a96978a5e569f26c94c6eeb7e99",
+    "aeb727420674f1dbad169938647c19f0c465bc7b1dfe9fd69c8b44be9158652f",
+    "7f9f132602a587586cd0132bbfa516a9de5afce976f176fb81daa539af38a24e"
+  ],
+  "backup-and-restore": [
+    "e1b85057a1c8d6e78f77e7a45e92db096e0dd9066f286183df73da714adab4fe"
+  ],
+  "dependency-and-secret-audit": [
+    "88d6d6fb0dfe64d95d975a59b4a4ddf50601ace2f71e57798d32b83bb3c3a22f",
+    "42f233a289e9522655c01420f1975458fcd34dafa1226ac79cd688c1148eb02b"
+  ],
+  "release-and-ci": [
+    "5d626d70fcef111b9a204f46268c7fae46aff67d749786448fb1abb744a67469",
+    "f6c08eb008aa5787bcc7aaa0333cbe68254873c2c55c3ea99334ccb8afb843e9"
+  ],
+  "authentication-integration": [
+    "a00e9a8ac53b23f465c47b4c1a2efd10e802e787d82bc18fd6259f0e36343199"
+  ],
+  "container-workflows": [
+    "293c619120ab2abdfb262f6999f2f17c506f2a7ae6781fd1d707be82c659586d"
+  ],
+  "kubernetes-operations": [
+    "d87de2863213af0885d4a418eaada5076525abb4b71f4d612c35d049ebc203d0"
+  ],
+  "phishing-triage": [
+    "3cabda44f093fd6c86f2e9692b482689edf23d694cc5e5b728fccccef76e6301"
+  ],
+  "detection-engineering": [
+    "8c5b01c2b7b7a26c1f149cff9a6439959e8628a48b8c1ee49dbc8897dee437d0"
+  ],
+  "rag-evaluation": [
+    "e8848fceca49ec8947203f3045401d752ef72efce9686921fae3045ea2fb79bc"
+  ],
+  "network-diagnostics": [
+    "7985f1f6906056df871e5a2154ebeb3faa8952a6354f74fb908a423ffc9017f7"
+  ],
+  "agent-security-evaluation": [
+    "cd9260413be9c24cd04738862c77f8cd39c96d098a1536955c20f7775463589e"
+  ],
+  "architecture-design": [
+    "7e23ac2460e03d2a33b3190916af2bb3a4446d65e6bd183dd9b67e96b1fb34a4"
+  ],
+  "technical-documentation": [
+    "b994ffa1b00401424e991216d8dc379014b47fd2ef877619cb84b6b47904f657"
+  ],
+  "performance-diagnosis": [
+    "63882807ad0206edb57cdf312627eb9caf2c056cbae82fc3e09dd25980f85cb6",
+    "901b0c96dd483f1f18154d7fa7fdb420811a0e68aa1e8d763ff9806524cc0258"
+  ],
+  "agent-workflow-diagnosis": [
+    "1dbf2a1e71e1bfa5b559e858b8459326a5ab9f9ac6367eb31f87ece65a8ce451"
+  ],
+  "api-contract-design": [
+    "7444a6daf34a2867ac257de7d7a89678549c739ebc91354abdd06efa9cde1a7a"
+  ],
+  "cache-design": [
+    "e598c42e6c2687c205acfcc859bcfc86b5dc4377f2567d2c9c34a59c704205cb"
+  ],
+  "customer-support": [
+    "e2f126bf227a2a696e65434d8d86a89460b816455309c9e2b43bb28bf8b0dd5b"
+  ],
+  "data-pipelines": [
+    "3b6487adb558059cd5f033991a5b87618f816d56f7168c2062e3aea5fae3ff6a"
+  ],
+  "team-messaging": [
+    "96ebfad68754a7871bbd2c3e38976b2df9cd251e2900388ce48e8131edf04584",
+    "b82ba87eba91614ecedced73421dcc6f26dae54950f3ad0f2d4219365c22b3e8"
+  ],
+  "google-drive": [
+    "80f47f5984f50558025993d95e1e29c537e8fd659bbc23b1421bf4989b727e0e"
+  ],
+  "google-docs": [
+    "9060b772b396af1f2f69301e87aa811524e89a23a7c5328895562f6744f5de1a"
+  ],
+  "google-sheets": [
+    "8705baa615e8dafca9b03215d5e75225ab249496d5f8579c0712896121d900a3"
+  ],
+  "google-slides": [
+    "69464ad54c6f5e995365f5a64b4b1f201affeb382b5191b3d6837557782179d0"
+  ],
+  "email-workflows": [
+    "f77c00946c8c192120bc3d9f3c80c01beb073f6f98d684b47f9156c0f0e57f61"
+  ],
+  "meeting-notes": [
+    "07745c534a7a051abbcaf8ad06c0630bf4af29d07ce4118fc67c3598791ca707"
+  ],
+  "forms-and-surveys": [
+    "88485dab6e7cb5bfcd88b20233aaedb751b983df9f8a6901bc58047897ab069a"
+  ],
+  "personal-organization": [
+    "11c2adf5e353bd905602582080352fce78adc48fdef37f141caad7660ea25b55"
+  ],
+  "completion-verification": [
+    "d11c2c6a1294ce896c19ade02ce97b0e247565d56c6d7759cf13be09616f1221"
+  ]
+}

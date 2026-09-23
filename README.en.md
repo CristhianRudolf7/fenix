@@ -1,20 +1,31 @@
 # Fénix
 
+Frontend and backend deploy independently under systemd. [Deployment guide](docs/en/frontend-deployment.md).
+
 [Español](README.md)
 
 **Current version: 0.3.0**
+
+Runtime improvements include provider-anchored context accounting, tool programs, conservative restart recovery, private file history and procedural skill candidates. See [behavior and limits](docs/en/harness-continuity.md).
 
 A local personal AI assistant for Linux. A Rust service provides a web interface
 and optional Telegram with **one continuous conversation**, local tools, explicit
 memory, manual skills, reminders and scheduled work. No Node server is needed at
 runtime.
 
+**Pending deployment verification:** validate the firewall on the actual
+infrastructure: allowed and blocked destinations, DNS restrictions, and execution
+termination if protection is lost. Local tests do not replace this check; it has
+not been performed yet. See [network protection and validation limits](docs/en/security-boundaries.md).
+
 ## Run locally
 
-Install Rust using [rustup](https://rust-lang.org/tools/install/), then run from
-this repository:
+Install Rust using [rustup](https://rust-lang.org/tools/install/), Node 22.12+ and
+pnpm 10.34.5, then run from this repository:
 
 ```sh
+pnpm --dir apps/web install --frozen-lockfile
+pnpm --dir apps/web build
 cargo run --locked -p fenix-server --bin fenix
 ```
 
@@ -38,7 +49,11 @@ computer and service must stay on for Telegram and scheduled work.
 - [Coding harness](docs/en/coding-harness.md): regex/glob search, multi-file patches, repository `AGENTS.md` guidance, configurable LSP and active-task compaction with recoverable checkpoints.
 
 - Bilingual web with chat, projects, provider setup, Telegram, memory, skills, schedules and
-  task traces. White light mode is the default; an explicit dark-mode choice persists.
+  task traces. Warm light mode is the default; an explicit dark-mode choice persists.
+  [Visual identity and interface](docs/en/interface.md).
+- [Browser dictation and Live](docs/en/live.md): React, TypeScript, Vite and Tailwind frontend;
+  independent conversational model with browser STT/TTS, grouped progress updates and
+  explicit user delegation. Hanging up leaves the master and subagents running.
 - Concurrent conversation turns, background subagents and editable plans with
   milestones and dependencies. Questions and planning do not hold the chat.
   [Planning, revisions and pub/sub](docs/en/planning.md) preserve work and channel destinations.
@@ -76,7 +91,7 @@ private local SQLite database, without a separate encryption master key. Known
 keys are redacted from agent output and never returned by settings endpoints.
 The service binds to loopback and rejects foreign browser origins and hosts.
 
-Heartbeat, voice, action
+Heartbeat, action
 restoration and automatic task recovery remain in [ROADMAP.md](ROADMAP.md).
 Interrupted tasks are recorded, not replayed. The web previews OpenAI Responses text as it arrives and shows live tool activity.
 Other provider adapters retain complete responses; Telegram delivers complete messages.
@@ -119,7 +134,7 @@ if exceeded, select the old directory with `--skills-dir` or copy resources manu
 
 ```text
 apps/server/             Rust executable and loopback HTTP API
-apps/web/                Browser UI embedded in the Rust executable
+apps/web/                Independent browser UI built with Vite
 crates/fenix-core/       Provider-independent conversation contracts
 crates/fenix-credentials/ Secret handling and exact project credential resolution
 crates/fenix-providers/  Provider catalog, HTTP clients and protocol codecs
@@ -136,14 +151,15 @@ config/                 Provider-library configuration examples
 ## Verification
 
 ```sh
+pnpm --dir apps/web install --frozen-lockfile
+pnpm --dir apps/web build
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked
 cargo build --locked -p fenix-server
-npm --prefix apps/web ci
 cd apps/web
-npx playwright install chromium
-npm test
+pnpm exec playwright install chromium
+pnpm test
 ```
 
 Default tests use local HTTP endpoints and fake credentials. Browser tests start
@@ -157,6 +173,10 @@ root. It uses temporary data and writes a secret-free report under ignored
 - [Projects in one conversation](docs/en/projects.md)
 - [Architecture](docs/en/architecture.md)
 - [Local installation and operation](docs/en/local-operation.md)
+- [Login and per-user isolation](docs/en/user-isolation.md)
+- [Execution security, credential broker and encrypted checkpoints](docs/en/execution-isolation.md)
+- [Self-hosted gVisor workspaces without KVM](docs/en/self-hosted-gvisor.md)
+- [Self-hosted microVMs and persistent tool environments](docs/en/self-hosted-microvms.md)
 - [Verification record](docs/en/verification.md)
 - [Provider library usage](docs/en/development.md)
 - [Provider endpoints and authentication](docs/en/provider-reference.md)
@@ -167,6 +187,16 @@ Interactive terminal sessions, persistent services, incremental logs, configurab
 
 [Local browser / Navegador local — sessions, controls and responsive tests](docs/en/browser.md)
 
+[Local integrations — WhatsApp QR and saved sessions](docs/en/integrations.md)
+
 [Native evaluation and execution recovery](docs/en/native-evaluation.md)
 
 See [procedural skills and recovery](docs/en/harness-recovery.md) for demand-loaded coding procedures, enforced read-only commands and reproducible evaluation.
+
+[Skill marketplace and Fénix Sentinel](docs/en/skill-marketplace.md): private/public publication, Nemotron reviews, corrections on copies, and request-abuse protection.
+
+[Scalable skills and native Fénix Documents](docs/en/skills-and-documents.md): on-demand discovery and local DOCX/XLSX/PPTX tools.
+
+[Library of 171 original skills](docs/en/skill-library.md): catalog, common structure, connection boundaries and source review.
+
+[Design: templates, visual results and the chat preview panel](docs/en/design.md).

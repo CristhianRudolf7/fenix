@@ -1,0 +1,131 @@
+{
+  "final_memory": {
+    "peak_rss_kib": 18804,
+    "rss_kib": 18484
+  },
+  "final_status": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 188,
+      "indexed_origins": 1,
+      "indexed_pages": 2,
+      "known_urls": 188,
+      "last_fetch_at": 1789832546,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 3
+    },
+    "crawler_request_budget": 64,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 80
+  },
+  "initial_memory": {
+    "peak_rss_kib": 11436,
+    "rss_kib": 11436
+  },
+  "method": "Simultaneous cold-corpus queries; only original sites and discovered links. No model, no background crawler, no provider. Rust book URL is a known entry listing, not a known answer URL. Cache phase explicitly disables discovery and reads. This measures bounded discovery, not global search recall or model answer quality.",
+  "offline_http_requests": 0,
+  "offline_repeats": [
+    {
+      "elapsed_us": 2061,
+      "hits": 1,
+      "query": "open source"
+    }
+  ],
+  "performed_at": "2026-09-19T15:42:26.164358321+00:00",
+  "searches": [
+    {
+      "elapsed_ms": 32539,
+      "request": {
+        "days": 30,
+        "discover": true,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "open source",
+        "read_pages": 1,
+        "source_urls": []
+      },
+      "result": {
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 188,
+            "indexed_origins": 1,
+            "indexed_pages": 2,
+            "known_urls": 188,
+            "last_fetch_at": 1789832546,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 3
+          },
+          "discovery": {
+            "candidates_considered": 1,
+            "enabled": true,
+            "entrypoints": [
+              "https://news.ycombinator.com/"
+            ],
+            "followed_urls": 1,
+            "sources": [
+              {
+                "discovered_urls": 100,
+                "indexed": true,
+                "resolved_url": "https://news.ycombinator.com/",
+                "status": "read",
+                "url": "https://news.ycombinator.com/"
+              },
+              {
+                "discovered_urls": 100,
+                "indexed": true,
+                "resolved_url": "https://news.ycombinator.com/item?id=49765348",
+                "status": "read",
+                "url": "https://news.ycombinator.com/item?id=49765348"
+              }
+            ],
+            "unvisited_domains": []
+          },
+          "query": "open source",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-19T15:42:26+00:00",
+              "page": {
+                "content_hash": "449531e78108ad52f2752d35f3d0307124471b64aa0c2d1e0a73c15d572c20f7",
+                "language": "en",
+                "passage_characters": 2400,
+                "published_at": "2026-09-19T10:46:58+00:00",
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-19T15:42:26+00:00",
+                "source": "cache",
+                "title": "Laya the open source version of Jev | Hacker News",
+                "truncated": true,
+                "url": "https://news.ycombinator.com/item?id=49765348",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": "2026-09-19T10:46:58+00:00",
+              "read_status": "cache",
+              "snippet_characters": 350,
+              "title": "Laya the open source version of Jev | Hacker News",
+              "url": "https://news.ycombinator.com/item?id=49765348"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Live discovery is bounded to selected entry pages and at most 6 relevant observed links (2 per origin); it is not full platform or internet search. Inspect discovery.sources for blocked, timed-out or unread sources. Use relevant domains or known source_urls to focus coverage.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+            "The date window uses declared publication metadata only. Pages with unknown, invalid or future publication dates are excluded; indexed_at is not a publication date."
+          ]
+        }
+      }
+    }
+  ],
+  "wall_ms": 32539
+}

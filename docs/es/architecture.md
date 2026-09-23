@@ -102,7 +102,7 @@ inspección del principal también respeta sus ámbitos consultables.
 Un worker toma los trabajos delegados independientemente de la cola del principal.
 SQLite guarda vínculos al padre, intentos, contexto independiente e informes. El
 hijo recibe su encargo, contexto del proyecto, instrucciones estables, memoria
-explícita pertinente del proyecto y general, y todos los metadatos de skills. No
+explícita pertinente del proyecto y general, y candidatos de skills acotados a la tarea. No
 recibe el historial principal; las herramientas de memoria conservan sus filtros. Los informes completos se
 guardan y se encolan para el principal; los detalles quedan en el registro del hijo.
 
@@ -130,10 +130,12 @@ base de datos conserva su estado de habilitación. Al iniciar se copian recursos
 antiguos de `<data-dir>/skills`, sin sobrescribir destinos, seguir enlaces ni borrar
 originales. Los límites de migración se documentan en [uso local](local-operation.md).
 
-Principal e hijos reciben todos los metadatos válidos, incluidas las skills
-deshabilitadas. Las descripciones se acotan a 512 bytes y las versiones a 80,
-indicando el truncamiento; no se omiten entradas por un máximo arbitrario.
-`skill_load` carga las instrucciones habilitadas bajo demanda, hasta 32 KB.
+Principal e hijos pueden consultar toda la biblioteca con `skill_search` y
+`skill_list` paginado; el contexto inicial solo recibe hasta dos candidatos pertinentes.
+Las descripciones se acotan a 512 bytes y las versiones a 80. `skill_load` carga
+instrucciones habilitadas o referencias bajo demanda, hasta 32.000 bytes. Un índice
+léxico incremental persistido evita releer y analizar entradas que no cambiaron.
+Consulta [skills escalables y documentos nativos](skills-and-documents.md).
 
 La memoria explícita guarda título, contenido, origen, proyecto/tarea y fechas. La
 normalización de contenido evita duplicados exactos dentro del mismo ámbito; FTS5 utiliza palabras Unicode, búsqueda OR
@@ -219,3 +221,7 @@ reintento y reconexión. El mensaje definitivo reemplaza al provisional. Este
 cambio no incorpora la propuesta de contratos de verificación de tareas.
 
 Referencia: [Streaming de OpenAI](https://developers.openai.com/api/docs/guides/streaming-responses).
+
+## Evidencia documental
+
+La [biblioteca de documentos](document-library.md) conserva originales versionados y evidencia consultable por separado de la memoria. La extracción nativa, OCR aislado, embeddings `text-embedding-3-small`, búsqueda híbrida por ámbito y citas se integran en la cuenta y conversación existentes.

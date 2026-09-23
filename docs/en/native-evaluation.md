@@ -9,7 +9,8 @@ A completed assistant turn is **not** a passing benchmark result.
 
 ## Run one isolated attempt
 
-Build with `cargo build --locked -p fenix-server`, then:
+Build the frontend first (`pnpm --dir apps/web install --frozen-lockfile` and
+`pnpm --dir apps/web build`), then build with `cargo build --locked -p fenix-server`:
 
 ```bash
 ./target/debug/fenix eval /absolute/path/config.json /absolute/path/new-trial
@@ -163,3 +164,9 @@ and instructions that alone exceed the minimum context budget cause an explicit
 error with a checkpoint rather than silently dropping requirements.
 
 When started explicitly through the bundled `ld-linux` loader, `binary_sha256` hashes the evaluated program, not the loader. `binary_path` and `process_image_path` record both identities. Earlier loader-launched manifests lack this correction: use the external frozen bundle/source protocol for their program hash; do not rewrite historical reports.
+
+## Externally supervised evaluations
+
+For an evaluation whose outer runner owns cancellation, set `settings.execution.externally_supervised` to `true`. This opt-in disables the foreground task deadline, model-step ceiling and total provider HTTP request timeout. Defaults remain bounded. An evaluation may then set `timeout_seconds` to `0` to disable its own timer. Cancellation and reporting still work. Connection establishment timeouts, provider capacity, tool safety/size checks, recovery policies and the external benchmark deadlines still apply; this is not unlimited computation.
+
+Set context capacity to the provider's verified capacity and choose a smaller output ceiling; requests are still clamped to remaining estimated context. The supported output configuration ceiling is 1,048,576 tokens. Do not claim a controlled model-only comparison when changing these settings together. Keep configuration, binary hash, infrastructure failures and all known costs in the evaluation record.

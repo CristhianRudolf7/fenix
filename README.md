@@ -1,20 +1,32 @@
 # Fénix
 
+Frontend y backend se despliegan por separado con systemd. [Guía de despliegue](docs/es/frontend-deployment.md).
+
 [English](README.en.md)
 
 **Versión actual: 0.3.0**
+
+Las mejoras del motor incluyen contexto basado en consumo reportado, programas de herramientas, recuperación conservadora tras reinicios, historial privado de archivos y candidatos de aprendizaje de skills. Véanse [funcionamiento y límites](docs/es/harness-continuity.md).
 
 Asistente personal local para Linux. Un servicio Rust ofrece una web y Telegram
 opcional con **una sola conversación continua**, herramientas locales, memoria
 explícita, skills manuales, recordatorios y tareas programadas. No necesita un
 servidor Node durante el uso habitual.
 
+**Pendiente de comprobar en el despliegue:** verificar el firewall en la
+infraestructura real: destinos permitidos y bloqueados, restricciones de DNS y
+detención de ejecuciones si se pierde la protección. Las pruebas locales no
+sustituyen esta comprobación; todavía no está realizada. Véase
+[protección de red y límites de validación](docs/es/security-boundaries.md).
+
 ## Iniciar
 
 Instala Rust mediante [rustup](https://rust-lang.org/tools/install/) y ejecuta desde
-el repositorio:
+el repositorio (Node 22.12+ y pnpm 10.34.5 para compilar la interfaz):
 
 ```sh
+pnpm --dir apps/web install --frozen-lockfile
+pnpm --dir apps/web build
 cargo run --locked -p fenix-server --bin fenix
 ```
 
@@ -39,8 +51,8 @@ encendidos para atender Telegram y ejecutar programaciones.
 - [Arnés de programación](docs/es/coding-harness.md): búsqueda regex/glob, parches de varios archivos, reglas `AGENTS.md` del repositorio, LSP configurable y compactación de tareas activas con checkpoints recuperables.
 
 - Web en español e inglés con bienvenida, chat, proyectos, proveedores, Telegram, memoria,
-  skills, programaciones, actividad y trazas. Fondo blanco por defecto y modo
-  oscuro activado manualmente.
+  skills, programaciones, actividad y trazas. Fondo marfil por defecto y modo
+  oscuro activado manualmente. [Identidad visual e interfaz](docs/es/interface.md).
 - Turnos de conversación concurrentes, subagentes y planes editables con hitos y
   dependencias. Las preguntas y la planificación no retienen el chat.
   [Planes, revisiones y pub/sub](docs/es/planning.md) conservan avances y canales de entrega.
@@ -83,7 +95,10 @@ orígenes y hosts del navegador.
 Las tareas interrumpidas quedan registradas y no se reanudan automáticamente.
 La web muestra texto progresivo con OpenAI Responses y la actividad de las
 herramientas. Los demás adaptadores y Telegram conservan respuestas completas.
-Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Heartbeat, voz y
+El [dictado y Live del navegador](docs/es/live.md) usan una interfaz con React,
+TypeScript, Vite y Tailwind. Live conversa mediante un modelo independiente, resume
+el progreso y transmite instrucciones explícitas al maestro. Colgar no detiene las tareas.
+Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Heartbeat y
 restauración de acciones permanecen en [ROADMAP.md](ROADMAP.md).
 
 ## Trabajo en segundo plano y skills compartidas
@@ -129,14 +144,15 @@ plantillas están en `resources/skills/`; cada instalación usa sus copias perso
 La documentación principal se mantiene en inglés con versión en español.
 
 ```sh
+pnpm --dir apps/web install --frozen-lockfile
+pnpm --dir apps/web build
 cargo fmt --all --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked
 cargo build --locked -p fenix-server
-npm --prefix apps/web ci
 cd apps/web
-npx playwright install chromium
-npm test
+pnpm exec playwright install chromium
+pnpm test
 ```
 
 Las pruebas habituales usan claves ficticias y servidores HTTP locales. Las del
@@ -150,6 +166,10 @@ no demuestran acceso real a las 17 cuentas.
 - [Proyectos en una conversación](docs/es/projects.md)
 - [Arquitectura](docs/es/architecture.md)
 - [Instalación y uso local](docs/es/local-operation.md)
+- [Login y aislamiento por usuario](docs/es/user-isolation.md)
+- [Seguridad de ejecución, integraciones y copias cifradas](docs/es/execution-isolation.md)
+- [Espacios propios con gVisor, sin KVM](docs/es/self-hosted-gvisor.md)
+- [MicroVMs propias y entornos persistentes de herramientas](docs/es/self-hosted-microvms.md)
 - [Registro de verificación](docs/es/verification.md)
 - [Uso de las bibliotecas](docs/es/development.md)
 - [Proveedores y autenticación](docs/es/provider-reference.md)
@@ -160,6 +180,16 @@ Las sesiones de terminal interactivas, servicios persistentes, registros increme
 
 [Local browser / Navegador local — sessions, controls and responsive tests](docs/es/browser.md)
 
+[Integraciones locales — QR de WhatsApp y sesiones guardadas](docs/es/integrations.md)
+
 [Evaluación nativa y recuperación del motor](docs/es/native-evaluation.md)
 
 Consulta [skills y recuperación](docs/es/harness-recovery.md) para procedimientos bajo demanda, comandos restringidos a lectura y evaluación reproducible.
+
+[Marketplace de skills y Fénix Sentinel](docs/es/skill-marketplace.md): publicación privada/pública, revisión con Nemotron, correcciones en copias y protección contra solicitudes repetidas.
+
+[Skills escalables y Fénix Documents](docs/es/skills-and-documents.md): búsqueda bajo demanda y herramientas locales para DOCX/XLSX/PPTX.
+
+[Biblioteca de 171 skills propias](docs/es/skill-library.md): catálogo, estructura común, límites de conexiones y revisión de fuentes.
+
+[Design: plantillas, resultados visuales y panel del chat](docs/es/design.md).

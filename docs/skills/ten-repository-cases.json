@@ -1,0 +1,312 @@
+[
+  {
+    "query": "Improve this skill after observing repeated failures, without turning examples into global rules.",
+    "expected": "skill-authoring",
+    "kind": "existing"
+  },
+  {
+    "query": "Mejora las instrucciones de una skill conservando una línea base y casos negativos.",
+    "expected": "skill-authoring",
+    "kind": "existing"
+  },
+  {
+    "query": "Compare paired agent evaluation outcomes with repeated seeds and missing trials.",
+    "expected": "experiment-and-benchmark-design",
+    "kind": "existing"
+  },
+  {
+    "query": "Compara resultados por tarea del agente antes y después, sin ocultar regresiones.",
+    "expected": "experiment-and-benchmark-design",
+    "kind": "existing"
+  },
+  {
+    "query": "Find the callers and tests for an unfamiliar symbol with bounded context retrieval.",
+    "expected": "repository-navigation",
+    "kind": "existing"
+  },
+  {
+    "query": "Busca la implementación y sus llamadas sin volcar todo el repositorio.",
+    "expected": "repository-navigation",
+    "kind": "existing"
+  },
+  {
+    "query": "Review this enum change and check consumers outside the diff for missing cases.",
+    "expected": "code-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Revisa este diff y verifica si el campo aparentemente ausente se genera mediante el ORM.",
+    "expected": "code-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Improve visual hierarchy and typography while retaining our existing design system.",
+    "expected": "frontend-design-and-accessibility",
+    "kind": "existing"
+  },
+  {
+    "query": "Mejora el diseño visual sin inventar testimonios ni cambiar la identidad de marca.",
+    "expected": "frontend-design-and-accessibility",
+    "kind": "existing"
+  },
+  {
+    "query": "Reproduce the broken checkout with before-and-after evidence and a clean test profile.",
+    "expected": "browser-regression-testing",
+    "kind": "existing"
+  },
+  {
+    "query": "Prueba la regresión de este formulario sin confundir una pantalla de acceso con la página esperada.",
+    "expected": "browser-regression-testing",
+    "kind": "existing"
+  },
+  {
+    "query": "Evaluate product demand against the current workaround and a falsifiable experiment.",
+    "expected": "product-discovery",
+    "kind": "existing"
+  },
+  {
+    "query": "Valida esta idea de producto con evidencia de uso y criterios para abandonarla.",
+    "expected": "product-discovery",
+    "kind": "existing"
+  },
+  {
+    "query": "Write landing page copy matching the audience and verified product positioning.",
+    "expected": "marketing-content",
+    "kind": "existing"
+  },
+  {
+    "query": "Redacta el lanzamiento con un registro de afirmaciones y pruebas del producto.",
+    "expected": "marketing-content",
+    "kind": "existing"
+  },
+  {
+    "query": "Audit AI search citation visibility without promising ranking gains from llms.txt.",
+    "expected": "seo-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Revisa SEO y citas en respuestas de IA usando consultas y fechas reproducibles.",
+    "expected": "seo-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Build an edit timeline and verify narration cues against exact video frames.",
+    "expected": "video-editing",
+    "kind": "existing"
+  },
+  {
+    "query": "Edita el vídeo y valida límites de escenas, pistas y sincronización.",
+    "expected": "video-editing",
+    "kind": "existing"
+  },
+  {
+    "query": "Deploy to Google Cloud using explicit project and runtime identity, not my active CLI defaults.",
+    "expected": "cloud-deployment",
+    "kind": "existing"
+  },
+  {
+    "query": "Prepara un despliegue GCP con región, identidad de servicio y revisión verificables.",
+    "expected": "cloud-deployment",
+    "kind": "existing"
+  },
+  {
+    "query": "Review Google IAM allow and deny policies with inherited access and conditions.",
+    "expected": "identity-access-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Revisa permisos IAM efectivos y el etag antes de proponer una política.",
+    "expected": "identity-access-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Evaluate a Composio MCP session integration with per-user account bindings.",
+    "expected": "mcp-integration",
+    "kind": "existing"
+  },
+  {
+    "query": "Diseña la conexión MCP de Composio con aislamiento entre usuarios.",
+    "expected": "mcp-integration",
+    "kind": "existing"
+  },
+  {
+    "query": "Integrate a tool router API and recover partially completed cross-service writes.",
+    "expected": "api-integration",
+    "kind": "existing"
+  },
+  {
+    "query": "Integra una API externa sin repetir escrituras cuando hay timeout.",
+    "expected": "api-integration",
+    "kind": "existing"
+  },
+  {
+    "query": "Update an Attio company record using discovered custom attributes and stable IDs.",
+    "expected": "crm-workflows",
+    "kind": "existing"
+  },
+  {
+    "query": "Actualiza un contacto CRM con Composio sin confundir cuentas ni borrar campos omitidos.",
+    "expected": "crm-workflows",
+    "kind": "existing"
+  },
+  {
+    "query": "Reconstruct a security incident timeline from supplied logs, preserving original timestamps.",
+    "expected": "incident-response",
+    "kind": "existing"
+  },
+  {
+    "query": "Investiga un incidente con PCAP y evidencias forenses sin modificar originales.",
+    "expected": "incident-response",
+    "kind": "existing"
+  },
+  {
+    "query": "Review agent code for prompt injection crossing into tool execution and tenant data.",
+    "expected": "security-code-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Audita límites de confianza del agente y llamadas a herramientas con datos no confiables.",
+    "expected": "security-code-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Review whether a skill scanner actually launches untrusted MCP servers.",
+    "expected": "skill-source-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Revisa scripts de una skill sin tratar el modo static como prueba de ausencia de ejecución.",
+    "expected": "skill-source-review",
+    "kind": "existing"
+  },
+  {
+    "query": "Analyze landing-page conversion drop-off with traffic segments and a measurable hypothesis.",
+    "expected": "conversion-optimization",
+    "kind": "new"
+  },
+  {
+    "query": "Optimiza conversiones del formulario usando abandonos y calidad de los registros.",
+    "expected": "conversion-optimization",
+    "kind": "new"
+  },
+  {
+    "query": "Review onboarding activation friction without making cancellation harder.",
+    "expected": "conversion-optimization",
+    "kind": "new"
+  },
+  {
+    "query": "Evalúa CRO de una página de precios y define la métrica de conversión.",
+    "expected": "conversion-optimization",
+    "kind": "new"
+  },
+  {
+    "query": "Explain this ELF binary from disassembly without executing the sample.",
+    "expected": "reverse-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Realiza ingeniería inversa de un binario y distingue offsets de direcciones virtuales.",
+    "expected": "reverse-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Compare compiled versions using function anchors and validated symbol mappings.",
+    "expected": "reverse-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Reconstruye el formato de un protocolo binario a partir de capturas locales.",
+    "expected": "reverse-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Develop a Sigma detection rule with benign negatives and actual log field mappings.",
+    "expected": "detection-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Crea una regla de detección SIEM y verifica falsos positivos con eventos reales.",
+    "expected": "detection-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Validate a YARA-L detection against historical telemetry without enabling alerts.",
+    "expected": "detection-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Comprueba cobertura de una regla de seguridad sin equiparar etiquetas ATT&CK con detección efectiva.",
+    "expected": "detection-engineering",
+    "kind": "new"
+  },
+  {
+    "query": "Crea una skill para un procedimiento repetible.",
+    "expected": "skill-authoring",
+    "kind": "guard"
+  },
+  {
+    "query": "Fix this failing unit test after reproducing the bug.",
+    "expected": "test-driven-repair",
+    "kind": "guard"
+  },
+  {
+    "query": "Implement a GSAP ScrollTrigger animation with cleanup.",
+    "expected": "web-animation",
+    "kind": "guard"
+  },
+  {
+    "query": "Produce a spoken narration and measure its rendered duration.",
+    "expected": "audio-production",
+    "kind": "guard"
+  },
+  {
+    "query": "Transcribe this recording with timestamps.",
+    "expected": "audio-transcription",
+    "kind": "guard"
+  },
+  {
+    "query": "Compare these RSS snapshots for changed articles.",
+    "expected": "feed-monitoring",
+    "kind": "guard"
+  },
+  {
+    "query": "Design the OpenAPI request and response contract.",
+    "expected": "api-contract-design",
+    "kind": "guard"
+  },
+  {
+    "query": "Build a cash-flow forecast with scenarios.",
+    "expected": "financial-modeling",
+    "kind": "guard"
+  },
+  {
+    "query": "Schedule a meeting across time zones.",
+    "expected": "calendar-scheduling",
+    "kind": "guard"
+  },
+  {
+    "query": "Busca el correo y prepara una respuesta en el mismo hilo.",
+    "expected": "email-workflows",
+    "kind": "guard"
+  },
+  {
+    "query": "Publica el resumen autorizado en el canal de Slack indicado.",
+    "expected": "team-messaging",
+    "kind": "guard"
+  },
+  {
+    "query": "Busca este archivo en Google Drive.",
+    "expected": "google-drive",
+    "kind": "guard"
+  },
+  {
+    "query": "Analyze this randomized A/B experiment with confidence intervals.",
+    "expected": "ab-test-analysis",
+    "kind": "guard"
+  },
+  {
+    "query": "Model trust boundaries and threat scenarios for this system.",
+    "expected": "threat-modeling",
+    "kind": "guard"
+  }
+]

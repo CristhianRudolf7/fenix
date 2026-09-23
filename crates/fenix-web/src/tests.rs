@@ -5,7 +5,7 @@ use wiremock::{
     matchers::{header, method, path},
 };
 
-async fn fixture(mut config: Config) -> (tempfile::TempDir, Arc<Web>, MockServer) {
+pub(super) async fn fixture(mut config: Config) -> (tempfile::TempDir, Arc<Web>, MockServer) {
     let dir = tempfile::tempdir().unwrap();
     config.request_interval_ms = 100;
     std::fs::write(
@@ -20,14 +20,109 @@ async fn fixture(mut config: Config) -> (tempfile::TempDir, Arc<Web>, MockServer
     (dir, web, server)
 }
 
-fn empty_config() -> Config {
+pub(super) fn empty_config() -> Config {
     Config {
         seeds: vec![],
         ..Config::default()
     }
 }
 
-async fn robots(server: &MockServer, body: &str) {
+#[tokio::test]
+async fn destination_policy_checks_initial_urls_robots_and_redirects() {
+    let (_dir, web, server) = fixture(Config {
+        allowed_hosts: Some(vec!["example.com".into()]),
+        ..empty_config()
+    })
+    .await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    Mock::given(method("GET"))
+        .and(path("/start"))
+        .respond_with(
+            ResponseTemplate::new(302).insert_header("Location", "https://other.example/escape"),
+        )
+        .mount(&server)
+        .await;
+    let cancel = CancellationToken::new();
+    assert!(
+        web.read("https://example.com/start", "", &cancel)
+            .await
+            .is_err()
+    );
+    assert!(
+        web.read("https://other.example/direct", "", &cancel)
+            .await
+            .is_err()
+    );
+    let requests = server.received_requests().await.unwrap();
+    assert!(requests.iter().any(|r| r.url.path() == "/start"));
+    assert!(
+        !requests
+            .iter()
+            .any(|r| matches!(r.url.path(), "/escape" | "/direct"))
+    );
+    // Test transport rewrites the host to the local fixture address.
+    // A forbidden origin must not trigger even its robots lookup.
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|r| r.url.path() == "/robots.txt")
+            .count(),
+        1
+    );
+}
+
+#[test]
+fn destination_policy_is_exact_and_empty_means_deny_all() {
+    for host in [
+        "*.example.com",
+        "Example.com",
+        "example.com/path",
+        "example.com:443",
+        "example.com.",
+        "user@example.com",
+        "127.0.0.1",
+    ] {
+        assert!(
+            Config {
+                allowed_hosts: Some(vec![host.into()]),
+                ..empty_config()
+            }
+            .validate()
+            .is_err(),
+            "{host}"
+        );
+    }
+    let config = Config {
+        allowed_hosts: Some(vec!["example.com".into()]),
+        ..empty_config()
+    };
+    assert!(config.validate().is_ok());
+    assert!(
+        config
+            .authorize_url(&Url::parse("https://sub.example.com/").unwrap())
+            .is_err()
+    );
+    assert!(
+        config
+            .authorize_url(&Url::parse("https://example.com.evil.test/").unwrap())
+            .is_err()
+    );
+    assert!(
+        config
+            .authorize_url(&Url::parse("https://example.com/").unwrap())
+            .is_ok()
+    );
+    assert!(
+        Config {
+            allowed_hosts: Some(vec![]),
+            ..empty_config()
+        }
+        .authorize_url(&Url::parse("https://example.com/").unwrap())
+        .is_err()
+    );
+}
+
+pub(super) async fn robots(server: &MockServer, body: &str) {
     Mock::given(method("GET"))
         .and(path("/robots.txt"))
         .respond_with(ResponseTemplate::new(200).set_body_string(body))
@@ -35,7 +130,7 @@ async fn robots(server: &MockServer, body: &str) {
         .await;
 }
 
-async fn html(server: &MockServer, route: &str, body: &str) {
+pub(super) async fn html(server: &MockServer, route: &str, body: &str) {
     Mock::given(method("GET"))
         .and(path(route))
         .respond_with(ResponseTemplate::new(200).set_body_raw(body, "text/html; charset=utf-8"))
@@ -43,7 +138,7 @@ async fn html(server: &MockServer, route: &str, body: &str) {
         .await;
 }
 
-fn page(url: &str, title: &str, text: &str) -> Page {
+pub(super) fn page(url: &str, title: &str, text: &str) -> Page {
     let mut document =
         extract::extract(&Url::parse(url).unwrap(), text, "text/plain", 24_000).unwrap();
     document.title = title.into();
@@ -113,7 +208,7 @@ fn html_extraction_keeps_article_evidence_and_filters_hidden_content() {
     assert!(
         document
             .text
-            .contains("Café científico Evidence & sources.")
+            .contains("Café científico\nEvidence & sources.")
     );
     for excluded in [
         "executeBadCode",
@@ -1171,5 +1266,1066 @@ fn older_configs_default_to_ten_and_cannot_exceed_the_limit() {
         }
         .validate()
         .is_err()
+    );
+}
+
+#[test]
+fn publication_dates_are_explicit_and_never_inferred_from_fetch_or_time_tags() {
+    let url = Url::parse("https://example.com/article").unwrap();
+    for (html, expected) in [
+        (
+            r#"<meta property="article:published_time" content="2025-03-02T14:00:00+02:00"><main>Evidence</main>"#,
+            Some("2025-03-02T12:00:00+00:00"),
+        ),
+        (
+            r#"<meta itemprop="datePublished" content="2025-03-02"><main>Evidence</main>"#,
+            Some("2025-03-02T00:00:00+00:00"),
+        ),
+        (
+            r#"<script type="application/ld+json">{"@type":"NewsArticle","datePublished":"2025-03-02"}</script><main>Evidence</main>"#,
+            Some("2025-03-02T00:00:00+00:00"),
+        ),
+        (
+            r#"<time datetime="2025-03-02">Updated recently</time><main>Evidence</main>"#,
+            None,
+        ),
+        (
+            r#"<meta property="article:modified_time" content="2025-03-02"><main>Evidence</main>"#,
+            None,
+        ),
+        (
+            r#"<meta property="article:published_time" content="2025-02-30"><main>Evidence</main>"#,
+            None,
+        ),
+        (
+            r#"<meta property="article:published_time" content="2999-01-01"><main>Evidence</main>"#,
+            None,
+        ),
+        (
+            r#"<script type="application/ld+json">{"comments":[{"datePublished":"2025-03-02"}]}</script>"#,
+            None,
+        ),
+    ] {
+        let document = extract::extract(&url, html, "text/html", 1024).unwrap();
+        assert_eq!(
+            document.published_at.map(timestamp).as_deref(),
+            expected,
+            "{html}"
+        );
+    }
+}
+
+#[test]
+fn feeds_only_discover_public_originals_without_indexing_excerpts() {
+    let url = Url::parse("https://feed.example/rss").unwrap();
+    for body in [
+        r#"<rss><channel><link>https://feed.example/</link><item><title>Not article evidence</title><description>Never index feed excerpts</description><pubDate>Fri, 18 Sep 2026 00:00:00 GMT</pubDate><link>https://source.example/post?a=1&amp;b=2</link></item><item><link>http://127.0.0.1/private</link></item></channel></rss>"#,
+        r#"<feed xmlns="http://www.w3.org/2005/Atom"><link href="https://feed.example/"/><entry><title>Not article evidence</title><updated>2026-09-18T00:00:00Z</updated><link rel="self" href="https://feed.example/item.xml"/><link rel="alternate" href="https://source.example/post?a=1&amp;b=2"/></entry></feed>"#,
+    ] {
+        let document = extract::extract(&url, body, "application/atom+xml", 1024).unwrap();
+        assert!(!document.indexable);
+        assert!(document.text.is_empty());
+        assert!(document.published_at.is_none());
+        assert_eq!(document.links, ["https://source.example/post?a=1&b=2"]);
+    }
+}
+
+#[tokio::test]
+async fn search_filters_dates_domains_duplicates_and_diversity_without_network() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    let now = Utc::now().timestamp();
+    for (url, text, publication) in [
+        (
+            "https://example.com/one",
+            "Orbital systems primary evidence",
+            Some(now - 3600),
+        ),
+        (
+            "https://example.com/two",
+            "Orbital systems secondary evidence",
+            Some(now - 3600),
+        ),
+        (
+            "https://news.example.com/three",
+            "Orbital systems third evidence",
+            Some(now - 3600),
+        ),
+        (
+            "https://unrelated.example/copy",
+            "Orbital systems primary evidence",
+            Some(now - 3600),
+        ),
+        (
+            "https://other.example/unique",
+            "Orbital systems independent evidence",
+            Some(now - 3600),
+        ),
+        (
+            "https://badexample.com/not-subdomain",
+            "Orbital systems misleading domain",
+            Some(now - 3600),
+        ),
+        (
+            "https://example.com.evil.example/not-subdomain",
+            "Orbital systems misleading suffix",
+            Some(now - 3600),
+        ),
+        (
+            "https://example.com/old",
+            "Orbital systems old evidence",
+            Some(now - 60 * 86_400),
+        ),
+        (
+            "https://example.com/undated",
+            "Orbital systems unknown date evidence",
+            None,
+        ),
+        (
+            "https://example.com/future",
+            "Orbital systems future evidence",
+            Some(now + 86_400),
+        ),
+    ] {
+        let mut page = page(url, "Orbital systems", text);
+        page.document.published_at = publication;
+        web.index.save(page).await.unwrap();
+    }
+    let cancel = CancellationToken::new();
+    let request = SearchRequest {
+        query: "What are the orbital systems".into(),
+        domains: vec!["EXAMPLE.COM.".into()],
+        days: Some(30),
+        limit: 10,
+        read_pages: 0,
+        max_per_domain: 10,
+        ..SearchRequest::default()
+    };
+    let response = web.search_with(request.clone(), &cancel).await.unwrap();
+    assert_eq!(response.results.len(), 3);
+    assert!(
+        response
+            .results
+            .iter()
+            .all(|hit| hit.published_at.is_some())
+    );
+    assert!(
+        response
+            .results
+            .iter()
+            .all(|hit| !hit.url.contains("evil") && !hit.url.contains("badexample"))
+    );
+    let diverse = web
+        .search_with(
+            SearchRequest {
+                max_per_domain: 2,
+                ..request.clone()
+            },
+            &cancel,
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        diverse.results.len(),
+        2,
+        "Requested domain includes its subdomains for diversity"
+    );
+    let all = web
+        .search_with(
+            SearchRequest {
+                domains: vec![],
+                max_per_domain: 10,
+                ..request
+            },
+            &cancel,
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        all.results.len(),
+        6,
+        "Identical content is deduplicated across domains"
+    );
+    assert_eq!(all.coverage.requests_today, 0);
+    assert!(server.received_requests().await.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn explicit_source_reads_populate_own_index_and_report_partial_failures_and_feeds() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    robots(&server, "User-agent: *\nAllow: /\nDisallow: /private\n").await;
+    html(
+        &server,
+        "/article",
+        "<title>Original evidence</title><main>Orbital systems independent research.</main>",
+    )
+    .await;
+    Mock::given(method("GET")).and(path("/feed")).respond_with(
+        ResponseTemplate::new(200).set_body_raw("<rss><channel><item><link>http://example.com/follow-up</link><description>Orbital systems fabricated excerpt</description></item></channel></rss>", "application/rss+xml")
+    ).mount(&server).await;
+    let response = web
+        .search_with(
+            SearchRequest {
+                query: "orbital systems".into(),
+                read_pages: 0,
+                source_urls: vec![
+                    "http://example.com/article".into(),
+                    "http://example.com/private".into(),
+                    "http://example.com/feed".into(),
+                ],
+                ..SearchRequest::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(response.results.len(), 1);
+    assert_eq!(response.results[0].read_status, "not_requested");
+    assert_eq!(response.source_reads.len(), 3);
+    assert_eq!(response.source_reads[0].status, "read");
+    assert!(response.source_reads[0].indexed);
+    assert_eq!(response.source_reads[1].status, "failed");
+    assert!(
+        response.source_reads[1]
+            .error
+            .as_ref()
+            .unwrap()
+            .contains("robots")
+    );
+    assert_eq!(response.source_reads[2].status, "discovered");
+    assert!(!response.source_reads[2].indexed);
+    assert_eq!(response.source_reads[2].discovered_urls, 1);
+    assert!(
+        web.index
+            .get("http://example.com/feed")
+            .await
+            .unwrap()
+            .is_none()
+    );
+    let requests = server.received_requests().await.unwrap();
+    assert!(
+        requests
+            .iter()
+            .all(|request| matches!(request.url.path(), "/robots.txt" | "/article" | "/feed"))
+    );
+    let follow_up: usize = web
+        .index
+        .call(|db| {
+            Ok(db.query_row(
+                "SELECT count(*) FROM frontier WHERE url='http://example.com/follow-up'",
+                [],
+                |row| row.get(0),
+            )?)
+        })
+        .await
+        .unwrap();
+    assert_eq!(follow_up, 1);
+}
+
+#[tokio::test]
+async fn own_search_validates_before_network_and_can_cancel_source_reads() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    for request in [
+        SearchRequest {
+            query: "orbital".into(),
+            domains: vec!["example.com%' OR 1=1 --".into()],
+            ..SearchRequest::default()
+        },
+        SearchRequest {
+            query: "orbital".into(),
+            domains: vec!["*.example.com".into()],
+            ..SearchRequest::default()
+        },
+        SearchRequest {
+            query: "orbital".into(),
+            days: Some(0),
+            ..SearchRequest::default()
+        },
+        SearchRequest {
+            query: "orbital".into(),
+            max_per_domain: 0,
+            ..SearchRequest::default()
+        },
+        SearchRequest {
+            query: "orbital".into(),
+            source_urls: vec!["http://127.0.0.1/private".into()],
+            ..SearchRequest::default()
+        },
+        SearchRequest {
+            query: "???".into(),
+            source_urls: vec!["http://example.com/article".into()],
+            ..SearchRequest::default()
+        },
+    ] {
+        assert!(
+            web.search_with(request, &CancellationToken::new())
+                .await
+                .is_err()
+        );
+    }
+    assert!(
+        serde_json::from_str::<SearchRequest>(r#"{"query":"orbit","provider":"brave"}"#).is_err()
+    );
+    assert!(server.received_requests().await.unwrap().is_empty());
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    Mock::given(method("GET"))
+        .and(path("/slow"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_delay(Duration::from_secs(10))
+                .set_body_raw("<main>Orbital evidence</main>", "text/html"),
+        )
+        .mount(&server)
+        .await;
+    let cancel = CancellationToken::new();
+    let request = web.search_with(
+        SearchRequest {
+            query: "orbital".into(),
+            read_pages: 0,
+            source_urls: vec!["http://example.com/slow".into()],
+            ..SearchRequest::default()
+        },
+        &cancel,
+    );
+    tokio::pin!(request);
+    tokio::select! {
+        result = &mut request => panic!("Slow request finished unexpectedly: {result:?}"),
+        _ = tokio::time::sleep(Duration::from_millis(200)) => cancel.cancel(),
+    }
+    let error = tokio::time::timeout(Duration::from_secs(1), request)
+        .await
+        .unwrap()
+        .unwrap_err();
+    assert!(error.to_string().contains("cancelled"));
+    assert_eq!(web.status().await.unwrap().active_operations, 0);
+    assert_eq!(web.status().await.unwrap().active_downloads, 0);
+}
+
+#[tokio::test]
+async fn publication_migration_preserves_old_corpus_and_fts_without_guessing_dates() {
+    let (dir, web, _server) = fixture(empty_config()).await;
+    web.index
+        .save(page(
+            "https://example.com/legacy",
+            "Legacy evidence",
+            "Orbital legacy research",
+        ))
+        .await
+        .unwrap();
+    web.index.call(|db| {
+        db.execute_batch("DROP INDEX pages_publication; ALTER TABLE pages DROP COLUMN published_at; ALTER TABLE frontier DROP COLUMN label; PRAGMA user_version=1;")?;
+        Ok(())
+    }).await.unwrap();
+    drop(web);
+    let reopened = Web::open(dir.path()).await.unwrap();
+    let response = reopened
+        .search("orbital", 5, 0, &CancellationToken::new())
+        .await
+        .unwrap();
+    assert_eq!(response.results.len(), 1);
+    assert_eq!(response.results[0].published_at, None);
+    let recent = reopened
+        .search_with(
+            SearchRequest {
+                query: "orbital".into(),
+                read_pages: 0,
+                days: Some(30),
+                ..SearchRequest::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert!(recent.results.is_empty());
+    assert_eq!(recent.coverage.indexed_pages, 1);
+    assert!(
+        reopened
+            .index
+            .candidates(
+                &SearchRequest {
+                    query: "orbital".into(),
+                    ..Default::default()
+                },
+                vec![]
+            )
+            .await
+            .unwrap()
+            .is_empty(),
+        "The new frontier label column must migrate without losing indexed pages"
+    );
+}
+
+#[tokio::test]
+async fn search_candidate_bound_is_disclosed_and_publication_filters_survive_refresh() {
+    let (_dir, web, server) = fixture(Config {
+        cache_minutes: 0,
+        ..empty_config()
+    })
+    .await;
+    web.index.call(|db| {
+        let tx = db.transaction()?;
+        for i in 0..1002 {
+            tx.execute("INSERT INTO pages(url,origin,title,text,hash,truncated,fetched_at) VALUES(?,'http://crowded.example','Orbit',?,?,0,0)", rusqlite::params![format!("http://crowded.example/{i:04}"), format!("Orbit source {i}"), format!("unique-{i}")])?;
+        }
+        tx.commit()?;
+        Ok(())
+    }).await.unwrap();
+    let response = web
+        .search("orbit", 10, 0, &CancellationToken::new())
+        .await
+        .unwrap();
+    assert_eq!(response.results.len(), 2);
+    assert!(
+        response
+            .warnings
+            .iter()
+            .any(|warning| warning.contains("1000 ranked candidates"))
+    );
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(&server, "/revised", "<meta property='article:published_time' content='2020-01-01'><main>Telescopes revised evidence</main>").await;
+    let mut indexed = page(
+        "http://example.com/revised",
+        "Telescopes",
+        "Telescopes earlier evidence",
+    );
+    indexed.document.published_at = Some(Utc::now().timestamp() - 3600);
+    web.index.save(indexed).await.unwrap();
+    let revised = web
+        .search_with(
+            SearchRequest {
+                query: "telescopes".into(),
+                read_pages: 1,
+                days: Some(30),
+                ..SearchRequest::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert!(revised.results.is_empty());
+    assert!(
+        revised
+            .warnings
+            .iter()
+            .any(|warning| warning.contains("changed publication date"))
+    );
+}
+
+#[tokio::test]
+async fn crawler_preserves_daily_capacity_for_explicit_foreground_reads() {
+    let (_dir, web, server) = fixture(Config {
+        requests_per_day: 10,
+        foreground_reserve_percent: 20,
+        seeds: vec!["http://example.com/background".into()],
+        ..empty_config()
+    })
+    .await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(
+        &server,
+        "/foreground",
+        "<main>Requested public evidence</main>",
+    )
+    .await;
+    web.index
+        .call(|db| {
+            db.execute(
+                "INSERT INTO traffic(id,day,requests) VALUES(1,?,8)",
+                [Utc::now().format("%Y-%m-%d").to_string()],
+            )?;
+            Ok(())
+        })
+        .await
+        .unwrap();
+    let status = web.status().await.unwrap();
+    assert_eq!(status.crawler_request_budget, 8);
+    assert_eq!(status.requests_per_day, 10);
+    assert_eq!(status.coverage.requests_today, 8);
+    assert!(!web.crawl_next().await.unwrap());
+    assert!(server.received_requests().await.unwrap().is_empty());
+    assert_eq!(
+        web.status().await.unwrap().coverage.due_urls,
+        1,
+        "Paused crawling must not lease its pending work"
+    );
+    let page = web
+        .read(
+            "http://example.com/foreground",
+            "evidence",
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert!(page.passage.contains("Requested public evidence"));
+    assert_eq!(
+        web.status().await.unwrap().coverage.requests_today,
+        10,
+        "Foreground can use both reserved requests for robots and its source"
+    );
+    assert!(
+        server
+            .received_requests()
+            .await
+            .unwrap()
+            .iter()
+            .all(|request| matches!(request.url.path(), "/robots.txt" | "/foreground"))
+    );
+    assert!(!web.crawl_next().await.unwrap());
+}
+
+#[test]
+fn foreground_reserve_defaults_for_old_configs_and_handles_small_budgets() {
+    let default: Config = serde_json::from_str(r#"{"requests_per_day":2500,"seeds":[]}"#).unwrap();
+    assert_eq!(default.foreground_reserve_percent, 20);
+    assert_eq!(default.crawler_request_budget(), 2000);
+    for (requests_per_day, reserve, expected) in [(1, 20, 1), (2, 20, 1), (10, 0, 10), (10, 90, 1)]
+    {
+        let config = Config {
+            requests_per_day,
+            foreground_reserve_percent: reserve,
+            ..empty_config()
+        };
+        config.validate().unwrap();
+        assert_eq!(config.crawler_request_budget(), expected);
+    }
+    assert!(
+        Config {
+            foreground_reserve_percent: 91,
+            ..empty_config()
+        }
+        .validate()
+        .is_err()
+    );
+}
+
+#[tokio::test]
+async fn live_discovery_follows_titles_from_an_empty_corpus_and_reuses_disk_links() {
+    let (dir, mut web, server) = fixture(Config {
+        seeds: vec!["https://example.com/".into()],
+        ..empty_config()
+    })
+    .await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(&server, "/", "<title>Research listing</title><a href='/p/17'>Orbital navigation research</a><a href='/p/18' rel='nofollow'>Orbital blocked link</a><a href='http://127.0.0.1/private'>Orbital private</a>").await;
+    let published = Utc::now().to_rfc3339();
+    html(&server, "/p/17", &format!("<title>Orbital navigation</title><meta property='article:published_time' content='{published}'><main>Orbital navigation original evidence.</main>")).await;
+    let request = SearchRequest {
+        query: "orbital navigation".into(),
+        discover: true,
+        fresh: false,
+        days: Some(30),
+        ..Default::default()
+    };
+    let result = web
+        .search_with(request.clone(), &CancellationToken::new())
+        .await
+        .unwrap();
+    assert!(result.discovery.enabled);
+    assert_eq!(result.discovery.followed_urls, 1);
+    assert_eq!(result.results.len(), 1);
+    assert_eq!(result.results[0].url, "https://example.com/p/17");
+    assert!(
+        result.results[0]
+            .page
+            .as_ref()
+            .unwrap()
+            .passage
+            .contains("original evidence")
+    );
+    assert_eq!(result.coverage.requests_today, 3); // robots + listing + original
+    drop(web);
+    web = Web::open(dir.path()).await.unwrap();
+    Arc::get_mut(&mut web).unwrap().network.test_address = Some(*server.address());
+    let again = web
+        .search_with(request, &CancellationToken::new())
+        .await
+        .unwrap();
+    assert_eq!(
+        again.discovery.followed_urls, 1,
+        "Observed labels survive restart and cached entry pages"
+    );
+    assert_eq!(again.coverage.requests_today, 3);
+    assert_eq!(server.received_requests().await.unwrap().len(), 3);
+}
+
+#[tokio::test]
+async fn live_discovery_uses_feed_titles_only_as_leads_and_respects_domain_filter() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    Mock::given(method("GET")).and(path("/feed")).respond_with(ResponseTemplate::new(200).set_body_raw(
+        "<rss><channel><item><link>https://example.com/p/9</link><title>Quantum sensing</title><description>Fake feed evidence</description></item><item><title>Quantum sensing</title><link>https://other.example/p/10</link></item></channel></rss>", "application/rss+xml"
+    )).mount(&server).await;
+    html(
+        &server,
+        "/p/9",
+        "<title>Quantum sensing</title><main>Independent original experiment.</main>",
+    )
+    .await;
+    let result = web
+        .search_with(
+            SearchRequest {
+                query: "quantum sensing".into(),
+                discover: true,
+                domains: vec!["example.com".into()],
+                source_urls: vec!["https://example.com/feed".into()],
+                ..Default::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result.source_reads[0].status, "discovered");
+    assert!(!result.source_reads[0].indexed);
+    assert_eq!(result.discovery.followed_urls, 1);
+    assert_eq!(result.results.len(), 1);
+    assert!(
+        !result.results[0]
+            .page
+            .as_ref()
+            .unwrap()
+            .passage
+            .contains("Fake feed")
+    );
+    assert_eq!(server.received_requests().await.unwrap().len(), 3);
+}
+
+#[test]
+fn hn_dates_belong_to_the_requested_permalink_and_titles_label_observed_threads() {
+    let old = "2020-02-02T12:00:00";
+    let recent = Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+    let body = format!(
+        "<table><tr class='athing' id='42'><td class='titleline'><a href='https://original.example/x'>Quantum systems</a></td></tr><tr><td><span class='age' title='{old} 123'><a href='item?id=42'>old</a></span><a href='item?id=42'>10 comments</a></td></tr><tr><td><span class='age' title='{recent} 999'><a href='item?id=43'>new comment</a></span></td></tr></table>"
+    );
+    let url = Url::parse("https://news.ycombinator.com/item?id=42").unwrap();
+    let document = extract::extract(&url, &body, "text/html", 4096).unwrap();
+    assert_eq!(
+        document.published_at,
+        Some(
+            chrono::DateTime::parse_from_rfc3339(&format!("{old}Z"))
+                .unwrap()
+                .timestamp()
+        )
+    );
+    assert!(
+        document
+            .link_labels
+            .iter()
+            .any(|(link, label)| link.ends_with("item?id=42") && label == "Quantum systems")
+    );
+    for value in [
+        "https://news.ycombinator.com/",
+        "https://news.ycombinator.com/item?id=44",
+        "https://unrelated.example/item?id=42",
+    ] {
+        assert!(
+            extract::extract(&Url::parse(value).unwrap(), &body, "text/html", 4096)
+                .unwrap()
+                .published_at
+                .is_none(),
+            "Must not assign another story or comment's date: {value}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn community_discovery_bootstraps_unseeded_domains_and_reports_denials() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    robots(&server, "User-agent: *\nDisallow: /\n").await;
+    let result = web
+        .search_with(
+            SearchRequest {
+                query: "Rust".into(),
+                discover: true,
+                domains: vec!["reddit.com".into()],
+                ..Default::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        result.discovery.entrypoints,
+        ["https://www.reddit.com/r/all/.rss"]
+    );
+    assert_eq!(result.discovery.sources[0].failure_kind, Some("blocked"));
+    assert_eq!(result.discovery.sources[0].status, "failed");
+    assert!(result.results.is_empty());
+    assert_eq!(
+        server.received_requests().await.unwrap().len(),
+        1,
+        "A denial must never request the article"
+    );
+}
+
+#[tokio::test]
+async fn discovery_bounds_entrypoints_targets_and_reports_unvisited_domains() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    let links = (0..10)
+        .map(|i| format!("<a href='/item-{i}'>Quantum experiment {i}</a>"))
+        .collect::<String>();
+    html(&server, "/", &links).await;
+    let result = web
+        .search_with(
+            SearchRequest {
+                query: "quantum".into(),
+                discover: true,
+                domains: (0..8).map(|i| format!("source{i}.example")).collect(),
+                ..Default::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result.discovery.entrypoints.len(), 4);
+    assert_eq!(result.discovery.unvisited_domains.len(), 4);
+    assert_eq!(result.discovery.followed_urls, 16);
+    let mut counts = std::collections::HashMap::new();
+    for source in &result.discovery.sources[4..] {
+        *counts
+            .entry(Url::parse(&source.url).unwrap().origin())
+            .or_insert(0) += 1;
+    }
+    assert!(counts.values().all(|count| *count <= 8));
+}
+
+#[tokio::test]
+async fn ten_simultaneous_live_searches_share_discovery_downloads() {
+    let (_dir, web, server) = fixture(Config {
+        seeds: vec!["https://example.com/".into()],
+        ..empty_config()
+    })
+    .await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(&server, "/", "<a href='/article'>Orbital systems</a>").await;
+    Mock::given(method("GET"))
+        .and(path("/article"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_delay(Duration::from_millis(200))
+                .set_body_raw(
+                    "<title>Orbital systems</title><main>Verified original.</main>",
+                    "text/html",
+                ),
+        )
+        .mount(&server)
+        .await;
+    let results = futures_util::future::join_all((0..10).map(|_| async {
+        web.search_with(
+            SearchRequest {
+                query: "orbital systems".into(),
+                discover: true,
+                ..Default::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap()
+    }))
+    .await;
+    assert!(results.iter().all(|result| {
+        result
+            .results
+            .iter()
+            .any(|hit| hit.url.ends_with("/article"))
+    }));
+    assert_eq!(server.received_requests().await.unwrap().len(), 3);
+    let status = web.status().await.unwrap();
+    assert_eq!(status.active_operations, 0);
+    assert_eq!(status.active_downloads, 0);
+}
+
+#[tokio::test]
+async fn origin_pacing_longer_than_the_old_timeout_can_complete() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    web.index
+        .save_robots(
+            "https://example.com",
+            "User-agent: *\nAllow: /\n".into(),
+            3600,
+        )
+        .await
+        .unwrap();
+    web.index
+        .call(|db| {
+            db.execute(
+                "UPDATE hosts SET next_request_ms=? WHERE origin='https://example.com'",
+                [Utc::now().timestamp_millis() + 30_200],
+            )?;
+            Ok(())
+        })
+        .await
+        .unwrap();
+    html(
+        &server,
+        "/article",
+        "<title>Paced source</title><main>Readable after origin waiting.</main>",
+    )
+    .await;
+    let started = std::time::Instant::now();
+    let result = web
+        .read("https://example.com/article", "", &CancellationToken::new())
+        .await
+        .unwrap();
+    assert!(started.elapsed() >= Duration::from_secs(30));
+    assert!(result.passage.contains("Readable"));
+    assert_eq!(web.status().await.unwrap().coverage.requests_today, 1);
+}
+
+#[tokio::test]
+async fn cancelling_live_discovery_releases_operations_and_downloads() {
+    let (_dir, web, server) = fixture(Config {
+        seeds: vec!["https://example.com/".into()],
+        ..empty_config()
+    })
+    .await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    Mock::given(method("GET"))
+        .and(path("/"))
+        .respond_with(ResponseTemplate::new(200).set_delay(Duration::from_secs(10)))
+        .mount(&server)
+        .await;
+    let cancel = CancellationToken::new();
+    let call = web.search_with(
+        SearchRequest {
+            query: "science".into(),
+            discover: true,
+            ..Default::default()
+        },
+        &cancel,
+    );
+    let cancellation = async {
+        tokio::time::sleep(Duration::from_millis(250)).await;
+        cancel.cancel();
+    };
+    let (result, _) = tokio::join!(call, cancellation);
+    assert!(result.unwrap_err().to_string().contains("cancelled"));
+    let status = web.status().await.unwrap();
+    assert_eq!(status.active_operations, 0);
+    assert_eq!(status.active_downloads, 0);
+}
+
+#[tokio::test]
+async fn discovery_traverses_observed_noscript_contents_without_running_javascript() {
+    let (_dir, web, server) = fixture(Config {
+        seeds: vec!["https://example.com/".into()],
+        ..empty_config()
+    })
+    .await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(&server, "/", "<nav aria-label='Table of contents'><noscript><iframe src='toc.html'></iframe></noscript></nav><script src='toc.js'></script>").await;
+    html(
+        &server,
+        "/toc.html",
+        "<a href='/opaque-42'>Ownership and borrowing</a>",
+    )
+    .await;
+    html(
+        &server,
+        "/opaque-42",
+        "<title>Ownership and borrowing</title><main>Original chapter evidence.</main>",
+    )
+    .await;
+    let result = web
+        .search_with(
+            SearchRequest {
+                query: "ownership borrowing".into(),
+                discover: true,
+                ..Default::default()
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(result.discovery.followed_urls, 2);
+    assert!(
+        result
+            .results
+            .iter()
+            .any(|hit| hit.url.ends_with("/opaque-42"))
+    );
+    let requests = server.received_requests().await.unwrap();
+    assert_eq!(requests.len(), 4);
+    assert!(
+        !requests
+            .iter()
+            .any(|request| request.url.path().ends_with(".js"))
+    );
+}
+
+#[tokio::test]
+async fn short_acronyms_do_not_match_unrelated_url_substrings() {
+    let (_dir, web, _server) = fixture(empty_config()).await;
+    web.index
+        .enqueue(
+            vec![
+                "https://example.com/from?site=john.example".into(),
+                "https://example.com/item?id=42".into(),
+            ],
+            1,
+        )
+        .await
+        .unwrap();
+    web.index
+        .label_links(vec![(
+            "https://example.com/item?id=42".into(),
+            "Show HN: a useful experiment".into(),
+        )])
+        .await
+        .unwrap();
+    let result = web
+        .index
+        .candidates(
+            &SearchRequest {
+                query: "HN".into(),
+                ..Default::default()
+            },
+            vec![],
+        )
+        .await
+        .unwrap();
+    assert_eq!(result, ["https://example.com/item?id=42"]);
+}
+
+#[tokio::test]
+async fn cold_hn_discovery_returns_dated_threads_and_excludes_recent_comments_on_old_stories() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(&server, "/", "<table><tr class='athing' id='42'><td><span class='titleline'><a href='https://original.example/'>Quantum experiment</a></span></td></tr><tr><td><a href='item?id=42'>5 comments</a></td></tr></table>").await;
+    let recent = Utc::now().format("%Y-%m-%dT%H:%M:%S").to_string();
+    html(&server, "/item", &format!("<title>Quantum experiment | Hacker News</title><span class='age' title='{recent}'><a href='item?id=42'>today</a></span><p>Quantum experiment original discussion.</p>")).await;
+    let request = SearchRequest {
+        query: "quantum experiment".into(),
+        domains: vec!["news.ycombinator.com".into()],
+        days: Some(30),
+        discover: true,
+        ..Default::default()
+    };
+    let result = web
+        .search_with(request.clone(), &CancellationToken::new())
+        .await
+        .unwrap();
+    assert_eq!(result.results.len(), 1);
+    assert_eq!(
+        result.results[0].url,
+        "https://news.ycombinator.com/item?id=42"
+    );
+    assert!(result.results[0].published_at.is_some());
+    assert!(result.results[0].page.is_some());
+    // A recent comment must not make this old submission satisfy days=30.
+    let mut old = page(
+        "https://news.ycombinator.com/item?id=43",
+        "Quantum experiment",
+        "Quantum experiment old story and recent comments",
+    );
+    old.document = extract::extract(&Url::parse(&old.document.url).unwrap(),
+        &format!("<title>Quantum experiment</title><span class='age' title='2020-01-01T00:00:00'><a href='item?id=43'>old</a></span><span class='age' title='{recent}'><a href='item?id=44'>new comment</a></span>"), "text/html", 4096).unwrap();
+    web.index.save(old).await.unwrap();
+    let again = web
+        .search_with(
+            SearchRequest {
+                discover: false,
+                read_pages: 0,
+                ..request
+            },
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(again.results.len(), 1);
+    assert_eq!(
+        again.results[0].url,
+        "https://news.ycombinator.com/item?id=42"
+    );
+}
+
+// Characterization tests for the live-documentation audit. They expose current
+// cache/extraction behavior; passing does not imply an always-live docs feature.
+#[tokio::test]
+async fn live_docs_audit_cached_read_misses_an_origin_update_until_revalidation() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(
+        &server,
+        "/documentation",
+        "<main>Release one: use legacyMethod.</main>",
+    )
+    .await;
+    let cancel = CancellationToken::new();
+    let first = web
+        .read("https://example.com/documentation", "Release", &cancel)
+        .await
+        .unwrap();
+    assert_eq!(first.source, "network");
+    server.reset().await;
+    html(
+        &server,
+        "/documentation",
+        "<main>Release two: use currentMethod.</main>",
+    )
+    .await;
+    let second = web
+        .read("https://example.com/documentation", "Release", &cancel)
+        .await
+        .unwrap();
+    assert_eq!(second.source, "cache");
+    assert!(second.passage.contains("legacyMethod"));
+    assert_eq!(server.received_requests().await.unwrap().len(), 0);
+    web.index
+        .call(|db| {
+            db.execute("UPDATE pages SET fetched_at=1", [])?;
+            Ok(())
+        })
+        .await
+        .unwrap();
+    let checked = web
+        .read("https://example.com/documentation", "Release", &cancel)
+        .await
+        .unwrap();
+    assert_eq!(checked.source, "network");
+    assert!(checked.passage.contains("currentMethod"));
+    eprintln!(
+        "Controlled origin changed: repeated default read made 0 requests and returned old method; after expiration, new method was retrieved."
+    );
+}
+
+#[tokio::test]
+async fn live_docs_audit_code_indentation_and_unknown_publication_dates() {
+    let (_dir, web, server) = fixture(empty_config()).await;
+    robots(&server, "User-agent: *\nAllow: /\n").await;
+    html(&server, "/docs", "<main><h1>Python function</h1><pre><code>def add(a, b):\n    return a + b\n</code></pre></main>").await;
+    let cancel = CancellationToken::new();
+    let read = web
+        .read("https://example.com/docs", "function", &cancel)
+        .await
+        .unwrap();
+    assert!(read.passage.contains("def add(a, b):\n    return a + b"));
+    assert!(read.published_at.is_none());
+    let ordinary = web
+        .search_with(
+            SearchRequest {
+                query: "Python function".into(),
+                read_pages: 0,
+                ..Default::default()
+            },
+            &cancel,
+        )
+        .await
+        .unwrap();
+    assert_eq!(ordinary.results.len(), 1);
+    let recent = web
+        .search_with(
+            SearchRequest {
+                query: "Python function".into(),
+                days: Some(30),
+                read_pages: 0,
+                ..Default::default()
+            },
+            &cancel,
+        )
+        .await
+        .unwrap();
+    assert!(recent.results.is_empty());
+    eprintln!(
+        "Controlled docs: HTML code indentation is preserved; the newly fetched page is excluded by days=30 because publication metadata is absent."
     );
 }

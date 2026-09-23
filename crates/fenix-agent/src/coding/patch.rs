@@ -2,7 +2,6 @@
 use crate::{
     Runtime,
     files::{MAX_FILE_BYTES, read_text},
-    write_private,
 };
 use anyhow::{Context, Result, bail};
 use serde_json::{Value, json};
@@ -65,7 +64,7 @@ fn parse(args: &Value) -> Result<Vec<Edit>> {
     }
     Ok(edits)
 }
-pub(super) fn patch_paths(args: &Value) -> Result<Vec<String>> {
+pub(crate) fn patch_paths(args: &Value) -> Result<Vec<String>> {
     Ok(parse(args)?
         .into_iter()
         .flat_map(|e| std::iter::once(e.path).chain(e.destination))
@@ -183,6 +182,9 @@ impl Runtime {
             {
                 bail!("Patched file exceeds 1 MiB");
             }
+            if let Some(content) = &after {
+                self.check_instruction_write(&destination, content)?;
+            }
             prepared.push(Prepared {
                 path,
                 destination,
@@ -211,26 +213,31 @@ impl Runtime {
                 {
                     bail!("File changed before patch write");
                 }
-                let permissions = edit
-                    .before
-                    .as_ref()
-                    .map(|_| std::fs::metadata(&edit.path).map(|m| m.permissions()))
-                    .transpose()?;
                 if let Some(after) = &edit.after {
-                    std::fs::create_dir_all(edit.destination.parent().context("Missing parent")?)?;
                     if edit.before.is_none() || edit.destination != edit.path {
-                        use std::io::Write;
-                        let mut f = std::fs::OpenOptions::new()
-                            .write(true)
-                            .create_new(true)
-                            .open(&edit.destination)?;
-                        f.write_all(after.as_bytes())?;
-                        f.sync_all()?;
+                        let permissions = if edit.before.is_some() {
+                            Some(
+                                fenix_execution::fs::open(&edit.path)?
+                                    .metadata()?
+                                    .permissions(),
+                            )
+                        } else {
+                            None
+                        };
+                        fenix_execution::fs::create_with_permissions(
+                            &edit.destination,
+                            after.as_bytes(),
+                            permissions,
+                        )?;
                     } else {
-                        write_private(&edit.destination, after)?;
-                    }
-                    if let Some(permissions) = permissions {
-                        std::fs::set_permissions(&edit.destination, permissions)?;
+                        fenix_execution::fs::replace(
+                            &edit.destination,
+                            edit.before
+                                .as_ref()
+                                .context("Missing original content")?
+                                .as_bytes(),
+                            after.as_bytes(),
+                        )?;
                     }
                 }
                 if let Some(after) = &edit.after
@@ -239,7 +246,13 @@ impl Runtime {
                     bail!("Patched file did not match the prepared content");
                 }
                 if edit.after.is_none() || edit.destination != edit.path {
-                    std::fs::remove_file(&edit.path)?;
+                    fenix_execution::fs::remove(
+                        &edit.path,
+                        edit.before
+                            .as_ref()
+                            .context("Missing original content")?
+                            .as_bytes(),
+                    )?;
                 }
                 Ok(())
             };
@@ -252,7 +265,7 @@ impl Runtime {
                     edit.destination.display()
                 );
             }
-            applied.push(json!({"path":edit.path,"destination":edit.destination,"deleted":edit.after.is_none(),"bytes":edit.after.as_ref().map(String::len)}));
+            applied.push(json!({"path":edit.path,"destination":edit.destination,"deleted":edit.after.is_none(),"before_sha256":edit.before.as_ref().map(|s|fenix_documents::sha256(s.as_bytes())),"sha256":edit.after.as_ref().map(|s|fenix_documents::sha256(s.as_bytes())),"bytes":edit.after.as_ref().map(String::len)}));
         }
         Ok(json!({"applied":applied,"verified":true}))
     }

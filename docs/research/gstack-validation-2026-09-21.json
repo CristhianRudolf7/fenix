@@ -1,0 +1,718 @@
+{
+  "date": "2026-09-21",
+  "upstream_commit": "a6b3a57512ca6d5c6aa5b68f74f736195021f96e",
+  "scope": "Original skill instructions, catalog documentation, migration fixtures and regression tests; no production deployment.",
+  "format_validation": {
+    "skills": 180,
+    "passed": 180,
+    "validator": "skill-creator/scripts/quick_validate.py"
+  },
+  "native_tests": {
+    "command": "TMPDIR=/dev/shm /home/Rudy/.cargo/bin/cargo test -p fenix-agent --lib skills:: --locked -- --nocapture",
+    "passed": 32,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 90,
+    "duration_seconds": 75.48
+  },
+  "discovery": {
+    "results": {
+      "baseline": {
+        "cases": 26,
+        "top3": 12,
+        "top1": 8
+      },
+      "candidate": {
+        "cases": 26,
+        "top3": 26,
+        "top1": 22
+      }
+    },
+    "guard_cases": 8,
+    "new_skills_taking_first_place_on_guard_queries": 0,
+    "interpretation": "Development regression queries authored for this change, not a held-out quality benchmark. Baseline restores eight original entrypoints and disables the three new skills. Thirteen baseline targets were unavailable by design; twelve of thirteen existing-skill cases passed at top 3. Candidate passes all 26. This measures lexical discovery, not model task completion or intelligence.",
+    "cases": [
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Audit the developer onboarding from README to first successful API call",
+        "rank": null,
+        "results": [
+          "technical-documentation",
+          "employee-onboarding",
+          "conversion-optimization"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Revisa la experiencia del desarrollador al integrar nuestro SDK",
+        "rank": null,
+        "results": [
+          "mcp-integration",
+          "dotnet-development",
+          "mobile-app-development"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Measure getting started friction and error recovery in our CLI",
+        "rank": null,
+        "results": [
+          "backup-and-restore",
+          "database-migrations",
+          "huggingface-hub"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Audita la primera integración y facilidad de instalación",
+        "rank": null,
+        "results": [
+          "package-build-and-install",
+          "mcp-integration",
+          "api-integration"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Review the developer onboarding plan before implementation",
+        "rank": null,
+        "results": [
+          "conversion-optimization",
+          "technical-documentation",
+          "requirements-and-planning"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Run configured checks and report repository health without fixes",
+        "rank": null,
+        "results": [
+          "test-driven-repair",
+          "vulnerability-management",
+          "dependency-and-secret-audit"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Quiero un informe de salud del código con lint y tests",
+        "rank": null,
+        "results": [
+          "code-review",
+          "test-driven-repair",
+          "professional-writing"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Code health dashboard with missing checks and actual exit status",
+        "rank": null,
+        "results": [
+          "dashboard-design",
+          "wearable-data-analysis",
+          "container-workflows"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Compara el estado de checks sin inventar una puntuación global",
+        "rank": null,
+        "results": [
+          "project-status-review",
+          "literature-review",
+          "audio-transcription"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Weekly engineering retrospective of delivery and rework",
+        "rank": null,
+        "results": [
+          "process-improvement",
+          "project-status-review",
+          "background-jobs"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Retrospectiva de ingeniería de las últimas dos semanas",
+        "rank": null,
+        "results": [
+          "reverse-engineering",
+          "agent-workflow-diagnosis"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Analyze engineering delivery trends and review bottlenecks",
+        "rank": null,
+        "results": [
+          "process-improvement",
+          "wearable-data-analysis",
+          "web-research"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Analiza reprocesos y cuellos de botella del equipo de ingeniería",
+        "rank": null,
+        "results": [
+          "reverse-engineering",
+          "purchase-comparison",
+          "team-messaging"
+        ]
+      },
+      {
+        "expected": "release-and-ci",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Verify deployment artifact and observe post-deploy canary errors",
+        "rank": null,
+        "results": [
+          "cloud-deployment",
+          "ml-inference-deployment",
+          "feature-rollouts"
+        ]
+      },
+      {
+        "expected": "technical-documentation",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Actualizar documentación de comandos y configuración tras una release",
+        "rank": 2,
+        "results": [
+          "cpp-development",
+          "technical-documentation",
+          "local-troubleshooting"
+        ]
+      },
+      {
+        "expected": "performance-diagnosis",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Compare browser performance latency against the previous baseline",
+        "rank": 1,
+        "results": [
+          "performance-diagnosis",
+          "load-and-resilience-testing",
+          "rag-evaluation"
+        ]
+      },
+      {
+        "expected": "browser-regression-testing",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "QA report only with screenshots and browser reproduction steps",
+        "rank": 2,
+        "results": [
+          "mobile-app-testing",
+          "browser-regression-testing",
+          "scheduled-workflows"
+        ]
+      },
+      {
+        "expected": "architecture-design",
+        "kind": "target",
+        "phase": "baseline",
+        "query": "Review architecture failure ownership retry compensation distribution",
+        "rank": 2,
+        "results": [
+          "load-and-resilience-testing",
+          "architecture-design",
+          "background-jobs"
+        ]
+      },
+      {
+        "expected": "project-status-review",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Summarize current project progress and open commitments",
+        "rank": 1,
+        "results": [
+          "project-status-review",
+          "conversation-recap",
+          "contract-review"
+        ]
+      },
+      {
+        "expected": "code-review",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Review this code diff for introduced defects",
+        "rank": 1,
+        "results": [
+          "code-review",
+          "security-change-review",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "agent-workflow-diagnosis",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Diagnose why the agent repeated the same task twice",
+        "rank": 2,
+        "results": [
+          "local-troubleshooting",
+          "agent-workflow-diagnosis",
+          "agent-security-evaluation"
+        ]
+      },
+      {
+        "expected": "api-contract-design",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Design API request and response schemas",
+        "rank": 1,
+        "results": [
+          "api-contract-design",
+          "api-security-testing",
+          "api-integration"
+        ]
+      },
+      {
+        "expected": "documents-word",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Create a Word report with headings and paragraphs",
+        "rank": 1,
+        "results": [
+          "documents-word",
+          "google-docs",
+          "seo-review"
+        ]
+      },
+      {
+        "expected": "browser-navigation",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Navigate a website and read its content",
+        "rank": 1,
+        "results": [
+          "browser-navigation",
+          "seo-review",
+          "frontend-design-and-accessibility"
+        ]
+      },
+      {
+        "expected": "product-discovery",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Evaluate product demand and current customer workarounds",
+        "rank": 1,
+        "results": [
+          "product-discovery",
+          "pricing-analysis",
+          "user-research"
+        ]
+      },
+      {
+        "expected": "completion-verification",
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Verify delivered artifacts meet the original requirements",
+        "rank": 1,
+        "results": [
+          "completion-verification",
+          "security-artifact-triage",
+          "security-fix-validation"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Audit the developer onboarding from README to first successful API call",
+        "rank": 1,
+        "results": [
+          "developer-experience-review",
+          "technical-documentation",
+          "employee-onboarding"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Revisa la experiencia del desarrollador al integrar nuestro SDK",
+        "rank": 1,
+        "results": [
+          "developer-experience-review",
+          "release-and-ci",
+          "mcp-integration"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Measure getting started friction and error recovery in our CLI",
+        "rank": 1,
+        "results": [
+          "developer-experience-review",
+          "backup-and-restore",
+          "huggingface-hub"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Audita la primera integración y facilidad de instalación",
+        "rank": 1,
+        "results": [
+          "developer-experience-review",
+          "package-build-and-install",
+          "mcp-integration"
+        ]
+      },
+      {
+        "expected": "developer-experience-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Review the developer onboarding plan before implementation",
+        "rank": 1,
+        "results": [
+          "developer-experience-review",
+          "technical-documentation",
+          "requirements-and-planning"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Run configured checks and report repository health without fixes",
+        "rank": 1,
+        "results": [
+          "code-health-review",
+          "test-driven-repair",
+          "vulnerability-management"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Quiero un informe de salud del código con lint y tests",
+        "rank": 1,
+        "results": [
+          "code-health-review",
+          "code-review",
+          "test-driven-repair"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Code health dashboard with missing checks and actual exit status",
+        "rank": 1,
+        "results": [
+          "code-health-review",
+          "dashboard-design",
+          "wearable-data-analysis"
+        ]
+      },
+      {
+        "expected": "code-health-review",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Compara el estado de checks sin inventar una puntuación global",
+        "rank": 1,
+        "results": [
+          "code-health-review",
+          "project-status-review",
+          "literature-review"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Weekly engineering retrospective of delivery and rework",
+        "rank": 1,
+        "results": [
+          "engineering-retrospective",
+          "process-improvement",
+          "project-status-review"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Retrospectiva de ingeniería de las últimas dos semanas",
+        "rank": 1,
+        "results": [
+          "engineering-retrospective",
+          "reverse-engineering",
+          "agent-workflow-diagnosis"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Analyze engineering delivery trends and review bottlenecks",
+        "rank": 1,
+        "results": [
+          "engineering-retrospective",
+          "process-improvement",
+          "wearable-data-analysis"
+        ]
+      },
+      {
+        "expected": "engineering-retrospective",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Analiza reprocesos y cuellos de botella del equipo de ingeniería",
+        "rank": 1,
+        "results": [
+          "engineering-retrospective",
+          "reverse-engineering",
+          "purchase-comparison"
+        ]
+      },
+      {
+        "expected": "release-and-ci",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Verify deployment artifact and observe post-deploy canary errors",
+        "rank": 2,
+        "results": [
+          "cloud-deployment",
+          "release-and-ci",
+          "ml-inference-deployment"
+        ]
+      },
+      {
+        "expected": "technical-documentation",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Actualizar documentación de comandos y configuración tras una release",
+        "rank": 2,
+        "results": [
+          "release-and-ci",
+          "technical-documentation",
+          "cpp-development"
+        ]
+      },
+      {
+        "expected": "performance-diagnosis",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Compare browser performance latency against the previous baseline",
+        "rank": 1,
+        "results": [
+          "performance-diagnosis",
+          "load-and-resilience-testing",
+          "rag-evaluation"
+        ]
+      },
+      {
+        "expected": "browser-regression-testing",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "QA report only with screenshots and browser reproduction steps",
+        "rank": 2,
+        "results": [
+          "mobile-app-testing",
+          "browser-regression-testing",
+          "scheduled-workflows"
+        ]
+      },
+      {
+        "expected": "architecture-design",
+        "kind": "target",
+        "phase": "candidate",
+        "query": "Review architecture failure ownership retry compensation distribution",
+        "rank": 1,
+        "results": [
+          "architecture-design",
+          "load-and-resilience-testing",
+          "background-jobs"
+        ]
+      },
+      {
+        "expected": "project-status-review",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Summarize current project progress and open commitments",
+        "rank": 1,
+        "results": [
+          "project-status-review",
+          "conversation-recap",
+          "contract-review"
+        ]
+      },
+      {
+        "expected": "code-review",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Review this code diff for introduced defects",
+        "rank": 1,
+        "results": [
+          "code-review",
+          "security-change-review",
+          "code-health-review"
+        ]
+      },
+      {
+        "expected": "agent-workflow-diagnosis",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Diagnose why the agent repeated the same task twice",
+        "rank": 2,
+        "results": [
+          "local-troubleshooting",
+          "agent-workflow-diagnosis",
+          "agent-security-evaluation"
+        ]
+      },
+      {
+        "expected": "api-contract-design",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Design API request and response schemas",
+        "rank": 1,
+        "results": [
+          "api-contract-design",
+          "api-security-testing",
+          "api-integration"
+        ]
+      },
+      {
+        "expected": "documents-word",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Create a Word report with headings and paragraphs",
+        "rank": 1,
+        "results": [
+          "documents-word",
+          "google-docs",
+          "seo-review"
+        ]
+      },
+      {
+        "expected": "browser-navigation",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Navigate a website and read its content",
+        "rank": 1,
+        "results": [
+          "browser-navigation",
+          "seo-review",
+          "diagram-authoring"
+        ]
+      },
+      {
+        "expected": "product-discovery",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Evaluate product demand and current customer workarounds",
+        "rank": 1,
+        "results": [
+          "product-discovery",
+          "user-research",
+          "pricing-analysis"
+        ]
+      },
+      {
+        "expected": "completion-verification",
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Verify delivered artifacts meet the original requirements",
+        "rank": 1,
+        "results": [
+          "completion-verification",
+          "security-artifact-triage",
+          "security-fix-validation"
+        ]
+      }
+    ]
+  },
+  "installation": "Native test verifies eight known stock originals upgrade; customized bodies, disabled state and a customized release reference survive; all three new skills load and remain disabled across reinstall when disabled.",
+  "initial_attempt": {
+    "result": "failed",
+    "cause": "Default /tmp was full; native fixtures failed with ENOSPC/SQLite storage errors. The in-flight build also retained the old 177-entry assertion while the bundle had reached 180. The assertion was updated for the final catalog and the full suite rerun with TMPDIR=/dev/shm.",
+    "not_a_clean_baseline": true
+  },
+  "skills": [
+    {
+      "name": "developer-experience-review",
+      "sha256": "11c2c6b158a63bc40fa420369abfa380dd0cf7d83487dece95360f6fb4d21097"
+    },
+    {
+      "name": "code-health-review",
+      "sha256": "a0015d3c130c75b86d82d94de1b27f9d3462128d3e6042f74ce501ac9608e59a"
+    },
+    {
+      "name": "engineering-retrospective",
+      "sha256": "e5e3cccdaaa0a4f0df5f64cd1e6f3013a175f36ed22081e5d284d5f8653cfdfe"
+    },
+    {
+      "name": "architecture-design",
+      "sha256": "6c8e922256c1c0f71b71052f9bb0214ff280ac2658b2b3cde830db2cd92010ed"
+    },
+    {
+      "name": "browser-regression-testing",
+      "sha256": "75736497e906bd37db6d6954bde73dece807e9fa63f381a85672374785c58b75"
+    },
+    {
+      "name": "frontend-design-and-accessibility",
+      "sha256": "6e0ba0b4c85bf995fd404f742060a6877a8ad14315849e32120f5189c4bdfb32"
+    },
+    {
+      "name": "performance-diagnosis",
+      "sha256": "901b0c96dd483f1f18154d7fa7fdb420811a0e68aa1e8d763ff9806524cc0258"
+    },
+    {
+      "name": "release-and-ci",
+      "sha256": "335d9c4f2222239bbca87dc7ae9a05690e1c2bfeb804b5a0f9e60d26cb164145"
+    },
+    {
+      "name": "requirements-and-planning",
+      "sha256": "c60426c55143e8c55289d762f18437b2fb9f82ab897c75606ffc288474f4b0d0"
+    },
+    {
+      "name": "skill-authoring",
+      "sha256": "1b84917eaff0f15c9fede3fe92cfbc6e517f201f921410e2400c25a7430d7d7e"
+    },
+    {
+      "name": "technical-documentation",
+      "sha256": "6c9e96928a75f4b36f792d9ec76de8fa282dfc12c0283dd0b68843bfae4eddd8"
+    }
+  ],
+  "not_executed": [
+    "Upstream setup or tests",
+    "Authenticated external integrations",
+    "Production restart or deployment",
+    "Independent model behavior benchmark"
+  ]
+}

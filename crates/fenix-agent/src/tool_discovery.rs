@@ -8,9 +8,15 @@ use std::collections::{HashMap, HashSet};
 fn essential(name: &str) -> bool {
     matches!(
         name,
-        "skill_search"
+        "skill_list"
+            | "skill_search"
             | "skill_load"
             | "tool_search"
+            | "files_list"
+            | "files_glob"
+            | "file_patch"
+            | "environment_inspect"
+            | "tool_program"
             | "file_read"
             | "file_write"
             | "file_edit"
@@ -20,6 +26,7 @@ fn essential(name: &str) -> bool {
             | "ask_user"
             | "subagent_finish"
             | "plan_review_read"
+            | "completion_audit_read"
     )
 }
 fn words(text: &str) -> Vec<String> {
@@ -31,9 +38,35 @@ fn words(text: &str) -> Vec<String> {
 }
 fn search_text(tool: &ToolDefinition) -> String {
     let hints = match tool.name.as_str() {
+        "tool_program" => {
+            "programa encadenar herramientas bucles lotes referencias filtrar resultados reducir llamadas"
+        }
+        "file_history" => "historial versiones restaurar deshacer cambios archivos tarea git local",
+        "skill_learning" => {
+            "aprender habilidades skills procedimiento candidatos revisar activar archivar mantenimiento"
+        }
+        "workspace_open" => {
+            "abrir mostrar visualizar archivo carpeta pestaña diapositiva slide página panel derecho open preview workspace"
+        }
+        "library_list" | "library_search" | "library_read" | "library_export"
+        | "library_import" => {
+            "biblioteca documentos fuentes citas investigación buscar comparar contrato archivos PDF Word Excel embeddings library document retrieval citations"
+        }
+        "document_extract" => {
+            "pdf OCR escaneado escanear extraer texto imagen páginas lectura factura contrato"
+        }
+        "document_read" | "document_create" | "document_edit" => {
+            "documento word excel powerpoint docx xlsx pptx hoja cálculo celdas presentación diapositivas"
+        }
+        "design_templates" | "design_present" | "design_list" | "design_read"
+        | "design_publish" | "design_import" | "diagram_edit" => {
+            "diseño design vista previa visualizar diagrama gráfica presentación documento imagen video plantilla"
+        }
         "file_patch" | "file_edit" | "file_write" => "archivo editar crear modificar parche",
         "files_glob" | "files_list" => "archivos carpeta buscar rutas patrones",
-        "code_query" => "código referencias definición símbolos diagnóstico lsp",
+        "code_query" => {
+            "código referencias definición símbolos diagnóstico lsp symbol outline find read name_path class method function"
+        }
         "command_input" => "terminal entrada escribir enviar stdin interactiva teclado eof",
         "command_list" | "command_output" | "command_cancel" => {
             "proceso comando salida registro historial cancelar servicios"
@@ -41,18 +74,34 @@ fn search_text(tool: &ToolDefinition) -> String {
         "subagent_spawn" | "subagent_send" | "subagent_status" | "subagent_cancel" => {
             "subagente delegar tarea mensaje corregir continuar estado"
         }
+        "worktree_manage" => {
+            "git worktree rama integrar cambios paralelo merge conflicto branch workspace"
+        }
         "plan_manage" => "planificar planificación hitos plan tareas dependencias",
         "memory_search" | "memory_manage" | "memory_context" | "knowledge_manage" => {
             "memoria preferencias recordar guardar"
         }
-        "schedule_manage" => "recordatorio cron programar horario",
+        "schedule_manage" | "workflow_manage" => {
+            "recordatorio cron programar horario flujo automatización pasos diagrama workflow n8n"
+        }
+        "connector_call" => {
+            "integraciones conexiones google workspace drive docs sheets slides gmail calendar tasks contacts contactos forms formularios chat meet esquemas discovery microsoft outlook gmail correo calendario slack github postgres sqlite sql proveedores plugins"
+        }
         "skill_load" => "habilidad cargar skill instrucciones",
         "project_manage" => "proyecto contexto estado",
-        "web_read" | "web_search" => "internet web investigar buscar página",
+        "project_spec" => {
+            "contrato proyecto requisitos especificación comportamiento cambios propuesta añadir modificar eliminar conflicto specification requirement delta"
+        }
+        "web_read" | "web_search" => {
+            "internet web investigar buscar página global reddit hackernews hacker news github comunidades últimos días trends"
+        }
+        "browser_connection" => "whatsapp integración conectar vincular sesión QR",
         name if name.starts_with("browser_") => {
             "navegador navegar clic escribir formulario pantalla responsivo sesión pestaña captura scroll"
         }
-        "task_inspect" => "auditoría tarea checkpoint registro evidencia",
+        "task_inspect" => {
+            "auditoría tarea checkpoint registro evidencia buscar resultados guardados salidas herramientas logs errores saved output search"
+        }
         _ => "",
     };
     format!("{} {} {} {}", tool.name, tool.name, tool.description, hints)
@@ -186,13 +235,13 @@ mod tests {
         let dir = tempfile::tempdir()?;
         let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
         let task = rt.store.enqueue("Create an artifact", "web", None)?;
-        let receipt = rt.ensure_tool_loaded(&task.id, "file_patch")?.unwrap();
+        let receipt = rt.ensure_tool_loaded(&task.id, "code_query")?.unwrap();
         assert_eq!(receipt["executed"], false);
         assert_eq!(
             receipt["tools"][0]["parameters"]["required"],
-            json!(["patch"])
+            json!(["path", "operation"])
         );
-        assert!(rt.ensure_tool_loaded(&task.id, "file_patch")?.is_none());
+        assert!(rt.ensure_tool_loaded(&task.id, "code_query")?.is_none());
         assert!(!dir.path().join("artifact").exists());
         let error = crate::tools::validate(
             "file_edit",
@@ -235,7 +284,8 @@ mod tests {
             serde_json::to_vec(&initial).unwrap().len()
                 < serde_json::to_vec(&full).unwrap().len() / 2
         );
-        assert!(!initial.iter().any(|t| t.name == "file_patch"));
+        assert!(initial.iter().any(|t| t.name == "file_patch"));
+        assert!(!initial.iter().any(|t| t.name == "code_query"));
         for name in ["file_read", "file_write", "file_edit"] {
             assert!(initial.iter().any(|tool| tool.name == name));
         }
@@ -283,11 +333,30 @@ mod tests {
             .search_tools(&task.id, &json!({"query":"recordatorio","limit":1}))
             .unwrap();
         assert_eq!(result["tools"][0]["name"], "schedule_manage");
+        let result = runtime
+            .search_tools(&task.id, &json!({"query":"whatsapp","limit":1}))
+            .unwrap();
+        assert_eq!(result["tools"][0]["name"], "browser_connection");
+        let status = runtime
+            .execute_tool(
+                &task.id,
+                "web",
+                &crate::config::Settings::initial(dir.path().to_owned()),
+                "browser_connection",
+                &json!({"connection":"whatsapp","action":"status"}),
+                &tokio_util::sync::CancellationToken::new(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(status["state"], "disconnected");
+        assert!(crate::tools::validate("browser_connection", &json!({"action":"qr"})).is_err());
+
         let child = runtime
             .store
             .create_subagent(
                 &task.id,
                 &fenix_storage::SubagentSpec {
+                    profile: "general".into(),
                     objective: "Read sources".into(),
                     expected_output: "References".into(),
                     context: String::new(),

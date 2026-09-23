@@ -1,0 +1,2952 @@
+{
+  "review_date_utc": "2026-09-19",
+  "scope": "The four corrected user-specified repositories; excludes VoltAgent/awesome-openclaw-skills.",
+  "repositories": [
+    {
+      "repo": "Imbad0202/academic-research-skills",
+      "commit": "1515a2192a6051f9a793cfd964bd05e3db20607c",
+      "date": "2026-09-19T22:01:54+08:00",
+      "tracked_files": 2741,
+      "skills": 4,
+      "url": "https://github.com/Imbad0202/academic-research-skills/tree/1515a2192a6051f9a793cfd964bd05e3db20607c",
+      "root_license": "CC-BY-NC-4.0",
+      "review_scope": "All SKILL.md paths, sizes and metadata inventoried; README/license/architecture and selected workflow/reference sections reviewed. Not an audit of every tracked file or a test of upstream software.",
+      "entrypoints": [
+        {
+          "name": "academic-paper",
+          "path": "academic-paper/SKILL.md",
+          "url": "https://github.com/Imbad0202/academic-research-skills/blob/1515a2192a6051f9a793cfd964bd05e3db20607c/academic-paper/SKILL.md",
+          "bytes": 50421,
+          "sha256": "a35a4cd3a55dac2456d57b690bca26566a425a37888108aadf89eb0fc9eee545",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": true,
+          "fenix_skills": [
+            "scientific-writing",
+            "research-evidence-audit"
+          ],
+          "decision": "Adapt writing/revision and experiment provenance; do not import fixed agent teams or oversight gates."
+        },
+        {
+          "name": "academic-paper-reviewer",
+          "path": "academic-paper-reviewer/SKILL.md",
+          "url": "https://github.com/Imbad0202/academic-research-skills/blob/1515a2192a6051f9a793cfd964bd05e3db20607c/academic-paper-reviewer/SKILL.md",
+          "bytes": 38691,
+          "sha256": "cef34e00307bf37db44ff659b5653785be68797c901c5a88d22349b0c137123e",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": true,
+          "fenix_skills": [
+            "peer-review",
+            "research-evidence-audit"
+          ],
+          "decision": "Adapt criteria-based review, evidence linkage and response matrices; no authenticity certification."
+        },
+        {
+          "name": "academic-pipeline",
+          "path": "academic-pipeline/SKILL.md",
+          "url": "https://github.com/Imbad0202/academic-research-skills/blob/1515a2192a6051f9a793cfd964bd05e3db20607c/academic-pipeline/SKILL.md",
+          "bytes": 52683,
+          "sha256": "18a92dc66555a68d56c6e1fe996bed82ba6c955498abb75111c21db2349e2102",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": true,
+          "fenix_skills": [
+            "scientific-writing"
+          ],
+          "decision": "Adapt the research-to-paper lifecycle using existing native plans; no second orchestration runtime."
+        },
+        {
+          "name": "deep-research",
+          "path": "deep-research/SKILL.md",
+          "url": "https://github.com/Imbad0202/academic-research-skills/blob/1515a2192a6051f9a793cfd964bd05e3db20607c/deep-research/SKILL.md",
+          "bytes": 37392,
+          "sha256": "bfd6e8ab1a2ebde477e4bd8da882cee5469ee367f7f444bb8641774e914cc9fb",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": true,
+          "fenix_skills": [
+            "literature-review",
+            "systematic-review",
+            "bibliography-management"
+          ],
+          "decision": "Separate exploratory synthesis from protocol-based screening; add an executable screening ledger."
+        }
+      ]
+    },
+    {
+      "repo": "greensock/gsap-skills",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "date": "2026-04-21T18:47:02-05:00",
+      "tracked_files": 44,
+      "skills": 8,
+      "url": "https://github.com/greensock/gsap-skills/tree/aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "root_license": "MIT",
+      "review_scope": "All SKILL.md paths, sizes and metadata inventoried; README/license/architecture and selected workflow/reference sections reviewed. Not an audit of every tracked file or a test of upstream software.",
+      "entrypoints": [
+        {
+          "name": "gsap-core",
+          "path": "skills/gsap-core/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-core/SKILL.md",
+          "bytes": 14792,
+          "sha256": "3887b47e050ab5afbe2a9a820f23d39fa02ab785e06a343be44c6f91d84d12b3",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Adapt scoped ownership, timelines and reversible animation setup."
+        },
+        {
+          "name": "gsap-frameworks",
+          "path": "skills/gsap-frameworks/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-frameworks/SKILL.md",
+          "bytes": 10621,
+          "sha256": "842d9d3659ec3ddc8abbdc524708f8facf81f468ac25d0577f48c759c4fa31e6",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Adapt framework mount/unmount and SSR boundaries; inspect the actual framework before coding."
+        },
+        {
+          "name": "gsap-performance",
+          "path": "skills/gsap-performance/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-performance/SKILL.md",
+          "bytes": 4139,
+          "sha256": "cb5408d6fba707aabcbfe3320317a14c1f8fca6070074e5261047930f50d441e",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Adapt measured frame/layout behavior and selective animation; no unconditional will-change."
+        },
+        {
+          "name": "gsap-plugins",
+          "path": "skills/gsap-plugins/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-plugins/SKILL.md",
+          "bytes": 21579,
+          "sha256": "5838b856c74c07fbc9fa99b6dfd1eee34ea554c3e530c30e0d58014b707d70a4",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Use task-specific plugin discovery and installed-version documentation rather than bundle all recipes."
+        },
+        {
+          "name": "gsap-react",
+          "path": "skills/gsap-react/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-react/SKILL.md",
+          "bytes": 6565,
+          "sha256": "88e2a5312b45e8cc7b3c496637ff5bc9af2ae9c925b555c8b235b34cbc989d74",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Adapt React context lifecycle; contextSafe does not cancel stale callbacks or remove listeners."
+        },
+        {
+          "name": "gsap-scrolltrigger",
+          "path": "skills/gsap-scrolltrigger/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-scrolltrigger/SKILL.md",
+          "bytes": 18390,
+          "sha256": "9351b6666a4749c0740406ea363aaccb99a087ff45cc5e8b99a0f367facf3ef4",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Adapt pin/refresh/scroll lifecycle; correct refreshPriority direction and verify with real GSAP."
+        },
+        {
+          "name": "gsap-timeline",
+          "path": "skills/gsap-timeline/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-timeline/SKILL.md",
+          "bytes": 4394,
+          "sha256": "1a8b0f39cc4be3ed3d834b89672e4ae2f151b901dc3450bebf10bbc45379fe02",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Adapt labels, relative sequencing and explicit timeline ownership."
+        },
+        {
+          "name": "gsap-utils",
+          "path": "skills/gsap-utils/SKILL.md",
+          "url": "https://github.com/greensock/gsap-skills/blob/aed9cfd3277740755f6bfc1155c7aa645403b760/skills/gsap-utils/SKILL.md",
+          "bytes": 12093,
+          "sha256": "1927bcc4ea95b38203404ad5ea1d060b15c4a886c65ae53e885ff1793aabe0ba",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "web-animation"
+          ],
+          "decision": "Use scoped selectors and appropriate utilities; no extra utility-only entrypoint."
+        }
+      ]
+    },
+    {
+      "repo": "earthtojake/text-to-cad",
+      "commit": "4ebbd2cc6172e4c5d53560a5948df214192aefac",
+      "date": "2026-09-18T04:09:29Z",
+      "tracked_files": 2286,
+      "skills": 12,
+      "url": "https://github.com/earthtojake/text-to-cad/tree/4ebbd2cc6172e4c5d53560a5948df214192aefac",
+      "root_license": "MIT",
+      "review_scope": "All SKILL.md paths, sizes and metadata inventoried; README/license/architecture and selected workflow/reference sections reviewed. Not an audit of every tracked file or a test of upstream software.",
+      "entrypoints": [
+        {
+          "name": "smui",
+          "path": "apps/viewer/skills/smui/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/apps/viewer/skills/smui/SKILL.md",
+          "bytes": 1079,
+          "sha256": "02012ab1d4073a1ceb03369e86fdfa8c7416deea75cf01ce905d66b17a593de1",
+          "has_frontmatter": false,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "frontend-design-and-accessibility"
+          ],
+          "decision": "Exclude viewer-internal theme rules: no portable skill metadata and no Fénix need for that theme."
+        },
+        {
+          "name": "bambu-labs",
+          "path": "skills/bambu-labs/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/bambu-labs/SKILL.md",
+          "bytes": 8450,
+          "sha256": "daedbfe068550a41ba2698cbc9720d7b60817efd26ff6c08d280d700b88a6d15",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "3d-printing-preparation"
+          ],
+          "decision": "Adapt explicit machine/job identity and retry reconciliation; no live printer driver."
+        },
+        {
+          "name": "cad",
+          "path": "skills/cad/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/cad/SKILL.md",
+          "bytes": 8856,
+          "sha256": "5ed66fe974450c0e31f58bff151a79dc9999740c54ed973974421e25f7ddeb7b",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "parametric-cad"
+          ],
+          "decision": "Implement original build123d example plus saved STEP/mesh inspection; do not vendor cadgen."
+        },
+        {
+          "name": "cad-viewer",
+          "path": "skills/cad-viewer/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/cad-viewer/SKILL.md",
+          "bytes": 7785,
+          "sha256": "1327d192a464bf0a0f0b62892af02989c676c77d62c03e5e2d0680acb1633796",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "parametric-cad"
+          ],
+          "decision": "Adapt truthful visual inspection and artifact handoff; no new viewer/server implementation."
+        },
+        {
+          "name": "dfam-check",
+          "path": "skills/dfam-check/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/dfam-check/SKILL.md",
+          "bytes": 6083,
+          "sha256": "ffec258aecf69d3b4f51aa48bf68a1bd2d16e1486e2b3da232632c311f758caa",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "3d-printing-preparation"
+          ],
+          "decision": "Adapt process-specific manufacturability decisions; mesh closure does not prove wall thickness or strength."
+        },
+        {
+          "name": "dxf",
+          "path": "skills/dxf/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/dxf/SKILL.md",
+          "bytes": 16218,
+          "sha256": "e9068d3a2d35b25c010cddc0d962bd3fc2a70032d6e968bfa38a1373391b6582",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "cad-drawing-and-fabrication"
+          ],
+          "decision": "Implement original DXF units/entities/bounds checker; no full manufacturing validator."
+        },
+        {
+          "name": "gcode",
+          "path": "skills/gcode/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/gcode/SKILL.md",
+          "bytes": 6085,
+          "sha256": "c0c08cb2989af7e94f3db672a90774df292b22351c9f0f0221f4cad75bbfee1d",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "3d-printing-preparation"
+          ],
+          "decision": "Adapt slicer/profile provenance and modal-command review; no universal G-code interpreter bundled."
+        },
+        {
+          "name": "sdf",
+          "path": "skills/sdf/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/sdf/SKILL.md",
+          "bytes": 9119,
+          "sha256": "ac317418a2e8f44a3c933688f9ee442a9905dc2f47181eabb498aaf30338add9",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "robot-description"
+          ],
+          "decision": "Adapt frame/version/plugin checks; native SDFormat/Gazebo validation remains required."
+        },
+        {
+          "name": "sendcutsend",
+          "path": "skills/sendcutsend/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/sendcutsend/SKILL.md",
+          "bytes": 13262,
+          "sha256": "4594a1cf536d4bd40382f199bc6b28bfbde33a601d095bcb9ac51ef8135941f8",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "cad-drawing-and-fabrication"
+          ],
+          "decision": "Adapt supplier/process constraints and drawing handoff; no quotation/order integration."
+        },
+        {
+          "name": "srdf",
+          "path": "skills/srdf/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/srdf/SKILL.md",
+          "bytes": 9963,
+          "sha256": "a62181a825270d40a2d935d0f1991453a907d26506aa6e6bb165a689b0e170f9",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "robot-description"
+          ],
+          "decision": "Adapt MoveIt group/name/collision checks; native planner remains required."
+        },
+        {
+          "name": "step-parts",
+          "path": "skills/step-parts/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/step-parts/SKILL.md",
+          "bytes": 6349,
+          "sha256": "2f0a8988692e2a78075636a3842e2d6f9fe932dd42344e00ea4ae5e76026e22f",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "parametric-cad"
+          ],
+          "decision": "Adapt catalog component identity, dimensions, provenance and simplified-envelope labeling."
+        },
+        {
+          "name": "urdf",
+          "path": "skills/urdf/SKILL.md",
+          "url": "https://github.com/earthtojake/text-to-cad/blob/4ebbd2cc6172e4c5d53560a5948df214192aefac/skills/urdf/SKILL.md",
+          "bytes": 8156,
+          "sha256": "ef4cec65171fc5f4c3750121d3ea3e7d9feb59817cac549e830665f836c1b115",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "robot-description"
+          ],
+          "decision": "Implement original offline topology/limits/inertia validator with explicitly unverified physics."
+        }
+      ]
+    },
+    {
+      "repo": "huggingface/skills",
+      "commit": "abc20ae526d8b4c0e4dff89f904adce28a4a0eb6",
+      "date": "2026-09-17T12:27:20+02:00",
+      "tracked_files": 203,
+      "skills": 26,
+      "url": "https://github.com/huggingface/skills/tree/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6",
+      "root_license": "Apache-2.0",
+      "review_scope": "All SKILL.md paths, sizes and metadata inventoried; README/license/architecture and selected workflow/reference sections reviewed. Not an audit of every tracked file or a test of upstream software.",
+      "entrypoints": [
+        {
+          "name": "hf-mcp",
+          "path": "hf-mcp/skills/hf-mcp/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/hf-mcp/skills/hf-mcp/SKILL.md",
+          "bytes": 4968,
+          "sha256": "4cd99f2f6fabc5d87eac1b9e9bb2278d8348eca3621c2120599dede8d6b66eb4",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "huggingface-hub",
+            "mcp-integration"
+          ],
+          "decision": "Use available native discovery/CLI/API or a configured connector; do not assume named upstream MCP tools exist."
+        },
+        {
+          "name": "hf-cli",
+          "path": "skills/hf-cli/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-cli/SKILL.md",
+          "bytes": 33105,
+          "sha256": "1115064fff1a79e8b67f71828fe9c1b6cbbbf85d893bda832dabeeb917f8702e",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": true,
+          "fenix_skills": [
+            "huggingface-hub"
+          ],
+          "decision": "Adapt repo type, revisions, bounded files, supported installed CLI and job lifecycle."
+        },
+        {
+          "name": "hf-cloud-aws-context-discovery",
+          "path": "skills/hf-cloud-aws-context-discovery/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-cloud-aws-context-discovery/SKILL.md",
+          "bytes": 3972,
+          "sha256": "6b59128ea1834913b01ff6752d52e529d304ee6086e2edec5c7ce451f7a14dff",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-inference-deployment"
+          ],
+          "decision": "Adapt account/region identity and quotas; preserve existing access scope."
+        },
+        {
+          "name": "hf-cloud-python-env-setup",
+          "path": "skills/hf-cloud-python-env-setup/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-cloud-python-env-setup/SKILL.md",
+          "bytes": 6723,
+          "sha256": "c5d108b134dc5237ec63fbbb3200717853f2c5281ab33b7a2f1576b46a4d0fe8",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "environment-and-dependencies",
+            "ml-inference-deployment"
+          ],
+          "decision": "Reuse existing environment workflow; no cloud-specific duplicate entrypoint."
+        },
+        {
+          "name": "hf-cloud-sagemaker-deployment-planner",
+          "path": "skills/hf-cloud-sagemaker-deployment-planner/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-cloud-sagemaker-deployment-planner/SKILL.md",
+          "bytes": 8620,
+          "sha256": "2538e5f705466ef2912c07eb4311befc29940f026dfd17720242e4c976a8d8e9",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-inference-deployment"
+          ],
+          "decision": "Adapt workload/latency pathway selection; no mandatory vendor path or broad trigger."
+        },
+        {
+          "name": "hf-cloud-sagemaker-iam-preflight",
+          "path": "skills/hf-cloud-sagemaker-iam-preflight/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-cloud-sagemaker-iam-preflight/SKILL.md",
+          "bytes": 7051,
+          "sha256": "a4ff26c2af2c0ce82a4ab34c5cf5eadce5db4573ed2525745c4ee7b21f1773e4",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-inference-deployment",
+            "identity-access-review"
+          ],
+          "decision": "Prefer suitable existing role and distinguish inaccessible preflight from denied deployment."
+        },
+        {
+          "name": "hf-cloud-sagemaker-production-defaults",
+          "path": "skills/hf-cloud-sagemaker-production-defaults/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-cloud-sagemaker-production-defaults/SKILL.md",
+          "bytes": 27636,
+          "sha256": "6a8c1aff465e548ac4476d56831f864621af83b6a0f54544637601f3ecc44f9e",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-inference-deployment"
+          ],
+          "decision": "Adapt persisted resource IDs, actual inference, observability and scoped teardown; no deployment scripts copied."
+        },
+        {
+          "name": "hf-cloud-serving-image-selection",
+          "path": "skills/hf-cloud-serving-image-selection/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-cloud-serving-image-selection/SKILL.md",
+          "bytes": 18539,
+          "sha256": "6af6adfe1cdcf7bcc061ee11e1e2cf88bae9fbb08bf79d16945ce748839c1d76",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-inference-deployment"
+          ],
+          "decision": "Resolve current compatible container and API contract; no unconditional vendor image preference."
+        },
+        {
+          "name": "hf-mem",
+          "path": "skills/hf-mem/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/hf-mem/SKILL.md",
+          "bytes": 3325,
+          "sha256": "ee99f9d97e084aa61a80eaec4e6de2265341e71256d918d48fb87a2ac01ce99f",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "model-selection"
+          ],
+          "decision": "Implement explicit nominal weights plus dense/GQA/MQA KV calculation; upstream header/Range inspection and other cache architectures are not reimplemented."
+        },
+        {
+          "name": "huggingface-best",
+          "path": "skills/huggingface-best/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-best/SKILL.md",
+          "bytes": 5852,
+          "sha256": "4566c02cb6da804dcc434b6b4d48a1895e937157cdaec4ec4c523a2f97cf16d0",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "model-selection"
+          ],
+          "decision": "Adapt evidence-based comparison; reject name-derived model sizes and weights-only fit conclusions."
+        },
+        {
+          "name": "huggingface-community-evals",
+          "path": "skills/huggingface-community-evals/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-community-evals/SKILL.md",
+          "bytes": 6552,
+          "sha256": "a97f1c703f55b72427453a76af858237e6392a447fcafa9eeb85f7ac67f0155d",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "experiment-and-benchmark-design"
+          ],
+          "decision": "Adapt task/metric/prompt/revision provenance; resolve frameworks instead of assuming a local checkout or missing skill."
+        },
+        {
+          "name": "huggingface-datasets",
+          "path": "skills/huggingface-datasets/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-datasets/SKILL.md",
+          "bytes": 4671,
+          "sha256": "eeca50adf211ea64a288b852938f85a5183b045c720dc696b62db9aa2ea8deb2",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "huggingface-hub",
+            "ml-dataset-preparation"
+          ],
+          "decision": "Adapt config/split pagination and formats; do not upload raw agent session folders by default."
+        },
+        {
+          "name": "huggingface-gradio",
+          "path": "skills/huggingface-gradio/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-gradio/SKILL.md",
+          "bytes": 24741,
+          "sha256": "ce41c656e364a8027755a520372448036d90811f5a1d377f02bb9d549c0865a9",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-demo-apps"
+          ],
+          "decision": "Adapt component contracts, session isolation, queue/cancellation and actual inference checks."
+        },
+        {
+          "name": "huggingface-llm-trainer",
+          "path": "skills/huggingface-llm-trainer/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-llm-trainer/SKILL.md",
+          "bytes": 28780,
+          "sha256": "fb5c5e25103e38226e4d8ae28db84a01de42a11da4be1918fa72f833699f9d0d",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-training",
+            "huggingface-hub"
+          ],
+          "decision": "Adapt objectives, saved artifacts and verification; no mandatory immediate hosted job or publication."
+        },
+        {
+          "name": "huggingface-local-models",
+          "path": "skills/huggingface-local-models/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-local-models/SKILL.md",
+          "bytes": 3780,
+          "sha256": "814640db1d5f2f274aec09d66b3589ed5a0fdcfaf536afd508b1d757dcae1534",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "model-selection",
+            "ml-inference-deployment"
+          ],
+          "decision": "Adapt exact GGUF artifacts, compatible runtimes and measured load/request validation."
+        },
+        {
+          "name": "huggingface-lora-space-builder",
+          "path": "skills/huggingface-lora-space-builder/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-lora-space-builder/SKILL.md",
+          "bytes": 33828,
+          "sha256": "7192d4a44172609eb073334e0410aff1d3b9134f82b94f1329435ca7fcfa0ad2",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": true,
+          "fenix_skills": [
+            "ml-demo-apps"
+          ],
+          "decision": "Adapt adapter/base compatibility and real demo outputs; no fixed copied app scaffold."
+        },
+        {
+          "name": "huggingface-paper-publisher",
+          "path": "skills/huggingface-paper-publisher/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-paper-publisher/SKILL.md",
+          "bytes": 16704,
+          "sha256": "04b59406cf88054ab365f5bbbc57fe2e2fcb369e942dff2841c4f4297318c353",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "huggingface-hub",
+            "scientific-writing"
+          ],
+          "decision": "Adapt explicit namespace/authorship and artifact links; preparing a paper does not publish it."
+        },
+        {
+          "name": "huggingface-papers",
+          "path": "skills/huggingface-papers/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-papers/SKILL.md",
+          "bytes": 9348,
+          "sha256": "985c2d5c7261aba2b157811cde0c2b30134663694a4ab701280de28f941eb3b2",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "huggingface-hub",
+            "literature-review"
+          ],
+          "decision": "Adapt paper/artifact discovery; social popularity does not establish scientific evidence."
+        },
+        {
+          "name": "huggingface-spaces",
+          "path": "skills/huggingface-spaces/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-spaces/SKILL.md",
+          "bytes": 17903,
+          "sha256": "efa6506be823aaea03c31ef6cd06734485f7c451065aab43cfa5b5053c0df82b",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-demo-apps",
+            "huggingface-hub"
+          ],
+          "decision": "Adapt build/runtime diagnostics, secrets and visibility; deployment still needs authorized external access."
+        },
+        {
+          "name": "huggingface-tool-builder",
+          "path": "skills/huggingface-tool-builder/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-tool-builder/SKILL.md",
+          "bytes": 5905,
+          "sha256": "2846b591259b134a5978073e4da477a06275d7a10893ce1383a0a3920c3ff1e1",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "huggingface-hub",
+            "api-integration"
+          ],
+          "decision": "Reuse existing API/tool-building workflow with Hub pagination and identity guidance."
+        },
+        {
+          "name": "huggingface-trackio",
+          "path": "skills/huggingface-trackio/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-trackio/SKILL.md",
+          "bytes": 5128,
+          "sha256": "540f52974f4f77c2455a7b37ed983da0dbfb0f5af3d2c482e4736f14f1cc8724",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-training"
+          ],
+          "decision": "Adapt local tracking and comparable metrics; explicitly control hosted dashboard visibility."
+        },
+        {
+          "name": "huggingface-vision-trainer",
+          "path": "skills/huggingface-vision-trainer/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-vision-trainer/SKILL.md",
+          "bytes": 30195,
+          "sha256": "c7aba4de75fa6595ffdaf5c50136786e8346aba0c9ff0261eaee656af4a3b0d9",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-training",
+            "ml-dataset-preparation"
+          ],
+          "decision": "Adapt label transforms, boxes/masks, task metrics and saved processor/model consistency."
+        },
+        {
+          "name": "huggingface-zerogpu",
+          "path": "skills/huggingface-zerogpu/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/huggingface-zerogpu/SKILL.md",
+          "bytes": 18278,
+          "sha256": "829659aec34224970fe7ed619729fdc7849fc5dd696e2000256c3ee0b517eff7",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-demo-apps"
+          ],
+          "decision": "Adapt supported SDK/GPU function boundaries and current quota checks; no hardcoded hardware promises."
+        },
+        {
+          "name": "train-sentence-transformers",
+          "path": "skills/train-sentence-transformers/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/train-sentence-transformers/SKILL.md",
+          "bytes": 10502,
+          "sha256": "9bd098d81049fc245032ee4f97cf5d9de906d726731ace4a6df0bad6d9dcd182",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-training"
+          ],
+          "decision": "Adapt bi-/cross-encoder, sparse and late-interaction objectives, negatives and held-out retrieval evaluation."
+        },
+        {
+          "name": "transformers-js",
+          "path": "skills/transformers-js/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/transformers-js/SKILL.md",
+          "bytes": 24911,
+          "sha256": "241ef15a39acbdf1d610acab683c0f76500d7c021c9c0303e6bb2c751ac3d395",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "browser-ml-inference"
+          ],
+          "decision": "Add ONNX/processor compatibility, worker lifecycle, WebGPU/WASM fallback and real device checks."
+        },
+        {
+          "name": "trl-training",
+          "path": "skills/trl-training/SKILL.md",
+          "url": "https://github.com/huggingface/skills/blob/abc20ae526d8b4c0e4dff89f904adce28a4a0eb6/skills/trl-training/SKILL.md",
+          "bytes": 8793,
+          "sha256": "2ec080bb13621036aeec8b11e0b1111843c42a9e5e7b1319136cac3772f28a76",
+          "has_frontmatter": true,
+          "exceeds_fenix_entrypoint_limit": false,
+          "fenix_skills": [
+            "ml-training"
+          ],
+          "decision": "Adapt SFT/preference/reward objective choice and installed APIs rather than duplicate a trainer skill."
+        }
+      ]
+    }
+  ],
+  "implementation": {
+    "catalog_before": 145,
+    "catalog_after": 156,
+    "added": [
+      "systematic-review",
+      "research-evidence-audit",
+      "web-animation",
+      "parametric-cad",
+      "cad-drawing-and-fabrication",
+      "robot-description",
+      "3d-printing-preparation",
+      "huggingface-hub",
+      "model-selection",
+      "ml-demo-apps",
+      "browser-ml-inference"
+    ],
+    "updated": [
+      "literature-review",
+      "scientific-writing",
+      "peer-review",
+      "bibliography-management",
+      "frontend-design-and-accessibility",
+      "ml-training",
+      "ml-dataset-preparation",
+      "ml-inference-deployment",
+      "experiment-and-benchmark-design"
+    ],
+    "migration_snapshots": [
+      {
+        "skill": "literature-review",
+        "previous_sha256": "12b7fe0ab7998cf324f4ba24e27bd01711e8c56b592b348f5408b69354c75f36"
+      },
+      {
+        "skill": "scientific-writing",
+        "previous_sha256": "4c0129b682f81cbb82ad0e5099e15648d8c3e10b51a5cae4405dd7e43bb85306"
+      },
+      {
+        "skill": "peer-review",
+        "previous_sha256": "695c825fc99d7079961079ffaadbaf3befa0e846daf4c37955b960b7444cfa10"
+      },
+      {
+        "skill": "bibliography-management",
+        "previous_sha256": "ec1b6044a4e7d5ac1698a0d7c81a8052a1f044c21150f4dec58180d57bd5e31b"
+      },
+      {
+        "skill": "frontend-design-and-accessibility",
+        "previous_sha256": "6214c1595d5702587bd1190a00eb48097c9a5c4bae4c3abf8d6dda9827262610"
+      },
+      {
+        "skill": "ml-training",
+        "previous_sha256": "56166d36f1d24a9210b39553903744da91bcd7d5dff12a3eedbf27813fa630c6"
+      },
+      {
+        "skill": "ml-dataset-preparation",
+        "previous_sha256": "4d13e4db00c37b64d74b91ff9fd5c41f849aa923bdf8efff41c0d7b9cc7afa90"
+      },
+      {
+        "skill": "ml-inference-deployment",
+        "previous_sha256": "4aa7a281a9375a799c1d3dec2896589dd045fb2639cef8186d5a8726323ba6a3"
+      },
+      {
+        "skill": "experiment-and-benchmark-design",
+        "previous_sha256": "71722fe87af8de86cdc289d63758b00a6044e0cba7f409a6d7023bbd9123d3e8"
+      }
+    ],
+    "affected_artifacts": [
+      {
+        "path": "resources/skills/systematic-review/SKILL.md",
+        "bytes": 3477,
+        "sha256": "9bf50a97cf5b6bd9d1d6d68671ee05ee0898fa5aff35b87aac656fb424977245"
+      },
+      {
+        "path": "resources/skills/systematic-review/references/screening-records.md",
+        "bytes": 1804,
+        "sha256": "86065e518af70fdb0f007e52d4a59b06e8f19b504dbed5602e053a4726d38bb6"
+      },
+      {
+        "path": "resources/skills/systematic-review/scripts/screening_counts.py",
+        "bytes": 4004,
+        "sha256": "e10f95fe6993d07da9bfbc964adac7e007fac8f3cf7081755c292eecdd18852c"
+      },
+      {
+        "path": "resources/skills/research-evidence-audit/SKILL.md",
+        "bytes": 3620,
+        "sha256": "57c6e60391cd976a1b5b33d3683481c6f354b7187f127cc788a651a6bf6f4f8d"
+      },
+      {
+        "path": "resources/skills/research-evidence-audit/references/evidence-ledger.md",
+        "bytes": 1994,
+        "sha256": "795e7a213944d73598cf22f01829b92122eae7433f0ea36af7bdeaae0c6810b5"
+      },
+      {
+        "path": "resources/skills/research-evidence-audit/scripts/audit_evidence.py",
+        "bytes": 4468,
+        "sha256": "8b5cb36ff54f73271b27539318f39b18daf6cda31763f749a3a4cb15345c7211"
+      },
+      {
+        "path": "resources/skills/web-animation/SKILL.md",
+        "bytes": 3426,
+        "sha256": "a43a80bed3f2b5d1ba72a3424c0af27af6859c7b08f1302f1832dfef35213be0"
+      },
+      {
+        "path": "resources/skills/web-animation/assets/scoped-reveal.mjs",
+        "bytes": 886,
+        "sha256": "9ef9de7e938fd0ed7bb67e747c3bb12152550718304c607b63514601b6b25d7d"
+      },
+      {
+        "path": "resources/skills/web-animation/references/lifecycle.md",
+        "bytes": 1766,
+        "sha256": "79e7374360b62391c972aad09a01ef45f038eccc935332ca678b8571efe9edee"
+      },
+      {
+        "path": "resources/skills/web-animation/references/scroll-and-plugins.md",
+        "bytes": 2026,
+        "sha256": "d45ef1f2f8ed0b6d241d21cd366168dcad07eacdef1d4e0a88cfe23b0c0bfa8c"
+      },
+      {
+        "path": "resources/skills/parametric-cad/SKILL.md",
+        "bytes": 3546,
+        "sha256": "2d9cd387c5739a06322c30001c4a0ff2e2cdd3deabce1123fd75a593555bc4a7"
+      },
+      {
+        "path": "resources/skills/parametric-cad/assets/mounting_plate.py",
+        "bytes": 1399,
+        "sha256": "0d6d7474fb213662719f79c513a088b61011354d3881afab76180bc50036dbef"
+      },
+      {
+        "path": "resources/skills/parametric-cad/references/catalog-parts.md",
+        "bytes": 1352,
+        "sha256": "90dc1fcb9709fced0fd62c5f70f4e88355f3d89053c6a2647d1992544e9548cb"
+      },
+      {
+        "path": "resources/skills/parametric-cad/references/geometry-checks.md",
+        "bytes": 2113,
+        "sha256": "76cb58a71d9486fcad05474bc2d9e52db2dfe92c1655170a879f0023e2890fba"
+      },
+      {
+        "path": "resources/skills/parametric-cad/scripts/inspect_geometry.py",
+        "bytes": 5330,
+        "sha256": "49ff803c451e281141dcffcb33aa43caf7a2f7437302c9dc3072a73798014dbb"
+      },
+      {
+        "path": "resources/skills/cad-drawing-and-fabrication/SKILL.md",
+        "bytes": 3124,
+        "sha256": "a05898a0fb1426288197804d2cad0253408f53fbdb8bc0d892b3ad9504e375d1"
+      },
+      {
+        "path": "resources/skills/cad-drawing-and-fabrication/references/drawing-checks.md",
+        "bytes": 1458,
+        "sha256": "e64a834f089a4cd45eca3f678f23750325f5249dc580d8abd403d545189db39e"
+      },
+      {
+        "path": "resources/skills/cad-drawing-and-fabrication/scripts/inspect_drawing.py",
+        "bytes": 2172,
+        "sha256": "7f58bf1b91cf17c4900903819530f7d44ac853e9e1923ebf89e4f2b3b142940b"
+      },
+      {
+        "path": "resources/skills/robot-description/SKILL.md",
+        "bytes": 3140,
+        "sha256": "9b9745a993e741478e43b949eee30d7912c8d288e0db387b094f650967a0d0d9"
+      },
+      {
+        "path": "resources/skills/robot-description/references/robot-formats.md",
+        "bytes": 1780,
+        "sha256": "3bcf3997e6273674ef843bfa20a56ddd48c169556e6b6d297c54126d9a0f55dc"
+      },
+      {
+        "path": "resources/skills/robot-description/scripts/check_urdf.py",
+        "bytes": 6534,
+        "sha256": "0a525046a604232b9d06a3d0f0b2b8d6e9f3bbdea0b52cb6bf859d221ba8da4a"
+      },
+      {
+        "path": "resources/skills/3d-printing-preparation/SKILL.md",
+        "bytes": 3290,
+        "sha256": "201f26f9b71e447905d7ff27c3887c0d9f545614b53ad2344d410852d625b07b"
+      },
+      {
+        "path": "resources/skills/3d-printing-preparation/references/print-handoff.md",
+        "bytes": 1890,
+        "sha256": "e998243b4a12ed95723f8d8a48e1aefbb61b175708a9af4ac3770afc4565f9e2"
+      },
+      {
+        "path": "resources/skills/huggingface-hub/SKILL.md",
+        "bytes": 3210,
+        "sha256": "fa430c86feed057431f7a4c8c1b594cda9dae78c7707c7c5f0d5779fc9ecb0de"
+      },
+      {
+        "path": "resources/skills/huggingface-hub/references/hub-data.md",
+        "bytes": 1691,
+        "sha256": "cfe91768aef35eb2b4d343eda1115892db46744a7c4b57cf64d41f3f4f71d520"
+      },
+      {
+        "path": "resources/skills/huggingface-hub/references/jobs.md",
+        "bytes": 1726,
+        "sha256": "320044c37582d267e2606f9fefdb45d59e1e585fa3eba7cad8c3d9784508ff93"
+      },
+      {
+        "path": "resources/skills/model-selection/SKILL.md",
+        "bytes": 3274,
+        "sha256": "f0a8a79c013bb3f9201acd45fe62d6d68c4ba9000f83e3af693d7760f3c99447"
+      },
+      {
+        "path": "resources/skills/model-selection/references/memory-estimates.md",
+        "bytes": 1650,
+        "sha256": "ec227e6cdc22c5be2f1d6e7d1cde4bda7754b44ca51cd8cbb165da1e52753a94"
+      },
+      {
+        "path": "resources/skills/model-selection/scripts/estimate_memory.py",
+        "bytes": 3553,
+        "sha256": "d7bb4fda9b67256b3939def4d0e0a35c4ae107889ea6c457ea7a00f38eaf92e4"
+      },
+      {
+        "path": "resources/skills/ml-demo-apps/SKILL.md",
+        "bytes": 3007,
+        "sha256": "9ebd6fd91a9ffddcac9ca2bf29828c4191f024edef49789a3b9e2dd8b5a402c8"
+      },
+      {
+        "path": "resources/skills/ml-demo-apps/references/spaces-and-zerogpu.md",
+        "bytes": 1946,
+        "sha256": "4131de8419228dce69c344c62280d9d2cf871070124bbc537e910801674a5d2e"
+      },
+      {
+        "path": "resources/skills/browser-ml-inference/SKILL.md",
+        "bytes": 3233,
+        "sha256": "bb9e8206c92e1f0498a3d24f9f3aa3cee184ebdd338088f23516bcf748dee4f7"
+      },
+      {
+        "path": "resources/skills/browser-ml-inference/references/javascript-runtime.md",
+        "bytes": 1544,
+        "sha256": "efd147ac60ea7c918b2f61d62d170dda6eb9d4c114bb3b1680f3ba8103891b90"
+      },
+      {
+        "path": "resources/skills/literature-review/SKILL.md",
+        "bytes": 2369,
+        "sha256": "9c6a63fe43d00681ee68cd74c5285eaa6781d93e459a26e9a6001e0a1d3bbf9f"
+      },
+      {
+        "path": "resources/skills/literature-review/references/evidence-table.md",
+        "bytes": 1431,
+        "sha256": "d922d97f7a521f2d2bf77e5742d232c29f5420d271b420729b9686cfdc528b71"
+      },
+      {
+        "path": "resources/skills/scientific-writing/SKILL.md",
+        "bytes": 1985,
+        "sha256": "f492f72cf91ee7059a92f7d2cff27a920f5f9183773ccbc46dbdaa78a92b4b06"
+      },
+      {
+        "path": "resources/skills/scientific-writing/references/research-lifecycle.md",
+        "bytes": 2005,
+        "sha256": "4bc8806451169898aa59c6ceacae60bb49dafc8d69da460f1ebcef1e45c6bfbe"
+      },
+      {
+        "path": "resources/skills/peer-review/SKILL.md",
+        "bytes": 1898,
+        "sha256": "531f8881bbb400bbe32706554b4140395d021b3cbc2043a4131f13538a4bb1cb"
+      },
+      {
+        "path": "resources/skills/peer-review/references/criteria-and-revision.md",
+        "bytes": 1427,
+        "sha256": "46dcf469cff9da0bb4d9dde62613d7f9bcb3660fddd56789395ff62f242b3c36"
+      },
+      {
+        "path": "resources/skills/bibliography-management/SKILL.md",
+        "bytes": 1926,
+        "sha256": "84c0723ee1b35cf7619e11b908aa93d126cb2423443fda1cce12f34b5ed28f51"
+      },
+      {
+        "path": "resources/skills/frontend-design-and-accessibility/SKILL.md",
+        "bytes": 2888,
+        "sha256": "3924bc96e3dd48d36003d1ae717d82f790f8ae7d9ae68e6965a4799195c0cac1"
+      },
+      {
+        "path": "resources/skills/ml-training/SKILL.md",
+        "bytes": 2075,
+        "sha256": "d471bec44798972bb2adeed7212f044fb778ff19d84fbc809df9ff20334dc30d"
+      },
+      {
+        "path": "resources/skills/ml-training/references/experiment-tracking.md",
+        "bytes": 1385,
+        "sha256": "b90796b72eb472617e2902f815e702a280a25eb693971e9be3b52c114398cdbc"
+      },
+      {
+        "path": "resources/skills/ml-training/references/training-methods.md",
+        "bytes": 1977,
+        "sha256": "ab00f9b68c8393ff560af06f130d21e1b4eb1d0b25807bf5c9e8396c68c66031"
+      },
+      {
+        "path": "resources/skills/ml-dataset-preparation/SKILL.md",
+        "bytes": 1962,
+        "sha256": "530bbe57ac300f277dfa93298b6b78be15e09488fca468bc92d731d2a67ec8e5"
+      },
+      {
+        "path": "resources/skills/ml-inference-deployment/SKILL.md",
+        "bytes": 2097,
+        "sha256": "0a795f525a104ebdb78fc32fc72942cf17fd60f0425f538b7867178458b884a4"
+      },
+      {
+        "path": "resources/skills/ml-inference-deployment/references/managed-and-local-serving.md",
+        "bytes": 1923,
+        "sha256": "b6ba920482f52c733543e214a777e34cd7c63c27b8ea72254ad08dc43c393866"
+      },
+      {
+        "path": "resources/skills/experiment-and-benchmark-design/SKILL.md",
+        "bytes": 2337,
+        "sha256": "e3400148c205e03796ba311ae5b803d248aef47df6f3eccbcb8a3a62d1f8f01c"
+      },
+      {
+        "path": "resources/skills/experiment-and-benchmark-design/references/model-evaluation.md",
+        "bytes": 1693,
+        "sha256": "dc399461f28daa4d1c139715bee75aedac7f777d7e730e4fcdcab0ec065629a8"
+      }
+    ],
+    "upstream_runtime_or_skill_text_vendored": false,
+    "live_service_deployed": false
+  },
+  "validation": {
+    "native_skill_tests": {
+      "passed": 20,
+      "failed": 0,
+      "seconds": 17.88,
+      "command": "cargo test -p fenix-agent --lib skills:: --locked -- --nocapture"
+    },
+    "helpers": {
+      "passed": 22,
+      "failed": 0,
+      "seconds": 33.649,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tests/skills/test_repository_helpers.py",
+      "cases": [
+        "test_corrupt_drawing_returns_structured_cli_failure (__main__.DrawingTests.test_corrupt_drawing_returns_structured_cli_failure)",
+        "test_saved_units_bounds_and_open_profile (__main__.DrawingTests.test_saved_units_bounds_and_open_profile)",
+        "test_bound_evidence_is_structural_not_semantic_proof (__main__.EvidenceTests.test_bound_evidence_is_structural_not_semantic_proof)",
+        "test_cli_success_and_failure_exit_status (__main__.EvidenceTests.test_cli_success_and_failure_exit_status)",
+        "test_duplicate_identity_and_dangling_source_are_rejected (__main__.EvidenceTests.test_duplicate_identity_and_dangling_source_are_rejected)",
+        "test_stale_source_and_manuscript_are_rejected (__main__.EvidenceTests.test_stale_source_and_manuscript_are_rejected)",
+        "test_symlink_escape_is_rejected (__main__.EvidenceTests.test_symlink_escape_is_rejected)",
+        "test_unresolved_is_preserved_but_resolved_needs_evidence (__main__.EvidenceTests.test_unresolved_is_preserved_but_resolved_needs_evidence)",
+        "test_wrong_quote_or_location_is_rejected (__main__.EvidenceTests.test_wrong_quote_or_location_is_rejected)",
+        "test_invalid_plate_dimensions_are_rejected (__main__.GeometryTests.test_invalid_plate_dimensions_are_rejected)",
+        "test_mesh_roundtrip_and_explicit_units (__main__.GeometryTests.test_mesh_roundtrip_and_explicit_units)",
+        "test_open_mesh_is_not_a_valid_solid (__main__.GeometryTests.test_open_mesh_is_not_a_valid_solid)",
+        "test_step_roundtrip_against_independent_dimensions_and_volume (__main__.GeometryTests.test_step_roundtrip_against_independent_dimensions_and_volume)",
+        "test_gqa_cache_and_binary_units (__main__.MemoryTests.test_gqa_cache_and_binary_units)",
+        "test_insufficient_capacity_and_invalid_input (__main__.MemoryTests.test_insufficient_capacity_and_invalid_input)",
+        "test_missing_dimensions_do_not_imply_fit (__main__.MemoryTests.test_missing_dimensions_do_not_imply_fit)",
+        "test_entities_and_mimic_cycles_are_rejected (__main__.RobotTests.test_entities_and_mimic_cycles_are_rejected)",
+        "test_invalid_topology_axes_limits_and_inertia (__main__.RobotTests.test_invalid_topology_axes_limits_and_inertia)",
+        "test_valid_tree_retains_unchecked_physics (__main__.RobotTests.test_valid_tree_retains_unchecked_physics)",
+        "test_invalid_decisions_and_references_are_rejected (__main__.ScreeningTests.test_invalid_decisions_and_references_are_rejected)",
+        "test_reports_studies_and_pending_are_separate (__main__.ScreeningTests.test_reports_studies_and_pending_are_separate)",
+        "test_unretrieved_reports_are_not_exclusions (__main__.ScreeningTests.test_unretrieved_reports_are_not_exclusions)"
+      ]
+    },
+    "browser_animation": {
+      "gsap_version": "3.15.0",
+      "browser": "153.0.8010.47",
+      "passed": 11,
+      "checks": [
+        "selectors remain inside the supplied root",
+        "normal animation reaches its readable end state",
+        "idempotent cleanup restores preexisting inline styles",
+        "cleanup leaves no owned tweens running",
+        "repeated mount and unmount do not accumulate tweens",
+        "disposing one component preserves another component's animation",
+        "a live reduced-motion change reverts movement and keeps content visible",
+        "initial reduced-motion preference creates no entrance tween",
+        "invalid animation parameters fail explicitly",
+        "higher ScrollTrigger refreshPriority sorts before lower priority",
+        "static content remains visible without JavaScript"
+      ]
+    },
+    "public_hub_reads": [
+      {
+        "name": "public_model_metadata",
+        "url": "https://huggingface.co/api/models/bert-base-uncased",
+        "status": "passed",
+        "elapsed_seconds": 0.398,
+        "response_bytes": 4560,
+        "model_id": "google-bert/bert-base-uncased",
+        "revision": "86b5e0934494bd15c9632b12f734a8a67f723594"
+      },
+      {
+        "name": "dataset_splits",
+        "url": "https://datasets-server.huggingface.co/splits?dataset=stanfordnlp%2Fimdb",
+        "status": "passed",
+        "elapsed_seconds": 0.23,
+        "response_bytes": 250,
+        "split_count": 3
+      },
+      {
+        "name": "dataset_bounded_rows",
+        "url": "https://datasets-server.huggingface.co/rows?dataset=stanfordnlp%2Fimdb&config=plain_text&split=train&offset=0&length=2",
+        "status": "passed",
+        "elapsed_seconds": 0.305,
+        "response_bytes": 3311,
+        "rows_returned": 2,
+        "total_rows": 25000,
+        "partial": false
+      }
+    ],
+    "retrieval_metrics": [
+      {
+        "phase": "baseline",
+        "kind": "new",
+        "cases": 44,
+        "top1": 0,
+        "top3": 0,
+        "expected_available": false
+      },
+      {
+        "phase": "baseline",
+        "kind": "existing",
+        "cases": 9,
+        "top1": 6,
+        "top3": 9,
+        "expected_available": true
+      },
+      {
+        "phase": "baseline",
+        "kind": "guard",
+        "cases": 12,
+        "top1": 11,
+        "top3": 11,
+        "expected_available": true
+      },
+      {
+        "phase": "candidate",
+        "kind": "new",
+        "cases": 44,
+        "top1": 44,
+        "top3": 44,
+        "expected_available": true
+      },
+      {
+        "phase": "candidate",
+        "kind": "existing",
+        "cases": 9,
+        "top1": 9,
+        "top3": 9,
+        "expected_available": true
+      },
+      {
+        "phase": "candidate",
+        "kind": "guard",
+        "cases": 12,
+        "top1": 11,
+        "top3": 11,
+        "expected_available": true
+      }
+    ],
+    "retrieval_rows": [
+      {
+        "expected": "systematic-review",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Conduct a systematic review with PRISMA screening counts and exclusion reasons.",
+        "rank": null,
+        "results": [
+          "literature-review",
+          "container-workflows",
+          "data-analysis"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Revisión sistemática con criterios de inclusión y registro de cribado.",
+        "rank": null,
+        "results": [
+          "literature-review",
+          "peer-review",
+          "project-status-review"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Recompute the screening ledger and separate reports from studies.",
+        "rank": null,
+        "results": [
+          "payment-and-billing",
+          "peer-review",
+          "literature-review"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Planifica un metaanálisis y conserva los motivos de exclusión.",
+        "rank": null,
+        "results": [
+          "travel-planning",
+          "meal-planning",
+          "scientific-writing"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Audit whether these manuscript claims are supported by their cited passages.",
+        "rank": null,
+        "results": [
+          "peer-review",
+          "purchase-comparison",
+          "web-research"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Comprueba si las citas respaldan las afirmaciones del manuscrito.",
+        "rank": null,
+        "results": [
+          "scientific-writing",
+          "peer-review",
+          "bibliography-management"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Validate the evidence ledger against the current source hashes and quotations.",
+        "rank": null,
+        "results": [
+          "payment-and-billing",
+          "document-comparison",
+          "storage-and-archive-work"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Audita evidencia científica y resultados que no tienen respaldo.",
+        "rank": null,
+        "results": [
+          "backup-and-restore",
+          "scientific-figures",
+          "data-quality-audit"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Implement a GSAP ScrollTrigger timeline and clean it up on navigation.",
+        "rank": null,
+        "results": [
+          "mobile-app-development",
+          "mobile-app-testing",
+          "web-presentations"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Anima esta sección con GSAP y respeta el movimiento reducido.",
+        "rank": null,
+        "results": [
+          "web-presentations",
+          "software-implementation",
+          "knowledge-workspace-connectors"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Fix duplicate GSAP animations after React unmount and remount.",
+        "rank": null,
+        "results": [
+          "frontend-design-and-accessibility",
+          "mobile-app-development",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Crea parallax con scroll sin romper teclado ni accesibilidad.",
+        "rank": null,
+        "results": [
+          "frontend-design-and-accessibility",
+          "mobile-app-testing",
+          "web-presentations"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Create a parametric CAD bracket and export a dimensioned STEP model.",
+        "rank": null,
+        "results": [
+          "diagram-authoring",
+          "audio-transcription",
+          "financial-modeling"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Diseña una pieza CAD paramétrica con agujeros y exporta STEP.",
+        "rank": null,
+        "results": [
+          "product-discovery",
+          "google-drive",
+          "forms-and-surveys"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Measure the saved STEP solid volume and bounding dimensions.",
+        "rank": null,
+        "results": [
+          "process-improvement",
+          "database-migrations",
+          "cache-design"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Modifica un ensamblaje build123d conservando parámetros editables.",
+        "rank": null,
+        "results": [
+          "git-recovery-and-change-management",
+          "requirements-and-planning",
+          "documents-presentations"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Create a DXF gasket drawing with separate cut and engraving layers.",
+        "rank": null,
+        "results": [
+          "privacy-redaction",
+          "forms-and-surveys",
+          "network-diagnostics"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Prepara un plano DXF para corte láser con unidades en milímetros.",
+        "rank": null,
+        "results": [
+          "process-and-service-management",
+          "release-and-ci",
+          "geospatial-analysis"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Check this SendCutSend DXF against the selected material requirements.",
+        "rank": null,
+        "results": [
+          "completion-verification",
+          "ml-training",
+          "cloud-deployment"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Revisa el dibujo 2D: contornos abiertos, escala y capas de fabricación.",
+        "rank": null,
+        "results": [
+          "customer-support",
+          "container-workflows",
+          "test-driven-repair"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Validate URDF joint limits, inertias and link topology.",
+        "rank": null,
+        "results": [
+          "simulation-modeling",
+          "audio-transcription",
+          "privacy-and-compliance"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Crea un robot URDF con articulaciones y masas verificadas.",
+        "rank": null,
+        "results": [
+          "text-processing-and-parsing",
+          "web-presentations",
+          "documents-word"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Check an SRDF MoveIt planning group against its URDF links.",
+        "rank": null,
+        "results": [
+          "roadmap-prioritization",
+          "travel-planning",
+          "meal-planning"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Revisa frames y sensores de un mundo SDF para Gazebo.",
+        "rank": null,
+        "results": [
+          "browser-navigation",
+          "test-driven-repair",
+          "scientific-writing"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Slice this STL using the actual printer profile and inspect the G-code.",
+        "rank": null,
+        "results": [
+          "browser-navigation",
+          "image-workflows",
+          "legacy-migration"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Prepara impresión 3D en OrcaSlicer con el perfil de mi impresora.",
+        "rank": null,
+        "results": [
+          "release-and-ci"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Check mesh printability and support requirements before FDM slicing.",
+        "rank": null,
+        "results": [
+          "procurement-and-vendors",
+          "customer-support",
+          "ml-inference-deployment"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Revisa G-code, temperaturas y límites antes de imprimir en Bambu.",
+        "rank": null,
+        "results": [
+          "security-code-review",
+          "rust-development",
+          "infrastructure-as-code"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Download selected Hugging Face dataset rows from the correct config and split.",
+        "rank": null,
+        "results": [
+          "ml-dataset-preparation",
+          "ml-training",
+          "structured-llm-output"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Consulta un dataset del Hub de Hugging Face con paginación.",
+        "rank": null,
+        "results": [
+          "api-integration",
+          "ml-dataset-preparation",
+          "sql-analysis-and-optimization"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Resume monitoring this existing HF Jobs job ID without submitting another job.",
+        "rank": null,
+        "results": [
+          "background-jobs",
+          "hiring-and-interviews",
+          "observability-and-slos"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Sube los archivos autorizados a mi repositorio de Hugging Face.",
+        "rank": null,
+        "results": [
+          "repository-navigation",
+          "customer-support",
+          "storage-and-archive-work"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Which local model fits my GPU after accounting for KV cache and runtime memory?",
+        "rank": null,
+        "results": [
+          "ml-inference-deployment",
+          "experiment-and-benchmark-design",
+          "cache-design"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Elige un modelo local según VRAM, contexto y licencia.",
+        "rank": null,
+        "results": [
+          "ml-inference-deployment",
+          "structured-llm-output",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Compare deployable models for this task using current benchmark conditions.",
+        "rank": null,
+        "results": [
+          "experiment-and-benchmark-design",
+          "pricing-analysis",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Estima la memoria de pesos y caché KV para elegir el modelo.",
+        "rank": null,
+        "results": [
+          "ml-inference-deployment",
+          "purchase-comparison",
+          "memory-and-reminders"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Build a Gradio demo for this LoRA and verify the output artifact.",
+        "rank": null,
+        "results": [
+          "ml-training",
+          "package-build-and-install",
+          "completion-verification"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Crea una demo Gradio para mi modelo en Hugging Face Spaces.",
+        "rank": null,
+        "results": [
+          "ml-inference-deployment",
+          "structured-llm-output",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Fix per-user state and GPU execution in this ZeroGPU Space.",
+        "rank": null,
+        "results": [
+          "experiment-and-benchmark-design",
+          "agent-workflow-diagnosis",
+          "storage-and-archive-work"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Comprueba que el playground de LoRA usa el modelo base correcto.",
+        "rank": null,
+        "results": [
+          "ml-training",
+          "skill-authoring",
+          "knowledge-base-maintenance"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Run this ONNX model with Transformers.js using WebGPU and a WASM fallback.",
+        "rank": null,
+        "results": [
+          "web-presentations",
+          "feature-rollouts",
+          "documents-word"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Implementa inferencia de modelos en el navegador con Transformers.js.",
+        "rank": null,
+        "results": [
+          "web-presentations",
+          "browser-regression-testing",
+          "software-implementation"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Dispose JavaScript model sessions when the web worker is replaced.",
+        "rank": null,
+        "results": [
+          "typescript-development",
+          "browser-regression-testing",
+          "browser-navigation"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Verifica que la inferencia WebGPU no bloquea la interfaz.",
+        "rank": null,
+        "results": [
+          "frontend-design-and-accessibility",
+          "api-contract-design",
+          "ml-inference-deployment"
+        ]
+      },
+      {
+        "expected": "peer-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Review the methodology and controls in this manuscript.",
+        "rank": 1,
+        "results": [
+          "peer-review",
+          "security-code-review",
+          "threat-modeling"
+        ]
+      },
+      {
+        "expected": "bibliography-management",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Revisa un archivo BibTeX y corrige referencias duplicadas.",
+        "rank": 1,
+        "results": [
+          "bibliography-management",
+          "git-recovery-and-change-management",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "scientific-writing",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Write a scientific manuscript from these actual experiment results.",
+        "rank": 2,
+        "results": [
+          "peer-review",
+          "scientific-writing",
+          "scientific-figures"
+        ]
+      },
+      {
+        "expected": "literature-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Find and compare papers about retrieval augmented generation.",
+        "rank": 1,
+        "results": [
+          "literature-review",
+          "rag-evaluation",
+          "image-workflows"
+        ]
+      },
+      {
+        "expected": "frontend-design-and-accessibility",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Improve keyboard focus and labels in this responsive web form.",
+        "rank": 1,
+        "results": [
+          "frontend-design-and-accessibility",
+          "web-presentations",
+          "browser-navigation"
+        ]
+      },
+      {
+        "expected": "ml-training",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Run SFT and DPO training with held-out data and saved adapters.",
+        "rank": 1,
+        "results": [
+          "ml-training",
+          "ml-dataset-preparation",
+          "experiment-and-benchmark-design"
+        ]
+      },
+      {
+        "expected": "ml-dataset-preparation",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Prepara datasets de entrenamiento sin fuga entre train y test.",
+        "rank": 1,
+        "results": [
+          "ml-dataset-preparation",
+          "data-analysis",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "ml-inference-deployment",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Deploy the selected model to a SageMaker inference endpoint.",
+        "rank": 2,
+        "results": [
+          "cloud-deployment",
+          "ml-inference-deployment",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "experiment-and-benchmark-design",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Run a reproducible model evaluation with Inspect and LightEval.",
+        "rank": 2,
+        "results": [
+          "ml-training",
+          "experiment-and-benchmark-design",
+          "rag-evaluation"
+        ]
+      },
+      {
+        "expected": "documents-word",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Create a Word DOCX report.",
+        "rank": 1,
+        "results": [
+          "documents-word",
+          "google-docs",
+          "pdf-workflows"
+        ]
+      },
+      {
+        "expected": "documents-spreadsheets",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Crea una hoja de cálculo Excel de gastos.",
+        "rank": 1,
+        "results": [
+          "documents-spreadsheets",
+          "invoice-and-expense-records",
+          "mathematical-computation"
+        ]
+      },
+      {
+        "expected": "test-driven-repair",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Repair a regression in this Rust parser.",
+        "rank": null,
+        "results": [
+          "software-implementation",
+          "rust-development",
+          "text-processing-and-parsing"
+        ]
+      },
+      {
+        "expected": "conversation-recap",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Summarize the decisions from our previous conversation.",
+        "rank": 1,
+        "results": [
+          "conversation-recap",
+          "project-status-review",
+          "meeting-notes"
+        ]
+      },
+      {
+        "expected": "diagram-authoring",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Crea un diagrama de arquitectura con nodos y conexiones.",
+        "rank": 1,
+        "results": [
+          "diagram-authoring",
+          "architecture-design",
+          "mobile-app-development"
+        ]
+      },
+      {
+        "expected": "data-analysis",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Calculate statistics and missing values in this CSV.",
+        "rank": 1,
+        "results": [
+          "data-analysis",
+          "google-sheets",
+          "documents-spreadsheets"
+        ]
+      },
+      {
+        "expected": "simulation-modeling",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Build a mathematical simulation with stated assumptions.",
+        "rank": 1,
+        "results": [
+          "simulation-modeling",
+          "mathematical-computation",
+          "product-discovery"
+        ]
+      },
+      {
+        "expected": "image-workflows",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Create an image illustration with the available image tools.",
+        "rank": 1,
+        "results": [
+          "image-workflows",
+          "container-workflows",
+          "google-slides"
+        ]
+      },
+      {
+        "expected": "code-review",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Revisa este diff sin cambiar código.",
+        "rank": 1,
+        "results": [
+          "code-review",
+          "test-driven-repair",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "database-migrations",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Plan a database schema migration.",
+        "rank": 1,
+        "results": [
+          "database-migrations",
+          "database-schema-design",
+          "legacy-migration"
+        ]
+      },
+      {
+        "expected": "agent-workflow-diagnosis",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Diagnose why the agent repeated a completed task.",
+        "rank": 1,
+        "results": [
+          "agent-workflow-diagnosis",
+          "local-troubleshooting",
+          "test-driven-repair"
+        ]
+      },
+      {
+        "expected": "completion-verification",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Comprueba si los documentos entregados cumplen los requisitos.",
+        "rank": 1,
+        "results": [
+          "completion-verification",
+          "requirements-and-planning",
+          "document-comparison"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Conduct a systematic review with PRISMA screening counts and exclusion reasons.",
+        "rank": 1,
+        "results": [
+          "systematic-review",
+          "literature-review",
+          "container-workflows"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Revisión sistemática con criterios de inclusión y registro de cribado.",
+        "rank": 1,
+        "results": [
+          "systematic-review",
+          "literature-review",
+          "peer-review"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Recompute the screening ledger and separate reports from studies.",
+        "rank": 1,
+        "results": [
+          "systematic-review",
+          "literature-review",
+          "research-evidence-audit"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Planifica un metaanálisis y conserva los motivos de exclusión.",
+        "rank": 1,
+        "results": [
+          "systematic-review",
+          "travel-planning",
+          "meal-planning"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Audit whether these manuscript claims are supported by their cited passages.",
+        "rank": 1,
+        "results": [
+          "research-evidence-audit",
+          "literature-review",
+          "peer-review"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Comprueba si las citas respaldan las afirmaciones del manuscrito.",
+        "rank": 1,
+        "results": [
+          "research-evidence-audit",
+          "scientific-writing",
+          "peer-review"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Validate the evidence ledger against the current source hashes and quotations.",
+        "rank": 1,
+        "results": [
+          "research-evidence-audit",
+          "systematic-review",
+          "document-comparison"
+        ]
+      },
+      {
+        "expected": "research-evidence-audit",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Audita evidencia científica y resultados que no tienen respaldo.",
+        "rank": 1,
+        "results": [
+          "research-evidence-audit",
+          "backup-and-restore",
+          "scientific-figures"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Implement a GSAP ScrollTrigger timeline and clean it up on navigation.",
+        "rank": 1,
+        "results": [
+          "web-animation",
+          "frontend-design-and-accessibility",
+          "mobile-app-development"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Anima esta sección con GSAP y respeta el movimiento reducido.",
+        "rank": 1,
+        "results": [
+          "web-animation",
+          "web-presentations",
+          "frontend-design-and-accessibility"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Fix duplicate GSAP animations after React unmount and remount.",
+        "rank": 1,
+        "results": [
+          "web-animation",
+          "frontend-design-and-accessibility",
+          "mobile-app-development"
+        ]
+      },
+      {
+        "expected": "web-animation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Crea parallax con scroll sin romper teclado ni accesibilidad.",
+        "rank": 1,
+        "results": [
+          "web-animation",
+          "frontend-design-and-accessibility",
+          "mobile-app-testing"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Create a parametric CAD bracket and export a dimensioned STEP model.",
+        "rank": 1,
+        "results": [
+          "parametric-cad",
+          "cad-drawing-and-fabrication",
+          "3d-printing-preparation"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Diseña una pieza CAD paramétrica con agujeros y exporta STEP.",
+        "rank": 1,
+        "results": [
+          "parametric-cad",
+          "cad-drawing-and-fabrication",
+          "3d-printing-preparation"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Measure the saved STEP solid volume and bounding dimensions.",
+        "rank": 1,
+        "results": [
+          "parametric-cad",
+          "3d-printing-preparation",
+          "process-improvement"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Modifica un ensamblaje build123d conservando parámetros editables.",
+        "rank": 1,
+        "results": [
+          "parametric-cad",
+          "git-recovery-and-change-management",
+          "requirements-and-planning"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Create a DXF gasket drawing with separate cut and engraving layers.",
+        "rank": 1,
+        "results": [
+          "cad-drawing-and-fabrication",
+          "parametric-cad",
+          "privacy-redaction"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Prepara un plano DXF para corte láser con unidades en milímetros.",
+        "rank": 1,
+        "results": [
+          "cad-drawing-and-fabrication",
+          "process-and-service-management",
+          "release-and-ci"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Check this SendCutSend DXF against the selected material requirements.",
+        "rank": 1,
+        "results": [
+          "cad-drawing-and-fabrication",
+          "completion-verification",
+          "3d-printing-preparation"
+        ]
+      },
+      {
+        "expected": "cad-drawing-and-fabrication",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Revisa el dibujo 2D: contornos abiertos, escala y capas de fabricación.",
+        "rank": 1,
+        "results": [
+          "cad-drawing-and-fabrication",
+          "customer-support",
+          "3d-printing-preparation"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Validate URDF joint limits, inertias and link topology.",
+        "rank": 1,
+        "results": [
+          "robot-description",
+          "parametric-cad",
+          "simulation-modeling"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Crea un robot URDF con articulaciones y masas verificadas.",
+        "rank": 1,
+        "results": [
+          "robot-description",
+          "text-processing-and-parsing",
+          "parametric-cad"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Check an SRDF MoveIt planning group against its URDF links.",
+        "rank": 1,
+        "results": [
+          "robot-description",
+          "roadmap-prioritization",
+          "identity-access-review"
+        ]
+      },
+      {
+        "expected": "robot-description",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Revisa frames y sensores de un mundo SDF para Gazebo.",
+        "rank": 1,
+        "results": [
+          "robot-description",
+          "browser-navigation",
+          "test-driven-repair"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Slice this STL using the actual printer profile and inspect the G-code.",
+        "rank": 1,
+        "results": [
+          "3d-printing-preparation",
+          "parametric-cad",
+          "browser-navigation"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Prepara impresión 3D en OrcaSlicer con el perfil de mi impresora.",
+        "rank": 1,
+        "results": [
+          "3d-printing-preparation",
+          "parametric-cad",
+          "cad-drawing-and-fabrication"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Check mesh printability and support requirements before FDM slicing.",
+        "rank": 1,
+        "results": [
+          "3d-printing-preparation",
+          "parametric-cad",
+          "procurement-and-vendors"
+        ]
+      },
+      {
+        "expected": "3d-printing-preparation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Revisa G-code, temperaturas y límites antes de imprimir en Bambu.",
+        "rank": 1,
+        "results": [
+          "3d-printing-preparation",
+          "security-code-review",
+          "rust-development"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Download selected Hugging Face dataset rows from the correct config and split.",
+        "rank": 1,
+        "results": [
+          "huggingface-hub",
+          "ml-dataset-preparation",
+          "ml-demo-apps"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Consulta un dataset del Hub de Hugging Face con paginación.",
+        "rank": 1,
+        "results": [
+          "huggingface-hub",
+          "ml-demo-apps",
+          "ml-dataset-preparation"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Resume monitoring this existing HF Jobs job ID without submitting another job.",
+        "rank": 1,
+        "results": [
+          "huggingface-hub",
+          "background-jobs",
+          "hiring-and-interviews"
+        ]
+      },
+      {
+        "expected": "huggingface-hub",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Sube los archivos autorizados a mi repositorio de Hugging Face.",
+        "rank": 1,
+        "results": [
+          "huggingface-hub",
+          "ml-demo-apps",
+          "repository-navigation"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Which local model fits my GPU after accounting for KV cache and runtime memory?",
+        "rank": 1,
+        "results": [
+          "model-selection",
+          "ml-inference-deployment",
+          "browser-ml-inference"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Elige un modelo local según VRAM, contexto y licencia.",
+        "rank": 1,
+        "results": [
+          "model-selection",
+          "ml-inference-deployment",
+          "structured-llm-output"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Compare deployable models for this task using current benchmark conditions.",
+        "rank": 1,
+        "results": [
+          "model-selection",
+          "experiment-and-benchmark-design",
+          "pricing-analysis"
+        ]
+      },
+      {
+        "expected": "model-selection",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Estima la memoria de pesos y caché KV para elegir el modelo.",
+        "rank": 1,
+        "results": [
+          "model-selection",
+          "ml-inference-deployment",
+          "purchase-comparison"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Build a Gradio demo for this LoRA and verify the output artifact.",
+        "rank": 1,
+        "results": [
+          "ml-demo-apps",
+          "ml-inference-deployment",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Crea una demo Gradio para mi modelo en Hugging Face Spaces.",
+        "rank": 1,
+        "results": [
+          "ml-demo-apps",
+          "huggingface-hub",
+          "ml-inference-deployment"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Fix per-user state and GPU execution in this ZeroGPU Space.",
+        "rank": 1,
+        "results": [
+          "ml-demo-apps",
+          "model-selection",
+          "experiment-and-benchmark-design"
+        ]
+      },
+      {
+        "expected": "ml-demo-apps",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Comprueba que el playground de LoRA usa el modelo base correcto.",
+        "rank": 1,
+        "results": [
+          "ml-demo-apps",
+          "ml-training",
+          "skill-authoring"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Run this ONNX model with Transformers.js using WebGPU and a WASM fallback.",
+        "rank": 1,
+        "results": [
+          "browser-ml-inference",
+          "ml-inference-deployment",
+          "model-selection"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Implementa inferencia de modelos en el navegador con Transformers.js.",
+        "rank": 1,
+        "results": [
+          "browser-ml-inference",
+          "web-presentations",
+          "model-selection"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Dispose JavaScript model sessions when the web worker is replaced.",
+        "rank": 1,
+        "results": [
+          "browser-ml-inference",
+          "typescript-development",
+          "browser-regression-testing"
+        ]
+      },
+      {
+        "expected": "browser-ml-inference",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Verifica que la inferencia WebGPU no bloquea la interfaz.",
+        "rank": 1,
+        "results": [
+          "browser-ml-inference",
+          "ml-demo-apps",
+          "frontend-design-and-accessibility"
+        ]
+      },
+      {
+        "expected": "peer-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Review the methodology and controls in this manuscript.",
+        "rank": 1,
+        "results": [
+          "peer-review",
+          "research-evidence-audit",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "bibliography-management",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Revisa un archivo BibTeX y corrige referencias duplicadas.",
+        "rank": 1,
+        "results": [
+          "bibliography-management",
+          "git-recovery-and-change-management",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "scientific-writing",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Write a scientific manuscript from these actual experiment results.",
+        "rank": 1,
+        "results": [
+          "scientific-writing",
+          "research-evidence-audit",
+          "peer-review"
+        ]
+      },
+      {
+        "expected": "literature-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Find and compare papers about retrieval augmented generation.",
+        "rank": 1,
+        "results": [
+          "literature-review",
+          "rag-evaluation",
+          "image-workflows"
+        ]
+      },
+      {
+        "expected": "frontend-design-and-accessibility",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Improve keyboard focus and labels in this responsive web form.",
+        "rank": 1,
+        "results": [
+          "frontend-design-and-accessibility",
+          "web-presentations",
+          "web-animation"
+        ]
+      },
+      {
+        "expected": "ml-training",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Run SFT and DPO training with held-out data and saved adapters.",
+        "rank": 1,
+        "results": [
+          "ml-training",
+          "ml-dataset-preparation",
+          "experiment-and-benchmark-design"
+        ]
+      },
+      {
+        "expected": "ml-dataset-preparation",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Prepara datasets de entrenamiento sin fuga entre train y test.",
+        "rank": 1,
+        "results": [
+          "ml-dataset-preparation",
+          "data-analysis",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "ml-inference-deployment",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Deploy the selected model to a SageMaker inference endpoint.",
+        "rank": 1,
+        "results": [
+          "ml-inference-deployment",
+          "cloud-deployment",
+          "ml-demo-apps"
+        ]
+      },
+      {
+        "expected": "experiment-and-benchmark-design",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Run a reproducible model evaluation with Inspect and LightEval.",
+        "rank": 1,
+        "results": [
+          "experiment-and-benchmark-design",
+          "ml-training",
+          "model-selection"
+        ]
+      },
+      {
+        "expected": "documents-word",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Create a Word DOCX report.",
+        "rank": 1,
+        "results": [
+          "documents-word",
+          "google-docs",
+          "pdf-workflows"
+        ]
+      },
+      {
+        "expected": "documents-spreadsheets",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Crea una hoja de cálculo Excel de gastos.",
+        "rank": 1,
+        "results": [
+          "documents-spreadsheets",
+          "invoice-and-expense-records",
+          "mathematical-computation"
+        ]
+      },
+      {
+        "expected": "test-driven-repair",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Repair a regression in this Rust parser.",
+        "rank": null,
+        "results": [
+          "software-implementation",
+          "rust-development",
+          "browser-regression-testing"
+        ]
+      },
+      {
+        "expected": "conversation-recap",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Summarize the decisions from our previous conversation.",
+        "rank": 1,
+        "results": [
+          "conversation-recap",
+          "project-status-review",
+          "customer-support"
+        ]
+      },
+      {
+        "expected": "diagram-authoring",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Crea un diagrama de arquitectura con nodos y conexiones.",
+        "rank": 1,
+        "results": [
+          "diagram-authoring",
+          "architecture-design",
+          "mobile-app-development"
+        ]
+      },
+      {
+        "expected": "data-analysis",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Calculate statistics and missing values in this CSV.",
+        "rank": 1,
+        "results": [
+          "data-analysis",
+          "google-sheets",
+          "documents-spreadsheets"
+        ]
+      },
+      {
+        "expected": "simulation-modeling",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Build a mathematical simulation with stated assumptions.",
+        "rank": 1,
+        "results": [
+          "simulation-modeling",
+          "mathematical-computation",
+          "robot-description"
+        ]
+      },
+      {
+        "expected": "image-workflows",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Create an image illustration with the available image tools.",
+        "rank": 1,
+        "results": [
+          "image-workflows",
+          "container-workflows",
+          "google-slides"
+        ]
+      },
+      {
+        "expected": "code-review",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Revisa este diff sin cambiar código.",
+        "rank": 1,
+        "results": [
+          "code-review",
+          "test-driven-repair",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "database-migrations",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Plan a database schema migration.",
+        "rank": 1,
+        "results": [
+          "database-migrations",
+          "database-schema-design",
+          "legacy-migration"
+        ]
+      },
+      {
+        "expected": "agent-workflow-diagnosis",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Diagnose why the agent repeated a completed task.",
+        "rank": 1,
+        "results": [
+          "agent-workflow-diagnosis",
+          "local-troubleshooting",
+          "test-driven-repair"
+        ]
+      },
+      {
+        "expected": "completion-verification",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Comprueba si los documentos entregados cumplen los requisitos.",
+        "rank": 1,
+        "results": [
+          "completion-verification",
+          "requirements-and-planning",
+          "document-comparison"
+        ]
+      }
+    ],
+    "corpus": {
+      "path": "docs/skills/repository-expansion-cases.json",
+      "sha256": "76b79fedb91f821ce13081718d59d9ec942399da5871c932ab40795117ffc1f9",
+      "held_out": false,
+      "constructed_after_skill_authoring": true,
+      "queries_changed_after_first_run": false
+    },
+    "known_baseline_miss": {
+      "query": "Repair a regression in this Rust parser.",
+      "expected": "test-driven-repair",
+      "baseline_top1": "software-implementation",
+      "candidate_top1": "software-implementation",
+      "expected_in_top3": false,
+      "note": "The guard assertion was corrected after the first paired run to preserve the baseline winner for pre-existing misses. This miss remains in reported metrics, not counted as successful expected retrieval."
+    },
+    "initial_build_issue": "A shared Cargo target reused a stale generated 145-entry catalog; rerunning the build script regenerated 156 entries before the recorded paired run.",
+    "live_llm_ab_evaluation": false,
+    "success_rate_gain_measured": false,
+    "token_cost_or_latency_gain_measured": false,
+    "unexecuted": [
+      "Full upstream runtimes",
+      "Gazebo/MoveIt simulation",
+      "Slicing and physical printing",
+      "Hosted Jobs/Spaces/SageMaker deployment",
+      "Model training and downloaded-weight inference",
+      "Browser ONNX/WebGPU model execution",
+      "Research corpus semantic adjudication"
+    ],
+    "static_checks": {
+      "entrypoints_validated": 156,
+      "max_entrypoint_bytes": 6539,
+      "categories": {
+        "business": 14,
+        "coordination": 4,
+        "creative": 7,
+        "data": 16,
+        "engineering": 43,
+        "knowledge": 4,
+        "office": 19,
+        "operations": 17,
+        "personal": 5,
+        "research": 14,
+        "security": 8,
+        "writing": 5
+      },
+      "local_links_checked": 517,
+      "affected_artifact_hashes_verified": 49,
+      "migration_hashes_verified": 9,
+      "resource_file_and_bundle_limits": "passed",
+      "no_bundled_bytecode_or_symlinks": true,
+      "bilingual_catalog_membership": "passed"
+    },
+    "clippy": {
+      "status": "passed",
+      "command": "cargo clippy -p fenix-agent --lib --tests --locked -- -D warnings",
+      "seconds": 31.72
+    },
+    "rustfmt": {
+      "status": "passed",
+      "scope": [
+        "crates/fenix-agent/src/skills/repository_expansion_tests.rs",
+        "crates/fenix-agent/src/skills.rs (skip_children=true)"
+      ]
+    },
+    "environment": {
+      "python": "3.13.5",
+      "python_packages": {
+        "build123d": "0.11.1",
+        "trimesh": "5.0.0",
+        "numpy": "2.5.2",
+        "ezdxf": "1.4.4",
+        "PyYAML": "6.0.2"
+      },
+      "cargo_profile": {
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0",
+        "CARGO_INCREMENTAL": "0"
+      }
+    },
+    "test_sources": [
+      {
+        "path": "tests/skills/test_repository_helpers.py",
+        "sha256": "006a04e81459eb7823f7d1cd96b26fb050e3cb14b041f5f47d9048d516ffe07c"
+      },
+      {
+        "path": "tests/skills/test_web_animation.mjs",
+        "sha256": "4f052ba575ddff74039f431505a72de63874bfc441352ab3a4968190ff490eed"
+      },
+      {
+        "path": "crates/fenix-agent/src/skills/repository_expansion_tests.rs",
+        "sha256": "f297dde727191c5017a346166662a7189a11d5098cbbb5c42e471f330021409b"
+      }
+    ]
+  }
+}

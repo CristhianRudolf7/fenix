@@ -1,0 +1,22 @@
+[Unit]
+Description=Fenix frontend and API reverse proxy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=XDG_CONFIG_HOME=%h/.config/fenix/caddy
+Environment=XDG_DATA_HOME=%h/.local/share/fenix-web/caddy
+Environment=FENIX_WEB_ROOT=%h/.local/share/fenix-web/current
+EnvironmentFile=-%h/.config/fenix/web.env
+ExecStartPre=/usr/bin/caddy validate --config %h/.config/fenix/Caddyfile --adapter caddyfile
+ExecStart=/usr/bin/caddy run --config %h/.config/fenix/Caddyfile --adapter caddyfile
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=20
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

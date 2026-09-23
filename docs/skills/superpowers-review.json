@@ -1,0 +1,2164 @@
+{
+  "review_date": "2026-09-19",
+  "target": "Fenix repository bundled skills; personal Codex configuration unchanged",
+  "upstream": {
+    "repository": "obra/superpowers",
+    "commit": "5bf4e78011075bcfc0dc295f0724994cd123ee71",
+    "version": "6.4.1",
+    "license": "MIT",
+    "entrypoints_read": [
+      {
+        "name": "brainstorming",
+        "path": "skills/brainstorming/SKILL.md",
+        "sha256": "a32d2255354775aa124855aa7100cf276bea096fff4ebb3a0edf57be216e6c72",
+        "bytes": 17548,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/brainstorming/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "requirements-and-planning",
+          "architecture-design"
+        ],
+        "decision": "adapt"
+      },
+      {
+        "name": "diagnosing-superpowers",
+        "path": "skills/diagnosing-superpowers/SKILL.md",
+        "sha256": "5a652f8132cc901eb5ca61f89157839f87a2f20aed037fc7a2b51051bc37cd19",
+        "bytes": 6904,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/diagnosing-superpowers/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "local-troubleshooting",
+          "conversation-recap"
+        ],
+        "decision": "deepen"
+      },
+      {
+        "name": "dispatching-parallel-agents",
+        "path": "skills/dispatching-parallel-agents/SKILL.md",
+        "sha256": "1968923066f3b707eb01d1992cdf4c42284c3855f70253b9cd5000ff45fca13c",
+        "bytes": 6078,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/dispatching-parallel-agents/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "task-delegation",
+          "native worker runtime"
+        ],
+        "decision": "retain"
+      },
+      {
+        "name": "executing-plans",
+        "path": "skills/executing-plans/SKILL.md",
+        "sha256": "f38e8f2ddcf079f65493adc713c1fed78421dfaf5f4dbf6b3a6b2b1d95466e71",
+        "bytes": 20405,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/executing-plans/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "software-implementation",
+          "requirements-and-planning",
+          "native planning and recovery"
+        ],
+        "decision": "adapt"
+      },
+      {
+        "name": "finishing-a-development-branch",
+        "path": "skills/finishing-a-development-branch/SKILL.md",
+        "sha256": "8db5a922b242dd4e1bf824cb91c13b3e8d8e8a86d6ceaf7f0774eb9cce909d65",
+        "bytes": 7781,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/finishing-a-development-branch/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "git-worktree-coordination",
+          "git-recovery-and-change-management",
+          "release-and-ci"
+        ],
+        "decision": "deepen"
+      },
+      {
+        "name": "receiving-code-review",
+        "path": "skills/receiving-code-review/SKILL.md",
+        "sha256": "091df1629510af1b92fc4abd6f96732ebedb4cb2c0f3457e8f2740b0504a2438",
+        "bytes": 6203,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/receiving-code-review/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "code-review"
+        ],
+        "decision": "deepen"
+      },
+      {
+        "name": "requesting-code-review",
+        "path": "skills/requesting-code-review/SKILL.md",
+        "sha256": "cfcee1b06774e7c0517f1e09be1a11f2d5680257072723e709ddbcf7e08b795a",
+        "bytes": 2977,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/requesting-code-review/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "code-review",
+          "task-delegation"
+        ],
+        "decision": "adapt"
+      },
+      {
+        "name": "subagent-driven-development",
+        "path": "skills/subagent-driven-development/SKILL.md",
+        "sha256": "8dde5589ee083fb4999106d116f01c8fdaf3116a8a9813fdedeb80329de49046",
+        "bytes": 32577,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/subagent-driven-development/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "task-delegation",
+          "code-review",
+          "native worker runtime"
+        ],
+        "decision": "adapt"
+      },
+      {
+        "name": "systematic-debugging",
+        "path": "skills/systematic-debugging/SKILL.md",
+        "sha256": "808fc5717aa88ad65efff312b11c186294d3e6ee301afb584e2f86599b137787",
+        "bytes": 9465,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/systematic-debugging/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "test-driven-repair",
+          "local-troubleshooting"
+        ],
+        "decision": "deepen"
+      },
+      {
+        "name": "test-driven-development",
+        "path": "skills/test-driven-development/SKILL.md",
+        "sha256": "64b03fce4aee5a97a93160cea8111f3ba13a17b7c001db4bd5836d67fd10705d",
+        "bytes": 9578,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/test-driven-development/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "test-driven-repair",
+          "test-strategy",
+          "software-implementation"
+        ],
+        "decision": "deepen"
+      },
+      {
+        "name": "using-git-worktrees",
+        "path": "skills/using-git-worktrees/SKILL.md",
+        "sha256": "8cfb86f121269e8f7f12361e6795c4f6738828340e28964c9229d365666c9edd",
+        "bytes": 6813,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/using-git-worktrees/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "git-worktree-coordination"
+        ],
+        "decision": "deepen"
+      },
+      {
+        "name": "using-superpowers",
+        "path": "skills/using-superpowers/SKILL.md",
+        "sha256": "82c5c8866ad7f5dd4440ce66bd7806ba48a2f13771beae5cf112e53f08fe36ba",
+        "bytes": 3192,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/using-superpowers/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "native skill discovery"
+        ],
+        "decision": "retain"
+      },
+      {
+        "name": "verification-before-completion",
+        "path": "skills/verification-before-completion/SKILL.md",
+        "sha256": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3",
+        "bytes": 3646,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/verification-before-completion/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "software-implementation",
+          "native evidence and task contracts"
+        ],
+        "decision": "deepen"
+      },
+      {
+        "name": "writing-plans",
+        "path": "skills/writing-plans/SKILL.md",
+        "sha256": "0bc3d36590f7b2c323ed3ec18ff77e9f8ed57af42f5680a02b11a2d20de265cf",
+        "bytes": 9092,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/writing-plans/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "requirements-and-planning"
+        ],
+        "decision": "adapt"
+      },
+      {
+        "name": "writing-skills",
+        "path": "skills/writing-skills/SKILL.md",
+        "sha256": "bbdfe742f853562e643a3d40d64476359d47881e39cef80a189283fa26d11ab9",
+        "bytes": 26623,
+        "version": null,
+        "category": null,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/writing-skills/SKILL.md",
+        "read_scope": "full entrypoint; supporting files only as separately recorded",
+        "fenix_mapping": [
+          "skill-authoring",
+          "experiment-and-benchmark-design"
+        ],
+        "decision": "deepen"
+      }
+    ],
+    "additional_files_consulted": [
+      {
+        "path": "README.md",
+        "sha256": "04fd40756d26d5f2132ddfbc5c3c35335b02bb456197308975f9d12eaa522382",
+        "bytes": 14389,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/README.md",
+        "read_scope": "full file"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+        "bytes": 1070,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/LICENSE",
+        "read_scope": "full file"
+      },
+      {
+        "path": ".claude-plugin/plugin.json",
+        "sha256": "aaa8449b5cc65a6df6feaa09f9317e87efb51440b17f626104d57222b3611a8e",
+        "bytes": 497,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/.claude-plugin/plugin.json",
+        "read_scope": "full file"
+      },
+      {
+        "path": ".codex-plugin/plugin.json",
+        "sha256": "8f879f5e2f04c5d2a93bd9ea455072384dc35d01f1dfc5307ca1be0cef5be9aa",
+        "bytes": 1730,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/.codex-plugin/plugin.json",
+        "read_scope": "full file"
+      },
+      {
+        "path": "hooks/session-start",
+        "sha256": "5e92229e49d7cff5e0355ab84b0bceb0d27d53c565b33210132ce6e413ee9665",
+        "bytes": 2667,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/hooks/session-start",
+        "read_scope": "full file"
+      },
+      {
+        "path": "hooks/hooks.json",
+        "sha256": "47fd72cc8bedf31c72702b35b4ed7bab670294d658c4ce518330337525a3798b",
+        "bytes": 334,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/hooks/hooks.json",
+        "read_scope": "full file"
+      },
+      {
+        "path": "skills/systematic-debugging/root-cause-tracing.md",
+        "sha256": "75b933b6a8c40bdb2031b10f21654395b56ec6ab6bc7b018c18d3fe57aeb7fb8",
+        "bytes": 5321,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/systematic-debugging/root-cause-tracing.md",
+        "read_scope": "full file"
+      },
+      {
+        "path": "skills/systematic-debugging/condition-based-waiting.md",
+        "sha256": "e89fec8400d6cd50f43407cec9fab50976ba4d55d0ec2eb51c0bd68036b54c26",
+        "bytes": 3516,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/systematic-debugging/condition-based-waiting.md",
+        "read_scope": "full file"
+      },
+      {
+        "path": "skills/test-driven-development/writing-good-tests.md",
+        "sha256": "51471c853306ff92ca8bb41dcaea05f31c0e46b03651f8f3c99754b7172f4ae1",
+        "bytes": 8268,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/test-driven-development/writing-good-tests.md",
+        "read_scope": "full file"
+      },
+      {
+        "path": "skills/requesting-code-review/code-reviewer.md",
+        "sha256": "82e370be6b3447523816286195571e4216ba56ba1ad6ad0e87862294c4c78dcb",
+        "bytes": 6449,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/requesting-code-review/code-reviewer.md",
+        "read_scope": "full file"
+      },
+      {
+        "path": "skills/diagnosing-superpowers/references/context-safety.md",
+        "sha256": "e6be2bd3495f454d4bedee9484d728d245d1fa656e11fc4ceec5693c16e4730a",
+        "bytes": 990,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/diagnosing-superpowers/references/context-safety.md",
+        "read_scope": "full file"
+      },
+      {
+        "path": "skills/using-superpowers/references/codex-tools.md",
+        "sha256": "1a38ad9b188c393052f58d95657a1c35ea6aafc8b5a27f198f3922912f70bbe7",
+        "bytes": 4762,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/skills/using-superpowers/references/codex-tools.md",
+        "read_scope": "full file"
+      },
+      {
+        "path": "tests/claude-code/README.md",
+        "sha256": "df8cc7a1709b5fd881f41f6e7afc180f1b686c14b97624c27e4957a174c09911",
+        "bytes": 4724,
+        "url": "https://github.com/obra/superpowers/blob/5bf4e78011075bcfc0dc295f0724994cd123ee71/tests/claude-code/README.md",
+        "read_scope": "selected sections"
+      }
+    ],
+    "scripts_executed": false,
+    "model_evaluations_run": false,
+    "supporting_resource_audit": "selected only; not exhaustive"
+  },
+  "fenix": {
+    "skill_count_before": 142,
+    "skill_count_after": 142,
+    "baseline_inventory": [
+      {
+        "name": "ab-test-analysis",
+        "path": "resources/skills/ab-test-analysis/SKILL.md",
+        "sha256": "f4d0b9710d8df6fa15aaad0e6d7c9edb7c612a2bc477abd39cbe0f21f08fd152",
+        "bytes": 1656,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "analytics-instrumentation",
+        "path": "resources/skills/analytics-instrumentation/SKILL.md",
+        "sha256": "e315d1c145a63dde0a7d8251a25604f2d5fc075c67ef73614a229b91276e0b9f",
+        "bytes": 1622,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "api-contract-design",
+        "path": "resources/skills/api-contract-design/SKILL.md",
+        "sha256": "7444a6daf34a2867ac257de7d7a89678549c739ebc91354abdd06efa9cde1a7a",
+        "bytes": 1988,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "api-integration",
+        "path": "resources/skills/api-integration/SKILL.md",
+        "sha256": "25cf9d02b348d725dac4da4dbf3f4e4f7dac98da27a67eba7781c5a9d18481f4",
+        "bytes": 1779,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "architecture-design",
+        "path": "resources/skills/architecture-design/SKILL.md",
+        "sha256": "7e23ac2460e03d2a33b3190916af2bb3a4446d65e6bd183dd9b67e96b1fb34a4",
+        "bytes": 1593,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "audio-transcription",
+        "path": "resources/skills/audio-transcription/SKILL.md",
+        "sha256": "314c7beb3be573a06e7b6627da6bac330b4f79ac398506657f8ff7f48381e9df",
+        "bytes": 1568,
+        "version": "1.0.0",
+        "category": "creative"
+      },
+      {
+        "name": "authentication-integration",
+        "path": "resources/skills/authentication-integration/SKILL.md",
+        "sha256": "a00e9a8ac53b23f465c47b4c1a2efd10e802e787d82bc18fd6259f0e36343199",
+        "bytes": 1780,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "background-jobs",
+        "path": "resources/skills/background-jobs/SKILL.md",
+        "sha256": "6b8de252f4aafacdb46dfb447c5d89b7f741fb8397b49066c072586abe3433a4",
+        "bytes": 1659,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "backup-and-restore",
+        "path": "resources/skills/backup-and-restore/SKILL.md",
+        "sha256": "e1b85057a1c8d6e78f77e7a45e92db096e0dd9066f286183df73da714adab4fe",
+        "bytes": 1727,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "bibliography-management",
+        "path": "resources/skills/bibliography-management/SKILL.md",
+        "sha256": "ec1b6044a4e7d5ac1698a0d7c81a8052a1f044c21150f4dec58180d57bd5e31b",
+        "bytes": 1572,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "brand-and-design-tokens",
+        "path": "resources/skills/brand-and-design-tokens/SKILL.md",
+        "sha256": "4663f4e98815134d82714ad42816e1b05347112edf0805bd405ed2351d4035c7",
+        "bytes": 1605,
+        "version": "1.0.0",
+        "category": "creative"
+      },
+      {
+        "name": "browser-navigation",
+        "path": "resources/skills/browser-navigation/SKILL.md",
+        "sha256": "9d679805604766fada82874ac8c4159e0ef360f593ec6e73c2766fcd7a538698",
+        "bytes": 5307,
+        "version": "1.3.0",
+        "category": "operations"
+      },
+      {
+        "name": "browser-regression-testing",
+        "path": "resources/skills/browser-regression-testing/SKILL.md",
+        "sha256": "462ff42495809cd33a953e28ed524f8b2364212e18c905e18d9e9b8c9dd579de",
+        "bytes": 1671,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "cache-design",
+        "path": "resources/skills/cache-design/SKILL.md",
+        "sha256": "e598c42e6c2687c205acfcc859bcfc86b5dc4377f2567d2c9c34a59c704205cb",
+        "bytes": 1550,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "calendar-scheduling",
+        "path": "resources/skills/calendar-scheduling/SKILL.md",
+        "sha256": "f5e17215b49dd5c5c5edda0b56868ed5a1a62192d0f205d2e48dc1525a357ea8",
+        "bytes": 2005,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "cloud-cost-review",
+        "path": "resources/skills/cloud-cost-review/SKILL.md",
+        "sha256": "647b328db876d8cdc669e0aa1210b72b7b32be3a2db995fc1cf056c2e6a22bcd",
+        "bytes": 1589,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "cloud-deployment",
+        "path": "resources/skills/cloud-deployment/SKILL.md",
+        "sha256": "a68be5b1268f5f7dd2a02b1f365d49bd90d8e427196c645b6a25d7a12c7a681f",
+        "bytes": 1710,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "cloud-file-sync",
+        "path": "resources/skills/cloud-file-sync/SKILL.md",
+        "sha256": "2caf08c9a90c82974e399cae9f652031330491492e8916f495b992ec0ab6f20f",
+        "bytes": 1633,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "code-review",
+        "path": "resources/skills/code-review/SKILL.md",
+        "sha256": "ce1b5572b4bcb28d0c7f7e123168abab86b93036cf814d3f52eb7fc11a24c6ea",
+        "bytes": 1973,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "competitive-research",
+        "path": "resources/skills/competitive-research/SKILL.md",
+        "sha256": "14921e8b4502a11c09ddcae339aa8886b1bfac5c4b6f16fe581b32b28c84a29b",
+        "bytes": 1632,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "container-workflows",
+        "path": "resources/skills/container-workflows/SKILL.md",
+        "sha256": "293c619120ab2abdfb262f6999f2f17c506f2a7ae6781fd1d707be82c659586d",
+        "bytes": 1586,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "content-calendar",
+        "path": "resources/skills/content-calendar/SKILL.md",
+        "sha256": "357b2e5e8bed536edfce12b4f175f0e7624f31850323db3eb997510beb9f5133",
+        "bytes": 1524,
+        "version": "1.0.0",
+        "category": "creative"
+      },
+      {
+        "name": "contract-review",
+        "path": "resources/skills/contract-review/SKILL.md",
+        "sha256": "a3c5a59c491a654169de6fc4d8d51fd06dcbec3f36647fe306e2e912e1984c25",
+        "bytes": 1702,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "conversation-recap",
+        "path": "resources/skills/conversation-recap/SKILL.md",
+        "sha256": "4de8c80dda47f8e1c3c1da99da8daac07161a129b3c41d6581894501a95ea2df",
+        "bytes": 2092,
+        "version": "1.1.0",
+        "category": "knowledge"
+      },
+      {
+        "name": "cpp-development",
+        "path": "resources/skills/cpp-development/SKILL.md",
+        "sha256": "38ef7774f01c1aae0e78cb677540caea088728d4f87661c219b1fec7ced74cfb",
+        "bytes": 1687,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "crm-workflows",
+        "path": "resources/skills/crm-workflows/SKILL.md",
+        "sha256": "21f10317dda7628244a37a1527f01916c10cefd0074674eaf71bf1e0b2c1d4a0",
+        "bytes": 1552,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "customer-support",
+        "path": "resources/skills/customer-support/SKILL.md",
+        "sha256": "e2f126bf227a2a696e65434d8d86a89460b816455309c9e2b43bb28bf8b0dd5b",
+        "bytes": 1600,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "dashboard-design",
+        "path": "resources/skills/dashboard-design/SKILL.md",
+        "sha256": "ad3992ea1ef01b6cc0ee8af7df46189ac42d16b568212c834bc723625df84182",
+        "bytes": 2157,
+        "version": "1.1.0",
+        "category": "data"
+      },
+      {
+        "name": "data-analysis",
+        "path": "resources/skills/data-analysis/SKILL.md",
+        "sha256": "fc08748de4d8211c981aa846f8190cd21315f42017d80a68b34dd7e1c6628de2",
+        "bytes": 2857,
+        "version": "1.2.0",
+        "category": "research"
+      },
+      {
+        "name": "data-pipelines",
+        "path": "resources/skills/data-pipelines/SKILL.md",
+        "sha256": "3b6487adb558059cd5f033991a5b87618f816d56f7168c2062e3aea5fae3ff6a",
+        "bytes": 1542,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "data-quality-audit",
+        "path": "resources/skills/data-quality-audit/SKILL.md",
+        "sha256": "b540be4fd183fd733890516a2f04ad53e7f7d129740815acf09a2a5f0578e4ae",
+        "bytes": 1561,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "database-migrations",
+        "path": "resources/skills/database-migrations/SKILL.md",
+        "sha256": "26843cff77759a88759dfee06b42bf679c517bc3509826f0a0a7b8c414c11e7f",
+        "bytes": 1814,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "database-schema-design",
+        "path": "resources/skills/database-schema-design/SKILL.md",
+        "sha256": "e616bb5b89628933bac2daa67ba077164eb417001264dfde5093ec050b78593f",
+        "bytes": 1602,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "dependency-and-secret-audit",
+        "path": "resources/skills/dependency-and-secret-audit/SKILL.md",
+        "sha256": "88d6d6fb0dfe64d95d975a59b4a4ddf50601ace2f71e57798d32b83bb3c3a22f",
+        "bytes": 2063,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "diagram-authoring",
+        "path": "resources/skills/diagram-authoring/SKILL.md",
+        "sha256": "d668872633bfee99c3d885fe9fe68619b7cc7f328bf79c6e9adb56d0ce8455e4",
+        "bytes": 2172,
+        "version": "1.1.0",
+        "category": "creative"
+      },
+      {
+        "name": "document-comparison",
+        "path": "resources/skills/document-comparison/SKILL.md",
+        "sha256": "1b5eabb28ba70cc9a299b4c38fadad084783d844e972bc1858ef1c37952944c6",
+        "bytes": 1599,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "documents-presentations",
+        "path": "resources/skills/documents-presentations/SKILL.md",
+        "sha256": "58cf32abd35c4c921d8990cb01905ce5738dbf0946b7e0d0627645db2b9c4c63",
+        "bytes": 3472,
+        "version": "1.2.0",
+        "category": "office"
+      },
+      {
+        "name": "documents-spreadsheets",
+        "path": "resources/skills/documents-spreadsheets/SKILL.md",
+        "sha256": "6a9b3a423ba35071455033cbc32c07db0e0f7dbc04070c2cdfb7e047725d1f74",
+        "bytes": 3893,
+        "version": "1.2.0",
+        "category": "office"
+      },
+      {
+        "name": "documents-word",
+        "path": "resources/skills/documents-word/SKILL.md",
+        "sha256": "7e8b519a15cdc6fe8d16c01982b9b368e425dd500e0994fe0b74ca017269e748",
+        "bytes": 3608,
+        "version": "1.2.0",
+        "category": "office"
+      },
+      {
+        "name": "dotnet-development",
+        "path": "resources/skills/dotnet-development/SKILL.md",
+        "sha256": "f9ec58e60b601742368f4d92135d24d3c3f7700b705eed87ed6045551a228904",
+        "bytes": 1583,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "email-workflows",
+        "path": "resources/skills/email-workflows/SKILL.md",
+        "sha256": "f77c00946c8c192120bc3d9f3c80c01beb073f6f98d684b47f9156c0f0e57f61",
+        "bytes": 2015,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "employee-onboarding",
+        "path": "resources/skills/employee-onboarding/SKILL.md",
+        "sha256": "8a9ca534b94a47793794ea1280da58f97cd0aa946b57d66c2dd79a627392b0b5",
+        "bytes": 1511,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "environment-and-dependencies",
+        "path": "resources/skills/environment-and-dependencies/SKILL.md",
+        "sha256": "40ed3b2fbe3e7b296cbfe5103e4cc11e2159fe622fc802afaaebbe7f44ddfe37",
+        "bytes": 2791,
+        "version": "1.2.0",
+        "category": "engineering"
+      },
+      {
+        "name": "experiment-and-benchmark-design",
+        "path": "resources/skills/experiment-and-benchmark-design/SKILL.md",
+        "sha256": "71722fe87af8de86cdc289d63758b00a6044e0cba7f409a6d7023bbd9123d3e8",
+        "bytes": 2074,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "feature-rollouts",
+        "path": "resources/skills/feature-rollouts/SKILL.md",
+        "sha256": "fe95eac9bb994581e0a448202b4e02204e84e01210ad350b49643bfec8caf903",
+        "bytes": 1560,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "financial-modeling",
+        "path": "resources/skills/financial-modeling/SKILL.md",
+        "sha256": "6cb94916a7529382abb53ce9ec2916130a39141320d58562b446b7459cf07b3d",
+        "bytes": 1615,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "forms-and-surveys",
+        "path": "resources/skills/forms-and-surveys/SKILL.md",
+        "sha256": "88485dab6e7cb5bfcd88b20233aaedb751b983df9f8a6901bc58047897ab069a",
+        "bytes": 1577,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "frontend-design-and-accessibility",
+        "path": "resources/skills/frontend-design-and-accessibility/SKILL.md",
+        "sha256": "6214c1595d5702587bd1190a00eb48097c9a5c4bae4c3abf8d6dda9827262610",
+        "bytes": 2683,
+        "version": "1.1.0",
+        "category": "engineering"
+      },
+      {
+        "name": "geospatial-analysis",
+        "path": "resources/skills/geospatial-analysis/SKILL.md",
+        "sha256": "9edb35672be5a8113549e88aa9a0d09efabccc34a18df63fae74eeba8bc96a8a",
+        "bytes": 1513,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "git-recovery-and-change-management",
+        "path": "resources/skills/git-recovery-and-change-management/SKILL.md",
+        "sha256": "1dadc7f19fb30b24917fd59a301ee8e11aa3a2a8b4bc64519168e0f34332f11a",
+        "bytes": 2783,
+        "version": "1.2.0",
+        "category": "engineering"
+      },
+      {
+        "name": "git-worktree-coordination",
+        "path": "resources/skills/git-worktree-coordination/SKILL.md",
+        "sha256": "91e4c1c171594373e3f6e6bf7fc2a99718f55dfb7ea004d6470fb7318585eecc",
+        "bytes": 1599,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "go-development",
+        "path": "resources/skills/go-development/SKILL.md",
+        "sha256": "81ea68f9fd0c488d265e0d3c38c5b820e4d412946062f7051bc357584bb699b3",
+        "bytes": 1556,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "google-docs",
+        "path": "resources/skills/google-docs/SKILL.md",
+        "sha256": "9060b772b396af1f2f69301e87aa811524e89a23a7c5328895562f6744f5de1a",
+        "bytes": 2018,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "google-drive",
+        "path": "resources/skills/google-drive/SKILL.md",
+        "sha256": "80f47f5984f50558025993d95e1e29c537e8fd659bbc23b1421bf4989b727e0e",
+        "bytes": 2394,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "google-sheets",
+        "path": "resources/skills/google-sheets/SKILL.md",
+        "sha256": "8705baa615e8dafca9b03215d5e75225ab249496d5f8579c0712896121d900a3",
+        "bytes": 1918,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "google-slides",
+        "path": "resources/skills/google-slides/SKILL.md",
+        "sha256": "69464ad54c6f5e995365f5a64b4b1f201affeb382b5191b3d6837557782179d0",
+        "bytes": 1885,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "grant-proposals",
+        "path": "resources/skills/grant-proposals/SKILL.md",
+        "sha256": "53a1d95f66624489059563265bb6080595d6b14dfafaed04c022940c43c62b91",
+        "bytes": 1580,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "hiring-and-interviews",
+        "path": "resources/skills/hiring-and-interviews/SKILL.md",
+        "sha256": "abf37b53059995f1be9103b5914d4f6668a13d77ae71e4e38deaea8e720b5ef7",
+        "bytes": 1664,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "identity-access-review",
+        "path": "resources/skills/identity-access-review/SKILL.md",
+        "sha256": "1e7c4da5632ae2729b77687816d367bb639ca54e4606b7f3a894c70896d3dfd1",
+        "bytes": 1556,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "image-workflows",
+        "path": "resources/skills/image-workflows/SKILL.md",
+        "sha256": "94619d89a02a5f44dadada7cba527071511449986e17025da98e790a06f052e8",
+        "bytes": 2244,
+        "version": "1.1.0",
+        "category": "creative"
+      },
+      {
+        "name": "incident-response",
+        "path": "resources/skills/incident-response/SKILL.md",
+        "sha256": "468305db37286b9584565cb3f8ddbbc8eceb3e7e8253815beb5fa29399c57295",
+        "bytes": 1993,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "infrastructure-as-code",
+        "path": "resources/skills/infrastructure-as-code/SKILL.md",
+        "sha256": "c44dc48f9f7c077d5b614a0e2d17fa7933ce7ded527d67d53b1a75c3a2018f9e",
+        "bytes": 1643,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "invoice-and-expense-records",
+        "path": "resources/skills/invoice-and-expense-records/SKILL.md",
+        "sha256": "fab561344ef60df2d4557a8c67d9b4d47477675e3bd6ac1f24b94891af4af0fc",
+        "bytes": 1938,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "issue-tracker-workflows",
+        "path": "resources/skills/issue-tracker-workflows/SKILL.md",
+        "sha256": "f7bd05aee762af0b0b6c194cee2a6a629035e9d46c83b0005e96a68f1ca67582",
+        "bytes": 1557,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "jvm-development",
+        "path": "resources/skills/jvm-development/SKILL.md",
+        "sha256": "95f06aafd22b5032fb1272a81f3621aa785343da1019831f00ae32689d8d659b",
+        "bytes": 1606,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "knowledge-base-maintenance",
+        "path": "resources/skills/knowledge-base-maintenance/SKILL.md",
+        "sha256": "d845d99d2cc021b7efd35a81df9a1f8bee3329a679d725f88636cbaf5142bd2d",
+        "bytes": 2029,
+        "version": "1.0.0",
+        "category": "knowledge"
+      },
+      {
+        "name": "knowledge-workspace-connectors",
+        "path": "resources/skills/knowledge-workspace-connectors/SKILL.md",
+        "sha256": "dc727e1f569e528e2b72b9e8f39c78052e71cd8ecb824d2605a7ba1d4ff148d8",
+        "bytes": 1571,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "kubernetes-operations",
+        "path": "resources/skills/kubernetes-operations/SKILL.md",
+        "sha256": "d87de2863213af0885d4a418eaada5076525abb4b71f4d612c35d049ebc203d0",
+        "bytes": 1742,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "latex-authoring",
+        "path": "resources/skills/latex-authoring/SKILL.md",
+        "sha256": "e8f5db56971ea328e75070353f33ef8c0b4993f614ad71b550ff1bfb8f0fc306",
+        "bytes": 2104,
+        "version": "1.1.0",
+        "category": "research"
+      },
+      {
+        "name": "learning-and-tutoring",
+        "path": "resources/skills/learning-and-tutoring/SKILL.md",
+        "sha256": "1febe7711fb78d4067ce6b8b37a72e9b8ae42159d00481bc7d9da6a161ec3b9a",
+        "bytes": 1534,
+        "version": "1.0.0",
+        "category": "personal"
+      },
+      {
+        "name": "legacy-migration",
+        "path": "resources/skills/legacy-migration/SKILL.md",
+        "sha256": "137e6992f1cce8e7cee4528c5229d3f5f3c464b1531112c58194cc85cbb2db0c",
+        "bytes": 1692,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "literature-review",
+        "path": "resources/skills/literature-review/SKILL.md",
+        "sha256": "12b7fe0ab7998cf324f4ba24e27bd01711e8c56b592b348f5408b69354c75f36",
+        "bytes": 2081,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "load-and-resilience-testing",
+        "path": "resources/skills/load-and-resilience-testing/SKILL.md",
+        "sha256": "c9c8b3d84405e2bb41a60ad6149abe8ebac048eaf7b0d8661d1dcd3f0619e6c6",
+        "bytes": 1636,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "local-file-work",
+        "path": "resources/skills/local-file-work/SKILL.md",
+        "sha256": "ba436f78d8b63bdf07fdd7384d4ed02f2cdea5604b48f5fe470a106edc709f07",
+        "bytes": 2258,
+        "version": "1.1.0",
+        "category": "operations"
+      },
+      {
+        "name": "local-troubleshooting",
+        "path": "resources/skills/local-troubleshooting/SKILL.md",
+        "sha256": "415df843ff7a0d7965a1d10b2ea244865e943684bda668b5d4e4d1a0a3ce04c8",
+        "bytes": 2421,
+        "version": "1.2.0",
+        "category": "operations"
+      },
+      {
+        "name": "marketing-content",
+        "path": "resources/skills/marketing-content/SKILL.md",
+        "sha256": "f26c2670348e8d0694d6a1a7271e4b3ac0767932af1363382835e097780c6a87",
+        "bytes": 1846,
+        "version": "1.0.0",
+        "category": "writing"
+      },
+      {
+        "name": "mathematical-computation",
+        "path": "resources/skills/mathematical-computation/SKILL.md",
+        "sha256": "f1467316bd02bce80b15c7060e8193aac6d243c4999d0babeac585b2a8c2ccaf",
+        "bytes": 1570,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "mcp-integration",
+        "path": "resources/skills/mcp-integration/SKILL.md",
+        "sha256": "2b4f8264355b25db5a45c706c801ae5919190da5bb7111f1050886ea7d8d4e9f",
+        "bytes": 1679,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "meal-planning",
+        "path": "resources/skills/meal-planning/SKILL.md",
+        "sha256": "3fc66a8d0e09f075ac70b5a614d5cdfd1b827dc45f47a521d0aecaa1e49924c1",
+        "bytes": 1645,
+        "version": "1.0.0",
+        "category": "personal"
+      },
+      {
+        "name": "meeting-notes",
+        "path": "resources/skills/meeting-notes/SKILL.md",
+        "sha256": "07745c534a7a051abbcaf8ad06c0630bf4af29d07ce4118fc67c3598791ca707",
+        "bytes": 1901,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "memory-and-reminders",
+        "path": "resources/skills/memory-and-reminders/SKILL.md",
+        "sha256": "6d4ddd363d05cc85c885d3315b1188ff162e60c7e13fb35f0cad34aebbb8d53b",
+        "bytes": 6539,
+        "version": "2.1.0",
+        "category": "knowledge"
+      },
+      {
+        "name": "ml-dataset-preparation",
+        "path": "resources/skills/ml-dataset-preparation/SKILL.md",
+        "sha256": "4d13e4db00c37b64d74b91ff9fd5c41f849aa923bdf8efff41c0d7b9cc7afa90",
+        "bytes": 1583,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "ml-inference-deployment",
+        "path": "resources/skills/ml-inference-deployment/SKILL.md",
+        "sha256": "4aa7a281a9375a799c1d3dec2896589dd045fb2639cef8186d5a8726323ba6a3",
+        "bytes": 1714,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "ml-training",
+        "path": "resources/skills/ml-training/SKILL.md",
+        "sha256": "56166d36f1d24a9210b39553903744da91bcd7d5dff12a3eedbf27813fa630c6",
+        "bytes": 1645,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "mobile-app-development",
+        "path": "resources/skills/mobile-app-development/SKILL.md",
+        "sha256": "16f91f087439b8026608afa05980a7579c3c83287b55cf425a6304a6e26864ce",
+        "bytes": 1667,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "mobile-app-testing",
+        "path": "resources/skills/mobile-app-testing/SKILL.md",
+        "sha256": "42986a5014326c2c95582d97c3793a2a2453c6b775017ed1a88c4bdc9616c6ae",
+        "bytes": 1590,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "network-diagnostics",
+        "path": "resources/skills/network-diagnostics/SKILL.md",
+        "sha256": "7985f1f6906056df871e5a2154ebeb3faa8952a6354f74fb908a423ffc9017f7",
+        "bytes": 1625,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "observability-and-slos",
+        "path": "resources/skills/observability-and-slos/SKILL.md",
+        "sha256": "7816a5a7ba0271107d889e044a2eb008722920c830eacb25c02e1612ba2b9068",
+        "bytes": 1683,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "package-build-and-install",
+        "path": "resources/skills/package-build-and-install/SKILL.md",
+        "sha256": "e12f22bd8bdc58457afee930a9a158899f188f7ce8bb1f0133f385cd9eca2373",
+        "bytes": 1942,
+        "version": "1.1.0",
+        "category": "engineering"
+      },
+      {
+        "name": "payment-and-billing",
+        "path": "resources/skills/payment-and-billing/SKILL.md",
+        "sha256": "bd5f984fe78aee2fc14af229d3857d3dc0fa0557d85b6703b6f30bfad5a5788f",
+        "bytes": 1792,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "pdf-workflows",
+        "path": "resources/skills/pdf-workflows/SKILL.md",
+        "sha256": "611896427d8c8e2557563b6bbbdfed64af7ca886dc8e560b52832b953e4db009",
+        "bytes": 2533,
+        "version": "1.1.0",
+        "category": "office"
+      },
+      {
+        "name": "peer-review",
+        "path": "resources/skills/peer-review/SKILL.md",
+        "sha256": "695c825fc99d7079961079ffaadbaf3befa0e846daf4c37955b960b7444cfa10",
+        "bytes": 1595,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "performance-diagnosis",
+        "path": "resources/skills/performance-diagnosis/SKILL.md",
+        "sha256": "63882807ad0206edb57cdf312627eb9caf2c056cbae82fc3e09dd25980f85cb6",
+        "bytes": 1974,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "personal-organization",
+        "path": "resources/skills/personal-organization/SKILL.md",
+        "sha256": "11c2adf5e353bd905602582080352fce78adc48fdef37f141caad7660ea25b55",
+        "bytes": 1564,
+        "version": "1.0.0",
+        "category": "personal"
+      },
+      {
+        "name": "phishing-triage",
+        "path": "resources/skills/phishing-triage/SKILL.md",
+        "sha256": "3cabda44f093fd6c86f2e9692b482689edf23d694cc5e5b728fccccef76e6301",
+        "bytes": 1626,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "pricing-analysis",
+        "path": "resources/skills/pricing-analysis/SKILL.md",
+        "sha256": "4ce0e7fb4378eee51e3962c7640ce31ee33a2c25ccda42cc3fe2c1144c602653",
+        "bytes": 1593,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "privacy-and-compliance",
+        "path": "resources/skills/privacy-and-compliance/SKILL.md",
+        "sha256": "3d34fb5969b210479d1fe281e04f289d147e2a80b32f63b31244afa43b4e03dc",
+        "bytes": 1634,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "privacy-redaction",
+        "path": "resources/skills/privacy-redaction/SKILL.md",
+        "sha256": "5596970f3c63acd9b87676d83bea9313a7490eff4ae4fa94f683fc9c726f665b",
+        "bytes": 1607,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "process-and-service-management",
+        "path": "resources/skills/process-and-service-management/SKILL.md",
+        "sha256": "9d54df3a04f38f17630332192cb942e6d360a3c8e95df1f155d337f3297c9919",
+        "bytes": 1924,
+        "version": "1.1.0",
+        "category": "operations"
+      },
+      {
+        "name": "process-improvement",
+        "path": "resources/skills/process-improvement/SKILL.md",
+        "sha256": "1bbec3fa19d41aae1f55cf609568d522b834bc264795595161c45fb3ecbab5ac",
+        "bytes": 1621,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "procurement-and-vendors",
+        "path": "resources/skills/procurement-and-vendors/SKILL.md",
+        "sha256": "109bca6ea788c033e9c5f346c81318e9cb813752b883bfd9fc4e3d698e87043c",
+        "bytes": 1624,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "product-discovery",
+        "path": "resources/skills/product-discovery/SKILL.md",
+        "sha256": "a3b1c49108ccee6341c70aed7dbd6b685743af93130909b49fe929e556dd0b65",
+        "bytes": 1524,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "professional-writing",
+        "path": "resources/skills/professional-writing/SKILL.md",
+        "sha256": "1cec2cf31304e2ac1dca47fa7253e8c843b6f674117bd295a1e10a0ffd15a49a",
+        "bytes": 2111,
+        "version": "1.1.0",
+        "category": "writing"
+      },
+      {
+        "name": "project-status-review",
+        "path": "resources/skills/project-status-review/SKILL.md",
+        "sha256": "d7c59f81f58fa8655cca954fa0baa9fc0255b33551b8f248c9a8fcd4a0e26ba6",
+        "bytes": 1881,
+        "version": "1.0.0",
+        "category": "coordination"
+      },
+      {
+        "name": "purchase-comparison",
+        "path": "resources/skills/purchase-comparison/SKILL.md",
+        "sha256": "bbe47f287c7c5225d4a4bd309cae1c756632f09c4b9a9a317ae9dd0c0f414d1b",
+        "bytes": 1512,
+        "version": "1.0.0",
+        "category": "personal"
+      },
+      {
+        "name": "python-development",
+        "path": "resources/skills/python-development/SKILL.md",
+        "sha256": "43604165ef7bfd18bfd21c3a9dab337fb000c42a13061ae4bba63bdb75435c09",
+        "bytes": 1685,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "rag-evaluation",
+        "path": "resources/skills/rag-evaluation/SKILL.md",
+        "sha256": "e8848fceca49ec8947203f3045401d752ef72efce9686921fae3045ea2fb79bc",
+        "bytes": 1713,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "realtime-protocols",
+        "path": "resources/skills/realtime-protocols/SKILL.md",
+        "sha256": "259c2bf9e2d4f4180cb915d73cc9c1338bab0a0eff5968352c6ad12c0c2ca2af",
+        "bytes": 1656,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "release-and-ci",
+        "path": "resources/skills/release-and-ci/SKILL.md",
+        "sha256": "5d626d70fcef111b9a204f46268c7fae46aff67d749786448fb1abb744a67469",
+        "bytes": 1951,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "repository-navigation",
+        "path": "resources/skills/repository-navigation/SKILL.md",
+        "sha256": "cacaef712bb322994148e2ef7d04d7e118752f1b676a291890212d6c2c802dce",
+        "bytes": 1735,
+        "version": "1.1.0",
+        "category": "engineering"
+      },
+      {
+        "name": "requirements-and-planning",
+        "path": "resources/skills/requirements-and-planning/SKILL.md",
+        "sha256": "13f3466f3a7f8d5b67664be94f7654d48eb2405c3f8fafb7703924b99eafb07c",
+        "bytes": 1959,
+        "version": "1.0.0",
+        "category": "coordination"
+      },
+      {
+        "name": "roadmap-prioritization",
+        "path": "resources/skills/roadmap-prioritization/SKILL.md",
+        "sha256": "ccded1c3006718b3afcd909eb8b8bf2a318ad026415a749f398af71ade40bdc8",
+        "bytes": 1606,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "rust-development",
+        "path": "resources/skills/rust-development/SKILL.md",
+        "sha256": "689e502002e6cc1336e174dbd7c5ddbcf231ca2540ea5c1b807aed76ca84c2a2",
+        "bytes": 1791,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "sales-opportunities",
+        "path": "resources/skills/sales-opportunities/SKILL.md",
+        "sha256": "06e98e1eda2a24dd98b58763f6dd1d621fb1dc1c745693376859d6c032255e78",
+        "bytes": 1584,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "scheduled-workflows",
+        "path": "resources/skills/scheduled-workflows/SKILL.md",
+        "sha256": "e0e7edc5f88aa124cbca17ee5a2c570a9ea59ae3c507f4f21773b113a2f154ab",
+        "bytes": 1595,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "scientific-figures",
+        "path": "resources/skills/scientific-figures/SKILL.md",
+        "sha256": "b5713bb3c7fc3d50271dd2572cf8e1dc8cac6b34b1afce29d34ff34e21460d87",
+        "bytes": 2133,
+        "version": "1.1.0",
+        "category": "research"
+      },
+      {
+        "name": "scientific-writing",
+        "path": "resources/skills/scientific-writing/SKILL.md",
+        "sha256": "4c0129b682f81cbb82ad0e5099e15648d8c3e10b51a5cae4405dd7e43bb85306",
+        "bytes": 1629,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "security-code-review",
+        "path": "resources/skills/security-code-review/SKILL.md",
+        "sha256": "768b6a835b777d98ffbf4e8e2f4081bad9ac4a96978a5e569f26c94c6eeb7e99",
+        "bytes": 1928,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "seo-review",
+        "path": "resources/skills/seo-review/SKILL.md",
+        "sha256": "c0c660f75eafcbc65dd6d25e027fa9399c62ef6dc94a6919ca76c46ceeca0890",
+        "bytes": 1845,
+        "version": "1.0.0",
+        "category": "writing"
+      },
+      {
+        "name": "shell-automation",
+        "path": "resources/skills/shell-automation/SKILL.md",
+        "sha256": "d634b0faf4206d48633ab505c7ffe981547380e5e82225c91dc6b3f5e0ce4ebb",
+        "bytes": 1737,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "simulation-modeling",
+        "path": "resources/skills/simulation-modeling/SKILL.md",
+        "sha256": "77dd89fe0f966d84fc131f3dbe6a20a82f763e736fd9e74d369174f3352ccbe9",
+        "bytes": 1543,
+        "version": "1.0.0",
+        "category": "research"
+      },
+      {
+        "name": "skill-authoring",
+        "path": "resources/skills/skill-authoring/SKILL.md",
+        "sha256": "9ad5db1dd6f9c34211c0609b0a4758a915e451c83d619505b11a92b4ea5ab78a",
+        "bytes": 2461,
+        "version": "1.1.0",
+        "category": "knowledge"
+      },
+      {
+        "name": "skill-source-review",
+        "path": "resources/skills/skill-source-review/SKILL.md",
+        "sha256": "d7c082a9fefa2bb70430f91e3eabdbcc21348d10e8421cf2de1999428691d449",
+        "bytes": 1992,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "software-implementation",
+        "path": "resources/skills/software-implementation/SKILL.md",
+        "sha256": "7d8e3faa8106bf4c1b60c227d00629c61b23de3745b3d2654187d4a8737e9d35",
+        "bytes": 3116,
+        "version": "1.2.0",
+        "category": "engineering"
+      },
+      {
+        "name": "sql-analysis-and-optimization",
+        "path": "resources/skills/sql-analysis-and-optimization/SKILL.md",
+        "sha256": "75fdf9912904399219a362f4be6a0daca74e6d9f9298eeab773c04cc43334e9c",
+        "bytes": 1999,
+        "version": "1.1.0",
+        "category": "engineering"
+      },
+      {
+        "name": "storage-and-archive-work",
+        "path": "resources/skills/storage-and-archive-work/SKILL.md",
+        "sha256": "d25652e23d581d4e185c739bbcf46660e5b618824815a2365849d60e4f56b4e5",
+        "bytes": 1676,
+        "version": "1.0.0",
+        "category": "operations"
+      },
+      {
+        "name": "structured-llm-output",
+        "path": "resources/skills/structured-llm-output/SKILL.md",
+        "sha256": "dc8885476318e4ea1202a5ec77db436ab7d3d3fb10f5b4dcff98ad5eaca7ec4d",
+        "bytes": 1658,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "task-delegation",
+        "path": "resources/skills/task-delegation/SKILL.md",
+        "sha256": "ebe69333ec245ceeb2fc6b7104c05f2589d7d9db6e0d41320fd7d952bf146f8c",
+        "bytes": 2043,
+        "version": "1.0.0",
+        "category": "coordination"
+      },
+      {
+        "name": "team-messaging",
+        "path": "resources/skills/team-messaging/SKILL.md",
+        "sha256": "96ebfad68754a7871bbd2c3e38976b2df9cd251e2900388ce48e8131edf04584",
+        "bytes": 1523,
+        "version": "1.0.0",
+        "category": "office"
+      },
+      {
+        "name": "technical-documentation",
+        "path": "resources/skills/technical-documentation/SKILL.md",
+        "sha256": "b994ffa1b00401424e991216d8dc379014b47fd2ef877619cb84b6b47904f657",
+        "bytes": 1911,
+        "version": "1.0.0",
+        "category": "writing"
+      },
+      {
+        "name": "test-driven-repair",
+        "path": "resources/skills/test-driven-repair/SKILL.md",
+        "sha256": "a8c9a7d4072ba59a40d7156bed0c0f0089be7f6a65cf9ac9ee7b64df4c4c5098",
+        "bytes": 2732,
+        "version": "1.2.0",
+        "category": "engineering"
+      },
+      {
+        "name": "test-strategy",
+        "path": "resources/skills/test-strategy/SKILL.md",
+        "sha256": "d7889ae8a8cc5fc6cd4db9161eabcee810fcbef5b9d9450c2b5932df7f9ddda7",
+        "bytes": 1715,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "text-processing-and-parsing",
+        "path": "resources/skills/text-processing-and-parsing/SKILL.md",
+        "sha256": "b6251e2a755b906a0293d8076bd07e47e124c560d9f516152fbcc6092f831ef3",
+        "bytes": 1769,
+        "version": "1.1.0",
+        "category": "engineering"
+      },
+      {
+        "name": "threat-modeling",
+        "path": "resources/skills/threat-modeling/SKILL.md",
+        "sha256": "537925c1c69b6cba28523b56a660e62482616ff10d932a0e853d37c66f4b4e5a",
+        "bytes": 1814,
+        "version": "1.0.0",
+        "category": "security"
+      },
+      {
+        "name": "time-series-forecasting",
+        "path": "resources/skills/time-series-forecasting/SKILL.md",
+        "sha256": "66b2143d1c126ca907081a3c13de2c79de365d63cde42515c144847cf022fb2a",
+        "bytes": 1593,
+        "version": "1.0.0",
+        "category": "data"
+      },
+      {
+        "name": "translation-and-localization",
+        "path": "resources/skills/translation-and-localization/SKILL.md",
+        "sha256": "5036cd3f48672cdfd6805fad534d1285f1a74650bcf0f0a07bc152f2d972b2a7",
+        "bytes": 1919,
+        "version": "1.0.0",
+        "category": "writing"
+      },
+      {
+        "name": "travel-planning",
+        "path": "resources/skills/travel-planning/SKILL.md",
+        "sha256": "b75538b77071a34f46b8cc7c62d34370747c0421e454826454540ff038b78bcd",
+        "bytes": 1656,
+        "version": "1.0.0",
+        "category": "personal"
+      },
+      {
+        "name": "typescript-development",
+        "path": "resources/skills/typescript-development/SKILL.md",
+        "sha256": "a96ba5fa89c3af160c6b52f3694cb21f4a83e96cebf6c2facdd294cfd74fa2d0",
+        "bytes": 1725,
+        "version": "1.0.0",
+        "category": "engineering"
+      },
+      {
+        "name": "user-research",
+        "path": "resources/skills/user-research/SKILL.md",
+        "sha256": "7555475be5d71f8a260940aa02ad36c46bcd17476ce00ee8353aa677c99499d2",
+        "bytes": 1642,
+        "version": "1.0.0",
+        "category": "business"
+      },
+      {
+        "name": "video-editing",
+        "path": "resources/skills/video-editing/SKILL.md",
+        "sha256": "77ab183e9ee52ebcfbd7908213481c78cf2cf39196e4d8dac1481a0f5b7307f5",
+        "bytes": 2154,
+        "version": "1.1.0",
+        "category": "creative"
+      },
+      {
+        "name": "web-presentations",
+        "path": "resources/skills/web-presentations/SKILL.md",
+        "sha256": "f0c4f204ccd67008f7756f9d2d8e4cc0a7966206aa5dfea31058e13e010ae20f",
+        "bytes": 2134,
+        "version": "1.1.0",
+        "category": "creative"
+      },
+      {
+        "name": "web-research",
+        "path": "resources/skills/web-research/SKILL.md",
+        "sha256": "9df32c0ae4720f858a47b0598b80ffb337878ba3228837e581bdf2ac93cfbd0a",
+        "bytes": 4788,
+        "version": "1.3.0",
+        "category": "research"
+      }
+    ],
+    "entrypoints_changed": [
+      {
+        "name": "code-review",
+        "before": {
+          "name": "code-review",
+          "path": "resources/skills/code-review/SKILL.md",
+          "sha256": "ce1b5572b4bcb28d0c7f7e123168abab86b93036cf814d3f52eb7fc11a24c6ea",
+          "bytes": 1973,
+          "version": "1.0.0",
+          "category": "engineering"
+        },
+        "after": {
+          "name": "code-review",
+          "path": "resources/skills/code-review/SKILL.md",
+          "sha256": "d7ee281ee863e9e87e4b5de5472136f8491dc594c90a673d4f642dcbcbcd191d",
+          "bytes": 2964,
+          "version": "1.1.0",
+          "category": "engineering"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/code-review.md"
+      },
+      {
+        "name": "git-worktree-coordination",
+        "before": {
+          "name": "git-worktree-coordination",
+          "path": "resources/skills/git-worktree-coordination/SKILL.md",
+          "sha256": "91e4c1c171594373e3f6e6bf7fc2a99718f55dfb7ea004d6470fb7318585eecc",
+          "bytes": 1599,
+          "version": "1.0.0",
+          "category": "engineering"
+        },
+        "after": {
+          "name": "git-worktree-coordination",
+          "path": "resources/skills/git-worktree-coordination/SKILL.md",
+          "sha256": "2dce1391677c8292db8d6bcaafbc2399ac9c0f86cf818b9f687f53936e9d6535",
+          "bytes": 2645,
+          "version": "1.1.0",
+          "category": "engineering"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/git-worktree-coordination.md"
+      },
+      {
+        "name": "local-troubleshooting",
+        "before": {
+          "name": "local-troubleshooting",
+          "path": "resources/skills/local-troubleshooting/SKILL.md",
+          "sha256": "415df843ff7a0d7965a1d10b2ea244865e943684bda668b5d4e4d1a0a3ce04c8",
+          "bytes": 2421,
+          "version": "1.2.0",
+          "category": "operations"
+        },
+        "after": {
+          "name": "local-troubleshooting",
+          "path": "resources/skills/local-troubleshooting/SKILL.md",
+          "sha256": "5ed876733a1039c1d2c496e0e59326a6ec81821f3ed7cf75174a1decc725cb84",
+          "bytes": 3008,
+          "version": "1.3.0",
+          "category": "operations"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/local-troubleshooting.md"
+      },
+      {
+        "name": "requirements-and-planning",
+        "before": {
+          "name": "requirements-and-planning",
+          "path": "resources/skills/requirements-and-planning/SKILL.md",
+          "sha256": "13f3466f3a7f8d5b67664be94f7654d48eb2405c3f8fafb7703924b99eafb07c",
+          "bytes": 1959,
+          "version": "1.0.0",
+          "category": "coordination"
+        },
+        "after": {
+          "name": "requirements-and-planning",
+          "path": "resources/skills/requirements-and-planning/SKILL.md",
+          "sha256": "5bdcd6b3df37a2d12023372666f71c4e9ee6aa20197b5e3a28ca37fb2e3408bf",
+          "bytes": 2973,
+          "version": "1.1.0",
+          "category": "coordination"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/requirements-and-planning.md"
+      },
+      {
+        "name": "skill-authoring",
+        "before": {
+          "name": "skill-authoring",
+          "path": "resources/skills/skill-authoring/SKILL.md",
+          "sha256": "9ad5db1dd6f9c34211c0609b0a4758a915e451c83d619505b11a92b4ea5ab78a",
+          "bytes": 2461,
+          "version": "1.1.0",
+          "category": "knowledge"
+        },
+        "after": {
+          "name": "skill-authoring",
+          "path": "resources/skills/skill-authoring/SKILL.md",
+          "sha256": "62b48049463a324a7cea343a70094a3cd4da1b9f4a84b69590599f2c9d699f91",
+          "bytes": 3076,
+          "version": "1.2.0",
+          "category": "knowledge"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/skill-authoring.md"
+      },
+      {
+        "name": "software-implementation",
+        "before": {
+          "name": "software-implementation",
+          "path": "resources/skills/software-implementation/SKILL.md",
+          "sha256": "7d8e3faa8106bf4c1b60c227d00629c61b23de3745b3d2654187d4a8737e9d35",
+          "bytes": 3116,
+          "version": "1.2.0",
+          "category": "engineering"
+        },
+        "after": {
+          "name": "software-implementation",
+          "path": "resources/skills/software-implementation/SKILL.md",
+          "sha256": "edc1c2e1f19aabbb2ff66c049f707dc98e2ae0f85075c150f585561ddd41c54e",
+          "bytes": 3957,
+          "version": "1.3.0",
+          "category": "engineering"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/software-implementation.md"
+      },
+      {
+        "name": "task-delegation",
+        "before": {
+          "name": "task-delegation",
+          "path": "resources/skills/task-delegation/SKILL.md",
+          "sha256": "ebe69333ec245ceeb2fc6b7104c05f2589d7d9db6e0d41320fd7d952bf146f8c",
+          "bytes": 2043,
+          "version": "1.0.0",
+          "category": "coordination"
+        },
+        "after": {
+          "name": "task-delegation",
+          "path": "resources/skills/task-delegation/SKILL.md",
+          "sha256": "9a51b809bfe39bbdf2d50e8784bb3163fae8fe16ad4965cb858eb6c5e12600c3",
+          "bytes": 3019,
+          "version": "1.1.0",
+          "category": "coordination"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/task-delegation.md"
+      },
+      {
+        "name": "test-driven-repair",
+        "before": {
+          "name": "test-driven-repair",
+          "path": "resources/skills/test-driven-repair/SKILL.md",
+          "sha256": "a8c9a7d4072ba59a40d7156bed0c0f0089be7f6a65cf9ac9ee7b64df4c4c5098",
+          "bytes": 2732,
+          "version": "1.2.0",
+          "category": "engineering"
+        },
+        "after": {
+          "name": "test-driven-repair",
+          "path": "resources/skills/test-driven-repair/SKILL.md",
+          "sha256": "d60053eace296829b7cd6596b56ea60d9a781ff33ceed5d094a7dd5e7b93ace0",
+          "bytes": 3493,
+          "version": "1.3.0",
+          "category": "engineering"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/test-driven-repair.md"
+      },
+      {
+        "name": "test-strategy",
+        "before": {
+          "name": "test-strategy",
+          "path": "resources/skills/test-strategy/SKILL.md",
+          "sha256": "d7889ae8a8cc5fc6cd4db9161eabcee810fcbef5b9d9450c2b5932df7f9ddda7",
+          "bytes": 1715,
+          "version": "1.0.0",
+          "category": "engineering"
+        },
+        "after": {
+          "name": "test-strategy",
+          "path": "resources/skills/test-strategy/SKILL.md",
+          "sha256": "4aa920cd1abad09625f5e2be15ff85a1972d3e640f70a06839e8de52ec549fc5",
+          "bytes": 2843,
+          "version": "1.1.0",
+          "category": "engineering"
+        },
+        "baseline_fixture": "crates/fenix-agent/tests/fixtures/skills/workflow-v1/test-strategy.md"
+      }
+    ],
+    "new_references": [
+      {
+        "path": "resources/skills/test-driven-repair/references/root-cause-investigation.md",
+        "sha256": "07ae412170a99b65df390b8c867659a2072e4c91fe780af9bd2991c928e28325",
+        "bytes": 2715
+      },
+      {
+        "path": "resources/skills/software-implementation/references/completion-evidence.md",
+        "sha256": "3153ae136162538c650497a2a5732f44f17821ab80ea6f26441ce29b760d6b6b",
+        "bytes": 2720
+      },
+      {
+        "path": "resources/skills/code-review/references/review-feedback.md",
+        "sha256": "7d38c339242dd41f27fb8677f4c402f478d20da700303dc22048cf1963222e8b",
+        "bytes": 2365
+      },
+      {
+        "path": "resources/skills/local-troubleshooting/references/agent-workflow-diagnosis.md",
+        "sha256": "35018f9621199963b3bdffd404de0ffbd8927b05ea302032994c9d5dfe9f603b",
+        "bytes": 3195
+      },
+      {
+        "path": "resources/skills/skill-authoring/references/behavioral-evaluation.md",
+        "sha256": "c8629f579314fab682bcac35ea57bbbfa3c90a7c0b0e091b0a0246bbbe0c8fa3",
+        "bytes": 2658
+      }
+    ],
+    "runtime_change": "No production runtime logic changes; regression tests and known-original migration hashes added.",
+    "source_tree_context": "Pre-existing and concurrent unrelated work is retained; paired retrieval changes only the nine recorded fixtures while all other embedded skills and the engine remain fixed within one runtime."
+  },
+  "validation": {
+    "baseline_existing_suite": {
+      "passed": 11,
+      "failed": 0
+    },
+    "candidate_skill_suite": {
+      "command": "cargo test -p fenix-agent --lib skills:: --locked -- --nocapture",
+      "environment": {
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0",
+        "CARGO_INCREMENTAL": "0"
+      },
+      "passed": 14,
+      "failed": 0,
+      "log_sha256": "03a347cbb4c8fe68015a0efb4cc535d907320d64d88d73125713bda5a1614d05"
+    },
+    "skill_creator_quick_validate": {
+      "skills": [
+        "code-review",
+        "git-worktree-coordination",
+        "local-troubleshooting",
+        "requirements-and-planning",
+        "skill-authoring",
+        "software-implementation",
+        "task-delegation",
+        "test-driven-repair",
+        "test-strategy"
+      ],
+      "passed": 9,
+      "failed": 0
+    },
+    "paired_discovery": {
+      "cases": "docs/skills/superpowers-discovery-cases.json",
+      "case_sha256": "6cd2b04f3d34d0b3f8595c3a4174ff09e08308fffc69b7cb2d42329b05192cc9",
+      "kind": "development regression set; not held out; no model calls",
+      "summary": {
+        "baseline": {
+          "queries": 18,
+          "top_1": 10,
+          "top_3": 11
+        },
+        "candidate": {
+          "queries": 18,
+          "top_1": 18,
+          "top_3": 18
+        }
+      },
+      "results": [
+        {
+          "expected": "test-driven-repair",
+          "phase": "baseline",
+          "query": "Trace the root cause of a flaky test before trying another fix",
+          "rank": null,
+          "results": [
+            "browser-regression-testing",
+            "network-diagnostics",
+            "security-code-review"
+          ]
+        },
+        {
+          "expected": "test-driven-repair",
+          "phase": "baseline",
+          "query": "Depura la causa raíz de una prueba intermitente",
+          "rank": null,
+          "results": [
+            "load-and-resilience-testing",
+            "container-workflows",
+            "feature-rollouts"
+          ]
+        },
+        {
+          "expected": "code-review",
+          "phase": "baseline",
+          "query": "Evaluate reviewer feedback before implementing the suggested changes",
+          "rank": 1,
+          "results": [
+            "code-review",
+            "learning-and-tutoring",
+            "test-driven-repair"
+          ]
+        },
+        {
+          "expected": "code-review",
+          "phase": "baseline",
+          "query": "Comprueba los comentarios del revisor antes de aplicar sus sugerencias",
+          "rank": null,
+          "results": [
+            "identity-access-review",
+            "google-sheets",
+            "simulation-modeling"
+          ]
+        },
+        {
+          "expected": "local-troubleshooting",
+          "phase": "baseline",
+          "query": "Explain why the agent repeated completed work and spent so many tokens",
+          "rank": null,
+          "results": [
+            "brand-and-design-tokens",
+            "requirements-and-planning",
+            "background-jobs"
+          ]
+        },
+        {
+          "expected": "local-troubleshooting",
+          "phase": "baseline",
+          "query": "Diagnostica por qué el agente repitió trabajo terminado y gastó tantos tokens",
+          "rank": null,
+          "results": [
+            "conversation-recap",
+            "brand-and-design-tokens",
+            "process-improvement"
+          ]
+        },
+        {
+          "expected": "git-worktree-coordination",
+          "phase": "baseline",
+          "query": "Prepare a development branch handoff without merging or deleting my worktree",
+          "rank": 1,
+          "results": [
+            "git-worktree-coordination",
+            "environment-and-dependencies",
+            "git-recovery-and-change-management"
+          ]
+        },
+        {
+          "expected": "git-worktree-coordination",
+          "phase": "baseline",
+          "query": "Finaliza la rama y conserva el worktree para revisar los cambios",
+          "rank": 3,
+          "results": [
+            "git-recovery-and-change-management",
+            "code-review",
+            "git-worktree-coordination"
+          ]
+        },
+        {
+          "expected": "requirements-and-planning",
+          "phase": "baseline",
+          "query": "Plan deliverables with producer consumer interfaces and acceptance checks",
+          "rank": 1,
+          "results": [
+            "requirements-and-planning",
+            "python-development",
+            "legacy-migration"
+          ]
+        },
+        {
+          "expected": "requirements-and-planning",
+          "phase": "baseline",
+          "query": "Planifica hitos con interfaces y criterios de aceptación",
+          "rank": 1,
+          "results": [
+            "requirements-and-planning",
+            "frontend-design-and-accessibility",
+            "travel-planning"
+          ]
+        },
+        {
+          "expected": "test-strategy",
+          "phase": "baseline",
+          "query": "Verify a regression test actually catches the faulty behavior",
+          "rank": 1,
+          "results": [
+            "test-strategy",
+            "browser-regression-testing",
+            "feature-rollouts"
+          ]
+        },
+        {
+          "expected": "test-strategy",
+          "phase": "baseline",
+          "query": "Comprueba que una prueba de regresión detecta el fallo real",
+          "rank": 1,
+          "results": [
+            "test-strategy",
+            "browser-regression-testing",
+            "environment-and-dependencies"
+          ]
+        },
+        {
+          "expected": "software-implementation",
+          "phase": "baseline",
+          "query": "Implement a utility and provide current evidence for each completion claim",
+          "rank": 1,
+          "results": [
+            "software-implementation",
+            "task-delegation",
+            "requirements-and-planning"
+          ]
+        },
+        {
+          "expected": "software-implementation",
+          "phase": "baseline",
+          "query": "Implementa un programa y verifica el entregable con evidencia de finalización",
+          "rank": 1,
+          "results": [
+            "software-implementation",
+            "mcp-integration",
+            "environment-and-dependencies"
+          ]
+        },
+        {
+          "expected": "task-delegation",
+          "phase": "baseline",
+          "query": "Delegate independent tasks with precise requirements and verify worker handoffs",
+          "rank": 1,
+          "results": [
+            "task-delegation",
+            "process-improvement",
+            "background-jobs"
+          ]
+        },
+        {
+          "expected": "task-delegation",
+          "phase": "baseline",
+          "query": "Delega subtareas independientes y verifica los entregables de los subagentes",
+          "rank": 1,
+          "results": [
+            "task-delegation",
+            "phishing-triage",
+            "employee-onboarding"
+          ]
+        },
+        {
+          "expected": "skill-authoring",
+          "phase": "baseline",
+          "query": "Evaluate a skill against baseline behavior and pressure scenarios",
+          "rank": null,
+          "results": [
+            "pricing-analysis",
+            "rag-evaluation",
+            "ml-training"
+          ]
+        },
+        {
+          "expected": "skill-authoring",
+          "phase": "baseline",
+          "query": "Evalúa una skill frente a una línea base con escenarios de presión",
+          "rank": null,
+          "results": [
+            "financial-modeling",
+            "knowledge-base-maintenance",
+            "sql-analysis-and-optimization"
+          ]
+        },
+        {
+          "expected": "test-driven-repair",
+          "phase": "candidate",
+          "query": "Trace the root cause of a flaky test before trying another fix",
+          "rank": 1,
+          "results": [
+            "test-driven-repair",
+            "browser-regression-testing",
+            "network-diagnostics"
+          ]
+        },
+        {
+          "expected": "test-driven-repair",
+          "phase": "candidate",
+          "query": "Depura la causa raíz de una prueba intermitente",
+          "rank": 1,
+          "results": [
+            "test-driven-repair",
+            "load-and-resilience-testing",
+            "test-strategy"
+          ]
+        },
+        {
+          "expected": "code-review",
+          "phase": "candidate",
+          "query": "Evaluate reviewer feedback before implementing the suggested changes",
+          "rank": 1,
+          "results": [
+            "code-review",
+            "learning-and-tutoring",
+            "skill-authoring"
+          ]
+        },
+        {
+          "expected": "code-review",
+          "phase": "candidate",
+          "query": "Comprueba los comentarios del revisor antes de aplicar sus sugerencias",
+          "rank": 1,
+          "results": [
+            "code-review",
+            "identity-access-review",
+            "google-sheets"
+          ]
+        },
+        {
+          "expected": "local-troubleshooting",
+          "phase": "candidate",
+          "query": "Explain why the agent repeated completed work and spent so many tokens",
+          "rank": 1,
+          "results": [
+            "local-troubleshooting",
+            "brand-and-design-tokens",
+            "requirements-and-planning"
+          ]
+        },
+        {
+          "expected": "local-troubleshooting",
+          "phase": "candidate",
+          "query": "Diagnostica por qué el agente repitió trabajo terminado y gastó tantos tokens",
+          "rank": 1,
+          "results": [
+            "local-troubleshooting",
+            "conversation-recap",
+            "brand-and-design-tokens"
+          ]
+        },
+        {
+          "expected": "git-worktree-coordination",
+          "phase": "candidate",
+          "query": "Prepare a development branch handoff without merging or deleting my worktree",
+          "rank": 1,
+          "results": [
+            "git-worktree-coordination",
+            "environment-and-dependencies",
+            "git-recovery-and-change-management"
+          ]
+        },
+        {
+          "expected": "git-worktree-coordination",
+          "phase": "candidate",
+          "query": "Finaliza la rama y conserva el worktree para revisar los cambios",
+          "rank": 1,
+          "results": [
+            "git-worktree-coordination",
+            "code-review",
+            "git-recovery-and-change-management"
+          ]
+        },
+        {
+          "expected": "requirements-and-planning",
+          "phase": "candidate",
+          "query": "Plan deliverables with producer consumer interfaces and acceptance checks",
+          "rank": 1,
+          "results": [
+            "requirements-and-planning",
+            "task-delegation",
+            "python-development"
+          ]
+        },
+        {
+          "expected": "requirements-and-planning",
+          "phase": "candidate",
+          "query": "Planifica hitos con interfaces y criterios de aceptación",
+          "rank": 1,
+          "results": [
+            "requirements-and-planning",
+            "task-delegation",
+            "travel-planning"
+          ]
+        },
+        {
+          "expected": "test-strategy",
+          "phase": "candidate",
+          "query": "Verify a regression test actually catches the faulty behavior",
+          "rank": 1,
+          "results": [
+            "test-strategy",
+            "browser-regression-testing",
+            "feature-rollouts"
+          ]
+        },
+        {
+          "expected": "test-strategy",
+          "phase": "candidate",
+          "query": "Comprueba que una prueba de regresión detecta el fallo real",
+          "rank": 1,
+          "results": [
+            "test-strategy",
+            "browser-regression-testing",
+            "test-driven-repair"
+          ]
+        },
+        {
+          "expected": "software-implementation",
+          "phase": "candidate",
+          "query": "Implement a utility and provide current evidence for each completion claim",
+          "rank": 1,
+          "results": [
+            "software-implementation",
+            "task-delegation",
+            "peer-review"
+          ]
+        },
+        {
+          "expected": "software-implementation",
+          "phase": "candidate",
+          "query": "Implementa un programa y verifica el entregable con evidencia de finalización",
+          "rank": 1,
+          "results": [
+            "software-implementation",
+            "mcp-integration",
+            "environment-and-dependencies"
+          ]
+        },
+        {
+          "expected": "task-delegation",
+          "phase": "candidate",
+          "query": "Delegate independent tasks with precise requirements and verify worker handoffs",
+          "rank": 1,
+          "results": [
+            "task-delegation",
+            "process-improvement",
+            "background-jobs"
+          ]
+        },
+        {
+          "expected": "task-delegation",
+          "phase": "candidate",
+          "query": "Delega subtareas independientes y verifica los entregables de los subagentes",
+          "rank": 1,
+          "results": [
+            "task-delegation",
+            "phishing-triage",
+            "employee-onboarding"
+          ]
+        },
+        {
+          "expected": "skill-authoring",
+          "phase": "candidate",
+          "query": "Evaluate a skill against baseline behavior and pressure scenarios",
+          "rank": 1,
+          "results": [
+            "skill-authoring",
+            "pricing-analysis",
+            "rag-evaluation"
+          ]
+        },
+        {
+          "expected": "skill-authoring",
+          "phase": "candidate",
+          "query": "Evalúa una skill frente a una línea base con escenarios de presión",
+          "rank": 1,
+          "results": [
+            "skill-authoring",
+            "financial-modeling",
+            "knowledge-base-maintenance"
+          ]
+        }
+      ]
+    },
+    "behavioral_evaluation": {
+      "status": "not_run",
+      "model_quality_gain": null,
+      "latency_gain": null,
+      "token_savings": null,
+      "cost_savings": null,
+      "reason": "No isolated live-model paired trials executed. Deterministic integration and lexical discovery checks do not measure model behavior."
+    },
+    "compiler_lints": {
+      "command": "cargo clippy -p fenix-agent --lib --locked -- -D warnings",
+      "passed": true
+    },
+    "formatting": {
+      "command": "rustfmt --edition 2024 --check crates/fenix-agent/src/skills.rs",
+      "passed": true
+    },
+    "artifact_integrity": {
+      "local_markdown_links": "passed",
+      "before_after_hashes": "passed",
+      "migration_hash_coverage": "passed",
+      "bilingual_skill_metadata": "passed",
+      "catalog_count": 142
+    }
+  },
+  "activation": {
+    "source_integrated": true,
+    "isolated_runtime_installation_tested": true,
+    "live_service_rebuilt_or_restarted": false,
+    "personal_codex_modified": false,
+    "custom_skill_policy": "Known exact originals upgrade; custom files and disabled state are preserved."
+  },
+  "authorship": "Original Fenix instructions informed by the pinned upstream comparison; no upstream bodies, scripts or assets redistributed."
+}

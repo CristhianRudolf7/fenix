@@ -92,13 +92,16 @@ predeterminados son cuatro horas por tarea principal, una hora por intento de hi
 y 128 pasos de modelo por tarea, acumulados entre reintentos y mensajes de
 seguimiento. Son configurables; no se añade presupuesto acumulado de tokens.
 
-Tras reiniciar, tareas, preguntas y planes sin terminar quedan interrumpidos.
-Los eventos y mensajes no entregados siguen disponibles; los efectos no se reanudan
-automáticamente. Para continuar un plan guardado, hay que revisarlo explícitamente
-con su evidencia anterior. El contexto de cada turno excluye las secuencias de
-herramientas todavía incompletas de otros turnos; al finalizar, cada secuencia
-queda agrupada. El historial original y la auditoría se conservan.
+Tras reiniciar pueden continuar las tareas con puntos completos de contexto y los
+planes cuyos trabajadores activos sean recuperables. Las preguntas pendientes,
+efectos inciertos y revisores independientes quedan para inspección o replanificación.
+Se conservan identificadores, contadores e hitos; no se repiten herramientas guardadas.
+Véanse [condiciones y límites](harness-continuity.md#recuperación-tras-reinicios).
+El contexto sigue excluyendo secuencias incompletas de otras tareas.
 
 Los turnos nuevos reciben referencias resumidas a tareas activas de su ámbito
 autorizado. Así pueden dirigir cambios en lenguaje natural a una tarea que todavía
 se elabora, sin importar su secuencia de herramientas incompleta.
+
+Las comprobaciones de resultados y el registro de tareas, requisitos, artefactos y
+hechos se detallan en [auditoría selectiva de resultados](completion-audits.md).

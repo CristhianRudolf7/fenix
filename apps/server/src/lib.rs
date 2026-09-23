@@ -6,7 +6,7 @@ use axum::{
     extract::{DefaultBodyLimit, Path, Query, Request, State},
     http::{HeaderValue, StatusCode, header},
     middleware::{self, Next},
-    response::{Html, IntoResponse, Response},
+    response::{IntoResponse, Response},
     routing::{get, post},
 };
 use fenix_agent::{
@@ -20,7 +20,23 @@ use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio_stream::wrappers::WatchStream;
 
+pub mod accounts;
+mod assets;
 mod browser;
+mod connectors;
+mod design_choice;
+mod designs;
+mod documents;
+mod integrations;
+mod live;
+mod skill_guard;
+mod workflows;
+mod workspace;
+
+fn require(condition: bool, message: &str) -> anyhow::Result<()> {
+    anyhow::ensure!(condition, "{message}");
+    Ok(())
+}
 
 type ApiResult<T> = Result<Json<T>, ApiError>;
 pub struct ApiError(anyhow::Error);
@@ -40,33 +56,58 @@ impl IntoResponse for ApiError {
 }
 
 pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
+    router_with_public_origin(runtime, port, None).expect("Local router configuration is valid")
+}
+
+/// The optional public origin must be served through an authenticated reverse proxy.
+pub fn router_with_public_origin(
+    runtime: Arc<Runtime>,
+    port: u16,
+    public_origin: Option<&str>,
+) -> anyhow::Result<Router> {
+    let public_origin = public_origin
+        .map(|value| -> anyhow::Result<String> {
+            let url = reqwest::Url::parse(value)?;
+            anyhow::ensure!(
+                url.scheme() == "https"
+                    && url.host_str().is_some()
+                    && url.username().is_empty()
+                    && url.password().is_none()
+                    && url.path() == "/"
+                    && url.query().is_none()
+                    && url.fragment().is_none(),
+                "FENIX_PUBLIC_ORIGIN must be an HTTPS origin without a path, credentials or query"
+            );
+            Ok(url.origin().ascii_serialization())
+        })
+        .transpose()?;
     runtime.browser.set_control_port(port);
-    Router::new()
+    let exchange = skill_guard::local_routes(&runtime)?;
+    Ok(Router::new()
         .merge(browser::routes())
-        .route(
-            "/",
-            get(|| async { Html(include_str!("../../web/index.html")) }),
-        )
-        .route(
-            "/app.js",
-            get(|| async {
-                (
-                    [(header::CONTENT_TYPE, "text/javascript; charset=utf-8")],
-                    include_str!("../../web/app.js"),
-                )
-            }),
-        )
-        .route(
-            "/styles.css",
-            get(|| async {
-                (
-                    [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-                    include_str!("../../web/styles.css"),
-                )
-            }),
-        )
+        .merge(integrations::routes())
+        .merge(connectors::routes())
+        .merge(workflows::routes())
+        .merge(live::routes())
+        .merge(designs::routes())
+        .merge(documents::routes())
+        .merge(workspace::routes())
+        .merge(skill_guard::tenant_routes())
+        .route("/", get(assets::index))
+        .route("/chat", get(assets::index))
+        .route("/projects", get(assets::index))
+        .route("/memory", get(assets::index))
+        .route("/skills", get(assets::index))
+        .route("/design", get(assets::index))
+        .route("/browser", get(assets::index))
+        .route("/integrations", get(assets::index))
+        .route("/schedules", get(assets::index))
+        .route("/activity", get(assets::index))
+        .route("/settings", get(assets::index))
+        .route("/assets/{*path}", get(assets::asset))
         .route("/api/status", get(status))
         .route("/api/web/status", get(web_status))
+        .route("/api/web/search", post(web_search))
         .route("/api/progress", get(progress))
         .route("/api/events", get(events))
         .route("/api/plans", get(plans))
@@ -95,32 +136,52 @@ pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
             "/api/instructions/{name}",
             get(instruction).put(save_instruction),
         )
+        .with_state(runtime)
+        .merge(exchange)
         .layer(DefaultBodyLimit::max(256 * 1024))
         .layer(middleware::from_fn(move |request: Request, next: Next| {
-            local_guard(request, next, port)
-        }))
-        .with_state(runtime)
+            local_guard(request, next, port, public_origin.clone())
+        })))
 }
 
-async fn local_guard(request: Request, next: Next, port: u16) -> Response {
+async fn local_guard(
+    request: Request,
+    next: Next,
+    port: u16,
+    public_origin: Option<String>,
+) -> Response {
     let host = request
         .headers()
         .get(header::HOST)
         .and_then(|h| h.to_str().ok())
         .unwrap_or("");
     let allowed = [format!("127.0.0.1:{port}"), format!("localhost:{port}")];
-    if !allowed.iter().any(|h| h == host) {
+    let remote = public_origin
+        .as_deref()
+        .is_some_and(|origin| origin.strip_prefix("https://") == Some(host));
+    if !remote && !allowed.iter().any(|h| h == host) {
         return StatusCode::FORBIDDEN.into_response();
     }
-    if let Some(origin) = request.headers().get(header::ORIGIN)
-        && origin.to_str().ok() != Some(format!("http://{host}").as_str())
+    let expected_origin = if remote {
+        public_origin.as_deref().unwrap().to_owned()
+    } else {
+        format!("http://{host}")
+    };
+    // This GET contains only a static OAuth landing page, never owner data.
+    // The token exchange is a separate authenticated same-origin JSON POST.
+    let oauth_landing = request.method() == axum::http::Method::GET
+        && request.uri().path() == "/api/connectors/oauth/callback";
+    if !oauth_landing
+        && let Some(origin) = request.headers().get(header::ORIGIN)
+        && origin.to_str().ok() != Some(expected_origin.as_str())
     {
         return StatusCode::FORBIDDEN.into_response();
     }
-    if request
-        .headers()
-        .get("sec-fetch-site")
-        .is_some_and(|h| h == "cross-site")
+    if !oauth_landing
+        && request
+            .headers()
+            .get("sec-fetch-site")
+            .is_some_and(|h| h == "cross-site")
     {
         return StatusCode::FORBIDDEN.into_response();
     }
@@ -138,13 +199,15 @@ async fn local_guard(request: Request, next: Next, port: u16) -> Response {
     }
     let mut response = next.run(request).await;
     let headers = response.headers_mut();
-    headers.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
+    headers
+        .entry(header::CACHE_CONTROL)
+        .or_insert(HeaderValue::from_static("no-store"));
     headers.insert(
         "x-content-type-options",
         HeaderValue::from_static("nosniff"),
     );
     headers.insert("referrer-policy", HeaderValue::from_static("no-referrer"));
-    headers.insert("content-security-policy",HeaderValue::from_static("default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"));
+    headers.entry("content-security-policy").or_insert(HeaderValue::from_static("default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"));
     response
 }
 async fn status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
@@ -153,6 +216,25 @@ async fn status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
 
 async fn web_status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
     Ok(Json(serde_json::to_value(runtime.web.status().await?)?))
+}
+
+async fn web_search(
+    State(runtime): State<Arc<Runtime>>,
+    Json(mut input): Json<Value>,
+) -> ApiResult<Value> {
+    // The owner's search UI reads the local index by default. Fetching original
+    // pages requires explicit read_pages or source_urls, never another search service.
+    input
+        .as_object_mut()
+        .ok_or_else(|| anyhow::anyhow!("Search requires a JSON object"))?
+        .entry("read_pages")
+        .or_insert(json!(0));
+    let request = serde_json::from_value(input)?;
+    let cancel = tokio_util::sync::CancellationToken::new();
+    let _cancel_on_drop = cancel.clone().drop_guard();
+    Ok(Json(serde_json::to_value(
+        runtime.web.search_with(request, &cancel).await?,
+    )?))
 }
 
 #[derive(Deserialize, Default)]
@@ -198,8 +280,9 @@ async fn plans(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
     Ok(Json(json!(runtime.store.plans()?)))
 }
 async fn plan(State(runtime): State<Arc<Runtime>>, Path(id): Path<String>) -> ApiResult<Value> {
+    let plan = runtime.store.plan(&id)?;
     Ok(Json(
-        json!({"plan":runtime.store.plan(&id)?,"revisions":runtime.store.plan_history(&id)?,"reviews":runtime.store.plan_reviews(&id)?,"review_metrics":runtime.store.plan_review_metrics(&id)?}),
+        json!({"plan":plan,"revisions":runtime.store.plan_history(&id)?,"reviews":runtime.store.plan_reviews(&id)?,"review_metrics":runtime.store.plan_review_metrics(&id)?,"completion_audits":runtime.store.completion_audits(&id)?,"evidence":runtime.store.plan_evidence(&id,plan.version)?}),
     ))
 }
 async fn replan(
@@ -289,15 +372,52 @@ struct TextInput {
 struct ChatInput {
     text: String,
     #[serde(default)]
+    document_ids: Vec<String>,
+    #[serde(default)]
     reply_to_task_id: Option<String>,
+    #[serde(default)]
+    design_choice: Option<design_choice::DesignChoice>,
 }
 async fn message(
     State(runtime): State<Arc<Runtime>>,
     Json(input): Json<ChatInput>,
 ) -> ApiResult<Value> {
+    require(input.document_ids.len() <= 20, "Select up to 20 documents")?;
+    let mut text = input.text;
+    if let Some(choice) = input.design_choice {
+        choice.append_to(&mut text)?;
+    }
+    let mut scope = None;
+    for (index, id) in input.document_ids.iter().enumerate() {
+        let doc = runtime.store.library_document(id, None)?;
+        if index == 0 {
+            scope = Some(doc.project_id.clone());
+            let project = doc
+                .project_id
+                .as_deref()
+                .map(|id| runtime.store.project(id).map(|p| p.name))
+                .transpose()?
+                .unwrap_or_else(|| "General".into());
+            text.push_str(&format!(
+                "\n\nSelected library sources / Fuentes seleccionadas — {}:\n",
+                project
+            ));
+        }
+        require(
+            scope.as_ref() == Some(&doc.project_id),
+            "Select documents from one project at a time",
+        )?;
+        require(doc.enabled, "Document is disabled")?;
+        // Source names are data and rendered as labels, never new instructions.
+        let title = doc.title.replace(['[', ']', '\n', '\r'], " ");
+        text.push_str(&format!(
+            "- [{}](/documents?document={}&revision={})\n",
+            title, doc.id, doc.revision
+        ));
+    }
     Ok(Json(
         runtime
-            .submit_referenced(&input.text, "web", input.reply_to_task_id.as_deref())
+            .conversation_turn(&text, "web", input.reply_to_task_id.as_deref())
             .await?,
     ))
 }

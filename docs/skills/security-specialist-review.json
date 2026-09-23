@@ -1,0 +1,38 @@
+{
+  "reviewed_at": "2026-09-20",
+  "source": "trailofbits/skills",
+  "scope": "Selected skill procedures and deterministic scan/planning helpers, not an exhaustive audit of the upstream repository",
+  "files": [
+    {
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/static-analysis/skills/semgrep/scripts/run-scans.sh",
+      "sha256": "d5f8dbf5652057351b3425741562acaf251217c45131c8b69312e2e77923d97a",
+      "bytes": 29821
+    },
+    {
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/static-analysis/skills/semgrep/scripts/merge_sarif.py",
+      "sha256": "8b6094e18a0e4d36250c72c81903edac914552df7eb2a7eebd1ac449d105f7ba",
+      "bytes": 14034
+    },
+    {
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/rust-review/scripts/build_run_plan.py",
+      "sha256": "2fa42b567741e6735d2e1099561dae9cde5c631ea7408bc84bc1aaac74d3f782",
+      "bytes": 24572
+    },
+    {
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/post-patch-validation/skills/post-patch-validation/SKILL.md",
+      "sha256": "33b604f4d7d62eab393d710edb98b18505fcbe079c07c9428daa018f29439b54",
+      "bytes": 15336
+    },
+    {
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/property-based-testing/skills/property-based-testing/SKILL.md",
+      "sha256": "9448cacb65c6237a7c22dc59602667177ecae405524079ae9ff92240590b995a",
+      "bytes": 4306
+    },
+    {
+      "url": "https://raw.githubusercontent.com/trailofbits/skills/main/plugins/variant-analysis/skills/variant-analysis/SKILL.md",
+      "sha256": "7b6b78e499bcb88d05c68254ffc91ebc28edabf4e9808adcc40e2628ebb9407e",
+      "bytes": 3903
+    }
+  ],
+  "implementation": "Original Rust profile routing, scanner artifact reader, evidence schema and six task-specific skills; no vendored upstream code"
+}

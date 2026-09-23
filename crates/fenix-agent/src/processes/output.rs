@@ -12,7 +12,6 @@ pub(super) async fn capture(
 ) {
     let mut buffer = [0u8; 4096];
     let mut pending = Vec::new();
-    let mut dropping_token = false;
     loop {
         let count = match reader.read(&mut buffer).await {
             Ok(count) => count,
@@ -26,32 +25,22 @@ pub(super) async fn capture(
         let valid = match std::str::from_utf8(&pending) {
             Ok(_) => pending.len(),
             Err(e) if e.error_len().is_none() && count != 0 => e.valid_up_to(),
-            Err(_) => pending.len(),
+            Err(_) => {
+                // Normalize invalid bytes before applying byte cursors. Otherwise
+                // consuming a lossy chunk can discard a retained credential label
+                // and expose its value when the next read arrives.
+                pending = String::from_utf8_lossy(&pending).into_owned().into_bytes();
+                pending.len()
+            }
         };
         let text = String::from_utf8_lossy(&pending[..valid]);
-        let (consumed, mut output) = if dropping_token {
-            if let Some((at, _)) = text.char_indices().find(|(_, c)| c.is_whitespace()) {
-                dropping_token = false;
-                let (used, result) = redactor.stream_prefix(&text[at..], count == 0);
-                (at + used, result)
-            } else {
-                (valid, String::new())
-            }
-        } else {
-            redactor.stream_prefix(&text, count == 0)
-        };
-        // Lossy decoding changes byte lengths; invalid data is consumed as one chunk.
-        let consumed = if std::str::from_utf8(&pending[..valid]).is_err() {
-            valid
-        } else {
-            consumed
-        };
+        let (consumed, output) = redactor.stream_prefix(&text, count == 0);
         pending.drain(..consumed.min(pending.len()));
         if pending.len() > 65_536 {
-            pending.clear();
-            dropping_token = true;
-            output.push_str("[REDACTED oversized unfinished token]");
-            process.state.lock().await.log_complete = false;
+            // Dropping only up to whitespace could expose the rest of a PEM
+            // block or a quoted multiword credential. Fail closed instead.
+            process.output_failure("Unfinished sensitive output exceeds the 64 KiB redaction buffer; process stopped").await;
+            break;
         }
         if !output.is_empty() {
             let mut state = process.state.lock().await;

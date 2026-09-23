@@ -1,10 +1,24 @@
 //! Durable conversation, task journal and lexical memory. No model or channel dependencies.
 
+pub mod library;
+pub use library::{LibraryChunk, LibraryDocument, LibraryHit};
+mod designs;
+mod recovery;
+pub use designs::{Design, DesignInput};
 mod events;
 mod knowledge;
 mod memory;
+pub mod memory_eval;
+mod memory_health;
+mod memory_retrieval;
 mod semantic_memory;
 pub use knowledge::*;
+pub use memory_retrieval::{MemorySearchHit, MemorySearchOptions, MemorySearchReport};
+mod completion_audits;
+pub use completion_audits::{
+    CompletionAudit, CompletionCheck, CompletionReport, EvidenceEntry, EvidenceInput, EvidenceKind,
+    EvidenceState,
+};
 mod plan_reviews;
 mod plans;
 pub use events::BusEvent;
@@ -13,8 +27,11 @@ pub use plan_reviews::{
     SpecialistRequest,
 };
 pub use plans::{Plan, PlanNode, PlanNodeSpec, PlanRevision};
+mod project_specs;
 mod projects;
+pub use project_specs::{ProjectRequirement, ProjectSpecChange, RequirementDelta, SpecDeltaInput};
 mod subagents;
+mod tool_output_search;
 pub use memory::{Memory, MemoryEvidence, MemoryMetadata};
 pub use projects::{Project, ProjectInput, TaskBinding};
 pub use subagents::{Subagent, SubagentSpec};
@@ -74,7 +91,7 @@ impl Store {
         connection.pragma_update(None, "journal_mode", "WAL")?;
         connection.pragma_update(None, "foreign_keys", "ON")?;
         let version: i64 = connection.pragma_query_value(None, "user_version", |row| row.get(0))?;
-        if version > 7 {
+        if version > 13 {
             bail!("Database was created by a newer Fenix version");
         }
         let migration = connection.transaction()?;
@@ -98,6 +115,24 @@ impl Store {
         }
         if version < 7 {
             migration.execute_batch(include_str!("../migrations/007_adaptive_memory.sql"))?;
+        }
+        if version < 8 {
+            migration.execute_batch(include_str!("../migrations/008_designs.sql"))?;
+        }
+        if version < 9 {
+            migration.execute_batch(include_str!("../migrations/009_library.sql"))?;
+        }
+        if version < 10 {
+            migration.execute_batch(include_str!("../migrations/010_completion_audits.sql"))?;
+        }
+        if version < 11 {
+            migration.execute_batch(include_str!("../migrations/011_project_specs.sql"))?;
+        }
+        if version < 12 {
+            migration.execute_batch(include_str!("../migrations/012_tool_output_search.sql"))?;
+        }
+        if version < 13 {
+            migration.execute_batch(include_str!("../migrations/013_memory_review.sql"))?;
         }
         migration.commit()?;
         connection.execute(
@@ -136,6 +171,7 @@ impl Store {
             "UPDATE questions SET status='interrupted' WHERE status='pending'",
             [],
         )?;
+        tx.execute("UPDATE completion_audits SET status='interrupted',body=json_set(body,'$.status','interrupted') WHERE status IN ('queued','running')", [])?;
         // Conversation history remains recoverable, but incomplete tool sequences never enter model context.
         tx.execute("UPDATE messages SET in_context=0 WHERE task_id IN (SELECT id FROM tasks WHERE status='interrupted')", [])?;
         tx.commit()?;
@@ -211,7 +247,12 @@ impl Store {
             session_id: self.session_id.clone(),
             request: text.to_owned(),
             origin: origin.to_owned(),
-            status: "queued".into(),
+            status: if origin == "workflow" {
+                "workflow_queued"
+            } else {
+                "queued"
+            }
+            .into(),
             schedule_id: schedule_id.map(str::to_owned),
             created_at: now(),
             updated_at: now(),
@@ -329,6 +370,11 @@ impl Store {
         self.db()?.query_row("SELECT id,session_id,request,origin,status,schedule_id,created_at,updated_at,error FROM tasks WHERE id=?1", [id], task_row).optional()?.context("Task not found")
     }
 
+    /// The final assistant result of a child task, without borrowing another conversation's output.
+    pub fn task_output(&self, id: &str) -> Result<Option<String>> {
+        Ok(self.db()?.query_row("SELECT text FROM messages WHERE task_id=?1 AND role='assistant' AND visible=1 ORDER BY seq DESC LIMIT 1", [id], |row|row.get(0)).optional()?)
+    }
+
     pub fn append(
         &self,
         task: Option<&str>,
@@ -406,7 +452,7 @@ impl Store {
         offset: usize,
         length: usize,
     ) -> Result<Value> {
-        let text:String=self.db()?.query_row("SELECT json_extract(data,'$.result') FROM events WHERE task_id=?1 AND kind='tool_result' AND json_extract(data,'$.call_id')=?2 ORDER BY seq DESC LIMIT 1",params![task,call_id],|r|r.get(0)).optional()?.context("Tool output not found")?;
+        let text:String=self.db()?.query_row("SELECT CAST(json_extract(data,'$.result') AS TEXT) FROM events WHERE task_id=?1 AND kind='tool_result' AND json_extract(data,'$.call_id')=?2 ORDER BY seq DESC LIMIT 1",params![task,call_id],|r|r.get(0)).optional()?.context("Tool output not found")?;
         let page = text
             .chars()
             .skip(offset)
@@ -440,6 +486,17 @@ impl Store {
             .query_map([kind], |r| r.get::<_, String>(0))?
             .map(|r| Ok(serde_json::from_str(&r?)?))
             .collect()
+    }
+    /// Queue polling should not deserialize completed artifacts or be limited by history pagination.
+    pub fn records_by_status<T: DeserializeOwned>(
+        &self,
+        kind: &str,
+        status: &str,
+        limit: usize,
+    ) -> Result<Vec<T>> {
+        self.db()?.prepare("SELECT data FROM records WHERE kind=?1 AND json_extract(data,'$.status')=?2 ORDER BY updated_at ASC LIMIT ?3")?
+            .query_map(params![kind,status,limit.clamp(1,200)],|row|row.get::<_,String>(0))?
+            .map(|row|Ok(serde_json::from_str(&row?)?)).collect()
     }
     pub fn delete(&self, kind: &str, id: &str) -> Result<()> {
         self.db()?.execute(

@@ -4,12 +4,41 @@ use serde_json::json;
 
 fn node(id: &str, dependencies: &[&str]) -> PlanNodeSpec {
     PlanNodeSpec {
+        profile: "general".into(),
         id: id.into(),
         objective: format!("Complete {id}"),
         expected_output: format!("Evidence for {id}"),
         depends_on: dependencies.iter().map(|s| s.to_string()).collect(),
         skills: vec![],
     }
+}
+fn verify_milestone(store: &Store, plan: &fenix_storage::Plan, node: &str) {
+    let audit = store
+        .completion_audits(&plan.id)
+        .unwrap()
+        .into_iter()
+        .find(|a| a.node_id == node)
+        .unwrap();
+    let auditor = worker(store, &plan.task_id, &format!("Verify {node}"));
+    store
+        .attach_completion_auditor(&audit.id, &auditor)
+        .unwrap();
+    store.event(&auditor, "tool_result", &json!({"call_id":"read", "tool":"file_read", "is_error":false, "result":{"content":"Fixture deliverable"}})).unwrap();
+    store
+        .finish_completion_audit(
+            &auditor,
+            fenix_storage::CompletionReport {
+                verdict: "verified".into(),
+                summary: "Observed fixture deliverable".into(),
+                checks: vec![fenix_storage::CompletionCheck {
+                    entry_id: format!("milestone:{node}"),
+                    state: fenix_storage::EvidenceState::Verified,
+                    detail: "Read fixture content".into(),
+                    call_ids: vec!["read".into()],
+                }],
+            },
+        )
+        .unwrap();
 }
 fn owner(store: &Store) -> String {
     store
@@ -27,6 +56,7 @@ fn worker(store: &Store, parent: &str, label: &str) -> String {
         .create_subagent(
             parent,
             &SubagentSpec {
+                profile: "general".into(),
                 objective: label.into(),
                 expected_output: "An evidenced outcome".into(),
                 context: String::new(),
@@ -89,6 +119,7 @@ fn revision_preserves_valid_completed_work_and_fences_changed_dependants() {
         )
         .unwrap();
     assert!(store.reconcile_plan_worker(&a).unwrap());
+    verify_milestone(&store, &plan, "a");
     let b = worker(&store, &task, "second");
     store.attach_plan_worker(&plan.id, 1, "b", &b).unwrap();
     let mut revised = node("b", &["a"]);
@@ -359,6 +390,7 @@ fn plan_evidence_reads_exclude_independent_branches_and_other_projects() {
         .finish_subagent(&a, "completed", &json!({"summary":"sources ready"}))
         .unwrap();
     store.reconcile_plan_worker(&a).unwrap();
+    verify_milestone(&store, &plan, "a");
     store.attach_plan_worker(&plan.id, 1, "b", &b).unwrap();
     assert_eq!(store.plan_evidence_sources(&b).unwrap(), vec![a]);
     assert!(store.plan_evidence_sources(&private).unwrap().is_empty());
@@ -389,4 +421,44 @@ fn slow_routing_cannot_overwrite_newer_conversation_focus() {
     store.set_task_focus(&b, None).unwrap();
     store.set_task_focus(&a, Some(&project.id)).unwrap();
     assert_eq!(store.conversation_focus().unwrap(), None);
+}
+
+#[test]
+fn security_milestones_require_scope_and_preserve_profile() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = Store::open(&dir.path().join("db")).unwrap();
+    let task = owner(&store);
+    let mut audit = node("audit", &[]);
+    audit.profile = "security".into();
+    assert!(
+        store
+            .create_plan(&task, "Audit source", "", vec![audit.clone()])
+            .is_err()
+    );
+    let plan = store
+        .create_plan(
+            &task,
+            "Audit source",
+            "Local source only; no network",
+            vec![audit.clone()],
+        )
+        .unwrap();
+    assert_eq!(
+        store.plan(&plan.id).unwrap().nodes[0].spec.profile,
+        "security"
+    );
+    audit.profile = "unknown".into();
+    assert!(
+        store
+            .create_plan(&task, "Audit source", "Local only", vec![audit])
+            .is_err()
+    );
+    let mut legacy = serde_json::to_value(node("old", &[])).unwrap();
+    legacy.as_object_mut().unwrap().remove("profile");
+    assert_eq!(
+        serde_json::from_value::<PlanNodeSpec>(legacy)
+            .unwrap()
+            .profile,
+        "general"
+    );
 }

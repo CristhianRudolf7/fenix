@@ -11,12 +11,68 @@ pub(crate) fn bounded(output: Value, budget: usize, task: &str, call: &str) -> V
         "preview": head_tail(&serialized, budget),
         "task_id": task,
         "call_id": call,
-        "retrieve": "Use task_inspect with task_id, call_id, offset and length to read the saved output in pages. The preview omits the middle; it is not complete evidence."
+        "retrieve": "Use task_inspect with task_id, call_id, offset and length to read the saved output in pages, or query to search its contents. Omit query when reading a search hit's character offsets. The preview omits the middle; it is not complete evidence."
     });
     // Keep execution state usable even when it falls in the omitted middle.
     // Repository guidance must remain intact before an agent retries a mutation.
     if let Some(rules) = output.get("repository_instructions") {
         receipt["repository_instructions"] = rules.clone();
+    }
+    // Search batches can exceed the per-call context allowance. Preserve the
+    // distinction between no evidence and unavailable sources even when the
+    // middle (including hits) is omitted. Full passages remain in task_inspect.
+    if output["backend"] == "local_fts5" {
+        let sources: Vec<_> = output["source_reads"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .chain(
+                output["discovery"]["sources"]
+                    .as_array()
+                    .into_iter()
+                    .flatten(),
+            )
+            .collect();
+        let results = output["results"].as_array();
+        receipt["backend"] = output["backend"].clone();
+        receipt["query"] = json!(crate::redaction::truncate(
+            output["query"].as_str().unwrap_or_default(),
+            400
+        ));
+        receipt["discovery"] = json!({"enabled": output["discovery"]["enabled"]});
+        receipt["search_summary"] = json!({
+            "returned_results": results.map_or(0, Vec::len),
+            "unread_results": results.into_iter().flatten().filter(|hit| hit["page"].is_null()).count(),
+            "sources_attempted": sources.len(),
+            "sources_failed": sources.iter().filter(|source| source["status"] == "failed").count(),
+            "sources_blocked": sources.iter().filter(|source| source["failure_kind"] == "blocked").count(),
+            "unvisited_domains": output["discovery"]["unvisited_domains"].as_array().map_or(0, Vec::len),
+            "full_evidence": "Read the saved output with task_inspect before citing omitted passages or claiming source coverage."
+        });
+        receipt["preview"] = json!(head_tail(&serialized, budget.saturating_sub(800)));
+    }
+    // Preserve actionable download evidence even when diagnostic events occupy
+    // the middle of an oversized browser inspection. Bound it independently.
+    if output["downloads"].is_object() {
+        let mut downloads = json!({});
+        for key in ["files", "transfers"] {
+            let items: Vec<_> = output["downloads"][key]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .take(8)
+                .cloned()
+                .collect();
+            downloads[key] = json!(items);
+        }
+        downloads["complete_list_in_saved_output"] = json!(true);
+        let size = downloads.to_string().len();
+        if size <= 4096 {
+            receipt["downloads"] = downloads;
+            receipt["profile"] = output["profile"].clone();
+            receipt["tab"] = output["tab"].clone();
+            receipt["preview"] = json!(head_tail(&serialized, budget.saturating_sub(size)));
+        }
     }
     for key in [
         "executed",
@@ -24,8 +80,17 @@ pub(crate) fn bounded(output: Value, budget: usize, task: &str, call: &str) -> V
         "status",
         "exit_code",
         "process_id",
+        "execution_mode",
+        "failure",
+        "initial_wait_ms",
         "next_cursor",
         "log_complete",
+        "all_invocations_reported_success",
+        "coverage_gap_count",
+        "next_offset",
+        "index_complete",
+        "indexed_through_event",
+        "total",
         "output_error",
         "code",
         "error",
@@ -64,6 +129,46 @@ fn head_tail(text: &str, budget: usize) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn saved_output_search_receipt_keeps_partial_coverage() {
+        let receipt = bounded(
+            json!({"results":"evidence".repeat(3000),"index_complete":false,"indexed_through_event":64,"next_offset":3}),
+            1000,
+            "task",
+            "search",
+        );
+        assert_eq!(receipt["index_complete"], false);
+        assert_eq!(receipt["indexed_through_event"], 64);
+        assert_eq!(receipt["next_offset"], 3);
+    }
+
+    #[test]
+    fn security_receipts_preserve_scan_gaps_and_pagination() {
+        let result = bounded(
+            json!({"candidates":"x".repeat(20000),"all_invocations_reported_success":false,"coverage_gap_count":2,"next_offset":10,"total":27}),
+            1000,
+            "worker",
+            "scan",
+        );
+        assert_eq!(result["all_invocations_reported_success"], false);
+        assert_eq!(result["coverage_gap_count"], 2);
+        assert_eq!(result["next_offset"], 10);
+        assert_eq!(result["total"], 27);
+        assert_eq!(result["task_id"], "worker");
+    }
+
+    #[test]
+    fn browser_receipts_keep_completed_links_and_transfer_progress() {
+        let downloads = json!({"files":[{"id":"file","bytes":123,"url":"/api/browser/downloads/p/file"}],"transfers":[{"id":"pending","state":"inProgress","received_bytes":456}]});
+        let output =
+            json!({"profile":"p","tab":"t","downloads":downloads,"events":"noise".repeat(5000)});
+        let receipt = bounded(output, 2000, "task", "call");
+        assert_eq!(receipt["downloads"]["files"], downloads["files"]);
+        assert_eq!(receipt["downloads"]["transfers"], downloads["transfers"]);
+        assert_eq!(receipt["profile"], "p");
+        assert!(receipt["truncated"].as_bool().unwrap());
+    }
 
     #[test]
     fn retains_final_diagnostics_and_execution_state() {
@@ -109,5 +214,27 @@ mod tests {
         let result = bounded(json!({"error":text}), 256, "t", "c");
         assert_eq!(result["error"]["truncated"], true);
         assert!(result["error"]["preview"].as_str().unwrap().len() <= 512);
+    }
+
+    #[test]
+    fn search_receipts_keep_coverage_failures_and_point_to_full_evidence() {
+        let output = json!({"backend":"local_fts5", "query":"Rust", "results":[
+            {"page":{"passage":"evidence ".repeat(1000)}}, {"page":null}
+        ],"source_reads":[{"status":"failed","failure_kind":"blocked"}],
+            "discovery":{"enabled":true,"sources":[{"status":"failed","failure_kind":"timeout"}],"unvisited_domains":["example.com"]}});
+        let receipt = bounded(output, 1024, "task", "search");
+        assert_eq!(receipt["truncated"], true);
+        assert_eq!(receipt["backend"], "local_fts5");
+        assert_eq!(receipt["discovery"]["enabled"], true);
+        assert_eq!(receipt["search_summary"]["returned_results"], 2);
+        assert_eq!(receipt["search_summary"]["unread_results"], 1);
+        assert_eq!(receipt["search_summary"]["sources_failed"], 2);
+        assert_eq!(receipt["search_summary"]["sources_blocked"], 1);
+        assert_eq!(receipt["search_summary"]["unvisited_domains"], 1);
+        assert_eq!(receipt["call_id"], "search");
+        assert!(
+            receipt["results"].is_null(),
+            "A receipt must not impersonate complete evidence"
+        );
     }
 }

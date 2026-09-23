@@ -1,3 +1,5 @@
+#[path = "support/completion.rs"]
+mod completion;
 use fenix_agent::{Runtime, config::Settings};
 use fenix_storage::TaskBinding;
 use serde_json::{Value, json};
@@ -51,6 +53,11 @@ fn has_result(body: &Value, call_id: &str) -> bool {
 
 async fn fixture() -> (tempfile::TempDir, Arc<Runtime>, MockServer) {
     let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("audit-fixture.txt"),
+        "A deterministic report fixture",
+    )
+    .unwrap();
     let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
         .await
         .unwrap();
@@ -67,6 +74,26 @@ async fn fixture() -> (tempfile::TempDir, Arc<Runtime>, MockServer) {
         .await
         .unwrap();
     server.reset().await;
+    let store = runtime.store.clone();
+    Mock::given(method("POST"))
+        .and(path("/responses"))
+        .and(|request: &Request| {
+            serde_json::from_slice::<Value>(&request.body)
+                .ok()
+                .is_some_and(|b| {
+                    b["tools"]
+                        .as_array()
+                        .is_some_and(|ts| ts.iter().any(|t| t["name"] == "completion_audit_read"))
+                })
+        })
+        .respond_with(move |request: &Request| {
+            let body: Value = serde_json::from_slice(&request.body).unwrap();
+            ResponseTemplate::new(200)
+                .set_body_json(completion::response(&body, &store).expect("Audit fixture"))
+        })
+        .with_priority(1)
+        .mount(&server)
+        .await;
     (dir, runtime, server)
 }
 
@@ -552,6 +579,56 @@ async fn an_execution_failure_after_correction_does_not_restart_the_review_loop(
             .filter(|t| t.origin == "plan_review")
             .count(),
         1
+    );
+    stop(&runtime, handles).await;
+}
+
+#[tokio::test]
+async fn security_plan_reviewer_keeps_read_only_tools_and_the_plan_report_contract() {
+    let (_dir, runtime, server) = fixture().await;
+    let (_parent, plan) = create(
+        &runtime,
+        json!([{"id":"report","objective":"Prepare a report","expected_output":"A report"}]),
+        json!({"review_reason":"Check the access-control requirement"}),
+    )
+    .await;
+    Mock::given(method("POST")).and(path("/responses"))
+        .respond_with(move |request:&Request| {
+            let body:Value=serde_json::from_slice(&request.body).unwrap();
+            if is_reviewer(&body) {
+                let input=body["input"].to_string();
+                if input.contains("specialist_1") {
+                    let tools=body["tools"].as_array().unwrap();
+                    assert!(!tools.iter().any(|t|t["name"]=="command_run" || t["name"]=="file_write"));
+                    let finish=tools.iter().find(|t|t["name"]=="subagent_finish").unwrap();
+                    assert!(finish["parameters"]["properties"]["security_report"].is_null());
+                    if !has_result(&body,"review-security-skill") {
+                        return ResponseTemplate::new(200).set_body_json(call("review-security-skill","skill_load",json!({"name":"security-code-review"})));
+                    }
+                    assert!(input.contains("Security Code Review"));
+                    return ResponseTemplate::new(200).set_body_json(reviewed(json!({"verdict":"pass","findings":[]})));
+                }
+                return ResponseTemplate::new(200).set_body_json(reviewed(json!({"verdict":"pass","findings":[],"specialists":[{"specialty":"Security","question":"Check the access-control requirement","node_ids":["report"],"skills":["security-code-review"]}]})));
+            }
+            if child_request(&body) { return ResponseTemplate::new(200).set_body_json(finish("Report ready")); }
+            ResponseTemplate::new(200).set_body_json(answer("Plan completed"))
+        }).mount(&server).await;
+    let handles = runtime.start();
+    wait_plan(&runtime, &plan, "completed").await;
+    let review = runtime.store.plan_reviews(&plan).unwrap().remove(0);
+    let specialist = review
+        .assignments
+        .iter()
+        .find(|a| a.role == "specialist_1")
+        .unwrap();
+    assert_eq!(
+        runtime
+            .store
+            .subagent(specialist.worker_id.as_deref().unwrap())
+            .unwrap()
+            .spec
+            .profile,
+        "security"
     );
     stop(&runtime, handles).await;
 }

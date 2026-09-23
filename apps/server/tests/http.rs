@@ -8,6 +8,67 @@ use serde_json::{Value, json};
 use tower::ServiceExt;
 
 #[tokio::test]
+async fn public_origin_is_explicit_and_preserves_origin_checks() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
+        .await
+        .unwrap();
+    let app = fenix_server::router_with_public_origin(
+        runtime.clone(),
+        4173,
+        Some("https://fenix.example.com"),
+    )
+    .unwrap();
+    for (host, origin, expected) in [
+        (
+            "fenix.example.com",
+            "https://fenix.example.com",
+            StatusCode::OK,
+        ),
+        (
+            "fenix.example.com",
+            "https://evil.example",
+            StatusCode::FORBIDDEN,
+        ),
+        (
+            "fenix.example.com",
+            "http://fenix.example.com",
+            StatusCode::FORBIDDEN,
+        ),
+        (
+            "evil.example",
+            "https://fenix.example.com",
+            StatusCode::FORBIDDEN,
+        ),
+        ("127.0.0.1:4173", "http://127.0.0.1:4173", StatusCode::OK),
+    ] {
+        let response = app
+            .clone()
+            .oneshot(
+                Request::builder()
+                    .uri("/api/status")
+                    .header("host", host)
+                    .header("origin", origin)
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(response.status(), expected);
+    }
+    for invalid in [
+        "http://fenix.example.com",
+        "https://fenix.example.com/path",
+        "https://user:pass@fenix.example.com",
+        "https://fenix.example.com?query=yes",
+    ] {
+        assert!(
+            fenix_server::router_with_public_origin(runtime.clone(), 4173, Some(invalid)).is_err()
+        );
+    }
+}
+
+#[tokio::test]
 async fn progress_sends_a_fresh_snapshot_and_keeps_the_local_origin_guard() {
     let dir = tempfile::tempdir().unwrap();
     let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills")))
@@ -406,6 +467,17 @@ async fn adaptive_memory_settings_history_and_entities_are_accessible_without_le
     assert_eq!(status, StatusCode::OK);
     let (_, settings) = request_json(app.clone(), "GET", "/api/memory/settings", Value::Null).await;
     assert_eq!(settings["settings"]["automatic_capture"], false);
+    assert_eq!(settings["settings"]["automatic_review"], true);
+    let (status, health) = request_json(
+        app.clone(),
+        "POST",
+        "/api/memory/knowledge",
+        json!({"action":"health"}),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(health["total_memories"], 0);
+    assert_eq!(health["destructive_changes"], false);
     assert!(!settings.to_string().contains("private-embedding-key"));
     let (status,entity)=request_json(app.clone(),"POST","/api/memory/knowledge",json!({"action":"entity_save","entity":{"name":"Research note","kind":"paper","aliases":["Reference"]}})).await;
     assert_eq!(status, StatusCode::OK);

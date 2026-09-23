@@ -1,8 +1,11 @@
 //! Local Chromium, persistent owner profiles, isolated task profiles and bounded CDP.
 mod actions;
 mod cdp;
+mod downloads;
+mod frames;
 mod tools;
 mod vault;
+mod whatsapp;
 use anyhow::{Context, Result, bail};
 use base64::{Engine, engine::general_purpose::STANDARD};
 use fs2::FileExt;
@@ -11,7 +14,6 @@ use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     fs::{File, OpenOptions},
-    io::Write,
     os::unix::fs::{OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     process::Stdio,
@@ -56,9 +58,12 @@ struct Profile {
 struct Session {
     child: Child,
     _group: ProcessGroup,
+    execution: Option<fenix_execution::Lease>,
+    directory: PathBuf,
     cdp: cdp::Cdp,
     _lock: File,
     tabs: BTreeMap<String, String>,
+    frame_sessions: Mutex<BTreeMap<String, String>>,
     active: String,
     last: Instant,
     temporary: bool,
@@ -71,22 +76,15 @@ struct Session {
 pub struct Browser {
     root: PathBuf,
     config: Config,
+    executor: Option<fenix_execution::Executor>,
     sessions: Mutex<BTreeMap<String, Session>>,
     profiles: Mutex<BTreeMap<String, Profile>>,
     control_port: AtomicU16,
     vault_lock: Mutex<()>,
+    integration_lock: Mutex<()>,
 }
 pub fn write_json(path: &Path, value: &Value) -> Result<()> {
-    let temp = path.with_extension(format!("{}.tmp", uuid::Uuid::new_v4()));
-    let mut file = OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .mode(0o600)
-        .open(&temp)?;
-    file.write_all(&serde_json::to_vec_pretty(value)?)?;
-    file.sync_all()?;
-    std::fs::rename(temp, path)?;
-    Ok(())
+    fenix_execution::fs::write(path, &serde_json::to_vec_pretty(value)?)
 }
 fn private_dir(path: &Path) -> Result<()> {
     std::fs::create_dir_all(path)?;
@@ -140,10 +138,12 @@ impl Browser {
         Ok(Arc::new(Self {
             root,
             config,
+            executor: fenix_execution::Executor::from_environment()?,
             sessions: Mutex::new(BTreeMap::new()),
             profiles: Mutex::new(profiles),
             control_port: AtomicU16::new(4173),
             vault_lock: Mutex::new(()),
+            integration_lock: Mutex::new(()),
         }))
     }
     pub fn set_control_port(&self, port: u16) {
@@ -184,10 +184,18 @@ impl Browser {
         let sessions = self.sessions.lock().await;
         Ok(
             json!({"available":Path::new(&self.config.executable).is_file(),"config":self.config,
-            "profiles":profiles.values().collect::<Vec<_>>(),"sessions":sessions.iter().map(|(name,s)|json!({"profile":name,"tab":s.active,"tabs":s.tabs.keys().collect::<Vec<_>>(),"temporary":s.temporary,"width":s.width,"height":s.height,"dpr":s.dpr,"rss_sum_mib":memory_mib(s.child.id().unwrap_or(0))})).collect::<Vec<_>>(),"vault_exists":self.root.join("credentials.enc").exists()}),
+            "profiles":profiles.values().collect::<Vec<_>>(),"sessions":sessions.iter().map(|(name,s)|json!({"profile":name,"tab":s.active,"tabs":s.tabs.keys().collect::<Vec<_>>(),"temporary":s.temporary,"width":s.width,"height":s.height,"dpr":s.dpr,"rss_sum_mib":if s.execution.is_none() {Some(memory_mib(s.child.id().unwrap_or(0)))} else {None}})).collect::<Vec<_>>(),"vault_exists":self.root.join("credentials.enc").exists()}),
         )
     }
     pub async fn profile(&self, name: &str, allow_agent: bool) -> Result<Value> {
+        if name == whatsapp::PROFILE {
+            let _guard = self.integration_lock.lock().await;
+            self.cancel_whatsapp_handoff()?;
+            return self.profile_record(name, allow_agent).await;
+        }
+        self.profile_record(name, allow_agent).await
+    }
+    async fn profile_record(&self, name: &str, allow_agent: bool) -> Result<Value> {
         identifier(name)?;
         if name.starts_with("test-") {
             bail!("The test- prefix is reserved for isolated test sessions");
@@ -220,11 +228,20 @@ impl Browser {
         if !catalog().iter().any(|t| t.name == name) {
             bail!("Unknown browser tool");
         }
+        if name == "browser_connection" {
+            if text(args, "connection", "whatsapp") != "whatsapp" {
+                bail!("Unknown browser connection");
+            }
+            return tokio::select! { biased; _ = cancel.cancelled() => bail!("Browser connection operation cancelled"), result = self.whatsapp_agent(text(args, "action", "status")) => result };
+        }
         if name == "browser_tabs" && text(args, "action", "") == "profiles" {
             let profiles = self.profiles.lock().await;
             return Ok(
                 json!({"profiles":profiles.values().filter(|p|owner||p.allow_agent).collect::<Vec<_>>(),"default":"Omit profile for a task-isolated test browser"}),
             );
+        }
+        if cancel.is_cancelled() {
+            bail!("Browser operation cancelled");
         }
         let fallback = format!("test-{task}");
         let profile = text(args, "profile", &fallback);
@@ -243,9 +260,7 @@ impl Browser {
                 .get(profile)
                 .is_some_and(|p| p.allow_agent)
             {
-                bail!(
-                    "Open the Browser view and enable agent access to this personal profile first"
-                );
+                bail!("Ask the owner to authorize agent access to this personal profile first");
             }
         } else if !profile.starts_with("test-") && !self.profiles.lock().await.contains_key(profile)
         {
@@ -260,7 +275,7 @@ impl Browser {
         {
             self.profile(profile, false).await?;
         }
-        let mut sessions = tokio::select! {_ = cancel.cancelled()=>bail!("Browser operation cancelled"),s=self.sessions.lock()=>s};
+        let mut sessions = tokio::select! {biased; _ = cancel.cancelled()=>bail!("Browser operation cancelled"),s=self.sessions.lock()=>s};
         if !owner
             && !profile.starts_with("test-")
             && !self
@@ -297,13 +312,15 @@ impl Browser {
                 bail!("Browser session limit reached; close another session first");
             }
             // Startup owns the child before every await, so cancellation cannot leak it.
-            let session = tokio::select! {_ = cancel.cancelled()=>bail!("Browser startup cancelled"),s=self.launch(profile)=>s?};
+            let session = tokio::select! {biased; _ = cancel.cancelled()=>bail!("Browser startup cancelled"),s=self.launch(profile)=>s?};
             sessions.insert(profile.into(), session);
         }
         let s = sessions.get_mut(profile).unwrap();
         s.last = Instant::now();
         // Do not automatically repeat a partially executed action on timeout.
-        tokio::select! {_ = cancel.cancelled()=>bail!("Browser operation cancelled; inspect before repeating an action"),r=self.operation(s,profile,name,args,owner)=>r}
+        let result = tokio::select! {biased; _ = cancel.cancelled()=>Err(anyhow::anyhow!("Browser operation cancelled; inspect before repeating an action")),r=self.operation(s,profile,name,args,owner)=>r};
+        s.last = Instant::now();
+        result
     }
     async fn launch(&self, profile: &str) -> Result<Session> {
         let directory = self.directory(profile);
@@ -322,7 +339,7 @@ impl Browser {
         // Linux. Use our encrypted owner vault instead; never change cookie state.
         let preferences = directory.join("Default/Preferences");
         let mut prefs: Value = if preferences.exists() {
-            serde_json::from_slice(&std::fs::read(&preferences)?)?
+            serde_json::from_slice(&fenix_execution::fs::read(&preferences, 16 * 1024 * 1024)?)?
         } else {
             json!({})
         };
@@ -336,33 +353,64 @@ impl Browser {
         if active_file.exists() {
             std::fs::remove_file(&active_file)?;
         }
-        let child = Command::new(&self.config.executable)
-            .args([
-                "--headless=new",
-                "--remote-debugging-port=0",
-                "--remote-debugging-address=127.0.0.1",
-                "--no-first-run",
-                "--no-default-browser-check",
-                "--disable-background-mode",
-                "--disable-sync",
-                "--window-size=1280,800",
-                "--disk-cache-size=67108864",
-            ])
-            .arg(format!("--user-data-dir={}", directory.display()))
-            .arg("about:blank")
+        let download = self.root.join("artifacts").join(profile).join("downloads");
+        private_dir(&download)?;
+        let mut argv = vec![
+            self.config.executable.clone(),
+            "--headless=new".into(),
+            "--remote-debugging-port=0".into(),
+            "--remote-debugging-address=127.0.0.1".into(),
+            "--no-first-run".into(),
+            "--no-default-browser-check".into(),
+            "--disable-background-mode".into(),
+            "--disable-sync".into(),
+            "--window-size=1280,800".into(),
+            "--disk-cache-size=67108864".into(),
+            format!("--user-data-dir={}", directory.display()),
+            "about:blank".into(),
+        ];
+        let execution = if let Some(executor) = &self.executor {
+            Some(
+                executor
+                    .create(fenix_execution::Specification::new(
+                        &format!("browser:{profile}"),
+                        "browser",
+                        argv.clone(),
+                        &directory,
+                        &directory,
+                        86400,
+                    ))
+                    .await?,
+            )
+        } else {
+            None
+        };
+        let mut command = if let Some(lease) = &execution {
+            lease.command()?
+        } else {
+            let mut command = Command::new(argv.remove(0));
+            command
+                .args(argv)
+                .env_clear()
+                .envs(fenix_execution::local_environment(&directory));
+            command
+        };
+        let child = command
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .kill_on_drop(true)
             .process_group(0)
             .spawn()
-            .context("Could not start Chromium; configure executable in browser.json")?;
+            .context(
+                "Could not start isolated Chromium; verify its executable and sandbox support",
+            )?;
         let group = ProcessGroup(child.id().context("Missing browser PID")?);
         let mut child = child;
         let endpoint=tokio::time::timeout(Duration::from_secs(45),async {
             loop {
                 if child.try_wait()?.is_some(){bail!("Chromium exited at startup. Its sandbox must be supported; Fenix does not disable it.");}
-                if let Ok(value) = std::fs::read_to_string(&active_file) {
+                if let Ok(value) = fenix_execution::fs::read(&active_file, 4096).and_then(|b| Ok(String::from_utf8(b)?)) {
                     let mut lines = value.lines();
                     if let (Some(port), Some(path)) = (lines.next(), lines.next())
                         && let Ok(port) = port.parse::<u16>()
@@ -372,7 +420,14 @@ impl Browser {
                 tokio::time::sleep(Duration::from_millis(50)).await;
             }
         }).await.context("Browser startup timed out")??;
-        let cdp = cdp::Cdp::connect(&endpoint).await?;
+        let cdp = if let Some(lease) = &execution {
+            let port = url::Url::parse(&endpoint)?
+                .port()
+                .context("Missing browser port")?;
+            cdp::Cdp::connect_stream(&endpoint, lease.connect(port).await?).await?
+        } else {
+            cdp::Cdp::connect(&endpoint).await?
+        };
         let targets = cdp.call(None, "Target.getTargets", json!({})).await?;
         let id = targets["targetInfos"]
             .as_array()
@@ -383,9 +438,12 @@ impl Browser {
         let mut s = Session {
             child,
             _group: group,
+            execution,
+            directory: directory.clone(),
             cdp,
             _lock: lock,
             tabs: BTreeMap::new(),
+            frame_sessions: Mutex::new(BTreeMap::new()),
             active: id.clone(),
             last: Instant::now(),
             temporary: profile.starts_with("test-"),
@@ -426,6 +484,23 @@ impl Browser {
         for domain in ["Page.enable", "Runtime.enable", "Network.enable"] {
             s.cdp.call(Some(&session), domain, json!({})).await?;
         }
+        if s.directory == self.directory(whatsapp::PROFILE) {
+            // WhatsApp's compatibility gate rejects HeadlessChrome. Keep the actual
+            // installed version/platform; only normalize the Chrome product name.
+            let version = s.cdp.call(None, "Browser.getVersion", json!({})).await?;
+            let user_agent = version["userAgent"]
+                .as_str()
+                .context("Missing browser user agent")?;
+            s.cdp
+                .call(
+                    Some(&session),
+                    "Emulation.setUserAgentOverride",
+                    json!({
+                        "userAgent": user_agent.replace("HeadlessChrome/", "Chrome/")
+                    }),
+                )
+                .await?;
+        }
         let port = self.control_port.load(Ordering::Relaxed);
         s.cdp.call(Some(&session),"Network.setBlockedURLs",json!({"urls":[format!("http://127.0.0.1:{port}/*"),format!("http://localhost:{port}/*"),format!("http://[::1]:{port}/*")]})).await?;
         s.cdp
@@ -452,21 +527,9 @@ impl Browser {
         frame: Option<&str>,
         expression: String,
     ) -> Result<Value> {
-        let tree = s
-            .cdp
-            .call(Some(session), "Page.getFrameTree", json!({}))
-            .await?;
-        let frame =
-            frame.unwrap_or_else(|| tree["frameTree"]["frame"]["id"].as_str().unwrap_or(""));
-        let world = s
-            .cdp
-            .call(
-                Some(session),
-                "Page.createIsolatedWorld",
-                json!({"frameId":frame,"worldName":"fenix-browser","grantUniveralAccess":false}),
-            )
-            .await?;
-        let result=s.cdp.call(Some(session),"Runtime.evaluate",json!({"expression":expression,"contextId":world["executionContextId"],"returnByValue":true,"awaitPromise":true,"timeout":5000})).await?;
+        let world = self.world(s, session, frame).await?;
+        let expression = format!("{}\n{}", include_str!("dom.js"), expression);
+        let result=s.cdp.call(Some(&world.session),"Runtime.evaluate",json!({"expression":expression,"contextId":world.id,"returnByValue":true,"awaitPromise":true,"timeout":5000})).await?;
         if result.get("exceptionDetails").is_some() {
             bail!("Page inspection failed; select a valid frame and observe again");
         }
@@ -494,6 +557,13 @@ impl Browser {
             self.attach(s, &tab).await?
         };
         let frame = args["frame"].as_str();
+        if let Some(dialog) = s.cdp.dialog(&session)
+            && matches!(name, "browser_observe" | "browser_inspect")
+        {
+            return Ok(
+                json!({"profile":profile,"tab":tab,"dialog":dialog,"next":"Handle the JavaScript dialog before observing the page"}),
+            );
+        }
         match name {
             "browser_open" => {
                 let url = self.valid_url(text(args, "url", "about:blank"))?;
@@ -639,22 +709,33 @@ impl Browser {
                         )
                         .await;
                 }
-                let frames = s
-                    .cdp
-                    .call(Some(&session), "Page.getFrameTree", json!({}))
-                    .await?;
+                let frames = json!({"frameTree":self.frame_set(s,&session).await?.tree});
                 let layout = s
                     .cdp
                     .call(Some(&session), "Page.getLayoutMetrics", json!({}))
                     .await?;
                 let events = s.cdp.events.lock().unwrap().clone();
+                let mut downloads = self.downloads(profile)?;
+                downloads["transfers"] = json!(s.cdp.downloads.lock().unwrap().values());
                 let mut safe_frames = frames;
                 strip_urls(&mut safe_frames);
                 Ok(
-                    json!({"frames":safe_frames,"layout":layout,"events":events,"rss_sum_mib":memory_mib(s.child.id().unwrap_or(0)),"warning":"Failure metadata omits sensitive payloads. RSS sums may double-count shared pages."}),
+                    json!({"frames":safe_frames,"layout":layout,"events":events,"profile":profile,"tab":tab,"downloads":downloads,"rss_sum_mib":if s.execution.is_none() {Some(memory_mib(s.child.id().unwrap_or(0)))} else {None},"warning":"Failure metadata omits sensitive payloads. RSS sums may double-count shared pages."}),
                 )
             }
-            "browser_act" => self.act(s, &session, frame, args, owner).await,
+            "browser_act" => {
+                if text(args, "action", "") == "dialog" {
+                    self.act(s, &session, frame, args, owner).await
+                } else {
+                    // Native input may not acknowledge until a modal closes. Release the
+                    // browser lock promptly so the next command can handle that modal.
+                    tokio::select! {
+                        biased;
+                        dialog = s.cdp.wait_dialog(&session) => Ok(json!({"performed":false,"interrupted_by_dialog":true,"dialog":dialog,"next":"Handle the dialog, then inspect; do not repeat the action automatically"})),
+                        result = self.act(s, &session, frame, args, owner) => result,
+                    }
+                }
+            }
             "browser_check" | "browser_wait" => {
                 if text(args, "condition", "") == "screenshot_matches" {
                     let name = text(args, "name", "");
@@ -676,11 +757,22 @@ impl Browser {
                         number(args, "timeout_ms", 10000.).clamp(0., 30000.) as u64
                     );
                 loop {
-                    let result = self.condition(s, &session, frame, args).await?;
-                    if name == "browser_check" || result["passed"] == true {
+                    let result = self.condition(s, profile, &session, frame, args).await?;
+                    if name == "browser_check"
+                        || result["passed"] == true
+                        || result["terminal"] == true
+                    {
                         return Ok(result);
                     }
                     if Instant::now() >= end {
+                        if text(args, "condition", "") == "download" {
+                            let mut pending = result;
+                            pending["timed_out"] = json!(true);
+                            pending["next"] = json!(
+                                "Inspect transfer progress or wait again for this ID; do not click the download again. A pending transfer is not a completed file."
+                            );
+                            return Ok(pending);
+                        }
                         bail!("Browser condition did not become true before timeout");
                     }
                     tokio::time::sleep(Duration::from_millis(100)).await;
@@ -692,6 +784,7 @@ impl Browser {
     async fn condition(
         &self,
         s: &Session,
+        profile: &str,
         session: &str,
         frame: Option<&str>,
         args: &Value,
@@ -705,21 +798,32 @@ impl Browser {
         }
         if condition == "download" {
             let guid = text(args, "download_id", "");
-            identifier(guid)?;
-            let events = s.cdp.events.lock().unwrap();
-            let passed = events.iter().any(|e| {
-                e["event"] == "Browser.downloadProgress"
-                    && e["state"] == "completed"
-                    && e["guid"] == guid
-            });
-            return Ok(json!({"passed":passed,"condition":condition}));
+            uuid::Uuid::parse_str(guid).context("Invalid download ID")?;
+            let mut transfer = s
+                .cdp
+                .downloads
+                .lock()
+                .unwrap()
+                .get(guid)
+                .unwrap_or_else(|| json!({"id":guid,"state":"unknown"}));
+            let file = self
+                .download_path(profile, guid)
+                .ok()
+                .and_then(|path| std::fs::metadata(path).ok());
+            let passed = file.is_some()
+                && matches!(transfer["state"].as_str(), Some("completed" | "unknown"));
+            if let Some(file) = file.filter(|_| passed) {
+                transfer["state"] = json!("completed");
+                transfer["file"] = json!({"id":guid,"bytes":file.len(),"url":format!("/api/browser/downloads/{profile}/{guid}")});
+            }
+            return Ok(
+                json!({"profile":profile,"passed":passed,"condition":condition,"terminal":passed || transfer["state"] == "canceled","download":transfer}),
+            );
         }
         if !["visible", "hidden", "text", "url", "ready", "no_overflow"].contains(&condition) {
             bail!("Unknown browser condition");
         }
-        let expression = format!(
-            r#"(()=>{{const a={args};const es=a.selector?[...document.querySelectorAll(a.selector)]:[];const visible=es.some(e=>e.getClientRects().length&&getComputedStyle(e).visibility!=='hidden');const overflow=document.documentElement.scrollWidth-innerWidth;const passed={{visible,hidden:!visible,text:(document.body?.innerText||'').includes(a.text||''),url:location.href.includes(a.text||''),ready:document.readyState==='complete',no_overflow:overflow<=1}}[a.condition];return {{passed,condition:a.condition,overflow_px:overflow,matches:es.length}};}})()"#
-        );
+        let expression = include_str!("condition.js").replace("CONDITION", &args.to_string());
         self.eval(s, session, frame, expression).await
     }
     async fn image(&self, s: &Session, session: &str, full: bool) -> Result<Vec<u8>> {
@@ -774,13 +878,7 @@ impl Browser {
         }
         let bytes = self.image(s, session, args["full_page"] == true).await?;
         let file = format!("{name}.png");
-        let mut output = OpenOptions::new()
-            .create(true)
-            .truncate(true)
-            .write(true)
-            .mode(0o600)
-            .open(directory.join(&file))?;
-        output.write_all(&bytes)?;
+        fenix_execution::fs::write(&directory.join(&file), &bytes)?;
         Ok(
             json!({"artifact":file,"profile":profile,"url":format!("/api/browser/artifacts/{profile}/{file}"),"bytes":bytes.len()}),
         )
@@ -805,7 +903,7 @@ impl Browser {
         if std::fs::metadata(&path)?.len() > 12 * 1024 * 1024 {
             bail!("Artifact too large");
         }
-        Ok(std::fs::read(path)?)
+        fenix_execution::fs::read(&path, 32 * 1024 * 1024)
     }
     pub fn downloads(&self, profile: &str) -> Result<Value> {
         identifier(profile)?;
@@ -884,6 +982,12 @@ impl Browser {
                 .filter_map(|(name, s)| {
                     total += memory_mib(s.child.id().unwrap_or(0));
                     (s.last.elapsed().as_secs() > self.config.idle_seconds
+                        && !s
+                            .cdp
+                            .downloads
+                            .lock()
+                            .unwrap()
+                            .active_recently(Duration::from_secs(self.config.idle_seconds))
                         || total > self.config.memory_budget_mib)
                         .then_some(name.clone())
                 })
@@ -896,6 +1000,8 @@ impl Browser {
                     }
                 }
             }
+            drop(sessions);
+            self.maintain_whatsapp().await;
         }
     }
 }
@@ -1223,6 +1329,19 @@ mod tests {
                 .unwrap()
                 .contains("Browser fixture")
         );
+        {
+            let sessions = b.sessions.lock().await;
+            let s = &sessions["personal"];
+            let saved = b.eval(s, &s.tabs[&s.active], None, r#"new Promise((resolve,reject)=>{
+                const open=indexedDB.open('session');
+                open.onerror=()=>reject(Error('Database open failed'));
+                open.onsuccess=()=>{const db=open.result;const tx=db.transaction('tokens','readwrite');
+                    tx.objectStore('tokens').put('fixture-persisted-token','login');
+                    tx.oncomplete=()=>{db.close();resolve(true)};tx.onerror=()=>reject(Error('Database write failed'));
+                };
+            })"#.into()).await.unwrap();
+            assert_eq!(saved, true);
+        }
         run("browser_close", json!({})).await;
         assert!(
             b.status().await.unwrap()["sessions"]
@@ -1244,6 +1363,15 @@ mod tests {
                     .contains("login=persisted")
             );
             assert_eq!(persisted["local"], "persisted");
+            let token = b.eval(s, session, None, r#"new Promise((resolve,reject)=>{
+                const open=indexedDB.open('session');
+                open.onerror=()=>reject(Error('Database open failed'));
+                open.onsuccess=()=>{const db=open.result;const request=db.transaction('tokens').objectStore('tokens').get('login');
+                    request.onsuccess=()=>{db.close();resolve(request.result)};
+                    request.onerror=()=>reject(Error('Database read failed'));
+                };
+            })"#.into()).await.unwrap();
+            assert_eq!(token, "fixture-persisted-token");
             assert!(
                 persisted["databases"]
                     .as_array()
@@ -1256,3 +1384,6 @@ mod tests {
         server.abort();
     }
 }
+
+#[cfg(test)]
+mod adversarial_tests;

@@ -1,0 +1,140 @@
+.design-panel-pdf .design-preview-scroll {
+  padding: 0;
+  overflow: hidden;
+}
+.design-panel-pdf .design-preview-content {
+  height: 100%;
+  min-height: 0;
+}
+.pdf-viewer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+.pdf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding: 10px 18px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.pdf-pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.pdf-pagination button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fg);
+}
+.pdf-pagination button:hover:not(:disabled) {
+  background: var(--hover);
+}
+.pdf-pagination button:disabled {
+  opacity: 0.3;
+}
+.pdf-pagination input {
+  width: 42px;
+  height: 30px;
+  padding: 0 4px;
+  appearance: textfield;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+.pdf-pagination input::-webkit-inner-spin-button,
+.pdf-pagination input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.pdf-page-count {
+  color: var(--muted);
+  white-space: nowrap;
+  padding-right: 2px;
+}
+.pdf-toolbar select {
+  width: auto;
+  max-width: 145px;
+  height: 32px;
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 12px;
+}
+.pdf-toolbar :is(button, input, select):focus-visible {
+  outline: 2px solid var(--button);
+  outline-offset: 2px;
+}
+.pdf-canvas-container {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: auto;
+  padding: 20px;
+  scrollbar-gutter: stable;
+  background: var(--soft);
+}
+.pdf-canvas-container canvas {
+  display: block;
+  margin: 0 auto;
+  background: white;
+  box-shadow:
+    0 2px 6px #0000000d,
+    0 8px 28px #0000000d;
+}
+.pdf-canvas-container canvas[hidden] {
+  display: none;
+}
+.pdf-status,
+.pdf-unlock {
+  padding: 16px 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.pdf-unlock {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pdf-unlock label {
+  display: grid;
+  gap: 8px;
+}
+.pdf-unlock input {
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+}
+@media (max-width: 480px) {
+  .pdf-toolbar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+  .pdf-canvas-container {
+    padding: 12px;
+  }
+}

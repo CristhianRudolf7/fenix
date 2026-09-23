@@ -1,0 +1,3252 @@
+{
+  "cold": [
+    {
+      "elapsed_ms": 11427,
+      "query": "IPCC climate change",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 176,
+          "indexed_origins": 2,
+          "indexed_pages": 4,
+          "known_urls": 182,
+          "last_fetch_at": 1789930109,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 8
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 21,
+          "enabled": true,
+          "entrypoints": [
+            "https://www.ipcc.ch/"
+          ],
+          "followed_urls": 5,
+          "sources": [
+            {
+              "discovered_urls": 95,
+              "indexed": true,
+              "resolved_url": "https://www.ipcc.ch/",
+              "retrieved_at": "2026-09-20T18:48:22+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.ipcc.ch/"
+            },
+            {
+              "discovered_urls": 59,
+              "indexed": true,
+              "resolved_url": "https://www.ipcc.ch/report/special-report-on-climate-change-and-cities/",
+              "retrieved_at": "2026-09-20T18:48:25+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.ipcc.ch/report/special-report-on-climate-change-and-cities/"
+            },
+            {
+              "discovered_urls": 56,
+              "indexed": true,
+              "resolved_url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/",
+              "retrieved_at": "2026-09-20T18:48:23+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Public page returned HTTP 401",
+              "failure_kind": "blocked",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://www.ipcc.ch/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.ipcc.ch%2Freport%2Fspecial-report-on-climate-change-and-cities%2F"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Public page returned HTTP 401",
+              "failure_kind": "blocked",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://www.ipcc.ch/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.ipcc.ch%2Freport%2Fspecial-report-on-climate-change-and-cities%2F&format=xml"
+            },
+            {
+              "discovered_urls": 63,
+              "indexed": true,
+              "resolved_url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/",
+              "retrieved_at": "2026-09-20T18:48:29+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "IPCC climate change",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:48:22+00:00",
+            "page": {
+              "content_hash": "b4c3c6296e82d064317e9cfa565ffc8647e389a2f982468a2b99922ed3db794a",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:22+00:00",
+              "source": "network",
+              "title": "IPCC — Intergovernmental Panel on Climate Change",
+              "truncated": true,
+              "url": "https://www.ipcc.ch/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "90495496d5534d4e636ba7830937f917e6eb83ddb9606dff40289609585cedce"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "IPCC — Intergovernmental Panel on Climate Change",
+            "url": "https://www.ipcc.ch/",
+            "snippet_characters": 350,
+            "snippet_sha256": "48bc879d414aa587c9671c538e5440d269375b638cea03b360aeaf11da9ca866"
+          },
+          {
+            "indexed_at": "2026-09-20T18:48:23+00:00",
+            "page": {
+              "content_hash": "24f03eaf5a76d77a05dfd96902a7f97a228efeb25c9b77cadd7af0850e690301",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:23+00:00",
+              "source": "network",
+              "title": "IWMI/IPCC co-sponsored Expert Meeting on Addressing Water Risks and Building Resilience to Climate Change — IPCC",
+              "truncated": false,
+              "url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 675,
+              "passage_sha256": "24f03eaf5a76d77a05dfd96902a7f97a228efeb25c9b77cadd7af0850e690301"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "IWMI/IPCC co-sponsored Expert Meeting on Addressing Water Risks and Building Resilience to Climate Change — IPCC",
+            "url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/",
+            "snippet_characters": 350,
+            "snippet_sha256": "b5189c76c6db8cf6e46842f506a21295dab8be3c6a01c49c2195a1a7f4df7e52"
+          },
+          {
+            "indexed_at": "2026-09-20T18:48:29+00:00",
+            "page": {
+              "content_hash": "39d859c3bb7051bce998916a2ba8e035d3c3ad33346e82e6e98b96b5b182b3be",
+              "language": "en-US",
+              "published_at": "2026-07-02T04:31:33+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:29+00:00",
+              "source": "network",
+              "title": "IWMI and IPCC to hold first Expert Meeting to advance the science of water in climate change  - IWMI",
+              "truncated": true,
+              "url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "5b087d60480ec1937636e35060f48e65f4d103fe5900e0a27854f4e1c19f5529"
+            },
+            "published_at": "2026-07-02T04:31:33+00:00",
+            "read_status": "network",
+            "title": "IWMI and IPCC to hold first Expert Meeting to advance the science of water in climate change  - IWMI",
+            "url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/",
+            "snippet_characters": 350,
+            "snippet_sha256": "9dff3ffca09b38e8c977704df40a855a9454ccee043c8bcac55438212c7149df"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 19094,
+      "query": "Python asyncio TaskGroup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 378,
+          "indexed_origins": 2,
+          "indexed_pages": 9,
+          "known_urls": 390,
+          "last_fetch_at": 1789930117,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 15
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 28,
+          "enabled": true,
+          "entrypoints": [
+            "https://docs.python.org/3/"
+          ],
+          "followed_urls": 11,
+          "sources": [
+            {
+              "discovered_urls": 57,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/",
+              "retrieved_at": "2026-09-20T18:48:20+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/"
+            },
+            {
+              "discovered_urls": 8,
+              "indexed": false,
+              "resolved_url": "https://docs.python.org/sitemap.xml",
+              "retrieved_at": "2026-09-20T18:48:22+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://docs.python.org/sitemap.xml"
+            },
+            {
+              "discovered_urls": 279,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/index.html",
+              "retrieved_at": "2026-09-20T18:48:25+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/index.html"
+            },
+            {
+              "discovered_urls": 39,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio.html",
+              "retrieved_at": "2026-09-20T18:48:26+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio.html"
+            },
+            {
+              "discovered_urls": 35,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-dev.html",
+              "retrieved_at": "2026-09-20T18:48:29+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-dev.html"
+            },
+            {
+              "discovered_urls": 28,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-threading.html",
+              "retrieved_at": "2026-09-20T18:48:30+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-threading.html"
+            },
+            {
+              "discovered_urls": 32,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/howto/a-conceptual-overview-of-asyncio.html",
+              "retrieved_at": "2026-09-20T18:48:32+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/howto/a-conceptual-overview-of-asyncio.html"
+            },
+            {
+              "discovered_urls": 0,
+              "indexed": false,
+              "resolved_url": "https://github.com/python/cpython/tree/3.14/Lib/asyncio/",
+              "retrieved_at": "2026-09-20T18:48:30+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://github.com/python/cpython/tree/3.14/Lib/asyncio/"
+            },
+            {
+              "discovered_urls": 24,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-sync.html",
+              "retrieved_at": "2026-09-20T18:48:34+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-sync.html"
+            },
+            {
+              "discovered_urls": 36,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-task.html",
+              "retrieved_at": "2026-09-20T18:48:37+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-task.html"
+            },
+            {
+              "discovered_urls": 14,
+              "indexed": true,
+              "resolved_url": "https://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html",
+              "retrieved_at": "2026-09-20T18:48:35+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Site robots policy is unavailable or access is restricted",
+              "failure_kind": "blocked",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://labs.quansight.org/blog/scaling-asyncio-on-free-threaded-python"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Python asyncio TaskGroup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:48:37+00:00",
+            "page": {
+              "content_hash": "04e8d7ae958bdc82477bab0f039b7d806ce5e8349e7c74ed73716519d48cbf08",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:37+00:00",
+              "source": "network",
+              "title": "Coroutines and tasks — Python 3.14.7 documentation",
+              "truncated": true,
+              "url": "https://docs.python.org/3/library/asyncio-task.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "73ca5a4ce68885c4c262a5a4c7210f3e73da7c8bbe3f9b927b02350fa3f68280"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Coroutines and tasks — Python 3.14.7 documentation",
+            "url": "https://docs.python.org/3/library/asyncio-task.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "ada6f7e17158060c3aafbbb0770043d2d56cecff0efdbf1e787d61c2b8412a75"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 10548,
+      "query": "receta peruana de ají de gallina",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 1759,
+          "indexed_origins": 4,
+          "indexed_pages": 6,
+          "known_urls": 1767,
+          "last_fetch_at": 1789930107,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 0,
+          "requests_today": 12
+        },
+        "discovery": {
+          "background_queued": 0,
+          "candidates_considered": 3,
+          "enabled": true,
+          "entrypoints": [
+            "https://developer.mozilla.org/en-US/docs/Web",
+            "https://es.wikipedia.org/wiki/Portal:Portada",
+            "https://en.wikipedia.org/wiki/Main_Page",
+            "https://www.gob.pe/"
+          ],
+          "followed_urls": 3,
+          "sources": [
+            {
+              "discovered_urls": 132,
+              "indexed": true,
+              "resolved_url": "https://developer.mozilla.org/en-US/docs/Web",
+              "retrieved_at": "2026-09-20T18:48:20+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            },
+            {
+              "discovered_urls": 725,
+              "indexed": true,
+              "resolved_url": "https://es.wikipedia.org/wiki/Portal:Portada",
+              "retrieved_at": "2026-09-20T18:48:21+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://es.wikipedia.org/wiki/Portal:Portada"
+            },
+            {
+              "discovered_urls": 618,
+              "indexed": true,
+              "resolved_url": "https://en.wikipedia.org/wiki/Main_Page",
+              "retrieved_at": "2026-09-20T18:48:21+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://en.wikipedia.org/wiki/Main_Page"
+            },
+            {
+              "discovered_urls": 51,
+              "indexed": true,
+              "resolved_url": "https://www.gob.pe/",
+              "retrieved_at": "2026-09-20T18:48:21+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.gob.pe/"
+            },
+            {
+              "discovered_urls": 10,
+              "indexed": false,
+              "resolved_url": "https://developer.mozilla.org/sitemap.xml",
+              "retrieved_at": "2026-09-20T18:48:22+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://developer.mozilla.org/sitemap.xml"
+            },
+            {
+              "discovered_urls": 196,
+              "indexed": true,
+              "resolved_url": "https://en.wikipedia.org/wiki/Wikipedia:Contents",
+              "retrieved_at": "2026-09-20T18:48:26+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://en.wikipedia.org/wiki/Wikipedia:Contents"
+            },
+            {
+              "discovered_urls": 173,
+              "indexed": true,
+              "resolved_url": "https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines/Attrib_copyright_license",
+              "retrieved_at": "2026-09-20T18:48:27+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://developer.mozilla.org/docs/MDN/Writing_guidelines/Attrib_copyright_license"
+            }
+          ],
+          "stop_reason": "no_unvisited_relevant_links",
+          "unvisited_domains": []
+        },
+        "query": "receta peruana de ají de gallina",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      },
+      "manual_review": {
+        "category": "empty",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 10850,
+      "query": "Docker multi stage builds",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 1829,
+          "indexed_origins": 1,
+          "indexed_pages": 4,
+          "known_urls": 1834,
+          "last_fetch_at": 1789930127,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 6
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 100,
+          "enabled": true,
+          "entrypoints": [
+            "https://docs.docker.com/"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 17,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/",
+              "retrieved_at": "2026-09-20T18:48:39+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/"
+            },
+            {
+              "discovered_urls": 1811,
+              "indexed": false,
+              "resolved_url": "https://docs.docker.com/sitemap.xml",
+              "retrieved_at": "2026-09-20T18:48:44+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://docs.docker.com/sitemap.xml"
+            },
+            {
+              "discovered_urls": 1,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/guides/",
+              "retrieved_at": "2026-09-20T18:48:41+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/guides/"
+            },
+            {
+              "discovered_urls": 8,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+              "retrieved_at": "2026-09-20T18:48:45+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/"
+            },
+            {
+              "discovered_urls": 1,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/build/building/multi-stage/",
+              "retrieved_at": "2026-09-20T18:48:47+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/build/building/multi-stage/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Docker multi stage builds",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:48:45+00:00",
+            "page": {
+              "content_hash": "f2af33119b21de71d7344881adbd5682ef2b2739b0404eb0f76b94d3d895639a",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:45+00:00",
+              "source": "network",
+              "title": "Multi-stage builds",
+              "truncated": true,
+              "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "63a22b96991cfdb19796a7090646fea662d557a7dba51e66d2d95e3959f76521"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Multi-stage builds",
+            "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+            "snippet_characters": 350,
+            "snippet_sha256": "126796f1202d1fc48e1ba7323a102d6620d6919143f23572f6f6fa17275e2cb8"
+          },
+          {
+            "indexed_at": "2026-09-20T18:48:47+00:00",
+            "page": {
+              "content_hash": "37de3d25bd1cd507529597dbc54930c3735d92f9e547e430fe8f6fef6b76fe96",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:47+00:00",
+              "source": "network",
+              "title": "Multi-stage builds",
+              "truncated": true,
+              "url": "https://docs.docker.com/build/building/multi-stage/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "5f6c1c2cebd79231b5ae6790be5447555e9558201c55696f9ac0740d643d2aca"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Multi-stage builds",
+            "url": "https://docs.docker.com/build/building/multi-stage/",
+            "snippet_characters": 350,
+            "snippet_sha256": "9a99265cfd200974f0b0b4426f9060266b8a05f0c59e99590c6b969a440185c5"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 11057,
+      "query": "React useEffect cleanup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 235,
+          "indexed_origins": 1,
+          "indexed_pages": 5,
+          "known_urls": 240,
+          "last_fetch_at": 1789930128,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 6
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 100,
+          "enabled": true,
+          "entrypoints": [
+            "https://react.dev/"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://react.dev/",
+              "retrieved_at": "2026-09-20T18:48:40+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/"
+            },
+            {
+              "discovered_urls": 158,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react",
+              "retrieved_at": "2026-09-20T18:48:44+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react-dom",
+              "retrieved_at": "2026-09-20T18:48:41+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react-dom"
+            },
+            {
+              "discovered_urls": 168,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffect",
+              "retrieved_at": "2026-09-20T18:48:46+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffect"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffectEvent",
+              "retrieved_at": "2026-09-20T18:48:48+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffectEvent"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "React useEffect cleanup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:48:46+00:00",
+            "page": {
+              "content_hash": "6cd335fd3122d115c6175ca2152987636403ac45ae258501d9572d0995a04894",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:46+00:00",
+              "source": "network",
+              "title": "useEffect – React",
+              "truncated": true,
+              "url": "https://react.dev/reference/react/useEffect",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "45a4033dc968707e425fc78df01007681f6fa6856412565826e0464f9aa0511e"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "useEffect – React",
+            "url": "https://react.dev/reference/react/useEffect",
+            "snippet_characters": 350,
+            "snippet_sha256": "fa13db36d7fc7f7ac4c0576647e71c38fddd23f697964236a24bcb03a4941922"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 11495,
+      "query": "Git rebase conflicts",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 531,
+          "indexed_origins": 1,
+          "indexed_pages": 5,
+          "known_urls": 536,
+          "last_fetch_at": 1789930128,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 6
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 162,
+          "enabled": true,
+          "entrypoints": [
+            "https://git-scm.com/docs"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 108,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs",
+              "retrieved_at": "2026-09-20T18:48:40+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs"
+            },
+            {
+              "discovered_urls": 172,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git-rebase",
+              "retrieved_at": "2026-09-20T18:48:42+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git-rebase"
+            },
+            {
+              "discovered_urls": 293,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git",
+              "retrieved_at": "2026-09-20T18:48:45+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git"
+            },
+            {
+              "discovered_urls": 176,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git-rebase/fr",
+              "retrieved_at": "2026-09-20T18:48:46+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git-rebase/fr"
+            },
+            {
+              "discovered_urls": 176,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git-rebase/ru",
+              "retrieved_at": "2026-09-20T18:48:48+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git-rebase/ru"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Git rebase conflicts",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:48:42+00:00",
+            "page": {
+              "content_hash": "21dfc39ef260b5f764354707249a6d669d0fb8ce2217e73140761d7f07bec510",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:42+00:00",
+              "source": "network",
+              "title": "Git - git-rebase Documentation",
+              "truncated": true,
+              "url": "https://git-scm.com/docs/git-rebase",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "0a0e0685317e1a7ee40d9c4b4763b08e86032b89d7519bb4b24689475abc7c01"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Git - git-rebase Documentation",
+            "url": "https://git-scm.com/docs/git-rebase",
+            "snippet_characters": 350,
+            "snippet_sha256": "af3ef22b903d6196ef6ba47f9eb9faf0e41a6d32f35bba2f6def432522a44808"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 10699,
+      "query": "Busca documentación actualizada de React useEffect cleanup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 235,
+          "indexed_origins": 1,
+          "indexed_pages": 5,
+          "known_urls": 240,
+          "last_fetch_at": 1789930139,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 6
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 100,
+          "enabled": true,
+          "entrypoints": [
+            "https://react.dev/"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://react.dev/",
+              "retrieved_at": "2026-09-20T18:48:51+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/"
+            },
+            {
+              "discovered_urls": 158,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react",
+              "retrieved_at": "2026-09-20T18:48:53+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react-dom",
+              "retrieved_at": "2026-09-20T18:48:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react-dom"
+            },
+            {
+              "discovered_urls": 168,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffect",
+              "retrieved_at": "2026-09-20T18:48:58+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffect"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffectEvent",
+              "retrieved_at": "2026-09-20T18:48:59+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffectEvent"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Busca documentación actualizada de React useEffect cleanup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:48:58+00:00",
+            "page": {
+              "content_hash": "6cd335fd3122d115c6175ca2152987636403ac45ae258501d9572d0995a04894",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:58+00:00",
+              "source": "network",
+              "title": "useEffect – React",
+              "truncated": true,
+              "url": "https://react.dev/reference/react/useEffect",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "45a4033dc968707e425fc78df01007681f6fa6856412565826e0464f9aa0511e"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "useEffect – React",
+            "url": "https://react.dev/reference/react/useEffect",
+            "snippet_characters": 350,
+            "snippet_sha256": "fa13db36d7fc7f7ac4c0576647e71c38fddd23f697964236a24bcb03a4941922"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 11000,
+      "query": "NASA Mars atmosphere",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 432,
+          "indexed_origins": 2,
+          "indexed_pages": 7,
+          "known_urls": 439,
+          "last_fetch_at": 1789930139,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 9
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 49,
+          "enabled": true,
+          "entrypoints": [
+            "https://science.nasa.gov/"
+          ],
+          "followed_urls": 6,
+          "sources": [
+            {
+              "discovered_urls": 233,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/",
+              "retrieved_at": "2026-09-20T18:48:51+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/"
+            },
+            {
+              "discovered_urls": 221,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/mars/",
+              "retrieved_at": "2026-09-20T18:48:53+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/mars/"
+            },
+            {
+              "discovered_urls": 220,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/moon/lunar-atmosphere/",
+              "retrieved_at": "2026-09-20T18:48:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/moon/lunar-atmosphere/"
+            },
+            {
+              "discovered_urls": 205,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/mars/stories/",
+              "retrieved_at": "2026-09-20T18:48:57+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/mars/stories/"
+            },
+            {
+              "discovered_urls": 214,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/mars/resources/",
+              "retrieved_at": "2026-09-20T18:48:59+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/mars/resources/"
+            },
+            {
+              "discovered_urls": 208,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/humans-in-space/humans-to-mars/",
+              "retrieved_at": "2026-09-20T18:48:58+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/humans-in-space/humans-to-mars/"
+            },
+            {
+              "discovered_urls": 190,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/news-release/nasa-selects-blue-origin-as-mars-telecommunications-network-provider/",
+              "retrieved_at": "2026-09-20T18:48:59+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/news-release/nasa-selects-blue-origin-as-mars-telecommunications-network-provider/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "NASA Mars atmosphere",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:48:53+00:00",
+            "page": {
+              "content_hash": "ed04e744ace6607536b15140dedbc4f6ad32f354b415af4bafba812e1346e05e",
+              "language": "en-US",
+              "published_at": "2023-06-01T00:49:01+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:53+00:00",
+              "source": "network",
+              "title": "Mars - NASA Science",
+              "truncated": true,
+              "url": "https://science.nasa.gov/mars/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "cd909e309098d636dad12c75ee110a455a00359201e2e5ca0c29098176d3b889"
+            },
+            "published_at": "2023-06-01T00:49:01+00:00",
+            "read_status": "network",
+            "title": "Mars - NASA Science",
+            "url": "https://science.nasa.gov/mars/",
+            "snippet_characters": 350,
+            "snippet_sha256": "d81a69604338c2f008ebbc47a3d02bad3b094469e6d9da0db81abf1023247a16"
+          },
+          {
+            "indexed_at": "2026-09-20T18:48:58+00:00",
+            "page": {
+              "content_hash": "d71fe9e0a7b40d140b6e05b6f58df87a8d41ca415018adb00cca83a9b7792905",
+              "language": "en-US",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:58+00:00",
+              "source": "network",
+              "title": "Humans to Mars - NASA",
+              "truncated": false,
+              "url": "https://www.nasa.gov/humans-in-space/humans-to-mars/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 5704,
+              "passage_sha256": "d71fe9e0a7b40d140b6e05b6f58df87a8d41ca415018adb00cca83a9b7792905"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Humans to Mars - NASA",
+            "url": "https://www.nasa.gov/humans-in-space/humans-to-mars/",
+            "snippet_characters": 350,
+            "snippet_sha256": "2affa81d445a3eac89820ab6fa4ac276ccfac384de639444fa1820eb9410b3a3"
+          },
+          {
+            "indexed_at": "2026-09-20T18:48:57+00:00",
+            "page": {
+              "content_hash": "9401faebb8a41566a4aced8804b5931fa09cebc9dedeff1684f16aaab25102bd",
+              "language": "en-US",
+              "published_at": "2023-07-17T13:42:57+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:57+00:00",
+              "source": "network",
+              "title": "Mars: News & Features - NASA Science",
+              "truncated": false,
+              "url": "https://science.nasa.gov/mars/stories/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 4221,
+              "passage_sha256": "9401faebb8a41566a4aced8804b5931fa09cebc9dedeff1684f16aaab25102bd"
+            },
+            "published_at": "2023-07-17T13:42:57+00:00",
+            "read_status": "network",
+            "title": "Mars: News & Features - NASA Science",
+            "url": "https://science.nasa.gov/mars/stories/",
+            "snippet_characters": 350,
+            "snippet_sha256": "c305a870aec8345620fe771d07315539753447acd5943d265e7ddd6e261f28fc"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 12132,
+      "query": "Tokio timeout",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 329,
+          "indexed_origins": 3,
+          "indexed_pages": 7,
+          "known_urls": 338,
+          "last_fetch_at": 1789930141,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 5,
+          "requests_today": 14
+        },
+        "discovery": {
+          "background_queued": 5,
+          "candidates_considered": 74,
+          "enabled": true,
+          "entrypoints": [
+            "https://docs.rs/tokio/latest/tokio/"
+          ],
+          "followed_urls": 8,
+          "sources": [
+            {
+              "discovered_urls": 109,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/",
+              "retrieved_at": "2026-09-20T18:48:53+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/"
+            },
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+              "retrieved_at": "2026-09-20T18:48:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html"
+            },
+            {
+              "discovered_urls": 77,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/index.html",
+              "retrieved_at": "2026-09-20T18:48:57+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/index.html"
+            },
+            {
+              "discovered_urls": 0,
+              "indexed": false,
+              "resolved_url": "https://crates.io/teams/github:tokio-rs:core",
+              "retrieved_at": "2026-09-20T18:48:57+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://crates.io/teams/github:tokio-rs:core"
+            },
+            {
+              "discovered_urls": 0,
+              "indexed": false,
+              "resolved_url": "https://crates.io/crates/tokio",
+              "retrieved_at": "2026-09-20T18:48:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://crates.io/crates/tokio"
+            },
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+              "retrieved_at": "2026-09-20T18:49:01+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+            },
+            {
+              "discovered_urls": 104,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/struct.Timeout.html",
+              "retrieved_at": "2026-09-20T18:48:59+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/struct.Timeout.html"
+            },
+            {
+              "discovered_urls": 33,
+              "indexed": true,
+              "resolved_url": "https://tokio.rs/tokio/tutorial",
+              "retrieved_at": "2026-09-20T18:48:59+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://tokio.rs/tokio/tutorial"
+            },
+            {
+              "discovered_urls": 127,
+              "indexed": true,
+              "resolved_url": "https://github.com/tokio-rs/tokio",
+              "retrieved_at": "2026-09-20T18:49:00+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://github.com/tokio-rs/tokio"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Tokio timeout",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:01+00:00",
+            "page": {
+              "content_hash": "f8a2dc50c37186d25cb30b057e037e4a743ee0a5ab6c3104c5270eae0b2ee148",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:01+00:00",
+              "source": "network",
+              "title": "timeout_at in tokio::time - Rust",
+              "truncated": false,
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 1894,
+              "passage_sha256": "f8a2dc50c37186d25cb30b057e037e4a743ee0a5ab6c3104c5270eae0b2ee148"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "timeout_at in tokio::time - Rust",
+            "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "205acb7c960727c7507ccbffc82e2eb29a0db252f8bb621299c9b24fe41864a8"
+          },
+          {
+            "indexed_at": "2026-09-20T18:48:55+00:00",
+            "page": {
+              "content_hash": "3046d7f6de5a2bf785fa9e4dbe407a04ddd391de68cb50ee7d9ffd36619872b5",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:48:55+00:00",
+              "source": "network",
+              "title": "timeout in tokio::time - Rust",
+              "truncated": false,
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 2081,
+              "passage_sha256": "3046d7f6de5a2bf785fa9e4dbe407a04ddd391de68cb50ee7d9ffd36619872b5"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "timeout in tokio::time - Rust",
+            "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "8f21c02ce7092a3df1a04984b4e7a948aeae0a6a22b79add92ed59398c9a7a2b"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 13968,
+      "query": "NASA solar eclipse",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 463,
+          "indexed_origins": 3,
+          "indexed_pages": 8,
+          "known_urls": 474,
+          "last_fetch_at": 1789930154,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 14
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 62,
+          "enabled": true,
+          "entrypoints": [
+            "https://science.nasa.gov/"
+          ],
+          "followed_urls": 8,
+          "sources": [
+            {
+              "discovered_urls": 233,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/",
+              "retrieved_at": "2026-09-20T18:49:03+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/"
+            },
+            {
+              "discovered_urls": 222,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/solar-system/",
+              "retrieved_at": "2026-09-20T18:49:07+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "discovered_urls": 199,
+              "indexed": true,
+              "resolved_url": "https://ciencia.nasa.gov/sistema-solar/",
+              "retrieved_at": "2026-09-20T18:49:09+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://ciencia.nasa.gov/sistema-solar"
+            },
+            {
+              "discovered_urls": 192,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/",
+              "retrieved_at": "2026-09-20T18:49:08+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/"
+            },
+            {
+              "discovered_urls": 185,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/solar-system/oort-cloud/",
+              "retrieved_at": "2026-09-20T18:49:08+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/solar-system/oort-cloud/"
+            },
+            {
+              "discovered_urls": 187,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/",
+              "retrieved_at": "2026-09-20T18:49:10+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/"
+            },
+            {
+              "discovered_urls": 197,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/",
+              "retrieved_at": "2026-09-20T18:49:12+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Public page returned HTTP 404",
+              "failure_kind": "unavailable",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://ciencia.nasa.gov/solar-system/"
+            },
+            {
+              "discovered_urls": 215,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/solar-system/solar-system-facts/",
+              "retrieved_at": "2026-09-20T18:49:14+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/solar-system/facts/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "NASA solar eclipse",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:12+00:00",
+            "page": {
+              "content_hash": "e239a79c7ab03b8a4651bba9cb3446a99742d2ea5c6a8d52b031a516339c259d",
+              "language": "en-US",
+              "published_at": "2026-07-27T18:01:14+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:12+00:00",
+              "source": "network",
+              "title": "NASA Science Soars During August Total Solar Eclipse - NASA Science",
+              "truncated": true,
+              "url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "e66694e45c43471152bf76551f1a4962235a933c8f17d73db8346f771de7ab52"
+            },
+            "published_at": "2026-07-27T18:01:14+00:00",
+            "read_status": "network",
+            "title": "NASA Science Soars During August Total Solar Eclipse - NASA Science",
+            "url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/",
+            "snippet_characters": 350,
+            "snippet_sha256": "c5e0c29befed59244f4669e15d4b7c3809bdc453c7cbbed196a08bea51517813"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:10+00:00",
+            "page": {
+              "content_hash": "a59d66f67f145c0f928cf5641ca3c0ae138095d5365c4d21844e7746413cc7e8",
+              "language": "en-US",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:10+00:00",
+              "source": "network",
+              "title": "Solar Eclipses - NASA",
+              "truncated": false,
+              "url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 625,
+              "passage_sha256": "a59d66f67f145c0f928cf5641ca3c0ae138095d5365c4d21844e7746413cc7e8"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Solar Eclipses - NASA",
+            "url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/",
+            "snippet_characters": 350,
+            "snippet_sha256": "7e52a37e14e71313f17b5490795ac191facca56f39aa4c9f57901cc97334b4dc"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:08+00:00",
+            "page": {
+              "content_hash": "1eb4cbd58193e6261606b4ea9b51501a4f7e16cd3f57df9eae6f6ee232f49831",
+              "language": "en-US",
+              "published_at": "2026-08-26T17:33:05+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:08+00:00",
+              "source": "network",
+              "title": "NASA Johnson Pilots Chase Moon’s Shadow for Eclipse Science  - NASA",
+              "truncated": false,
+              "url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 4839,
+              "passage_sha256": "1eb4cbd58193e6261606b4ea9b51501a4f7e16cd3f57df9eae6f6ee232f49831"
+            },
+            "published_at": "2026-08-26T17:33:05+00:00",
+            "read_status": "network",
+            "title": "NASA Johnson Pilots Chase Moon’s Shadow for Eclipse Science  - NASA",
+            "url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/",
+            "snippet_characters": 350,
+            "snippet_sha256": "40ee064e42de2a636d1de0879f6726b729a1c4bde638b97a08abaf9fd57373fe"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:09+00:00",
+            "published_at": "2023-06-28T05:30:55+00:00",
+            "read_status": "not_requested",
+            "title": "Sistema solar - NASA Ciencia",
+            "url": "https://ciencia.nasa.gov/sistema-solar/",
+            "snippet_characters": 350,
+            "snippet_sha256": "fdf98a62d645b777569f31bba2306c5e7638743aebbf7d2920bbac7b3d4c7c4b"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "Exact lexical matches were sparse; additional results passed topical term coverage and proximity filters. Lexical support is not a factual confidence score."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 12912,
+      "query": "World Bank poverty",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 560,
+          "indexed_origins": 3,
+          "indexed_pages": 7,
+          "known_urls": 568,
+          "last_fetch_at": 1789930153,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 11
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 37,
+          "enabled": true,
+          "entrypoints": [
+            "https://www.worldbank.org/en/topic"
+          ],
+          "followed_urls": 6,
+          "sources": [
+            {
+              "discovered_urls": 87,
+              "indexed": true,
+              "resolved_url": "https://www.worldbank.org/ext/en/development-topics",
+              "retrieved_at": "2026-09-20T18:49:05+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.worldbank.org/en/topic"
+            },
+            {
+              "discovered_urls": 26,
+              "indexed": true,
+              "resolved_url": "https://www.worldbank.org/ext/en/topic/poverty",
+              "retrieved_at": "2026-09-20T18:49:07+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty"
+            },
+            {
+              "discovered_urls": 21,
+              "indexed": true,
+              "resolved_url": "https://www.worldbank.org/ext/en/topic/poverty/measuring-poverty",
+              "retrieved_at": "2026-09-20T18:49:09+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.worldbank.org/ext/en/topic/poverty/measuring-poverty"
+            },
+            {
+              "discovered_urls": 365,
+              "indexed": true,
+              "resolved_url": "https://academy.worldbank.org/en/prosperity/poverty",
+              "retrieved_at": "2026-09-20T18:49:13+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://academy.worldbank.org/en/prosperity/poverty"
+            },
+            {
+              "discovered_urls": 56,
+              "indexed": true,
+              "resolved_url": "https://www.worldbank.org/en/publication/poverty-prosperity-and-planet",
+              "retrieved_at": "2026-09-20T18:49:12+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.worldbank.org/en/publication/poverty-prosperity-and-planet"
+            },
+            {
+              "discovered_urls": 11,
+              "indexed": true,
+              "resolved_url": "https://www.worldbank.org/en/topic/poverty/publication/child-poverty-global-regional-and-select-national-trends",
+              "retrieved_at": "2026-09-20T18:49:13+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.worldbank.org/en/topic/poverty/publication/child-poverty-global-regional-and-select-national-trends"
+            },
+            {
+              "discovered_urls": 48,
+              "indexed": true,
+              "resolved_url": "https://data360.worldbank.org/en/prosperity/poverty",
+              "retrieved_at": "2026-09-20T18:49:13+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://data360.worldbank.org/en/prosperity/poverty"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "World Bank poverty",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:09+00:00",
+            "page": {
+              "content_hash": "59b69b89db4cb3972ae6b2b190e021850454d3c0f7eadbcd06549e0bdf14048c",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:09+00:00",
+              "source": "network",
+              "title": "Measuring Poverty | World Bank Group",
+              "truncated": true,
+              "url": "https://www.worldbank.org/ext/en/topic/poverty/measuring-poverty",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "834571665d5453b4802890c65f4c0936e09582dc48a56ff8343248d9fd6a6283"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Measuring Poverty | World Bank Group",
+            "url": "https://www.worldbank.org/ext/en/topic/poverty/measuring-poverty",
+            "snippet_characters": 350,
+            "snippet_sha256": "2c62afc875e060e67377700f5fbb90dab32ef3154b5cb8b242471fcc0627f441"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:07+00:00",
+            "page": {
+              "content_hash": "bf97cf264aeca6f17f51f55f995b3a74fa5d0cf6e80908b9735ac8ddcca65438",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:07+00:00",
+              "source": "network",
+              "title": "Poverty | World Bank Group",
+              "truncated": true,
+              "url": "https://www.worldbank.org/ext/en/topic/poverty",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "e5c214ade5f360464d623e44abbaf733db134dc441b34a1169a870c34a30d794"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Poverty | World Bank Group",
+            "url": "https://www.worldbank.org/ext/en/topic/poverty",
+            "snippet_characters": 350,
+            "snippet_sha256": "4c47904efc33c748bfa1bb09866e3d55a975afdc4b5fcfad9ded69e8b7c990c5"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    },
+    {
+      "elapsed_ms": 11026,
+      "query": "PostgreSQL window functions",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 185,
+          "indexed_origins": 1,
+          "indexed_pages": 4,
+          "known_urls": 190,
+          "last_fetch_at": 1789930151,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 6
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 136,
+          "enabled": true,
+          "entrypoints": [
+            "https://www.postgresql.org/docs/current/"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 124,
+              "indexed": true,
+              "resolved_url": "https://www.postgresql.org/docs/current/",
+              "retrieved_at": "2026-09-20T18:49:03+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.postgresql.org/docs/current/"
+            },
+            {
+              "discovered_urls": 55,
+              "indexed": true,
+              "resolved_url": "https://www.postgresql.org/docs/current/functions.html",
+              "retrieved_at": "2026-09-20T18:49:05+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.postgresql.org/docs/current/functions.html"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Web response exceeds the download byte limit",
+              "failure_kind": "unavailable",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://www.postgresql.org/sitemap.xml"
+            },
+            {
+              "discovered_urls": 26,
+              "indexed": true,
+              "resolved_url": "https://www.postgresql.org/docs/current/functions-window.html",
+              "retrieved_at": "2026-09-20T18:49:09+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.postgresql.org/docs/current/functions-window.html"
+            },
+            {
+              "discovered_urls": 26,
+              "indexed": true,
+              "resolved_url": "https://www.postgresql.org/docs/current/functions-net.html",
+              "retrieved_at": "2026-09-20T18:49:11+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.postgresql.org/docs/current/functions-net.html"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "PostgreSQL window functions",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:09+00:00",
+            "page": {
+              "content_hash": "e35fa9b7cb125d52f3b063547a098f0666683efc87ed05f181ed8e810a82a61a",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:09+00:00",
+              "source": "network",
+              "title": "PostgreSQL: Documentation: 18: 9.22. Window Functions",
+              "truncated": false,
+              "url": "https://www.postgresql.org/docs/current/functions-window.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 5456,
+              "passage_sha256": "e35fa9b7cb125d52f3b063547a098f0666683efc87ed05f181ed8e810a82a61a"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "PostgreSQL: Documentation: 18: 9.22. Window Functions",
+            "url": "https://www.postgresql.org/docs/current/functions-window.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "ce74af109d5a7c472d3bac70252fa1b7dba479a8f4662f53b6885101a001a272"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:05+00:00",
+            "page": {
+              "content_hash": "447483a8ef87d78bca10b3a0a69676838b1fa63bf7313e54e921887046593d76",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:05+00:00",
+              "source": "network",
+              "title": "PostgreSQL: Documentation: 18: Chapter 9. Functions and Operators",
+              "truncated": false,
+              "url": "https://www.postgresql.org/docs/current/functions.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 4911,
+              "passage_sha256": "447483a8ef87d78bca10b3a0a69676838b1fa63bf7313e54e921887046593d76"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "PostgreSQL: Documentation: 18: Chapter 9. Functions and Operators",
+            "url": "https://www.postgresql.org/docs/current/functions.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "116dca4ba580d8ca78c71bf4025f4778a8bfda1303c2ff7053286b1d45c0c0c7"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      },
+      "manual_review": {
+        "category": "relevant_source",
+        "scope": "Source relevance only; no live-model answer evaluation."
+      }
+    }
+  ],
+  "custom_queries": false,
+  "final_memory": {
+    "peak_rss_kib": 69956,
+    "rss_kib": 69956
+  },
+  "initial_memory": {
+    "peak_rss_kib": 7688,
+    "rss_kib": 7688
+  },
+  "method": "Query-only searches, fresh=true, discover=true, no answer URLs. Cold cases have isolated empty corpora, three at a time. Separate cold shared installation executes ten concurrent calls. Bootstrap source catalog is enabled. Nonempty results alone are not a relevance pass. No model or Chromium included in memory measurements.",
+  "parallel": [
+    {
+      "elapsed_ms": 40368,
+      "query": "IPCC climate change",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5595,
+          "indexed_origins": 15,
+          "indexed_pages": 49,
+          "known_urls": 5655,
+          "last_fetch_at": 1789930195,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 96,
+          "requests_today": 81
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 21,
+          "enabled": true,
+          "entrypoints": [
+            "https://www.ipcc.ch/"
+          ],
+          "followed_urls": 5,
+          "sources": [
+            {
+              "discovered_urls": 95,
+              "indexed": true,
+              "resolved_url": "https://www.ipcc.ch/",
+              "retrieved_at": "2026-09-20T18:49:24+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.ipcc.ch/"
+            },
+            {
+              "discovered_urls": 59,
+              "indexed": true,
+              "resolved_url": "https://www.ipcc.ch/report/special-report-on-climate-change-and-cities/",
+              "retrieved_at": "2026-09-20T18:49:32+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.ipcc.ch/report/special-report-on-climate-change-and-cities/"
+            },
+            {
+              "discovered_urls": 56,
+              "indexed": true,
+              "resolved_url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/",
+              "retrieved_at": "2026-09-20T18:49:34+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Public page returned HTTP 401",
+              "failure_kind": "blocked",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://www.ipcc.ch/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.ipcc.ch%2Freport%2Fspecial-report-on-climate-change-and-cities%2F"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Public page returned HTTP 401",
+              "failure_kind": "blocked",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://www.ipcc.ch/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.ipcc.ch%2Freport%2Fspecial-report-on-climate-change-and-cities%2F&format=xml"
+            },
+            {
+              "discovered_urls": 63,
+              "indexed": true,
+              "resolved_url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/",
+              "retrieved_at": "2026-09-20T18:49:51+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "IPCC climate change",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:24+00:00",
+            "page": {
+              "content_hash": "b4c3c6296e82d064317e9cfa565ffc8647e389a2f982468a2b99922ed3db794a",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:24+00:00",
+              "source": "network",
+              "title": "IPCC — Intergovernmental Panel on Climate Change",
+              "truncated": true,
+              "url": "https://www.ipcc.ch/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "90495496d5534d4e636ba7830937f917e6eb83ddb9606dff40289609585cedce"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "IPCC — Intergovernmental Panel on Climate Change",
+            "url": "https://www.ipcc.ch/",
+            "snippet_characters": 350,
+            "snippet_sha256": "48bc879d414aa587c9671c538e5440d269375b638cea03b360aeaf11da9ca866"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:51+00:00",
+            "page": {
+              "content_hash": "39d859c3bb7051bce998916a2ba8e035d3c3ad33346e82e6e98b96b5b182b3be",
+              "language": "en-US",
+              "published_at": "2026-07-02T04:31:33+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:51+00:00",
+              "source": "network",
+              "title": "IWMI and IPCC to hold first Expert Meeting to advance the science of water in climate change  - IWMI",
+              "truncated": true,
+              "url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "5b087d60480ec1937636e35060f48e65f4d103fe5900e0a27854f4e1c19f5529"
+            },
+            "published_at": "2026-07-02T04:31:33+00:00",
+            "read_status": "network",
+            "title": "IWMI and IPCC to hold first Expert Meeting to advance the science of water in climate change  - IWMI",
+            "url": "https://www.iwmi.org/news/iwmi-and-ipcc-to-hold-first-expert-meeting-to-advance-the-science-of-water-in-climate-change/",
+            "snippet_characters": 350,
+            "snippet_sha256": "9dff3ffca09b38e8c977704df40a855a9454ccee043c8bcac55438212c7149df"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:34+00:00",
+            "page": {
+              "content_hash": "24f03eaf5a76d77a05dfd96902a7f97a228efeb25c9b77cadd7af0850e690301",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:34+00:00",
+              "source": "network",
+              "title": "IWMI/IPCC co-sponsored Expert Meeting on Addressing Water Risks and Building Resilience to Climate Change — IPCC",
+              "truncated": false,
+              "url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 675,
+              "passage_sha256": "24f03eaf5a76d77a05dfd96902a7f97a228efeb25c9b77cadd7af0850e690301"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "IWMI/IPCC co-sponsored Expert Meeting on Addressing Water Risks and Building Resilience to Climate Change — IPCC",
+            "url": "https://www.ipcc.ch/event/iwmi-ipcc-co-sponsored-expert-meeting-on-addressing-water-risks-and-building-resilience-to-climate-change/",
+            "snippet_characters": 350,
+            "snippet_sha256": "b5189c76c6db8cf6e46842f506a21295dab8be3c6a01c49c2195a1a7f4df7e52"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 44424,
+      "query": "Python asyncio TaskGroup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5730,
+          "indexed_origins": 17,
+          "indexed_pages": 53,
+          "known_urls": 5796,
+          "last_fetch_at": 1789930198,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 117,
+          "requests_today": 86
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 28,
+          "enabled": true,
+          "entrypoints": [
+            "https://docs.python.org/3/"
+          ],
+          "followed_urls": 11,
+          "sources": [
+            {
+              "discovered_urls": 57,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/",
+              "retrieved_at": "2026-09-20T18:49:17+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/"
+            },
+            {
+              "discovered_urls": 8,
+              "indexed": false,
+              "resolved_url": "https://docs.python.org/sitemap.xml",
+              "retrieved_at": "2026-09-20T18:49:24+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://docs.python.org/sitemap.xml"
+            },
+            {
+              "discovered_urls": 279,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/index.html",
+              "retrieved_at": "2026-09-20T18:49:29+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/index.html"
+            },
+            {
+              "discovered_urls": 39,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio.html",
+              "retrieved_at": "2026-09-20T18:49:37+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio.html"
+            },
+            {
+              "discovered_urls": 35,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-dev.html",
+              "retrieved_at": "2026-09-20T18:49:49+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-dev.html"
+            },
+            {
+              "discovered_urls": 28,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-threading.html",
+              "retrieved_at": "2026-09-20T18:49:50+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-threading.html"
+            },
+            {
+              "discovered_urls": 32,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/howto/a-conceptual-overview-of-asyncio.html",
+              "retrieved_at": "2026-09-20T18:49:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/howto/a-conceptual-overview-of-asyncio.html"
+            },
+            {
+              "discovered_urls": 0,
+              "indexed": false,
+              "resolved_url": "https://github.com/python/cpython/tree/3.14/Lib/asyncio/",
+              "retrieved_at": "2026-09-20T18:49:53+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://github.com/python/cpython/tree/3.14/Lib/asyncio/"
+            },
+            {
+              "discovered_urls": 24,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-sync.html",
+              "retrieved_at": "2026-09-20T18:49:56+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-sync.html"
+            },
+            {
+              "discovered_urls": 36,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-task.html",
+              "retrieved_at": "2026-09-20T18:49:58+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-task.html"
+            },
+            {
+              "discovered_urls": 14,
+              "indexed": true,
+              "resolved_url": "https://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html",
+              "retrieved_at": "2026-09-20T18:49:57+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Site robots policy is unavailable or access is restricted",
+              "failure_kind": "blocked",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://labs.quansight.org/blog/scaling-asyncio-on-free-threaded-python"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Python asyncio TaskGroup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:58+00:00",
+            "page": {
+              "content_hash": "04e8d7ae958bdc82477bab0f039b7d806ce5e8349e7c74ed73716519d48cbf08",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:58+00:00",
+              "source": "network",
+              "title": "Coroutines and tasks — Python 3.14.7 documentation",
+              "truncated": true,
+              "url": "https://docs.python.org/3/library/asyncio-task.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "73ca5a4ce68885c4c262a5a4c7210f3e73da7c8bbe3f9b927b02350fa3f68280"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Coroutines and tasks — Python 3.14.7 documentation",
+            "url": "https://docs.python.org/3/library/asyncio-task.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "ada6f7e17158060c3aafbbb0770043d2d56cecff0efdbf1e787d61c2b8412a75"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 22748,
+      "query": "receta peruana de ají de gallina",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5225,
+          "indexed_origins": 13,
+          "indexed_pages": 29,
+          "known_urls": 5262,
+          "last_fetch_at": 1789930175,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 0,
+          "requests_today": 70
+        },
+        "discovery": {
+          "background_queued": 0,
+          "candidates_considered": 3,
+          "enabled": true,
+          "entrypoints": [
+            "https://developer.mozilla.org/en-US/docs/Web",
+            "https://es.wikipedia.org/wiki/Portal:Portada",
+            "https://en.wikipedia.org/wiki/Main_Page",
+            "https://www.gob.pe/"
+          ],
+          "followed_urls": 3,
+          "sources": [
+            {
+              "discovered_urls": 132,
+              "indexed": true,
+              "resolved_url": "https://developer.mozilla.org/en-US/docs/Web",
+              "retrieved_at": "2026-09-20T18:49:18+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://developer.mozilla.org/en-US/docs/Web"
+            },
+            {
+              "discovered_urls": 725,
+              "indexed": true,
+              "resolved_url": "https://es.wikipedia.org/wiki/Portal:Portada",
+              "retrieved_at": "2026-09-20T18:49:22+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://es.wikipedia.org/wiki/Portal:Portada"
+            },
+            {
+              "discovered_urls": 618,
+              "indexed": true,
+              "resolved_url": "https://en.wikipedia.org/wiki/Main_Page",
+              "retrieved_at": "2026-09-20T18:49:20+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://en.wikipedia.org/wiki/Main_Page"
+            },
+            {
+              "discovered_urls": 51,
+              "indexed": true,
+              "resolved_url": "https://www.gob.pe/",
+              "retrieved_at": "2026-09-20T18:49:23+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.gob.pe/"
+            },
+            {
+              "discovered_urls": 10,
+              "indexed": false,
+              "resolved_url": "https://developer.mozilla.org/sitemap.xml",
+              "retrieved_at": "2026-09-20T18:49:34+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://developer.mozilla.org/sitemap.xml"
+            },
+            {
+              "discovered_urls": 196,
+              "indexed": true,
+              "resolved_url": "https://en.wikipedia.org/wiki/Wikipedia:Contents",
+              "retrieved_at": "2026-09-20T18:49:31+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://en.wikipedia.org/wiki/Wikipedia:Contents"
+            },
+            {
+              "discovered_urls": 173,
+              "indexed": true,
+              "resolved_url": "https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines/Attrib_copyright_license",
+              "retrieved_at": "2026-09-20T18:49:35+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://developer.mozilla.org/docs/MDN/Writing_guidelines/Attrib_copyright_license"
+            }
+          ],
+          "stop_reason": "no_unvisited_relevant_links",
+          "unvisited_domains": []
+        },
+        "query": "receta peruana de ají de gallina",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 26302,
+      "query": "Docker multi stage builds",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5238,
+          "indexed_origins": 13,
+          "indexed_pages": 35,
+          "known_urls": 5283,
+          "last_fetch_at": 1789930179,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 16,
+          "requests_today": 79
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 100,
+          "enabled": true,
+          "entrypoints": [
+            "https://docs.docker.com/"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 17,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/",
+              "retrieved_at": "2026-09-20T18:49:18+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/"
+            },
+            {
+              "discovered_urls": 1811,
+              "indexed": false,
+              "resolved_url": "https://docs.docker.com/sitemap.xml",
+              "retrieved_at": "2026-09-20T18:49:26+00:00",
+              "source": "network",
+              "status": "discovered",
+              "url": "https://docs.docker.com/sitemap.xml"
+            },
+            {
+              "discovered_urls": 1,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/guides/",
+              "retrieved_at": "2026-09-20T18:49:28+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/guides/"
+            },
+            {
+              "discovered_urls": 8,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+              "retrieved_at": "2026-09-20T18:49:37+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/"
+            },
+            {
+              "discovered_urls": 1,
+              "indexed": true,
+              "resolved_url": "https://docs.docker.com/build/building/multi-stage/",
+              "retrieved_at": "2026-09-20T18:49:39+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.docker.com/build/building/multi-stage/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Docker multi stage builds",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:37+00:00",
+            "page": {
+              "content_hash": "f2af33119b21de71d7344881adbd5682ef2b2739b0404eb0f76b94d3d895639a",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:37+00:00",
+              "source": "network",
+              "title": "Multi-stage builds",
+              "truncated": true,
+              "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "63a22b96991cfdb19796a7090646fea662d557a7dba51e66d2d95e3959f76521"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Multi-stage builds",
+            "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+            "snippet_characters": 350,
+            "snippet_sha256": "126796f1202d1fc48e1ba7323a102d6620d6919143f23572f6f6fa17275e2cb8"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:39+00:00",
+            "page": {
+              "content_hash": "37de3d25bd1cd507529597dbc54930c3735d92f9e547e430fe8f6fef6b76fe96",
+              "language": null,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:39+00:00",
+              "source": "network",
+              "title": "Multi-stage builds",
+              "truncated": true,
+              "url": "https://docs.docker.com/build/building/multi-stage/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "5f6c1c2cebd79231b5ae6790be5447555e9558201c55696f9ac0740d643d2aca"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Multi-stage builds",
+            "url": "https://docs.docker.com/build/building/multi-stage/",
+            "snippet_characters": 350,
+            "snippet_sha256": "9a99265cfd200974f0b0b4426f9060266b8a05f0c59e99590c6b969a440185c5"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 29860,
+      "query": "React useEffect cleanup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5256,
+          "indexed_origins": 13,
+          "indexed_pages": 37,
+          "known_urls": 5304,
+          "last_fetch_at": 1789930184,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 48,
+          "requests_today": 81
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 100,
+          "enabled": true,
+          "entrypoints": [
+            "https://react.dev/"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://react.dev/",
+              "retrieved_at": "2026-09-20T18:49:20+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/"
+            },
+            {
+              "discovered_urls": 158,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react",
+              "retrieved_at": "2026-09-20T18:49:28+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react-dom",
+              "retrieved_at": "2026-09-20T18:49:31+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react-dom"
+            },
+            {
+              "discovered_urls": 168,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffect",
+              "retrieved_at": "2026-09-20T18:49:42+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffect"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffectEvent",
+              "retrieved_at": "2026-09-20T18:49:44+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffectEvent"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "React useEffect cleanup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:42+00:00",
+            "page": {
+              "content_hash": "6cd335fd3122d115c6175ca2152987636403ac45ae258501d9572d0995a04894",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:42+00:00",
+              "source": "network",
+              "title": "useEffect – React",
+              "truncated": true,
+              "url": "https://react.dev/reference/react/useEffect",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "45a4033dc968707e425fc78df01007681f6fa6856412565826e0464f9aa0511e"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "useEffect – React",
+            "url": "https://react.dev/reference/react/useEffect",
+            "snippet_characters": 350,
+            "snippet_sha256": "fa13db36d7fc7f7ac4c0576647e71c38fddd23f697964236a24bcb03a4941922"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 34454,
+      "query": "Git rebase conflicts",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5490,
+          "indexed_origins": 13,
+          "indexed_pages": 40,
+          "known_urls": 5541,
+          "last_fetch_at": 1789930186,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 64,
+          "requests_today": 81
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 162,
+          "enabled": true,
+          "entrypoints": [
+            "https://git-scm.com/docs"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 108,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs",
+              "retrieved_at": "2026-09-20T18:49:23+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs"
+            },
+            {
+              "discovered_urls": 172,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git-rebase",
+              "retrieved_at": "2026-09-20T18:49:30+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git-rebase"
+            },
+            {
+              "discovered_urls": 293,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git",
+              "retrieved_at": "2026-09-20T18:49:33+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git"
+            },
+            {
+              "discovered_urls": 176,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git-rebase/fr",
+              "retrieved_at": "2026-09-20T18:49:45+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git-rebase/fr"
+            },
+            {
+              "discovered_urls": 176,
+              "indexed": true,
+              "resolved_url": "https://git-scm.com/docs/git-rebase/ru",
+              "retrieved_at": "2026-09-20T18:49:46+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://git-scm.com/docs/git-rebase/ru"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Git rebase conflicts",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:30+00:00",
+            "page": {
+              "content_hash": "21dfc39ef260b5f764354707249a6d669d0fb8ce2217e73140761d7f07bec510",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:30+00:00",
+              "source": "network",
+              "title": "Git - git-rebase Documentation",
+              "truncated": true,
+              "url": "https://git-scm.com/docs/git-rebase",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "0a0e0685317e1a7ee40d9c4b4763b08e86032b89d7519bb4b24689475abc7c01"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Git - git-rebase Documentation",
+            "url": "https://git-scm.com/docs/git-rebase",
+            "snippet_characters": 350,
+            "snippet_sha256": "af3ef22b903d6196ef6ba47f9eb9faf0e41a6d32f35bba2f6def432522a44808"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 30368,
+      "query": "Busca documentación actualizada de React useEffect cleanup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5340,
+          "indexed_origins": 13,
+          "indexed_pages": 37,
+          "known_urls": 5388,
+          "last_fetch_at": 1789930184,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 48,
+          "requests_today": 81
+        },
+        "discovery": {
+          "background_queued": 0,
+          "candidates_considered": 100,
+          "enabled": true,
+          "entrypoints": [
+            "https://react.dev/"
+          ],
+          "followed_urls": 4,
+          "sources": [
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://react.dev/",
+              "retrieved_at": "2026-09-20T18:49:20+00:00",
+              "source": "shared",
+              "status": "read",
+              "url": "https://react.dev/"
+            },
+            {
+              "discovered_urls": 158,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react",
+              "retrieved_at": "2026-09-20T18:49:28+00:00",
+              "source": "shared",
+              "status": "read",
+              "url": "https://react.dev/reference/react"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react-dom",
+              "retrieved_at": "2026-09-20T18:49:31+00:00",
+              "source": "shared",
+              "status": "read",
+              "url": "https://react.dev/reference/react-dom"
+            },
+            {
+              "discovered_urls": 168,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffect",
+              "retrieved_at": "2026-09-20T18:49:42+00:00",
+              "source": "shared",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffect"
+            },
+            {
+              "discovered_urls": 160,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffectEvent",
+              "retrieved_at": "2026-09-20T18:49:44+00:00",
+              "source": "shared",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffectEvent"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Busca documentación actualizada de React useEffect cleanup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:42+00:00",
+            "page": {
+              "content_hash": "6cd335fd3122d115c6175ca2152987636403ac45ae258501d9572d0995a04894",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:42+00:00",
+              "source": "shared",
+              "title": "useEffect – React",
+              "truncated": true,
+              "url": "https://react.dev/reference/react/useEffect",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "45a4033dc968707e425fc78df01007681f6fa6856412565826e0464f9aa0511e"
+            },
+            "published_at": null,
+            "read_status": "shared",
+            "title": "useEffect – React",
+            "url": "https://react.dev/reference/react/useEffect",
+            "snippet_characters": 350,
+            "snippet_sha256": "fa13db36d7fc7f7ac4c0576647e71c38fddd23f697964236a24bcb03a4941922"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 28489,
+      "query": "NASA Mars atmosphere",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5251,
+          "indexed_origins": 13,
+          "indexed_pages": 36,
+          "known_urls": 5298,
+          "last_fetch_at": 1789930183,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 32,
+          "requests_today": 81
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 50,
+          "enabled": true,
+          "entrypoints": [
+            "https://science.nasa.gov/"
+          ],
+          "followed_urls": 6,
+          "sources": [
+            {
+              "discovered_urls": 233,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/",
+              "retrieved_at": "2026-09-20T18:49:18+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/"
+            },
+            {
+              "discovered_urls": 221,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/mars/",
+              "retrieved_at": "2026-09-20T18:49:25+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/mars/"
+            },
+            {
+              "discovered_urls": 220,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/moon/lunar-atmosphere/",
+              "retrieved_at": "2026-09-20T18:49:28+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/moon/lunar-atmosphere/"
+            },
+            {
+              "discovered_urls": 221,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/mars/",
+              "retrieved_at": "2026-09-20T18:49:43+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/mars"
+            },
+            {
+              "discovered_urls": 205,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/mars/stories/",
+              "retrieved_at": "2026-09-20T18:49:38+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/mars/stories/"
+            },
+            {
+              "discovered_urls": 208,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/humans-in-space/humans-to-mars/",
+              "retrieved_at": "2026-09-20T18:49:37+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/humans-in-space/humans-to-mars/"
+            },
+            {
+              "discovered_urls": 190,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/news-release/nasa-selects-blue-origin-as-mars-telecommunications-network-provider/",
+              "retrieved_at": "2026-09-20T18:49:39+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/news-release/nasa-selects-blue-origin-as-mars-telecommunications-network-provider/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "NASA Mars atmosphere",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:43+00:00",
+            "page": {
+              "content_hash": "ed04e744ace6607536b15140dedbc4f6ad32f354b415af4bafba812e1346e05e",
+              "language": "en-US",
+              "published_at": "2023-06-01T00:49:01+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:43+00:00",
+              "source": "network",
+              "title": "Mars - NASA Science",
+              "truncated": true,
+              "url": "https://science.nasa.gov/mars/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "cd909e309098d636dad12c75ee110a455a00359201e2e5ca0c29098176d3b889"
+            },
+            "published_at": "2023-06-01T00:49:01+00:00",
+            "read_status": "network",
+            "title": "Mars - NASA Science",
+            "url": "https://science.nasa.gov/mars/",
+            "snippet_characters": 350,
+            "snippet_sha256": "d81a69604338c2f008ebbc47a3d02bad3b094469e6d9da0db81abf1023247a16"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:37+00:00",
+            "page": {
+              "content_hash": "d71fe9e0a7b40d140b6e05b6f58df87a8d41ca415018adb00cca83a9b7792905",
+              "language": "en-US",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:37+00:00",
+              "source": "network",
+              "title": "Humans to Mars - NASA",
+              "truncated": false,
+              "url": "https://www.nasa.gov/humans-in-space/humans-to-mars/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 5704,
+              "passage_sha256": "d71fe9e0a7b40d140b6e05b6f58df87a8d41ca415018adb00cca83a9b7792905"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Humans to Mars - NASA",
+            "url": "https://www.nasa.gov/humans-in-space/humans-to-mars/",
+            "snippet_characters": 350,
+            "snippet_sha256": "2affa81d445a3eac89820ab6fa4ac276ccfac384de639444fa1820eb9410b3a3"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:38+00:00",
+            "page": {
+              "content_hash": "9401faebb8a41566a4aced8804b5931fa09cebc9dedeff1684f16aaab25102bd",
+              "language": "en-US",
+              "published_at": "2023-07-17T13:42:57+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:38+00:00",
+              "source": "network",
+              "title": "Mars: News & Features - NASA Science",
+              "truncated": false,
+              "url": "https://science.nasa.gov/mars/stories/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 4221,
+              "passage_sha256": "9401faebb8a41566a4aced8804b5931fa09cebc9dedeff1684f16aaab25102bd"
+            },
+            "published_at": "2023-07-17T13:42:57+00:00",
+            "read_status": "network",
+            "title": "Mars: News & Features - NASA Science",
+            "url": "https://science.nasa.gov/mars/stories/",
+            "snippet_characters": 350,
+            "snippet_sha256": "c305a870aec8345620fe771d07315539753447acd5943d265e7ddd6e261f28fc"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 40926,
+      "query": "Tokio timeout",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5718,
+          "indexed_origins": 16,
+          "indexed_pages": 50,
+          "known_urls": 5781,
+          "last_fetch_at": 1789930195,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 101,
+          "requests_today": 84
+        },
+        "discovery": {
+          "background_queued": 5,
+          "candidates_considered": 74,
+          "enabled": true,
+          "entrypoints": [
+            "https://docs.rs/tokio/latest/tokio/"
+          ],
+          "followed_urls": 8,
+          "sources": [
+            {
+              "discovered_urls": 109,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/",
+              "retrieved_at": "2026-09-20T18:49:26+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/"
+            },
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+              "retrieved_at": "2026-09-20T18:49:34+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html"
+            },
+            {
+              "discovered_urls": 77,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/index.html",
+              "retrieved_at": "2026-09-20T18:49:35+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/index.html"
+            },
+            {
+              "discovered_urls": 0,
+              "indexed": false,
+              "resolved_url": "https://crates.io/teams/github:tokio-rs:core",
+              "retrieved_at": "2026-09-20T18:49:37+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://crates.io/teams/github:tokio-rs:core"
+            },
+            {
+              "discovered_urls": 0,
+              "indexed": false,
+              "resolved_url": "https://crates.io/crates/tokio",
+              "retrieved_at": "2026-09-20T18:49:35+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://crates.io/crates/tokio"
+            },
+            {
+              "discovered_urls": 67,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+              "retrieved_at": "2026-09-20T18:49:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+            },
+            {
+              "discovered_urls": 104,
+              "indexed": true,
+              "resolved_url": "https://docs.rs/tokio/latest/tokio/time/struct.Timeout.html",
+              "retrieved_at": "2026-09-20T18:49:49+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://docs.rs/tokio/latest/tokio/time/struct.Timeout.html"
+            },
+            {
+              "discovered_urls": 33,
+              "indexed": true,
+              "resolved_url": "https://tokio.rs/tokio/tutorial",
+              "retrieved_at": "2026-09-20T18:49:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://tokio.rs/tokio/tutorial"
+            },
+            {
+              "discovered_urls": 127,
+              "indexed": true,
+              "resolved_url": "https://github.com/tokio-rs/tokio",
+              "retrieved_at": "2026-09-20T18:49:55+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://github.com/tokio-rs/tokio"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "Tokio timeout",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:34+00:00",
+            "page": {
+              "content_hash": "3046d7f6de5a2bf785fa9e4dbe407a04ddd391de68cb50ee7d9ffd36619872b5",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:34+00:00",
+              "source": "network",
+              "title": "timeout in tokio::time - Rust",
+              "truncated": false,
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 2081,
+              "passage_sha256": "3046d7f6de5a2bf785fa9e4dbe407a04ddd391de68cb50ee7d9ffd36619872b5"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "timeout in tokio::time - Rust",
+            "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "8f21c02ce7092a3df1a04984b4e7a948aeae0a6a22b79add92ed59398c9a7a2b"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:55+00:00",
+            "page": {
+              "content_hash": "f8a2dc50c37186d25cb30b057e037e4a743ee0a5ab6c3104c5270eae0b2ee148",
+              "language": "en",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:55+00:00",
+              "source": "network",
+              "title": "timeout_at in tokio::time - Rust",
+              "truncated": false,
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 1894,
+              "passage_sha256": "f8a2dc50c37186d25cb30b057e037e4a743ee0a5ab6c3104c5270eae0b2ee148"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "timeout_at in tokio::time - Rust",
+            "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+            "snippet_characters": 350,
+            "snippet_sha256": "205acb7c960727c7507ccbffc82e2eb29a0db252f8bb621299c9b24fe41864a8"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 36080,
+      "query": "NASA solar eclipse",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5560,
+          "indexed_origins": 13,
+          "indexed_pages": 45,
+          "known_urls": 5616,
+          "last_fetch_at": 1789930190,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 80,
+          "requests_today": 81
+        },
+        "discovery": {
+          "background_queued": 16,
+          "candidates_considered": 71,
+          "enabled": true,
+          "entrypoints": [
+            "https://science.nasa.gov/"
+          ],
+          "followed_urls": 8,
+          "sources": [
+            {
+              "discovered_urls": 233,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/",
+              "retrieved_at": "2026-09-20T18:49:18+00:00",
+              "source": "shared",
+              "status": "read",
+              "url": "https://science.nasa.gov/"
+            },
+            {
+              "discovered_urls": 222,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/solar-system/",
+              "retrieved_at": "2026-09-20T18:49:31+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/solar-system/"
+            },
+            {
+              "discovered_urls": 199,
+              "indexed": true,
+              "resolved_url": "https://ciencia.nasa.gov/sistema-solar/",
+              "retrieved_at": "2026-09-20T18:49:29+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://ciencia.nasa.gov/sistema-solar"
+            },
+            {
+              "discovered_urls": 192,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/",
+              "retrieved_at": "2026-09-20T18:49:27+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/"
+            },
+            {
+              "discovered_urls": 185,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/solar-system/oort-cloud/",
+              "retrieved_at": "2026-09-20T18:49:34+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/solar-system/oort-cloud/"
+            },
+            {
+              "discovered_urls": 187,
+              "indexed": true,
+              "resolved_url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/",
+              "retrieved_at": "2026-09-20T18:49:46+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/"
+            },
+            {
+              "discovered_urls": 197,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/",
+              "retrieved_at": "2026-09-20T18:49:49+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/"
+            },
+            {
+              "discovered_urls": 0,
+              "error": "Public page returned HTTP 404",
+              "failure_kind": "unavailable",
+              "indexed": false,
+              "status": "failed",
+              "url": "https://ciencia.nasa.gov/solar-system/"
+            },
+            {
+              "discovered_urls": 218,
+              "indexed": true,
+              "resolved_url": "https://science.nasa.gov/moon/solar-wind/",
+              "retrieved_at": "2026-09-20T18:49:50+00:00",
+              "source": "network",
+              "status": "read",
+              "url": "https://science.nasa.gov/moon/solar-wind/"
+            }
+          ],
+          "stop_reason": "strong_lexical_source",
+          "unvisited_domains": []
+        },
+        "query": "NASA solar eclipse",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:49:49+00:00",
+            "page": {
+              "content_hash": "e239a79c7ab03b8a4651bba9cb3446a99742d2ea5c6a8d52b031a516339c259d",
+              "language": "en-US",
+              "published_at": "2026-07-27T18:01:14+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:49+00:00",
+              "source": "network",
+              "title": "NASA Science Soars During August Total Solar Eclipse - NASA Science",
+              "truncated": true,
+              "url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 6000,
+              "passage_sha256": "e66694e45c43471152bf76551f1a4962235a933c8f17d73db8346f771de7ab52"
+            },
+            "published_at": "2026-07-27T18:01:14+00:00",
+            "read_status": "network",
+            "title": "NASA Science Soars During August Total Solar Eclipse - NASA Science",
+            "url": "https://science.nasa.gov/science-research/heliophysics/nasa-science-soars-during-august-total-solar-eclipse/",
+            "snippet_characters": 350,
+            "snippet_sha256": "c5e0c29befed59244f4669e15d4b7c3809bdc453c7cbbed196a08bea51517813"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:46+00:00",
+            "page": {
+              "content_hash": "a59d66f67f145c0f928cf5641ca3c0ae138095d5365c4d21844e7746413cc7e8",
+              "language": "en-US",
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:46+00:00",
+              "source": "network",
+              "title": "Solar Eclipses - NASA",
+              "truncated": false,
+              "url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 625,
+              "passage_sha256": "a59d66f67f145c0f928cf5641ca3c0ae138095d5365c4d21844e7746413cc7e8"
+            },
+            "published_at": null,
+            "read_status": "network",
+            "title": "Solar Eclipses - NASA",
+            "url": "https://www.nasa.gov/solar-system/skywatching/eclipses/solar-eclipses/",
+            "snippet_characters": 350,
+            "snippet_sha256": "7e52a37e14e71313f17b5490795ac191facca56f39aa4c9f57901cc97334b4dc"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:27+00:00",
+            "page": {
+              "content_hash": "1eb4cbd58193e6261606b4ea9b51501a4f7e16cd3f57df9eae6f6ee232f49831",
+              "language": "en-US",
+              "published_at": "2026-08-26T17:33:05+00:00",
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:49:27+00:00",
+              "source": "network",
+              "title": "NASA Johnson Pilots Chase Moon’s Shadow for Eclipse Science  - NASA",
+              "truncated": false,
+              "url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+              "passage_characters": 4839,
+              "passage_sha256": "1eb4cbd58193e6261606b4ea9b51501a4f7e16cd3f57df9eae6f6ee232f49831"
+            },
+            "published_at": "2026-08-26T17:33:05+00:00",
+            "read_status": "network",
+            "title": "NASA Johnson Pilots Chase Moon’s Shadow for Eclipse Science  - NASA",
+            "url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/",
+            "snippet_characters": 350,
+            "snippet_sha256": "40ee064e42de2a636d1de0879f6726b729a1c4bde638b97a08abaf9fd57373fe"
+          },
+          {
+            "indexed_at": "2026-09-20T18:49:29+00:00",
+            "published_at": "2023-06-28T05:30:55+00:00",
+            "read_status": "not_requested",
+            "title": "Sistema solar - NASA Ciencia",
+            "url": "https://ciencia.nasa.gov/sistema-solar/",
+            "snippet_characters": 350,
+            "snippet_sha256": "fdf98a62d645b777569f31bba2306c5e7638743aebbf7d2920bbac7b3d4c7c4b"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "Exact lexical matches were sparse; additional results passed topical term coverage and proximity filters. Lexical support is not a factual confidence score."
+        ]
+      }
+    }
+  ],
+  "parallel_wall_ms": 44432,
+  "performed_at": "2026-09-20T18:49:59.531499496+00:00",
+  "sampling_seed": 20260920,
+  "status": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 5730,
+      "indexed_origins": 17,
+      "indexed_pages": 53,
+      "known_urls": 5796,
+      "last_fetch_at": 1789930198,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "priority_urls": 117,
+      "requests_today": 86
+    },
+    "crawler_request_budget": 1600,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 2000
+  },
+  "wall_ms": 101242,
+  "artifact_note": "Full public passages/snippets removed after review; source URLs, hashes, lengths, timing and provenance retained."
+}

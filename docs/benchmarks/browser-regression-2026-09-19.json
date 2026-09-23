@@ -1,0 +1,385 @@
+{
+  "date": "2026-09-19",
+  "engine": "Chromium 153.0.8010.47 (Debian 13)",
+  "scope": "Real sandboxed Chromium; temporary profiles; controlled local fixtures including React and cross-site frames",
+  "scenarios": 59,
+  "passed": 59,
+  "scenario_elapsed_ms_sum": 158462,
+  "timing_note": "Includes per-scenario navigation and setup; shared host under concurrent load; not a latency benchmark",
+  "results": [
+    {
+      "case": "month_replace",
+      "elapsed_ms": 2371,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "week_replace",
+      "elapsed_ms": 2027,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "clear_date",
+      "elapsed_ms": 2827,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "clear_contenteditable",
+      "elapsed_ms": 3450,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "textarea_crlf",
+      "elapsed_ms": 3223,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "prevented_checkbox_rejected",
+      "elapsed_ms": 1969,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "alert_can_be_dismissed",
+      "elapsed_ms": 2195,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "prompt_accepts_text",
+      "elapsed_ms": 2158,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "cross_nested_frame_click",
+      "elapsed_ms": 5074,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "scaled_frame_click",
+      "elapsed_ms": 4071,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "covered_frame_rejected",
+      "elapsed_ms": 3137,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "react_controlled_form",
+      "elapsed_ms": 3289,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "unicode_replace",
+      "elapsed_ms": 3007,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "clear_text",
+      "elapsed_ms": 4086,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "email_replace",
+      "elapsed_ms": 3177,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "number_replace",
+      "elapsed_ms": 2140,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "date_replace",
+      "elapsed_ms": 2483,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "time_replace",
+      "elapsed_ms": 3061,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "datetime_replace",
+      "elapsed_ms": 3639,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "color_replace",
+      "elapsed_ms": 2664,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "invalid_date_rejected",
+      "elapsed_ms": 2335,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "range_text_rejected",
+      "elapsed_ms": 1725,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "readonly_rejected",
+      "elapsed_ms": 1654,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "disabled_fieldset_rejected",
+      "elapsed_ms": 2201,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "inert_rejected",
+      "elapsed_ms": 3082,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "noneditable_rejected",
+      "elapsed_ms": 2800,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "maxlength_not_silent",
+      "elapsed_ms": 2743,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "textarea_multiline",
+      "elapsed_ms": 2652,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "contenteditable_replace",
+      "elapsed_ms": 1491,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "type_at_caret",
+      "elapsed_ms": 2916,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "key_targets_requested_input",
+      "elapsed_ms": 3618,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "enter_in_textarea",
+      "elapsed_ms": 3834,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "literal_plus_key",
+      "elapsed_ms": 3197,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "unicode_key",
+      "elapsed_ms": 2099,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "focus_replacement_not_silent",
+      "elapsed_ms": 1826,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "checkbox_idempotent",
+      "elapsed_ms": 4607,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "radio_uncheck_rejected",
+      "elapsed_ms": 2566,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "select_enabled",
+      "elapsed_ms": 2160,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "disabled_option_rejected",
+      "elapsed_ms": 2149,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "disabled_optgroup_rejected",
+      "elapsed_ms": 1940,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "hidden_file_upload",
+      "elapsed_ms": 1967,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "duplicate_selector_rejected",
+      "elapsed_ms": 2198,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "covered_click_rejected",
+      "elapsed_ms": 2535,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "partially_covered_click",
+      "elapsed_ms": 2517,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "clipped_large_click",
+      "elapsed_ms": 2240,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "double_click",
+      "elapsed_ms": 1945,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "hover",
+      "elapsed_ms": 1746,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "html_drag",
+      "elapsed_ms": 2132,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "shadow_fill",
+      "elapsed_ms": 2198,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "shadow_wait",
+      "elapsed_ms": 1340,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "scoped_text_condition",
+      "elapsed_ms": 2248,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "delayed_input",
+      "elapsed_ms": 3239,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "nested_frame_click",
+      "elapsed_ms": 3294,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "nested_frame_fill",
+      "elapsed_ms": 2857,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "cross_site_frame_fill",
+      "elapsed_ms": 2861,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "cross_site_frame_click",
+      "elapsed_ms": 3194,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "agent_password_blocked",
+      "elapsed_ms": 1762,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "navigation_back_forward",
+      "elapsed_ms": 4191,
+      "error": null,
+      "passed": true
+    },
+    {
+      "case": "spa_back",
+      "elapsed_ms": 2355,
+      "error": null,
+      "passed": true
+    }
+  ],
+  "additional_verification": {
+    "rust_tests": {
+      "passed": 6,
+      "failed": 0
+    },
+    "focused_ui_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "application_ui_tests": {
+      "passed": 2,
+      "failed": 0,
+      "note": "Welcome setup and real browser controls workflow"
+    },
+    "indexeddb_token_survives_restart": true,
+    "public_selenium_form_submission": true,
+    "clippy_warnings_denied": "passed",
+    "typescript_checks": "passed",
+    "frontend_and_server_build": "passed"
+  }
+}

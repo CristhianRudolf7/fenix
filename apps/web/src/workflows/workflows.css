@@ -1,0 +1,632 @@
+.schedules-page,
+.flow-view {
+  --flow-border: var(--line, #deddd6);
+  color: var(--fg, var(--ink));
+  min-width: 0;
+}
+.schedules-page {
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 32px;
+}
+.schedules-heading,
+.flow-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 25px;
+}
+.schedules-heading h1,
+.flow-heading h1 {
+  font-family: var(--editorial);
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1.12;
+  margin: 8px 0 10px;
+}
+.flow-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.schedules-toolbar {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+.schedules-toolbar > input {
+  flex: 1;
+  min-width: 100px;
+}
+.flow-tabs {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin: 12px 0 20px;
+}
+.flow-tabs button {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  padding: 10px 17px;
+  white-space: nowrap;
+}
+.flow-tabs button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.schedule-cards {
+  display: grid;
+  gap: 16px;
+}
+.schedule-card {
+  display: flex;
+  gap: 20px;
+  border: 1px solid var(--flow-border);
+  border-radius: 16px;
+  padding: 24px;
+  background: var(--bg, #fff);
+  box-shadow: var(--shadow);
+}
+.schedule-symbol,
+.connector-symbol {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 25px;
+}
+.schedule-card-main {
+  min-width: 0;
+  flex: 1;
+}
+.schedule-card-title {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.schedule-card h2 {
+  font-size: 19px;
+  margin: 0;
+}
+.schedule-card .flow-actions {
+  margin-top: 16px;
+}
+.schedule-result {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.schedule-mini-route {
+  font-size: 13px;
+  padding: 10px 0;
+  color: var(--muted);
+}
+.flow-state {
+  font-size: 12px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.flow-state::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 100%;
+  background: var(--muted, #888);
+}
+.flow-state.completed,
+.flow-state.active {
+  color: var(--success);
+}
+.flow-state.completed::before,
+.flow-state.active::before {
+  background: var(--success);
+}
+.flow-state.failed,
+.flow-state.interrupted {
+  color: var(--danger);
+}
+.flow-state.failed::before {
+  background: var(--danger);
+}
+.flow-state.running::before,
+.flow-state.waiting::before {
+  background: var(--accent);
+  animation: flow-pulse 1.5s ease-in-out infinite;
+}
+.flow-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 285px;
+  gap: 12px;
+  min-height: 440px;
+}
+.flow-canvas-wrap {
+  position: relative;
+  border: 1px solid var(--flow-border);
+  border-radius: 15px;
+  overflow: hidden;
+  min-width: 0;
+  background: radial-gradient(
+    circle,
+    var(--flow-border) 0.8px,
+    transparent 1px
+  );
+  background-size: 18px 18px;
+}
+.flow-canvas {
+  overflow: auto;
+  height: 100%;
+  max-height: 65vh;
+  min-height: 400px;
+  overscroll-behavior: contain;
+}
+.flow-edges {
+  position: absolute;
+  inset: 0;
+  color: var(--muted, #7a8485);
+}
+.flow-node {
+  position: absolute;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  width: 232px;
+  min-height: 88px;
+  padding: 14px;
+  border: 1px solid var(--flow-border);
+  border-radius: 12px;
+  background: var(--bg, #fff);
+  box-shadow: var(--shadow);
+  color: inherit;
+}
+.flow-node.selected {
+  border: 2px solid var(--accent);
+  padding: 13px;
+}
+.flow-node.completed {
+  border-color: var(--success);
+}
+.flow-node.failed {
+  border-color: var(--danger);
+}
+.flow-node.skipped {
+  opacity: 0.5;
+}
+.flow-node-symbol {
+  font-size: 27px;
+  color: var(--accent);
+  width: 30px;
+  flex-shrink: 0;
+}
+.flow-node strong {
+  display: block;
+  max-width: 154px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.flow-node small,
+.flow-node-state {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--muted, #777);
+}
+.flow-node.running {
+  animation: flow-border 2s ease-in-out infinite;
+}
+.flow-zoom {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  background: var(--bg, #fff);
+  box-shadow: var(--shadow);
+  border-radius: 8px;
+  border: 1px solid var(--flow-border);
+  display: flex;
+}
+.flow-zoom button {
+  border: 0;
+  background: transparent;
+  padding: 7px 12px;
+  color: inherit;
+}
+.flow-inspector {
+  background: var(--bg, #fff);
+  padding: 20px;
+  border: 1px solid var(--flow-border);
+  border-radius: 15px;
+  min-width: 0;
+  overflow: auto;
+  max-height: 65vh;
+}
+.flow-inspector h2 {
+  font-family: var(--editorial);
+  font-size: 23px;
+  margin: 9px 0;
+}
+.flow-inspector pre {
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--canvas);
+  padding: 10px;
+  border-radius: 8px;
+  max-height: 340px;
+  overflow: auto;
+}
+.flow-inspector details {
+  margin: 15px 0;
+}
+.flow-browser-steps {
+  padding-left: 23px;
+  display: grid;
+  gap: 8px;
+}
+.flow-browser-steps li {
+  padding: 10px 7px;
+  background: var(--canvas);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.flow-browser-steps small {
+  display: block;
+  color: var(--muted);
+}
+.flow-condition {
+  padding: 9px;
+  border: 1px dashed var(--accent);
+  border-radius: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.flow-run-strip {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  border: 1px solid var(--flow-border);
+  border-radius: 11px;
+  padding: 12px 16px;
+  margin: 12px 0;
+  background: var(--bg, #fff);
+}
+.flow-run-strip p {
+  flex-basis: 100%;
+  font-size: 13px;
+  margin: 0;
+}
+.flow-composer {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 25px;
+  padding: 10px 12px;
+  border: 1px solid var(--flow-border);
+  border-radius: 14px;
+  background: var(--bg, #fff);
+  box-shadow: var(--shadow);
+}
+.flow-composer > span {
+  color: var(--accent);
+  font-size: 25px;
+  padding: 0 5px;
+}
+.flow-composer > input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+}
+.flow-error {
+  padding: 14px;
+  border: 1px solid var(--danger);
+  border-radius: 10px;
+  color: var(--danger);
+  overflow-wrap: anywhere;
+}
+.flow-history {
+  min-height: 300px;
+}
+.flow-history-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  text-align: left;
+  padding: 18px;
+  margin-bottom: 10px;
+  width: 100%;
+  background: var(--bg, #fff);
+  color: inherit;
+  border: 1px solid var(--flow-border);
+}
+.flow-history-row > span:last-child {
+  margin-left: auto;
+}
+.schedule-empty {
+  padding: 65px 25px;
+  text-align: center;
+  border: 1px dashed var(--flow-border);
+  border-radius: 16px;
+}
+.schedule-empty > span {
+  font-size: 40px;
+  color: var(--accent);
+}
+.schedule-empty h2 {
+  font-family: var(--editorial);
+  font-size: 29px;
+}
+.flow-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  background: #18252666;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+.flow-modal {
+  width: min(560px, 100%);
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 26px;
+  background: var(--bg, #fff);
+  color: var(--fg, var(--ink));
+  border-radius: 20px;
+  box-shadow: 0 20px 90px #0003;
+}
+.flow-modal > header {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.flow-modal h2 {
+  font-family: var(--editorial);
+  font-size: 27px;
+  margin: 0;
+}
+.flow-modal form,
+.flow-modal label {
+  display: grid;
+  gap: 9px;
+}
+.flow-modal form {
+  gap: 17px;
+}
+.flow-modal textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.flow-modal code {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+}
+.flow-modal details > label {
+  margin-top: 15px;
+}
+.flow-loading {
+  padding: 45px;
+  text-align: center;
+  font-size: 40px;
+  animation: flow-pulse 1s infinite;
+}
+.workflow-panel {
+  padding: 18px !important;
+  overflow: auto;
+}
+.flow-view.is-compact .flow-heading {
+  display: block;
+}
+.flow-view.is-compact h1 {
+  font-size: 27px;
+}
+.flow-view.is-compact .flow-body {
+  grid-template-columns: 1fr;
+}
+.flow-view.is-compact .flow-inspector {
+  max-height: 280px;
+}
+.flow-view.is-compact .flow-canvas {
+  min-height: 310px;
+  max-height: 45vh;
+}
+.flow-view.is-compact .flow-composer {
+  flex-wrap: wrap;
+}
+.connector-catalog {
+  margin: 24px 0 32px;
+}
+.connector-search {
+  display: grid;
+  gap: 8px;
+  max-width: 520px;
+  margin-bottom: 24px;
+}
+.connector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 18px;
+}
+.connector-card {
+  border: 1px solid var(--line, #deddd6);
+  border-radius: 16px;
+  background: var(--bg, #fff);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.connector-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.connector-title h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.connector-title > div {
+  flex: 1;
+  min-width: 0;
+}
+.connector-title small {
+  display: block;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.connector-connect {
+  align-self: flex-start;
+}
+.connector-account {
+  border-top: 1px solid var(--line, #ddd);
+  padding-top: 13px;
+  display: grid;
+  gap: 8px;
+}
+.connector-account .flow-actions {
+  font-size: 12px;
+}
+.connector-card details {
+  font-size: 13px;
+  margin-top: auto;
+}
+.connector-card ul {
+  padding-left: 20px;
+}
+.connector-permission {
+  display: flex !important;
+  align-items: center;
+}
+.connector-permission input {
+  width: auto;
+}
+.connector-card p {
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+}
+.connector-catalog input,
+.flow-modal input,
+.flow-modal select,
+.flow-modal textarea,
+.schedules-toolbar input {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+@keyframes flow-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes flow-border {
+  50% {
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+}
+@media (min-width: 1000px) {
+  .schedules-page > .flow-view > .flow-heading {
+    padding-top: 20px;
+  }
+  html.workflow-open .shell {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+  html.workflow-open .sidebar .brand-name,
+  html.workflow-open .sidebar .nav-label,
+  html.workflow-open .sidebar .nav-link > span:not(.nav-icon),
+  html.workflow-open .sidebar .sidebar-version,
+  html.workflow-open .sidebar .sidebar-bottom {
+    display: none;
+  }
+  html.workflow-open .sidebar {
+    width: 76px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  html.workflow-open .sidebar .nav a {
+    justify-content: center;
+    font-size: 0;
+  }
+  html.workflow-open .sidebar .nav svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+@media (max-width: 850px) {
+  .schedules-page {
+    padding: 20px 14px;
+  }
+  .schedules-heading,
+  .flow-heading {
+    flex-direction: column;
+  }
+  .flow-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flow-inspector {
+    max-height: 320px;
+  }
+  .flow-canvas {
+    min-height: 350px;
+  }
+  .flow-composer {
+    flex-wrap: wrap;
+  }
+  .flow-composer > input {
+    flex-basis: 70%;
+  }
+  .flow-composer > button {
+    margin-left: auto;
+  }
+  .schedule-card {
+    padding: 17px;
+    gap: 11px;
+  }
+  .schedules-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .schedule-card-title {
+    gap: 8px;
+  }
+  .schedule-card-title h2 {
+    font-size: 17px;
+    flex-basis: 100%;
+  }
+  .flow-history-row {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .flow-modal-backdrop {
+    padding: 10px;
+  }
+  .flow-modal {
+    padding: 20px;
+  }
+  .flow-actions button {
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-node.running,
+  .flow-state.running::before,
+  .flow-state.waiting::before,
+  .flow-loading {
+    animation: none;
+  }
+}

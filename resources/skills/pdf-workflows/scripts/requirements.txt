@@ -1,0 +1,6 @@
+# Install at image build time, never during a document request.
+charset-normalizer==3.5.1
+Pillow==12.3.0
+pypdf==6.19.0
+pypdfium2==5.13.0
+reportlab==4.4.10

@@ -1,6 +1,6 @@
 # Adaptive memory
 
-Fénix stores memory in SQLite (schema version 7). This is the canonical store; `instructions/MEMORY.md` is an export of up to 200 active records, not a second writable database. Existing memories migrate as confirmed explicit facts without losing their IDs or project bindings. Historical versions start at migration; earlier overwritten content cannot be reconstructed retroactively.
+Fénix stores memory in SQLite (schema version 13). This is the canonical store; `instructions/MEMORY.md` is an export of up to 200 active records, not a second writable database. Existing memories migrate as confirmed explicit facts without losing their IDs or project bindings. Historical versions start at migration; earlier overwritten content cannot be reconstructed retroactively.
 
 ## Records and evidence
 
@@ -43,7 +43,7 @@ Same normalized preference plus three distinct source messages promotes an extra
 
 Checkpoint capture reuses original owner-message sources rather than re-extracting model summaries or tool output as user facts. Prior task sources are also enqueued before conversation compaction. The checkpoint remains durable before capture is queued; existing recent messages and task/session IDs are preserved. This implementation does not perform unrestricted semantic harvesting of every tool output or all assistant text.
 
-Every cycle excludes expired facts, incrementally proposes lexical overlap pairs for review, and optionally updates embeddings. Overlap is a hint, not proof of duplication/contradiction; review can mark complementary/duplicate/conflicting/dismissed, while actual correction/withdrawal is explicit. No automatic destructive merging. Entity cards omit invalid evidence, and graph references are protected by foreign keys. The worker reports failed jobs through task events and maintenance status; only memory jobs resume after service restart, not interrupted task effects.
+Every cycle excludes expired facts, incrementally proposes lexical overlap pairs for review, and optionally updates embeddings. The evidence-bearing retrieval section below describes selective background assessments and expanded diagnostics. Overlap is a hint, not proof of duplication/contradiction; review can mark complementary/duplicate/conflicting/dismissed, while actual correction/withdrawal is explicit. No automatic destructive merging. Entity cards omit invalid evidence, and graph references are protected by foreign keys. The worker reports failed jobs through task events and maintenance status; only memory jobs resume after service restart, not interrupted task effects.
 
 ## Optional embeddings
 
@@ -69,3 +69,38 @@ The memory page exposes scope, type, lifecycle state, source quotes, history, ex
 ## Validation
 
 Regression coverage includes migration, candidate promotion with unique provenance, withdrawal replay, temporal revisions, scoped aliases and typed edges, invalidated evidence, bounded graph traversal, context packing, incremental cursors, durable retries, overlap review, semantic invalidation, and mocked extraction/embedding providers. These tests establish behavior; they are not a claim of measured long-term memory quality on real-user benchmarks.
+
+## Evidence-bearing retrieval and review
+
+The agent's `memory_search` now consistently returns `{results, diagnostics, warnings, reviews}`. Each result contains `memory`, `score`, `branches`, `evidence`, `create_safety` and `freshness`. The administrative `/api/memory` list remains unchanged.
+
+- Lexical candidates and optional vector candidates are fused with a deterministic relational arm. Explicit entity names/aliases anchor a scoped walk, two hops by default, at most three. Up to four anchors and 40 edges per anchor are considered; truncation is reported. Edge evidence memories and their paths participate in ranking. Alias resolution does not guess entities from semantic resemblance. `graph:false` disables this arm. Historical `since`/`as_of` searches exclude current graph and vector state.
+- Exact content/ID matches are marked `create_safety: exists`. An exact title is only `possible_match`; vectors and loose keywords remain `unknown`. These labels concern record identity, not truth. The existing canonical content deduplication remains the write-time backstop. Similarity never authorizes merging or overwriting.
+- `recency` accepts `auto` (default), `on`, or `off`. Auto recognizes a small English/Spanish current-state vocabulary. Commitments, assumptions and facts use 14-, 30- and 90-day half-lives for a relevance nudge capped at 15%; preferences, constraints and decisions are evergreen. Age uses explicit `valid_from`, falling back to creation time, so a maintenance write does not rejuvenate a fact. Age beyond two half-lives suggests revalidation, not deletion or falsity. These are initial engineering defaults, not calibrated probabilities.
+- Context packing uses the same deterministic retrieval, preserves priority memories, and adds compact notices for relevant pending reviews. Full claims, evidence and revision history remain retrievable. No additional model or embedding request is required for ordinary retrieval or context packing.
+
+Relations now bind both their schema version and the exact memory revision that supported them. Editing that evidence hides the edge until explicitly revalidated with `relation_save`. Migration 13 records the current revision as a baseline for existing edges; it cannot certify their past semantic correctness.
+
+### Selective contradiction review
+
+Incremental overlap discovery proposes same-scope, same-kind and same-entity pairs (including the general/no-entity group). It uses lexical overlap/title hints and can miss paraphrases and very short claims. Explicit non-overlapping validity intervals yield a deterministic temporal-change proposal, not proof that one fact supersedes another. Other ambiguous pairs can enter the background reviewer.
+
+`automatic_review` defaults to true and has an independent checkbox in the memory page. The existing configured runtime model reviews at most one pair per worker cycle, with two attempts per exact revision pair, a 60-second reservation, a 45-second request timeout and at most 1,400 output tokens. The input is restricted to the two claims and bounded source excerpts. There is no new provider, mandatory reranker, or full-history review. This background feature consumes model tokens; turn it off to use local hints and conversational review only.
+
+The reviewer must return `duplicate`, `complementary`, `conflicting`, `temporal_change`, or `ambiguous`, an explanation and exact quotes from both input claims. Ambiguous proposals require a clarification question. Results are version-fenced and never change claim status/content or automatically supersede anything. Relevant notices reach search and context packing; the conversational agent inspects sources and asks the owner when needed. A successful assessment is not rerun unless a claim changes. Failed attempts survive restarts and exhausted pairs remain available for manual review.
+
+`memory_context reviews` exposes both original claims and the proposal. `knowledge_manage review_resolve` records complementary/duplicate/conflicting/temporal_change/ambiguous/dismissed; supply `first_revision` and `second_revision` from the reviewed pair so a delayed decision cannot resolve changed claims. It remains separate from explicit correction or withdrawal. Reviews are capped at 100 per call. Source uncertainty and reviewer judgments are not calibrated truth guarantees.
+
+### Health and maintenance
+
+`memory_context health` (also POST `/api/memory/knowledge` with `action: health`) reports scoped lexical gaps, pending embeddings for the configured endpoint/model, orphan entities, relations invalidated by evidence/schema changes, exhausted reviews and aging-memory candidates. Freshness inspection samples up to 500 confirmed records and returns at most 50 IDs, with coverage fields; it is not a full semantic audit.
+
+The background worker repairs up to 50 derived lexical entries per cycle and checks one memory scope per cycle using a persisted round-robin cursor. Health reports are persisted per scope. Canonical memories, relations, history and orphan entities are not deleted or silently merged. Optional embedding indexing continues to process only changed eligible records through the existing worker.
+
+### Reproducible evaluation
+
+Run `cargo run -p fenix-storage --example memory_benchmark` to evaluate 26 fixed English/Spanish development queries in a temporary database. No production data, provider credentials, external service or model call is used. `memory_eval::MemoryEvalCase` and `Store::evaluate_memory_retrieval` support caller-supplied query/relevance corpora.
+
+Both configurations receive the same corpus and queries: lexical baseline versus the production deterministic retrieval path. JSON output includes per-query IDs, precision@k, recall@k, MRR, nDCG, forbidden-memory hits, p95 retrieval latency and estimated serialized-result tokens (UTF-8 bytes/3, not billed tokens). Duplicate IDs cannot inflate metrics. Empty-ground-truth queries report correct abstention separately. This benchmark does not measure answer generation, review-model accuracy or live-user task success; embeddings are not part of this offline comparison. Expanded evidence may increase result tokens, so a recall gain is not automatically a cost reduction.
+
+Recorded [development evaluation](../benchmarks/memory-retrieval-2026-09-21.json): recall@5 92.3% → 100.0%, nDCG@5 0.710 → 0.769, zero forbidden hits. Estimated result tokens averaged 158 → 393; evidence costs context. Latency is one local pass with baseline first, so cache/order effects prevent a speed claim. This is a development corpus, not held-out validation.

@@ -6,7 +6,7 @@ if [[ "$(uname -s)" != "Linux" ]]; then
     echo "Fenix currently supports Linux. / Fenix requiere Linux." >&2
     exit 1
 fi
-for dependency in cargo systemctl xdg-open; do
+for dependency in cargo pnpm systemctl xdg-open; do
     if ! command -v "$dependency" >/dev/null 2>&1; then
         echo "Missing dependency / Dependencia faltante: $dependency" >&2
         exit 1
@@ -24,6 +24,8 @@ fenix_unit_directory="$HOME/.config/systemd/user"
 fenix_application_directory="$HOME/.local/share/applications"
 
 cd -- "$fenix_repository"
+pnpm --dir apps/web install --frozen-lockfile
+pnpm --dir apps/web build
 cargo build --release --locked -p fenix-server --bin fenix
 install -d -m 700 "$fenix_install_directory"
 install -d "$fenix_binary_directory" "$fenix_unit_directory" "$fenix_application_directory"
@@ -31,6 +33,8 @@ install -d "$fenix_binary_directory" "$fenix_unit_directory" "$fenix_application
 if systemctl --user is-active --quiet fenix.service; then
     systemctl --user stop fenix.service
 fi
+install -d "$fenix_install_directory/web"
+cp -a apps/web/dist/. "$fenix_install_directory/web/"
 install -m 755 target/release/fenix "$fenix_binary_directory/fenix"
 install -m 644 packaging/linux/fenix.service "$fenix_unit_directory/fenix.service"
 install -m 644 packaging/linux/fenix.desktop "$fenix_application_directory/fenix.desktop"

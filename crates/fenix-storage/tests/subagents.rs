@@ -3,6 +3,7 @@ use serde_json::json;
 
 fn spec() -> SubagentSpec {
     SubagentSpec {
+        profile: "general".into(),
         objective: "Find the quarterly expenses".into(),
         expected_output: "A total with source file references".into(),
         context: "Only the finance folder is relevant".into(),
@@ -213,9 +214,9 @@ fn upgrade_preserves_existing_data_and_restart_does_not_resume_children() {
         connection
             .pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        7
+        13
     );
-    connection.pragma_update(None, "user_version", 8).unwrap();
+    connection.pragma_update(None, "user_version", 14).unwrap();
     drop(connection);
     assert!(Store::open(&path).is_err());
 }
@@ -296,4 +297,65 @@ fn followups_are_durable_idempotent_scoped_and_preserve_attempts() {
             .send_subagent_input(&parent.id, &child.id, "Try again")
             .is_err()
     );
+}
+
+#[test]
+fn security_profile_is_durable_distinct_and_backward_compatible() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("profiles.db");
+    let store = Store::open(&path).unwrap();
+    let parent = store.enqueue("Audit a fixture", "web", None).unwrap();
+    let general = store.create_subagent(&parent.id, &spec()).unwrap();
+    let mut security = spec();
+    security.profile = "security".into();
+    let child = store.create_subagent(&parent.id, &security).unwrap();
+    assert_ne!(child.id, general.id);
+    assert_eq!(
+        child.id,
+        store.create_subagent(&parent.id, &security).unwrap().id
+    );
+    security.profile = "administrator".into();
+    assert!(store.create_subagent(&parent.id, &security).is_err());
+    security.profile = "security".into();
+    security.constraints.clear();
+    assert!(store.create_subagent(&parent.id, &security).is_err());
+    let mut old = serde_json::to_value(spec()).unwrap();
+    old.as_object_mut().unwrap().remove("profile");
+    assert_eq!(
+        serde_json::from_value::<SubagentSpec>(old).unwrap().profile,
+        "general"
+    );
+    drop(store);
+    assert_eq!(
+        Store::open(&path)
+            .unwrap()
+            .subagent(&child.id)
+            .unwrap()
+            .spec
+            .profile,
+        "security"
+    );
+}
+
+#[test]
+fn security_handoff_is_compact_and_full_evidence_stays_recoverable() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = Store::open(&dir.path().join("db")).unwrap();
+    let parent = store.enqueue("Audit fixture", "web", None).unwrap();
+    let mut assignment = spec();
+    assignment.profile = "security".into();
+    let child = store.create_subagent(&parent.id, &assignment).unwrap();
+    let findings=(0..12).map(|i|json!({"id":format!("F{i}"),"title":"Finding","status":if i==11 {"confirmed"}else{"suspected"},"severity":if i==11 {"critical"}else{"low"},"evidence":"LONG_RAW_EVIDENCE".repeat(1000)})).collect::<Vec<_>>();
+    let result = json!({"summary":"Audit finished with uncertainties","security_report":{"scope":"fixture","findings":findings,"coverage":[{"area":"API","status":"not_tested","evidence":"No endpoint"}]}});
+    store
+        .finish_subagent(&child.id, "completed", &result)
+        .unwrap();
+    let report = store.enqueue_subagent_report(&child.id).unwrap().unwrap();
+    assert!(!report.request.contains("LONG_RAW_EVIDENCE"));
+    assert!(report.request.contains("F11"));
+    assert!(report.request.contains("finding_counts"));
+    assert!(report.request.contains("not_tested"));
+    assert!(report.request.contains(&child.id));
+    assert!(report.request.len() < 10000);
+    assert_eq!(store.subagent(&child.id).unwrap().result.unwrap(), result);
 }

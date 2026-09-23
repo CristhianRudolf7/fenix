@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "validated_at": "2026-09-19T22:11:35.156566+00:00",
+  "summary_en": "Implemented Fenix-owned OCI execution isolation with measured synthetic-account tests; production migration and stronger-runtime adoption remain separate.",
+  "summary_es": "Aislamiento OCI propio implementado y probado con cuentas sintéticas; la migración de producción y los runtimes más fuertes quedan separados.",
+  "local_head": "bf88808075b6e9d9f0c3ffbdd52737b0aaa8601b",
+  "workspace_state": "Pre-existing uncommitted work preserved. Hashes identify selected implementation files, not a clean committed release.",
+  "environment": {
+    "kernel": "6.12.107+deb13-cloud-amd64",
+    "architecture": "x86_64",
+    "python": "3.13.5",
+    "cryptography": "50.0.0",
+    "rust": "1.98.1",
+    "docker": "26.1.5+dfsg1",
+    "cgroup_version": 2,
+    "cgroup_driver": "systemd",
+    "runtime": "runc",
+    "kvm_device_present": false,
+    "test_image": "sha256:99f9b203620b10f491d97934810768ef515ecdb1917d52d2773c396f7cdae2d5",
+    "test_image_role": "Existing local image supplies OS tools and Chromium; not a rebuilt/deployed final controller image.",
+    "tests_run_as": "Normal developer user for Rust/policy tests; explicit sudo for disposable Docker, AppArmor and filesystem tests."
+  },
+  "deployment": {
+    "existing_accounts_migrated": false,
+    "production_service_activated": false,
+    "production_controllers_restarted": false,
+    "systemd_boot_drill": false,
+    "temporary_test_resources_cleaned": true
+  },
+  "checks": [
+    {
+      "command": "cargo test --workspace --all-targets --locked -- --test-threads=2",
+      "passed": 341,
+      "failed": 0,
+      "ignored": 9,
+      "log_sha256": "5d4f6ed1635112d0b7e9f8625547c72250018fe62451569b1da5c761b1c2bc0b"
+    },
+    {
+      "command": "cargo test --workspace --doc --locked",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "b04a6c9afffc0f76f9f4708909cd8d8887909699fbe80c12c818922134fd9c2c"
+    },
+    {
+      "command": "/usr/bin/python3 -m unittest discover -s tests/isolation -p test_execution.py -v",
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "a24020ad823eebd2fd7cf4e0719477ca7b7abc0eb8ae5cb8b0bd214dc26359cb"
+    },
+    {
+      "command": "sudo env FENIX_DOCKER_TESTS=1 FENIX_TEST_IMAGE=fenix-tenant:local /usr/bin/python3 -m unittest discover -s tests/isolation -p test_docker.py -v",
+      "passed": 9,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "18f64682c70909d46115a34dd764ba83109390520f2a9b3c787741afd51de79f"
+    },
+    {
+      "command": "sudo env FENIX_DOCKER_TESTS=1 FENIX_TEST_IMAGE=fenix-tenant:local /usr/bin/python3 -m unittest discover -s tests/isolation -p test_browser.py -v",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "cd6ee4066a2fb20d71052881db8e258d31214e9f2b97b96912c33e07dd5a9256"
+    },
+    {
+      "command": "sudo env FENIX_DOCKER_TESTS=1 /usr/bin/python3 -m unittest discover -s tests/isolation -p test_storage.py -v",
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "log_sha256": "0412a5ff8402519ae295a97d892262a75f96d565f93d214c5063800890e68059"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+      "status": "passed",
+      "log_sha256": "586e595d50750718830ab931864114b568874b4beab8baa493be9aab6dde814f"
+    },
+    {
+      "command": "cargo fmt --all --check",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "command": "python3 -m compileall (isolation scripts and tests); bash -n scripts/install-isolation.sh",
+      "status": "passed"
+    },
+    {
+      "command": "cargo build -p fenix-server --bin fenix --locked",
+      "status": "passed",
+      "log_sha256": "bcccbeeacc3e8bd53c69ca1f84df12e618a1522c9ba92db023413b0670d08bd6"
+    }
+  ],
+  "acceptance_matrix_note": "Mapping to the 33 original targets. Partial or bounded-scope entries are not claims of complete acceptance. These are regression fixtures, not a proof of security or an independent penetration test.",
+  "acceptance_matrix": [
+    {
+      "id": "A01",
+      "status": "tested",
+      "evidence": "Gateway tenant-routing tests and authenticated service owner-spoof rejection."
+    },
+    {
+      "id": "A02",
+      "status": "partial",
+      "evidence": "Owner-filtered execution/checkpoint lists and private marketplace rows tested; not an exhaustive enumeration of every UI count."
+    },
+    {
+      "id": "A03",
+      "status": "tested",
+      "evidence": "Gateway restart, registry reorder, stable identity and fixed expiry regression test."
+    },
+    {
+      "id": "A04",
+      "status": "tested",
+      "evidence": "Real HTTP quiet-stream revocation, re-enable rejection, credential/revision checks and runner revocation."
+    },
+    {
+      "id": "A05",
+      "status": "partial",
+      "evidence": "Foreign runner status/cancel, browser CDP connection and checkpoint deletion denied; no exhaustive browser artifact-ID matrix."
+    },
+    {
+      "id": "A06",
+      "status": "partial",
+      "evidence": "Existing project/subagent/scheduler/Telegram regressions pass and use the shared execution context; no real multi-account Telegram or delayed production-job drill."
+    },
+    {
+      "id": "A07",
+      "status": "bounded_scope",
+      "evidence": "Native broker denies foreign connection IDs before dispatch. Universal MCP/OAuth refresh adapters are not implemented."
+    },
+    {
+      "id": "A08",
+      "status": "tested",
+      "evidence": "Existing immutable public snapshot/private owner report marketplace regressions pass."
+    },
+    {
+      "id": "F01",
+      "status": "partial",
+      "evidence": "Real shell environment/mount secrecy, PTY, read-only offline language-server launch and browser mounts tested. Real pylsp protocol test remains opt-in."
+    },
+    {
+      "id": "F02",
+      "status": "tested",
+      "evidence": "Descriptor-relative traversal/link rejection, pinned inode path replacement, archive links and authenticated restore fixtures pass."
+    },
+    {
+      "id": "F03",
+      "status": "partial",
+      "evidence": "Policy rejects overlapping writable tasks and foreign workspace mounts. A prolonged simultaneous multi-account write stress test was not run."
+    },
+    {
+      "id": "N01",
+      "status": "partial",
+      "evidence": "Full firewall rules verified; a controlled host listener is unreachable from the runner. Metadata, public NAT hairpin and every other-account port were not probed end-to-end."
+    },
+    {
+      "id": "N02",
+      "status": "partial",
+      "evidence": "IPv6 disabled in runner configuration; broker rejects private/mixed DNS and configured host/NAT addresses. No exhaustive live rebinding/redirect adversary test."
+    },
+    {
+      "id": "N03",
+      "status": "partial",
+      "evidence": "Packet rules constrain protocols and ports independently of client proxy behavior; real host TCP denial verified. UDP/QUIC saturation probes not run."
+    },
+    {
+      "id": "N04",
+      "status": "partial",
+      "evidence": "Empty policy rejected in unit fixture; live guard reconciliation and complete verification pass. Process interruption midway through iptables-restore not injected."
+    },
+    {
+      "id": "N05",
+      "status": "not_exercised",
+      "evidence": "Startup gates, controller lifetime binding and monitoring implemented. No host reboot or Docker daemon restart drill; polling is not zero-latency enforcement."
+    },
+    {
+      "id": "N06",
+      "status": "tested",
+      "evidence": "Mandatory execution transport fails closed, configured runtime must exist, and Docker cancellation failure reports pending cleanup while killing the cgroup."
+    },
+    {
+      "id": "C01",
+      "status": "partial",
+      "evidence": "Fixed HTTPS host/port/method/path and pinned TLS destination implemented. Live API/SNI mismatch matrix not executed."
+    },
+    {
+      "id": "C02",
+      "status": "partial",
+      "evidence": "Current account revision, runner revocation and disabled-owner checkpoint restore covered; live external write revocation race not exercised."
+    },
+    {
+      "id": "C03",
+      "status": "partial",
+      "evidence": "Bounded JSON response, redirect/secret-reflection rejection and restricted audit fields implemented. No live adversarial credential-echo service test."
+    },
+    {
+      "id": "C04",
+      "status": "tested",
+      "evidence": "Foreign integration and caller resource/body-field overrides rejected; durable usage budget tested with synthetic API transport."
+    },
+    {
+      "id": "R01",
+      "status": "tested",
+      "evidence": "Registry duplicates/insecure permissions rejected; real controller provisioning/preflight confirms UID, image, mounts, quotas, token and revision."
+    },
+    {
+      "id": "R02",
+      "status": "partial",
+      "evidence": "Real cgroup memory/PID settings and account slices verified; full CPU/RAM/fork/descriptor-pressure fairness drill not performed."
+    },
+    {
+      "id": "R03",
+      "status": "partial",
+      "evidence": "Actual fixed-size ext4 ENOSPC, remount and migration tested; snapshot bounds and bounded logging/metadata implemented. Combined multi-account host exhaustion not run."
+    },
+    {
+      "id": "R04",
+      "status": "tested",
+      "evidence": "Real detached descendants disappear on cancellation; one-use attach and direct cgroup stop during a synthetic Docker API failure verified."
+    },
+    {
+      "id": "B01",
+      "status": "partial",
+      "evidence": "Actual Chromium inner sandbox and authenticated owner-scoped CDP work; browser-only mounts verified. Full adversarial navigation/profile matrix remains opt-in."
+    },
+    {
+      "id": "B02",
+      "status": "unchanged",
+      "evidence": "Existing design preview isolation retained; frontend browser security matrix not rerun in this task."
+    },
+    {
+      "id": "B03",
+      "status": "bounded_scope",
+      "evidence": "No public preview grants introduced. Private runner port connections require current owner authorization; foreign CDP denied."
+    },
+    {
+      "id": "S01",
+      "status": "tested",
+      "evidence": "Disabled owner cannot restore; ciphertext tampering fails before destination creation."
+    },
+    {
+      "id": "S02",
+      "status": "bounded_scope",
+      "evidence": "Encrypted project-file restore/clone produces fresh directories/generations. RAM snapshots and warm-machine reassignment are not implemented."
+    },
+    {
+      "id": "S03",
+      "status": "bounded_scope",
+      "evidence": "File restoration does not replay APIs; broker has no automatic retry and failed/ambiguous calls consume usage. No live payment/write rollback test."
+    },
+    {
+      "id": "O01",
+      "status": "partial",
+      "evidence": "Audit is outside runner mounts, private, rotated and excludes raw secrets/arguments. Full host incident/tamper drill not executed."
+    },
+    {
+      "id": "O02",
+      "status": "partial",
+      "evidence": "Shell, terminal, skill helper, isolated language-server process, Chromium/CDP and file restore tested. Final image deployment, real external APIs and complete UI download flow remain deployment checks."
+    }
+  ],
+  "ignored_rust_tests": [
+    "test coding::lsp::live_tests::real_python_language_server_definitions_and_diagnostics ... ignored, Requires FENIX_TEST_PYLSP pointing to a separately installed pylsp executable",
+    "test adversarial_tests::adversarial_browser_matrix ... ignored, Requires sandbox-capable Chromium; controlled local fixtures only",
+    "test adversarial_tests::browser_navigation_resources_and_responsive_layout ... ignored, Requires sandbox-capable Chromium and the built React fixture",
+    "test adversarial_tests::public_selenium_form_smoke ... ignored, Requires Chromium and internet access to Selenium's public test form",
+    "test tests::real_chromium_navigation_responsive_and_persistent_login ... ignored, Requires sandbox-capable local Chromium",
+    "test explicitly_selected_live_provider_completes_one_request ... ignored, requires an explicit provider, model, and credential; sends one billable request",
+    "test live_openai_preview_matches_the_completed_response ... ignored, Opt-in billable OpenAI streaming check; requires OPENAI_API_KEY",
+    "test skill_guard::tests::live_nemotron_publication_smoke ... ignored, Requires FENIX_SENTINEL_SMOKE_CONFIG; makes a real paid Nemotron request",
+    "test skill_guard::tests::live_nemotron_repair_smoke ... ignored, Requires FENIX_SENTINEL_SMOKE_CONFIG; makes paid Nemotron repair requests"
+  ],
+  "validation_notes": [
+    "An initial all-target link exhausted disk; only regenerable Cargo incremental cache was removed.",
+    "A default-parallel test exceeded an existing five-second runtime assertion under load. Final all-target run uses two test threads; that timing assertion was not weakened.",
+    "Stale tests assuming a fixed skill count, full upfront skill catalog and former browser authorization wording were aligned with the existing on-demand behavior. Two existing Clippy findings were simplified without behavior changes.",
+    "No paid provider request or real external integration write was made. Frontend files were not changed by this security implementation.",
+    "Shared host-kernel isolation, host root/Docker authority and polling detection latency remain explicit trust/operational limits. File checkpoints are not atomic RAM/block snapshots."
+  ],
+  "upstream_reuse": [
+    {
+      "component": "Browser-specific seccomp policy",
+      "source": "https://github.com/moby/moby/blob/v26.1.5/profiles/seccomp/default.json",
+      "license": "Apache-2.0",
+      "adaptation": "Constrained user/PID/network namespace operations and chroot for the Chromium inner sandbox."
+    },
+    {
+      "component": "Browser-specific AppArmor policy",
+      "source": "https://github.com/moby/moby/blob/v26.1.5/profiles/apparmor/template.go",
+      "license": "Apache-2.0",
+      "adaptation": "Named Fenix browser policy with user namespace permission; mount/proc/sys restrictions retained."
+    }
+  ],
+  "implementation_sha256": {
+    "apps/server/src/accounts/registry.rs": "ef741309ce493764d81589c5581271fcff2fa653935d7c4c3f9e498ffe99df5e",
+    "apps/server/src/accounts/sessions.rs": "77d7415f1d46872e9859acc7d0bb68bdb468a110e029c165dddcd9102b7612e8",
+    "apps/server/src/accounts.rs": "9859fd64ab2aeca30c0d3bc63154d53ddec0a77c2806ea8e838228e5f7f27a11",
+    "crates/fenix-agent/src/coding/lsp.rs": "797042d2fa45f923842d6b83a043a98983cfb7644fa7c879ff621a42a422b26c",
+    "crates/fenix-agent/src/processes.rs": "20a6d1bae9b78635be3168ed37e707d95f292527395902d1f4b79fa74e17df0d",
+    "crates/fenix-agent/src/tools.rs": "4a84461e7f2ebfe722201b9ad1b30bf8fd8e7d3118297d6c228c632b871c22e0",
+    "crates/fenix-browser/src/cdp.rs": "8b19e658280a5cf4df3848e97f5c7a8c0501cedce29116f415cbbc0cce4872dc",
+    "crates/fenix-browser/src/lib.rs": "51d7e0e5dfda6a40177f3b0981452c28ce70b409e6426add38233687cf5db403",
+    "crates/fenix-execution/src/fs.rs": "b4b10f1f78259ca607ff2b0200a6fa0a6176043b26045a67246aa596438a609c",
+    "crates/fenix-execution/src/lib.rs": "bece1076438dd75679bda68df87ce1041140219658081721e2451e008f7995fe",
+    "packaging/linux/Dockerfile.tenant": "9ce583ed16416ccd22628d0d353986c6d7ceeaa00f645fe199ebf4715dd3476c",
+    "packaging/linux/fenix-browser.apparmor": "38e8f550464071342808e989f86694337e1b3e2f5694fae4c215f5eea434d42d",
+    "packaging/linux/fenix-controller@.service": "ab05d74f81ee17a13d0d9751cecc7c326afa2adcb918b010cb762bfb7ed18eae",
+    "packaging/linux/fenix-execution.service": "3f119626ce3b499e373454e6ae703ba7d56bdf7ccaffa7fd54cabfedf5a61efe",
+    "packaging/linux/seccomp-browser.json": "b915c64cad27a3c909654ebcafedb0309679de38e4bd7da306563e50e541a044",
+    "scripts/execution-service.py": "bfd1763161acc9e99297177861187384743aa1ce23cff8f8d999c02e6df97e41",
+    "scripts/fenix_execution/__init__.py": "6afbad7894f9a30b2c5ddb13a46a9a3284c6e5618cd171007880ed5776db5607",
+    "scripts/fenix_execution/broker.py": "41880bb1ce7e7664468a755921f2dfeefb754c904657a55614996350e2efff8b",
+    "scripts/fenix_execution/checkpoints.py": "709d30185e71bbc34d40b68e47da44b05b670a5d464b24df493fa4d3e1d1bcd2",
+    "scripts/fenix_execution/docker.py": "f5470c2963240276b9e56ab8d3322bc4954fd7858941494311684e41c67d6b98",
+    "scripts/fenix_execution/policy.py": "a73a25c31a014ebdcaafd88ad80658d4c30cf61237e2519c709c5a7e45d6a3d0",
+    "scripts/fenix_execution/service.py": "7ea6366aeb4f57b591a38e64e965aaf3b1b315edae945e86a57ee3e02225fbe2",
+    "scripts/fenix_isolation.py": "c0ba8ebb7fb28bc95ec43b6ce85e2b7483501223f58c39e5be068e188859cd34",
+    "scripts/install-isolation.sh": "954d31110617cec5758f14e8291d135fb19654ef35e314b4e393589fbec3fe8b",
+    "scripts/tenant-container.py": "9325704269aabdc700fd901f6e24a1f047e34e92fd0ecd2c87c5dde226d6c64b",
+    "scripts/tenant-network-guard.py": "b58b9b7ee525aa7231a132d820719b4942c39f0733ad834ff75da3f219e71b24",
+    "scripts/tenant-preflight.py": "1e7b0b20e21aa5ffd6ff95fb99ff757f08c4f7b0b493b9c0fbbc225d3b3f3c38",
+    "scripts/tenant-storage.py": "649e4fd0c7fe211bedeb9d67d79060ff0e43f59c56676225de4303780a7a5a55",
+    "tests/isolation/test_browser.py": "999ecbcae3b7663d5a37d12636b332b6318d5a65fba4e59e4c7704becbce586e",
+    "tests/isolation/test_docker.py": "5cc2cc27bcd5e00ae35603203fdaaf0632a6d3157eafead4e331e56bef33cf09",
+    "tests/isolation/test_execution.py": "d04ae73709eb0be7c209022d5e0bdbb78c7c56a72e29762d451ab9bee9bebc03",
+    "tests/isolation/test_storage.py": "cd1fbc1fe5131c5f48aa650cbe549034ec6962d48c4dbfc1f9c6575df0c12534"
+  }
+}

@@ -45,6 +45,7 @@ impl Runtime {
             if !canonical.is_dir() {
                 bail!("Project workspace must be a directory");
             }
+            self.validate_user_workspace(&canonical)?;
             input.workspace = Some(canonical.to_string_lossy().into_owned());
         } else {
             input.workspace = None;
@@ -329,6 +330,15 @@ impl Runtime {
             if message.created_at > task.created_at
                 || !matches!(message.role.as_str(), "user" | "assistant")
             {
+                continue;
+            }
+            if matches!(message.origin.as_str(), "live" | "web" | "telegram")
+                && message.task_id.is_none()
+            {
+                general.push(json!({"role":message.role,"text":truncate(&message.text,400)}));
+                if general.len() == 8 {
+                    break;
+                }
                 continue;
             }
             let Some(id) = message.task_id.as_deref().filter(|id| *id != task.id) else {

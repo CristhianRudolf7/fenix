@@ -1,0 +1,32 @@
+[package]
+name = "fenix-connectors"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+reqwest.workspace = true
+tokio.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+rusqlite = { workspace = true, features = ["hooks"] }
+fenix-execution.workspace = true
+aes-gcm = "0.10"
+base64 = "0.22"
+sha2 = "0.10"
+postgres = { version = "0.19", features = ["with-serde_json-1", "with-chrono-0_4", "with-uuid-1"] }
+postgres-native-tls = "0.5"
+native-tls = "0.2"
+imap = "2.4"
+lettre = { version = "0.11", default-features = false, features = ["builder", "smtp-transport", "native-tls"] }
+
+[dev-dependencies]
+tempfile.workspace = true
+wiremock.workspace = true
+
+[lints]
+workspace = true

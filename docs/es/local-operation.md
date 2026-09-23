@@ -6,6 +6,10 @@
 
 ## Inicio y configuración
 
+Primero instala Node 22.12+ y pnpm 10.34.5, y compila la interfaz con
+`pnpm --dir apps/web install --frozen-lockfile` y `pnpm --dir apps/web build`.
+Consulta [voz del navegador y Live](live.md) para desarrollo y configuración de voz.
+
 Ejecuta `cargo run --locked -p fenix-server --bin fenix` desde el clon y abre
 http://127.0.0.1:4173. Los datos se guardan en `.fenix/`, relativa al directorio de
 ejecución. Puedes indicar `--data-dir`, `--skills-dir` y `--port`; `--help` los lista.
@@ -123,7 +127,7 @@ automáticamente. Comparte `~/.fenix/skills/` con los clones de desarrollo, aunq
 cada base de datos conserva su habilitación de skills. El servicio se activa con la sesión de usuario. No se configura
 para funcionar después de cerrar sesión. El acceso Fénix inicia el servicio y abre
 la web. Una actualización mediante el instalador detiene el servicio existente;
-las tareas pendientes se marcarán interrumpidas al reiniciar.
+las tareas con puntos seguros pueden continuar; las inciertas quedan interrumpidas.
 
 Consulta `systemctl --user status fenix` o `journalctl --user -u fenix` para
 diagnósticos. Detén con `systemctl --user stop fenix`. Para desinstalar, deshabilita
@@ -140,8 +144,9 @@ el servicio detenido para incluir correctamente el estado de SQLite/WAL. Los dat
 de ejecución, skills personales y `apuntes.md` permanecen ignorados por Git.
 
 Cerrar la pestaña no detiene el servicio. Al apagarlo se cancelan procesos
-gestionados. El reinicio conserva historial y programaciones, pero marca las tareas
-anteriores sin terminar como interrumpidas; no repite sus efectos ni recupera
-ejecuciones vencidas. No hay rollback automático ni restauración de procesos.
+gestionados. El reinicio conserva historial y programaciones y puede continuar tareas
+con puntos seguros; las inciertas quedan interrumpidas. No repite efectos guardados
+ni ejecuciones vencidas. El historial de archivos permite restauración explícita,
+pero no restaura procesos. Véanse [funcionamiento y límites](harness-continuity.md).
 
 [Local browser / Navegador local](browser.md)

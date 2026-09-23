@@ -123,6 +123,55 @@ fn client(provider: ProviderId) -> ProviderClient {
 }
 
 #[tokio::test]
+async fn provider_boundary_redacts_prompts_but_preserves_authentication() {
+    let provider = ProviderId::Groq;
+    let server = MockServer::start().await;
+    let mut body = fixture(provider);
+    body["choices"][0]["message"]["content"] = json!("Ready.");
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(body))
+        .mount(&server)
+        .await;
+    let request = ChatRequest::new(
+        "test-model",
+        vec![Message::user(format!(
+            "Credential {DEFAULT_KEY}\nPassword: synthetic-request-secret"
+        ))],
+    );
+    let result = client(provider)
+        .complete(&config(provider, &server), None, &request)
+        .await
+        .unwrap();
+    assert_eq!(result.message.text_content(), "Ready.");
+    let requests = server.received_requests().await.unwrap();
+    let sent = String::from_utf8(requests[0].body.clone()).unwrap();
+    assert!(!sent.contains(DEFAULT_KEY));
+    assert!(!sent.contains("synthetic-request-secret"));
+    assert_eq!(
+        requests[0].headers.get("authorization").unwrap(),
+        &format!("Bearer {DEFAULT_KEY}")
+    );
+}
+
+#[tokio::test]
+async fn secret_bearing_provider_replay_is_never_returned_or_silently_rewritten() {
+    let provider = ProviderId::Groq;
+    let server = MockServer::start().await;
+    let mut body = fixture(provider);
+    body["choices"][0]["message"]["content"] = json!("Password: synthetic-response-secret");
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(200).set_body_json(body))
+        .mount(&server)
+        .await;
+    let error = client(provider)
+        .complete(&config(provider, &server), None, &request())
+        .await
+        .unwrap_err();
+    assert!(!error.to_string().contains("synthetic-response-secret"));
+    assert!(error.to_string().contains("replay contains sensitive data"));
+}
+
+#[tokio::test]
 async fn every_provider_sends_default_and_project_keys_with_its_native_protocol() {
     for provider in ProviderId::ALL {
         let server = MockServer::start().await;
@@ -750,6 +799,36 @@ async fn request_timeout_is_bounded_and_reported() {
             .await,
         Err(ProviderError::Timeout)
     ));
+}
+
+#[tokio::test]
+async fn externally_supervised_requests_can_outlive_the_default_deadline() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_delay(Duration::from_millis(200))
+                .set_body_json(fixture(ProviderId::OpenAi)),
+        )
+        .mount(&server)
+        .await;
+    let mut credentials = CredentialStore::default();
+    credentials.set_default(ProviderId::OpenAi, credential(DEFAULT_KEY));
+    let client = ProviderClient::with_options(
+        credentials,
+        ClientOptions {
+            timeout: Duration::from_millis(30),
+            disable_request_timeout: true,
+            ..ClientOptions::default()
+        },
+    )
+    .expect("valid client");
+    assert!(
+        client
+            .complete(&config(ProviderId::OpenAi, &server), None, &request())
+            .await
+            .is_ok()
+    );
 }
 
 #[tokio::test]

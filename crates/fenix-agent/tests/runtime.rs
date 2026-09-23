@@ -490,6 +490,26 @@ async fn cron_uses_peru_and_duplicate_schedules_are_rejected() {
 #[tokio::test]
 async fn telegram_pairs_only_with_local_code_and_accepts_only_owner_text() {
     let (_dir, runtime, _server) = fixture(vec![]).await;
+    // Telegram now enters through the independently configured conversational model.
+    let conversation = MockServer::start().await;
+    Mock::given(method("POST"))
+        .respond_with(
+            ResponseTemplate::new(200)
+                .set_body_json(answer(r#"{"reply":"Forwarded","action":"delegate"}"#)),
+        )
+        .mount(&conversation)
+        .await;
+    runtime
+        .configure_live(
+            fenix_agent::live::LiveSettings {
+                provider: fenix_core::ProviderId::OpenAi,
+                model: "conversation-test".into(),
+                base_url: Some(conversation.uri()),
+            },
+            Some("conversation-test-key".into()),
+        )
+        .await
+        .unwrap();
     let mut settings = TelegramSettings {
         enabled: true,
         username: "test_bot".into(),
@@ -537,7 +557,13 @@ async fn skill_installation_preserves_personal_edits_and_enabled_state() {
     let runtime = Runtime::open(&path, Some(&path.join("skills")))
         .await
         .unwrap();
-    assert_eq!(runtime.skills().unwrap().len(), 14);
+    let bundled = std::fs::read_dir(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../resources/skills"),
+    )
+    .unwrap()
+    .filter(|entry| entry.as_ref().unwrap().path().join("SKILL.md").is_file())
+    .count();
+    assert_eq!(runtime.skills().unwrap().len(), bundled);
     let skill = runtime.skills_dir.join("conversation-recap/SKILL.md");
     std::fs::write(
         &skill,
@@ -1058,7 +1084,7 @@ async fn agent_discovers_browser_tools_and_enforces_personal_profile_handoff() {
             && v["output"]
                 .as_str()
                 .unwrap_or("")
-                .contains("enable agent access")
+                .contains("authorize agent access")
     }));
     assert!(
         runtime.browser.status().await.unwrap()["sessions"]
@@ -1190,5 +1216,75 @@ async fn large_receipts_keep_tail_evidence_and_full_redacted_journal() {
     assert!(journal.contains("MIDDLE_WITNESS"));
     assert!(journal.contains("FINAL_DIAGNOSTIC"));
     assert!(!journal.contains("fake-private-test-key"));
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn native_document_creation_waits_for_approval_and_records_the_effect() {
+    let (dir,runtime,_server)=fixture(vec![
+        call("load-documents","skill_load",json!({"name":"documents-word"})),
+        call("create-document","document_create",json!({"path":"approved.docx","document":{"format":"docx","paragraphs":[{"text":"Approved report"}]}})),
+        answer("Document created"),
+    ]).await;
+    let workers = runtime.start();
+    let task = runtime
+        .submit("Create approved.docx with the text Approved report", "web")
+        .await
+        .unwrap()["task_id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let approval = pending(&runtime).await;
+    assert!(!dir.path().join("approved.docx").exists());
+    runtime
+        .submit(
+            &format!("aprobar {}", approval["id"].as_str().unwrap()),
+            "web",
+        )
+        .await
+        .unwrap();
+    wait_for(&runtime, &task, "completed").await;
+    let bytes = std::fs::read(dir.path().join("approved.docx")).unwrap();
+    assert!(
+        fenix_documents::inspect(&bytes, 0, 10)
+            .unwrap()
+            .to_string()
+            .contains("Approved report")
+    );
+    let events = runtime.store.events(&task, 0, 100).unwrap();
+    assert!(
+        events
+            .iter()
+            .any(|e| e["kind"] == "file_effect_started" && e["data"]["tool"] == "document_create")
+    );
+    assert!(events.iter().any(|e| e["kind"] == "file_effect_finished" && e["data"]["result"]["verified"] == true));
+    stop(&runtime, workers).await;
+}
+
+#[tokio::test]
+async fn agent_discovers_design_tools_presents_choices_and_publishes_a_visual() {
+    let (_dir, runtime, _server) = fixture(vec![
+        call("design-options", "design_present", json!({"template_ids":["decision-flow","login-sequence"]})),
+        call("design-output", "design_publish", json!({"design":{"title":"Login diagram","kind":"diagram","content":{"source":"flowchart LR\n User --> Login\n Login --> Session"}}})),
+        answer("The login diagram is available in Design."),
+    ]).await;
+    let workers = runtime.start();
+    let task = runtime
+        .submit("Show two diagram options and create a login diagram", "web")
+        .await
+        .unwrap();
+    let task_id = task["task_id"].as_str().unwrap();
+    wait_for_with_timeout(&runtime, task_id, "completed", Duration::from_secs(15)).await;
+    let results = runtime.store.designs(None, true, 0, 20).unwrap();
+    assert_eq!(results.len(), 1);
+    assert_eq!(results[0]["title"], "Login diagram");
+    assert_eq!(results[0]["task_id"], task_id);
+    assert_eq!(
+        runtime.store.records::<Value>("design_offer").unwrap()[0]["templates"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
     stop(&runtime, workers).await;
 }

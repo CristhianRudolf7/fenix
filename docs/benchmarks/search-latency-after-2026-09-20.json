@@ -1,0 +1,2845 @@
+{
+  "cold": {
+    "calls": [
+      {
+        "elapsed_ms": 13583,
+        "http_attempts_during_call": 78,
+        "offline": false,
+        "query": "React useEffect cleanup",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5668,
+            "indexed_origins": 11,
+            "indexed_pages": 41,
+            "known_urls": 5721,
+            "last_fetch_at": 1789930002,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 48,
+            "requests_today": 78
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 100,
+            "enabled": true,
+            "entrypoints": [
+              "https://react.dev/"
+            ],
+            "followed_urls": 4,
+            "sources": [
+              {
+                "discovered_urls": 67,
+                "indexed": true,
+                "resolved_url": "https://react.dev/",
+                "retrieved_at": "2026-09-20T18:46:32+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://react.dev/"
+              },
+              {
+                "discovered_urls": 158,
+                "indexed": true,
+                "resolved_url": "https://react.dev/reference/react",
+                "retrieved_at": "2026-09-20T18:46:34+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://react.dev/reference/react"
+              },
+              {
+                "discovered_urls": 160,
+                "indexed": true,
+                "resolved_url": "https://react.dev/reference/react-dom",
+                "retrieved_at": "2026-09-20T18:46:36+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://react.dev/reference/react-dom"
+              },
+              {
+                "discovered_urls": 168,
+                "indexed": true,
+                "resolved_url": "https://react.dev/reference/react/useEffect",
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://react.dev/reference/react/useEffect"
+              },
+              {
+                "discovered_urls": 160,
+                "indexed": true,
+                "resolved_url": "https://react.dev/reference/react/useEffectEvent",
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://react.dev/reference/react/useEffectEvent"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "React useEffect cleanup",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:39+00:00",
+              "page": {
+                "content_hash": "6cd335fd3122d115c6175ca2152987636403ac45ae258501d9572d0995a04894",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "title": "useEffect – React",
+                "truncated": true,
+                "url": "https://react.dev/reference/react/useEffect",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "useEffect – React",
+              "url": "https://react.dev/reference/react/useEffect"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 14938,
+        "http_attempts_during_call": 81,
+        "offline": false,
+        "query": "Next.js proxy middleware",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5824,
+            "indexed_origins": 13,
+            "indexed_pages": 47,
+            "known_urls": 5882,
+            "last_fetch_at": 1789930004,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 80,
+            "requests_today": 81
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 120,
+            "enabled": true,
+            "entrypoints": [
+              "https://nextjs.org/docs"
+            ],
+            "followed_urls": 6,
+            "sources": [
+              {
+                "discovered_urls": 344,
+                "indexed": true,
+                "resolved_url": "https://nextjs.org/docs",
+                "retrieved_at": "2026-09-20T18:46:33+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://nextjs.org/docs"
+              },
+              {
+                "discovered_urls": 341,
+                "indexed": true,
+                "resolved_url": "https://nextjs.org/docs/app/getting-started/proxy",
+                "retrieved_at": "2026-09-20T18:46:37+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://nextjs.org/docs/app/getting-started/proxy"
+              },
+              {
+                "discovered_urls": 343,
+                "indexed": true,
+                "resolved_url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy",
+                "retrieved_at": "2026-09-20T18:46:36+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy"
+              },
+              {
+                "discovered_urls": 6,
+                "indexed": true,
+                "resolved_url": "https://nextjs.org/docs/app/getting-started/proxy.md",
+                "retrieved_at": "2026-09-20T18:46:38+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://nextjs.org/docs/app/getting-started/proxy.md"
+              },
+              {
+                "discovered_urls": 340,
+                "indexed": true,
+                "resolved_url": "https://nextjs.org/docs/messages/middleware-upgrade-guide",
+                "retrieved_at": "2026-09-20T18:46:44+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://nextjs.org/docs/messages/middleware-upgrade-guide"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "robots.txt does not permit reading this URL",
+                "failure_kind": "blocked",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://github.com/vercel/next.js/edit/canary/docs/01-app/01-getting-started/16-proxy.mdx"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "robots.txt does not permit reading this URL",
+                "failure_kind": "blocked",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://github.com/vercel/next.js/edit/canary/docs/01-app/03-api-reference/03-file-conventions/proxy.mdx"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "Next.js proxy middleware",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:38+00:00",
+              "page": {
+                "content_hash": "86763cd010fdecaa65369bdf49dedf2025529d71e98fa8762e6776407f193d72",
+                "language": null,
+                "passage_characters": 4206,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:38+00:00",
+                "source": "network",
+                "title": "https://nextjs.org/docs/app/getting-started/proxy.md",
+                "truncated": false,
+                "url": "https://nextjs.org/docs/app/getting-started/proxy.md",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "https://nextjs.org/docs/app/getting-started/proxy.md",
+              "url": "https://nextjs.org/docs/app/getting-started/proxy.md"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:36+00:00",
+              "page": {
+                "content_hash": "8fc310a9c87ce22bb528702c1c521161d31ff29ac9c6932f6eb8735e55bd13de",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:36+00:00",
+                "source": "network",
+                "title": "File-system conventions: proxy.js | Next.js",
+                "truncated": true,
+                "url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "File-system conventions: proxy.js | Next.js",
+              "url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 17276,
+        "http_attempts_during_call": 85,
+        "offline": false,
+        "query": "Tokio timeout",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5951,
+            "indexed_origins": 14,
+            "indexed_pages": 51,
+            "known_urls": 6017,
+            "last_fetch_at": 1789930007,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 117,
+            "requests_today": 85
+          },
+          "discovery": {
+            "background_queued": 5,
+            "candidates_considered": 74,
+            "enabled": true,
+            "entrypoints": [
+              "https://docs.rs/tokio/latest/tokio/"
+            ],
+            "followed_urls": 8,
+            "sources": [
+              {
+                "discovered_urls": 109,
+                "indexed": true,
+                "resolved_url": "https://docs.rs/tokio/latest/tokio/",
+                "retrieved_at": "2026-09-20T18:46:34+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.rs/tokio/latest/tokio/"
+              },
+              {
+                "discovered_urls": 67,
+                "indexed": true,
+                "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+                "retrieved_at": "2026-09-20T18:46:37+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html"
+              },
+              {
+                "discovered_urls": 77,
+                "indexed": true,
+                "resolved_url": "https://docs.rs/tokio/latest/tokio/time/index.html",
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.rs/tokio/latest/tokio/time/index.html"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": false,
+                "resolved_url": "https://crates.io/teams/github:tokio-rs:core",
+                "retrieved_at": "2026-09-20T18:46:37+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://crates.io/teams/github:tokio-rs:core"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": false,
+                "resolved_url": "https://crates.io/crates/tokio",
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://crates.io/crates/tokio"
+              },
+              {
+                "discovered_urls": 67,
+                "indexed": true,
+                "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+              },
+              {
+                "discovered_urls": 104,
+                "indexed": true,
+                "resolved_url": "https://docs.rs/tokio/latest/tokio/time/struct.Timeout.html",
+                "retrieved_at": "2026-09-20T18:46:44+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.rs/tokio/latest/tokio/time/struct.Timeout.html"
+              },
+              {
+                "discovered_urls": 33,
+                "indexed": true,
+                "resolved_url": "https://tokio.rs/tokio/tutorial",
+                "retrieved_at": "2026-09-20T18:46:44+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://tokio.rs/tokio/tutorial"
+              },
+              {
+                "discovered_urls": 127,
+                "indexed": true,
+                "resolved_url": "https://github.com/tokio-rs/tokio",
+                "retrieved_at": "2026-09-20T18:46:47+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://github.com/tokio-rs/tokio"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "Tokio timeout",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:37+00:00",
+              "page": {
+                "content_hash": "3046d7f6de5a2bf785fa9e4dbe407a04ddd391de68cb50ee7d9ffd36619872b5",
+                "language": "en",
+                "passage_characters": 2081,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:37+00:00",
+                "source": "network",
+                "title": "timeout in tokio::time - Rust",
+                "truncated": false,
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "timeout in tokio::time - Rust",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:42+00:00",
+              "page": {
+                "content_hash": "f8a2dc50c37186d25cb30b057e037e4a743ee0a5ab6c3104c5270eae0b2ee148",
+                "language": "en",
+                "passage_characters": 1894,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "title": "timeout_at in tokio::time - Rust",
+                "truncated": false,
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "timeout_at in tokio::time - Rust",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 18886,
+        "http_attempts_during_call": 87,
+        "offline": false,
+        "query": "Python asyncio TaskGroup",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930008,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 133,
+            "requests_today": 87
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 28,
+            "enabled": true,
+            "entrypoints": [
+              "https://docs.python.org/3/"
+            ],
+            "followed_urls": 11,
+            "sources": [
+              {
+                "discovered_urls": 57,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/",
+                "retrieved_at": "2026-09-20T18:46:32+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/"
+              },
+              {
+                "discovered_urls": 8,
+                "indexed": false,
+                "resolved_url": "https://docs.python.org/sitemap.xml",
+                "retrieved_at": "2026-09-20T18:46:36+00:00",
+                "source": "network",
+                "status": "discovered",
+                "url": "https://docs.python.org/sitemap.xml"
+              },
+              {
+                "discovered_urls": 279,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/library/index.html",
+                "retrieved_at": "2026-09-20T18:46:34+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/library/index.html"
+              },
+              {
+                "discovered_urls": 39,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/library/asyncio.html",
+                "retrieved_at": "2026-09-20T18:46:38+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/library/asyncio.html"
+              },
+              {
+                "discovered_urls": 35,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/library/asyncio-dev.html",
+                "retrieved_at": "2026-09-20T18:46:40+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/library/asyncio-dev.html"
+              },
+              {
+                "discovered_urls": 28,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/library/asyncio-threading.html",
+                "retrieved_at": "2026-09-20T18:46:44+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/library/asyncio-threading.html"
+              },
+              {
+                "discovered_urls": 32,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/howto/a-conceptual-overview-of-asyncio.html",
+                "retrieved_at": "2026-09-20T18:46:45+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/howto/a-conceptual-overview-of-asyncio.html"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": false,
+                "resolved_url": "https://github.com/python/cpython/tree/3.14/Lib/asyncio/",
+                "retrieved_at": "2026-09-20T18:46:45+00:00",
+                "source": "network",
+                "status": "discovered",
+                "url": "https://github.com/python/cpython/tree/3.14/Lib/asyncio/"
+              },
+              {
+                "discovered_urls": 24,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/library/asyncio-sync.html",
+                "retrieved_at": "2026-09-20T18:46:46+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/library/asyncio-sync.html"
+              },
+              {
+                "discovered_urls": 36,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/library/asyncio-task.html",
+                "retrieved_at": "2026-09-20T18:46:48+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.python.org/3/library/asyncio-task.html"
+              },
+              {
+                "discovered_urls": 14,
+                "indexed": true,
+                "resolved_url": "https://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html",
+                "retrieved_at": "2026-09-20T18:46:47+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://aosabook.org/en/500L/a-web-crawler-with-asyncio-coroutines.html"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "Site robots policy is unavailable or access is restricted",
+                "failure_kind": "blocked",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://labs.quansight.org/blog/scaling-asyncio-on-free-threaded-python"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "Python asyncio TaskGroup",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:48+00:00",
+              "page": {
+                "content_hash": "04e8d7ae958bdc82477bab0f039b7d806ce5e8349e7c74ed73716519d48cbf08",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:48+00:00",
+                "source": "network",
+                "title": "Coroutines and tasks — Python 3.14.7 documentation",
+                "truncated": true,
+                "url": "https://docs.python.org/3/library/asyncio-task.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "Coroutines and tasks — Python 3.14.7 documentation",
+              "url": "https://docs.python.org/3/library/asyncio-task.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 5050,
+        "http_attempts_during_call": 32,
+        "offline": false,
+        "query": "SQLite transactions isolation",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 2038,
+            "indexed_origins": 10,
+            "indexed_pages": 15,
+            "known_urls": 2053,
+            "last_fetch_at": 1789929995,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 0,
+            "requests_today": 32
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 2,
+            "enabled": true,
+            "entrypoints": [
+              "https://www.sqlite.org/docs.html"
+            ],
+            "followed_urls": 1,
+            "sources": [
+              {
+                "discovered_urls": 122,
+                "indexed": true,
+                "resolved_url": "https://www.sqlite.org/docs.html",
+                "retrieved_at": "2026-09-20T18:46:32+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.sqlite.org/docs.html"
+              },
+              {
+                "discovered_urls": 21,
+                "indexed": true,
+                "resolved_url": "https://www.sqlite.org/isolation.html",
+                "retrieved_at": "2026-09-20T18:46:35+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.sqlite.org/isolation.html"
+              }
+            ],
+            "stop_reason": "no_unvisited_relevant_links",
+            "unvisited_domains": []
+          },
+          "query": "SQLite transactions isolation",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:35+00:00",
+              "page": {
+                "content_hash": "cc773465706786574b61bbe59c574b94bf4ffca41c4371b6def5a51957fac451",
+                "language": null,
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:35+00:00",
+                "source": "network",
+                "title": "Isolation In SQLite",
+                "truncated": true,
+                "url": "https://www.sqlite.org/isolation.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "Isolation In SQLite",
+              "url": "https://www.sqlite.org/isolation.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 12690,
+        "http_attempts_during_call": 78,
+        "offline": false,
+        "query": "PostgreSQL window functions",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5673,
+            "indexed_origins": 11,
+            "indexed_pages": 37,
+            "known_urls": 5721,
+            "last_fetch_at": 1789930002,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 32,
+            "requests_today": 78
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 136,
+            "enabled": true,
+            "entrypoints": [
+              "https://www.postgresql.org/docs/current/"
+            ],
+            "followed_urls": 4,
+            "sources": [
+              {
+                "discovered_urls": 124,
+                "indexed": true,
+                "resolved_url": "https://www.postgresql.org/docs/current/",
+                "retrieved_at": "2026-09-20T18:46:32+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.postgresql.org/docs/current/"
+              },
+              {
+                "discovered_urls": 55,
+                "indexed": true,
+                "resolved_url": "https://www.postgresql.org/docs/current/functions.html",
+                "retrieved_at": "2026-09-20T18:46:35+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.postgresql.org/docs/current/functions.html"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "Web response exceeds the download byte limit",
+                "failure_kind": "unavailable",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://www.postgresql.org/sitemap.xml"
+              },
+              {
+                "discovered_urls": 26,
+                "indexed": true,
+                "resolved_url": "https://www.postgresql.org/docs/current/functions-window.html",
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.postgresql.org/docs/current/functions-window.html"
+              },
+              {
+                "discovered_urls": 26,
+                "indexed": true,
+                "resolved_url": "https://www.postgresql.org/docs/current/functions-net.html",
+                "retrieved_at": "2026-09-20T18:46:40+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.postgresql.org/docs/current/functions-net.html"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "PostgreSQL window functions",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:39+00:00",
+              "page": {
+                "content_hash": "e35fa9b7cb125d52f3b063547a098f0666683efc87ed05f181ed8e810a82a61a",
+                "language": "en",
+                "passage_characters": 5456,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "title": "PostgreSQL: Documentation: 18: 9.22. Window Functions",
+                "truncated": false,
+                "url": "https://www.postgresql.org/docs/current/functions-window.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "PostgreSQL: Documentation: 18: 9.22. Window Functions",
+              "url": "https://www.postgresql.org/docs/current/functions-window.html"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:35+00:00",
+              "page": {
+                "content_hash": "447483a8ef87d78bca10b3a0a69676838b1fa63bf7313e54e921887046593d76",
+                "language": "en",
+                "passage_characters": 4911,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:35+00:00",
+                "source": "network",
+                "title": "PostgreSQL: Documentation: 18: Chapter 9. Functions and Operators",
+                "truncated": false,
+                "url": "https://www.postgresql.org/docs/current/functions.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "PostgreSQL: Documentation: 18: Chapter 9. Functions and Operators",
+              "url": "https://www.postgresql.org/docs/current/functions.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 13976,
+        "http_attempts_during_call": 78,
+        "offline": false,
+        "query": "Docker multi stage builds",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5778,
+            "indexed_origins": 11,
+            "indexed_pages": 41,
+            "known_urls": 5831,
+            "last_fetch_at": 1789930002,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 64,
+            "requests_today": 78
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 100,
+            "enabled": true,
+            "entrypoints": [
+              "https://docs.docker.com/"
+            ],
+            "followed_urls": 4,
+            "sources": [
+              {
+                "discovered_urls": 17,
+                "indexed": true,
+                "resolved_url": "https://docs.docker.com/",
+                "retrieved_at": "2026-09-20T18:46:33+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.docker.com/"
+              },
+              {
+                "discovered_urls": 1811,
+                "indexed": false,
+                "resolved_url": "https://docs.docker.com/sitemap.xml",
+                "retrieved_at": "2026-09-20T18:46:35+00:00",
+                "source": "network",
+                "status": "discovered",
+                "url": "https://docs.docker.com/sitemap.xml"
+              },
+              {
+                "discovered_urls": 1,
+                "indexed": true,
+                "resolved_url": "https://docs.docker.com/guides/",
+                "retrieved_at": "2026-09-20T18:46:37+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.docker.com/guides/"
+              },
+              {
+                "discovered_urls": 8,
+                "indexed": true,
+                "resolved_url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/"
+              },
+              {
+                "discovered_urls": 1,
+                "indexed": true,
+                "resolved_url": "https://docs.docker.com/build/building/multi-stage/",
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://docs.docker.com/build/building/multi-stage/"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "Docker multi stage builds",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:39+00:00",
+              "page": {
+                "content_hash": "f2af33119b21de71d7344881adbd5682ef2b2739b0404eb0f76b94d3d895639a",
+                "language": null,
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "title": "Multi-stage builds",
+                "truncated": true,
+                "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "Multi-stage builds",
+              "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:42+00:00",
+              "page": {
+                "content_hash": "37de3d25bd1cd507529597dbc54930c3735d92f9e547e430fe8f6fef6b76fe96",
+                "language": null,
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "title": "Multi-stage builds",
+                "truncated": true,
+                "url": "https://docs.docker.com/build/building/multi-stage/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "Multi-stage builds",
+              "url": "https://docs.docker.com/build/building/multi-stage/"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 12639,
+        "http_attempts_during_call": 78,
+        "offline": false,
+        "query": "CSS grid layout",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5669,
+            "indexed_origins": 11,
+            "indexed_pages": 36,
+            "known_urls": 5717,
+            "last_fetch_at": 1789930000,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 32,
+            "requests_today": 78
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 119,
+            "enabled": true,
+            "entrypoints": [
+              "https://developer.mozilla.org/en-US/docs/Web"
+            ],
+            "followed_urls": 5,
+            "sources": [
+              {
+                "discovered_urls": 132,
+                "indexed": true,
+                "resolved_url": "https://developer.mozilla.org/en-US/docs/Web",
+                "retrieved_at": "2026-09-20T18:46:32+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://developer.mozilla.org/en-US/docs/Web"
+              },
+              {
+                "discovered_urls": 402,
+                "indexed": true,
+                "resolved_url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout",
+                "retrieved_at": "2026-09-20T18:46:35+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout"
+              },
+              {
+                "discovered_urls": 1345,
+                "indexed": true,
+                "resolved_url": "https://developer.mozilla.org/en-US/docs/Web/CSS/How_to/Layout_cookbook/Column_layouts",
+                "retrieved_at": "2026-09-20T18:46:36+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/How_to/Layout_cookbook/Column_layouts"
+              },
+              {
+                "discovered_urls": 1366,
+                "indexed": true,
+                "resolved_url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout",
+                "retrieved_at": "2026-09-20T18:46:38+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout"
+              },
+              {
+                "discovered_urls": 419,
+                "indexed": true,
+                "resolved_url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids",
+                "retrieved_at": "2026-09-20T18:46:40+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": false,
+                "resolved_url": "https://scrimba.com/learn-css-grid-c02k?via=mdn",
+                "retrieved_at": "2026-09-20T18:46:39+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://scrimba.com/learn-css-grid-c02k?via=mdn"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "CSS grid layout",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:38+00:00",
+              "page": {
+                "content_hash": "7d916cca296287a9c780a0c79fe5d56ac718d4b376780e8b5e216e2a335cb6a9",
+                "language": "en-US",
+                "passage_characters": 4940,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:38+00:00",
+                "source": "network",
+                "title": "CSS grid layout - CSS | MDN",
+                "truncated": false,
+                "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "CSS grid layout - CSS | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:40+00:00",
+              "page": {
+                "content_hash": "81b2b4fd70c41c9bc8defee5ecd022f48e9dd6cb44fe6851c16c937ff1ff862b",
+                "language": "en-US",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:40+00:00",
+                "source": "network",
+                "title": "CSS grid layout - Learn web development | MDN",
+                "truncated": true,
+                "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "CSS grid layout - Learn web development | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 15388,
+        "http_attempts_during_call": 81,
+        "offline": false,
+        "query": "NASA Jupiter moons",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5828,
+            "indexed_origins": 13,
+            "indexed_pages": 49,
+            "known_urls": 5890,
+            "last_fetch_at": 1789930005,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 112,
+            "requests_today": 81
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 28,
+            "enabled": true,
+            "entrypoints": [
+              "https://science.nasa.gov/"
+            ],
+            "followed_urls": 7,
+            "sources": [
+              {
+                "discovered_urls": 233,
+                "indexed": true,
+                "resolved_url": "https://science.nasa.gov/",
+                "retrieved_at": "2026-09-20T18:46:33+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://science.nasa.gov/"
+              },
+              {
+                "discovered_urls": 193,
+                "indexed": true,
+                "resolved_url": "https://science.nasa.gov/jupiter/",
+                "retrieved_at": "2026-09-20T18:46:34+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://science.nasa.gov/jupiter/"
+              },
+              {
+                "discovered_urls": 192,
+                "indexed": true,
+                "resolved_url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/",
+                "retrieved_at": "2026-09-20T18:46:36+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.nasa.gov/centers-and-facilities/johnson/nasa-johnson-pilots-chase-moons-shadow-for-eclipse-science/"
+              },
+              {
+                "discovered_urls": 237,
+                "indexed": true,
+                "resolved_url": "https://science.nasa.gov/moon/image-galleries/the-moon-from-earth/",
+                "retrieved_at": "2026-09-20T18:46:37+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://science.nasa.gov/moon/image-galleries/the-moon-from-earth/"
+              },
+              {
+                "discovered_urls": 188,
+                "indexed": true,
+                "resolved_url": "https://science.nasa.gov/jupiter/jupiter-moons/",
+                "retrieved_at": "2026-09-20T18:46:45+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://science.nasa.gov/jupiter/moons/"
+              },
+              {
+                "discovered_urls": 201,
+                "indexed": true,
+                "resolved_url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/",
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "Unsupported content type; only HTML, plain text, XML sitemaps and RSS/Atom feeds are supported",
+                "failure_kind": "unavailable",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://www.nasa.gov/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.nasa.gov%2Fcenters-and-facilities%2Fjohnson%2Fnasa-johnson-pilots-chase-moons-shadow-for-eclipse-science%2F"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "XML is not a supported sitemap, RSS or Atom feed",
+                "failure_kind": "unavailable",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://www.nasa.gov/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fwww.nasa.gov%2Fcenters-and-facilities%2Fjohnson%2Fnasa-johnson-pilots-chase-moons-shadow-for-eclipse-science%2F&format=xml"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "NASA Jupiter moons",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:42+00:00",
+              "page": {
+                "content_hash": "36ee7d45ef35523ad9859ab7b9cf99434af67653e3688600ce80cb6a6dede04a",
+                "language": "en-US",
+                "passage_characters": 3453,
+                "published_at": "2025-09-03T00:56:53+00:00",
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "title": "Juno Detected the Final Missing Auroral Signature from Jupiter’s Four Largest Moons - NASA Science",
+                "truncated": false,
+                "url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": "2025-09-03T00:56:53+00:00",
+              "read_status": "network",
+              "title": "Juno Detected the Final Missing Auroral Signature from Jupiter’s Four Largest Moons - NASA Science",
+              "url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:45+00:00",
+              "page": {
+                "content_hash": "3b806d97860706ab50280f13ef70eae396f4190ac32241d30e61fe3fc81adf60",
+                "language": "en-US",
+                "passage_characters": 2942,
+                "published_at": "2017-11-10T07:39:14+00:00",
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:45+00:00",
+                "source": "network",
+                "title": "Jupiter Moons",
+                "truncated": false,
+                "url": "https://science.nasa.gov/jupiter/jupiter-moons/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": "2017-11-10T07:39:14+00:00",
+              "read_status": "network",
+              "title": "Jupiter Moons",
+              "url": "https://science.nasa.gov/jupiter/jupiter-moons/"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 15213,
+        "http_attempts_during_call": 81,
+        "offline": false,
+        "query": "WHO dengue symptoms",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5828,
+            "indexed_origins": 13,
+            "indexed_pages": 49,
+            "known_urls": 5890,
+            "last_fetch_at": 1789930005,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 96,
+            "requests_today": 81
+          },
+          "discovery": {
+            "background_queued": 16,
+            "candidates_considered": 34,
+            "enabled": true,
+            "entrypoints": [
+              "https://www.who.int/health-topics/"
+            ],
+            "followed_urls": 6,
+            "sources": [
+              {
+                "discovered_urls": 360,
+                "indexed": true,
+                "resolved_url": "https://www.who.int/health-topics/",
+                "retrieved_at": "2026-09-20T18:46:32+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.who.int/health-topics/"
+              },
+              {
+                "discovered_urls": 203,
+                "indexed": true,
+                "resolved_url": "https://www.who.int/health-topics/dengue-and-severe-dengue",
+                "retrieved_at": "2026-09-20T18:46:34+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.who.int/health-topics/dengue-and-severe-dengue"
+              },
+              {
+                "discovered_urls": 173,
+                "indexed": true,
+                "resolved_url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue",
+                "retrieved_at": "2026-09-20T18:46:38+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.who.int/mega-menu/health-topics/popular/dengue"
+              },
+              {
+                "discovered_urls": 161,
+                "indexed": true,
+                "resolved_url": "https://www.who.int/podcasts/episode/science-in-5/episode--115---dengue-fever",
+                "retrieved_at": "2026-09-20T18:46:42+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.who.int/podcasts/episode/science-in-5/episode--115---dengue-fever"
+              },
+              {
+                "discovered_urls": 187,
+                "indexed": true,
+                "resolved_url": "https://www.who.int/activities/improving-data-for-dengue",
+                "retrieved_at": "2026-09-20T18:46:44+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.who.int/activities/improving-data-for-dengue"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "robots.txt does not permit reading this URL",
+                "failure_kind": "blocked",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://worldhealthorg.shinyapps.io/dengue_global/"
+              },
+              {
+                "discovered_urls": 61,
+                "indexed": true,
+                "resolved_url": "https://www.cdc.gov/dengue/areas-with-risk/index.html",
+                "retrieved_at": "2026-09-20T18:46:44+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.cdc.gov/dengue/areas-with-risk/index.html"
+              }
+            ],
+            "stop_reason": "strong_lexical_source",
+            "unvisited_domains": []
+          },
+          "query": "WHO dengue symptoms",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:34+00:00",
+              "page": {
+                "content_hash": "08561e62ef49d52a6d420a5ee5efce5542331c17c2fde44d37463a512e8ef511",
+                "language": "en",
+                "passage_characters": 4866,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:34+00:00",
+                "source": "network",
+                "title": "Dengue and severe dengue",
+                "truncated": false,
+                "url": "https://www.who.int/health-topics/dengue-and-severe-dengue",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "Dengue and severe dengue",
+              "url": "https://www.who.int/health-topics/dengue-and-severe-dengue"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:38+00:00",
+              "page": {
+                "content_hash": "042067a67ec431bc3c6a1b9fe6c683aac30dd96cbb15c8f40eabb08f63a99034",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:38+00:00",
+                "source": "network",
+                "title": "Dengue",
+                "truncated": true,
+                "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "Dengue",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      }
+    ],
+    "http_attempts": 87,
+    "wall_ms": 18898
+  },
+  "final_memory": {
+    "peak_rss_kib": 60388,
+    "rss_kib": 60388
+  },
+  "initial_memory": {
+    "peak_rss_kib": 7072,
+    "rss_kib": 7072
+  },
+  "method": "One initially empty persistent temporary corpus. Ten concurrent cold calls, four sequential warm live calls, ten warm concurrent calls, a related new query, then an explicitly offline control. Fresh=true throughout. No model, browser or search provider. Per-call HTTP deltas overlap during batches; use batch totals.",
+  "offline_control": {
+    "elapsed_ms": 21,
+    "http_attempts_during_call": 0,
+    "offline": true,
+    "query": "React useEffect cleanup",
+    "result": {
+      "backend": "local_fts5",
+      "coverage": {
+        "due_urls": 6197,
+        "indexed_origins": 16,
+        "indexed_pages": 57,
+        "known_urls": 6272,
+        "last_fetch_at": 1789930022,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "priority_urls": 162,
+        "requests_today": 117
+      },
+      "discovery": {
+        "background_queued": 0,
+        "candidates_considered": 0,
+        "enabled": false,
+        "entrypoints": [],
+        "followed_urls": 0,
+        "sources": [],
+        "stop_reason": "disabled",
+        "unvisited_domains": []
+      },
+      "query": "React useEffect cleanup",
+      "queue_wait_ms": 0,
+      "results": [
+        {
+          "indexed_at": "2026-09-20T18:46:53+00:00",
+          "published_at": null,
+          "read_status": "not_requested",
+          "title": "useEffect – React",
+          "url": "https://react.dev/reference/react/useEffect"
+        }
+      ],
+      "source_reads": [],
+      "warnings": [
+        "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+        "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+      ]
+    }
+  },
+  "performed_at": "2026-09-20T18:47:05.698626519+00:00",
+  "related_new_query": {
+    "elapsed_ms": 7916,
+    "http_attempts_during_call": 8,
+    "offline": false,
+    "query": "Python pathlib Path",
+    "result": {
+      "backend": "local_fts5",
+      "coverage": {
+        "due_urls": 6197,
+        "indexed_origins": 16,
+        "indexed_pages": 57,
+        "known_urls": 6272,
+        "last_fetch_at": 1789930022,
+        "max_pages": 5000,
+        "page_limit_reached": false,
+        "priority_urls": 162,
+        "requests_today": 117
+      },
+      "discovery": {
+        "background_queued": 16,
+        "candidates_considered": 14,
+        "enabled": true,
+        "entrypoints": [
+          "https://docs.python.org/3/"
+        ],
+        "followed_urls": 6,
+        "sources": [
+          {
+            "discovered_urls": 0,
+            "indexed": true,
+            "resolved_url": "https://docs.python.org/3/",
+            "retrieved_at": "2026-09-20T18:46:32+00:00",
+            "source": "cache",
+            "status": "read",
+            "url": "https://docs.python.org/3/"
+          },
+          {
+            "discovered_urls": 33,
+            "indexed": true,
+            "resolved_url": "https://docs.python.org/3/library/pathlib.html",
+            "retrieved_at": "2026-09-20T18:46:59+00:00",
+            "source": "network",
+            "status": "read",
+            "url": "https://docs.python.org/3/library/pathlib.html"
+          },
+          {
+            "discovered_urls": 29,
+            "indexed": true,
+            "resolved_url": "https://docs.python.org/3/library/os.path.html",
+            "retrieved_at": "2026-09-20T18:47:00+00:00",
+            "source": "network",
+            "status": "read",
+            "url": "https://docs.python.org/3/library/os.path.html"
+          },
+          {
+            "discovered_urls": 0,
+            "indexed": false,
+            "resolved_url": "https://github.com/python/cpython/tree/3.14/Lib/pathlib/",
+            "retrieved_at": "2026-09-20T18:47:00+00:00",
+            "source": "network",
+            "status": "discovered",
+            "url": "https://github.com/python/cpython/tree/3.14/Lib/pathlib/"
+          },
+          {
+            "discovered_urls": 26,
+            "indexed": true,
+            "resolved_url": "https://docs.python.org/3/library/sys_path_init.html",
+            "retrieved_at": "2026-09-20T18:47:02+00:00",
+            "source": "network",
+            "status": "read",
+            "url": "https://docs.python.org/3/library/sys_path_init.html"
+          },
+          {
+            "discovered_urls": 226,
+            "indexed": true,
+            "resolved_url": "https://en.wikipedia.org/wiki/Path_(computing)",
+            "retrieved_at": "2026-09-20T18:47:02+00:00",
+            "source": "network",
+            "status": "read",
+            "url": "https://en.wikipedia.org/wiki/Path_(computing)"
+          },
+          {
+            "discovered_urls": 0,
+            "indexed": false,
+            "resolved_url": "https://github.com/python/cpython/blob/3.14/Lib/ntpath.py",
+            "retrieved_at": "2026-09-20T18:47:05+00:00",
+            "source": "network",
+            "status": "discovered",
+            "url": "https://github.com/python/cpython/tree/3.14/Lib/ntpath.py"
+          }
+        ],
+        "stop_reason": "strong_lexical_source",
+        "unvisited_domains": []
+      },
+      "query": "Python pathlib Path",
+      "queue_wait_ms": 0,
+      "results": [
+        {
+          "indexed_at": "2026-09-20T18:46:59+00:00",
+          "page": {
+            "content_hash": "f5434be7843657ceffcb8e3dc2a66882134b573fdb314c1736e37145b105d0aa",
+            "language": "en",
+            "passage_characters": 6000,
+            "published_at": null,
+            "queue_wait_ms": 0,
+            "retrieved_at": "2026-09-20T18:46:59+00:00",
+            "source": "network",
+            "title": "pathlib — Object-oriented filesystem paths — Python 3.14.7 documentation",
+            "truncated": true,
+            "url": "https://docs.python.org/3/library/pathlib.html",
+            "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+          },
+          "published_at": null,
+          "read_status": "network",
+          "title": "pathlib — Object-oriented filesystem paths — Python 3.14.7 documentation",
+          "url": "https://docs.python.org/3/library/pathlib.html"
+        },
+        {
+          "indexed_at": "2026-09-20T18:47:00+00:00",
+          "page": {
+            "content_hash": "c633743e0fe7c837483bd6add02a5b0e0c1376c98ac5c3ea0c31a0c082db1850",
+            "language": "en",
+            "passage_characters": 6000,
+            "published_at": null,
+            "queue_wait_ms": 0,
+            "retrieved_at": "2026-09-20T18:47:00+00:00",
+            "source": "network",
+            "title": "os.path — Common pathname manipulations — Python 3.14.7 documentation",
+            "truncated": true,
+            "url": "https://docs.python.org/3/library/os.path.html",
+            "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+          },
+          "published_at": null,
+          "read_status": "network",
+          "title": "os.path — Common pathname manipulations — Python 3.14.7 documentation",
+          "url": "https://docs.python.org/3/library/os.path.html"
+        },
+        {
+          "indexed_at": "2026-09-20T18:47:02+00:00",
+          "page": {
+            "content_hash": "eff849d9b9c6ed5d6cebbb2ca9f563534211170d7b0e0ac9b78e8b9520d322fa",
+            "language": "en",
+            "passage_characters": 6000,
+            "published_at": "2003-12-15T22:32:46+00:00",
+            "queue_wait_ms": 0,
+            "retrieved_at": "2026-09-20T18:47:02+00:00",
+            "source": "network",
+            "title": "Path (computing) - Wikipedia",
+            "truncated": true,
+            "url": "https://en.wikipedia.org/wiki/Path_(computing)",
+            "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+          },
+          "published_at": "2003-12-15T22:32:46+00:00",
+          "read_status": "network",
+          "title": "Path (computing) - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Path_(computing)"
+        }
+      ],
+      "source_reads": [],
+      "warnings": [
+        "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+        "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+        "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+      ]
+    }
+  },
+  "status": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 6197,
+      "indexed_origins": 16,
+      "indexed_pages": 57,
+      "known_urls": 6272,
+      "last_fetch_at": 1789930022,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "priority_urls": 162,
+      "requests_today": 117
+    },
+    "crawler_request_budget": 1600,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 2000
+  },
+  "warm_individual": [
+    {
+      "elapsed_ms": 281,
+      "http_attempts_during_call": 1,
+      "offline": false,
+      "query": "React useEffect cleanup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5963,
+          "indexed_origins": 15,
+          "indexed_pages": 53,
+          "known_urls": 6031,
+          "last_fetch_at": 1789930009,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 133,
+          "requests_today": 88
+        },
+        "discovery": {
+          "background_queued": 0,
+          "candidates_considered": 0,
+          "enabled": true,
+          "entrypoints": [
+            "https://react.dev/reference/react/useEffect"
+          ],
+          "followed_urls": 0,
+          "sources": [
+            {
+              "discovered_urls": 0,
+              "indexed": true,
+              "resolved_url": "https://react.dev/reference/react/useEffect",
+              "retrieved_at": "2026-09-20T18:46:49+00:00",
+              "source": "revalidated",
+              "status": "read",
+              "url": "https://react.dev/reference/react/useEffect"
+            }
+          ],
+          "stop_reason": "indexed_sources",
+          "unvisited_domains": []
+        },
+        "query": "React useEffect cleanup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:46:49+00:00",
+            "page": {
+              "content_hash": "6cd335fd3122d115c6175ca2152987636403ac45ae258501d9572d0995a04894",
+              "language": "en",
+              "passage_characters": 6000,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:46:49+00:00",
+              "source": "revalidated",
+              "title": "useEffect – React",
+              "truncated": true,
+              "url": "https://react.dev/reference/react/useEffect",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+            },
+            "published_at": null,
+            "read_status": "revalidated",
+            "title": "useEffect – React",
+            "url": "https://react.dev/reference/react/useEffect"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 1353,
+      "http_attempts_during_call": 1,
+      "offline": false,
+      "query": "Python asyncio TaskGroup",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5963,
+          "indexed_origins": 15,
+          "indexed_pages": 53,
+          "known_urls": 6031,
+          "last_fetch_at": 1789930010,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 133,
+          "requests_today": 89
+        },
+        "discovery": {
+          "background_queued": 0,
+          "candidates_considered": 0,
+          "enabled": true,
+          "entrypoints": [
+            "https://docs.python.org/3/library/asyncio-task.html"
+          ],
+          "followed_urls": 0,
+          "sources": [
+            {
+              "discovered_urls": 0,
+              "indexed": true,
+              "resolved_url": "https://docs.python.org/3/library/asyncio-task.html",
+              "retrieved_at": "2026-09-20T18:46:50+00:00",
+              "source": "revalidated",
+              "status": "read",
+              "url": "https://docs.python.org/3/library/asyncio-task.html"
+            }
+          ],
+          "stop_reason": "indexed_sources",
+          "unvisited_domains": []
+        },
+        "query": "Python asyncio TaskGroup",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:46:50+00:00",
+            "page": {
+              "content_hash": "04e8d7ae958bdc82477bab0f039b7d806ce5e8349e7c74ed73716519d48cbf08",
+              "language": "en",
+              "passage_characters": 6000,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:46:50+00:00",
+              "source": "revalidated",
+              "title": "Coroutines and tasks — Python 3.14.7 documentation",
+              "truncated": true,
+              "url": "https://docs.python.org/3/library/asyncio-task.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+            },
+            "published_at": null,
+            "read_status": "revalidated",
+            "title": "Coroutines and tasks — Python 3.14.7 documentation",
+            "url": "https://docs.python.org/3/library/asyncio-task.html"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 227,
+      "http_attempts_during_call": 1,
+      "offline": false,
+      "query": "SQLite transactions isolation",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5963,
+          "indexed_origins": 15,
+          "indexed_pages": 53,
+          "known_urls": 6031,
+          "last_fetch_at": 1789930010,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 133,
+          "requests_today": 90
+        },
+        "discovery": {
+          "background_queued": 0,
+          "candidates_considered": 0,
+          "enabled": true,
+          "entrypoints": [
+            "https://www.sqlite.org/isolation.html"
+          ],
+          "followed_urls": 0,
+          "sources": [
+            {
+              "discovered_urls": 0,
+              "indexed": true,
+              "resolved_url": "https://www.sqlite.org/isolation.html",
+              "retrieved_at": "2026-09-20T18:46:50+00:00",
+              "source": "revalidated",
+              "status": "read",
+              "url": "https://www.sqlite.org/isolation.html"
+            }
+          ],
+          "stop_reason": "indexed_sources",
+          "unvisited_domains": []
+        },
+        "query": "SQLite transactions isolation",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:46:50+00:00",
+            "page": {
+              "content_hash": "cc773465706786574b61bbe59c574b94bf4ffca41c4371b6def5a51957fac451",
+              "language": null,
+              "passage_characters": 6000,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:46:50+00:00",
+              "source": "revalidated",
+              "title": "Isolation In SQLite",
+              "truncated": true,
+              "url": "https://www.sqlite.org/isolation.html",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+            },
+            "published_at": null,
+            "read_status": "revalidated",
+            "title": "Isolation In SQLite",
+            "url": "https://www.sqlite.org/isolation.html"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 2134,
+      "http_attempts_during_call": 2,
+      "offline": false,
+      "query": "WHO dengue symptoms",
+      "result": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 5963,
+          "indexed_origins": 15,
+          "indexed_pages": 53,
+          "known_urls": 6031,
+          "last_fetch_at": 1789930012,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "priority_urls": 137,
+          "requests_today": 92
+        },
+        "discovery": {
+          "background_queued": 4,
+          "candidates_considered": 0,
+          "enabled": true,
+          "entrypoints": [
+            "https://www.who.int/health-topics/dengue-and-severe-dengue",
+            "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
+          ],
+          "followed_urls": 0,
+          "sources": [
+            {
+              "discovered_urls": 0,
+              "indexed": true,
+              "resolved_url": "https://www.who.int/health-topics/dengue-and-severe-dengue",
+              "retrieved_at": "2026-09-20T18:46:50+00:00",
+              "source": "revalidated",
+              "status": "read",
+              "url": "https://www.who.int/health-topics/dengue-and-severe-dengue"
+            },
+            {
+              "discovered_urls": 0,
+              "indexed": true,
+              "resolved_url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue",
+              "retrieved_at": "2026-09-20T18:46:52+00:00",
+              "source": "revalidated",
+              "status": "read",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
+            }
+          ],
+          "stop_reason": "indexed_sources",
+          "unvisited_domains": []
+        },
+        "query": "WHO dengue symptoms",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-20T18:46:50+00:00",
+            "page": {
+              "content_hash": "08561e62ef49d52a6d420a5ee5efce5542331c17c2fde44d37463a512e8ef511",
+              "language": "en",
+              "passage_characters": 4866,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:46:50+00:00",
+              "source": "revalidated",
+              "title": "Dengue and severe dengue",
+              "truncated": false,
+              "url": "https://www.who.int/health-topics/dengue-and-severe-dengue",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+            },
+            "published_at": null,
+            "read_status": "revalidated",
+            "title": "Dengue and severe dengue",
+            "url": "https://www.who.int/health-topics/dengue-and-severe-dengue"
+          },
+          {
+            "indexed_at": "2026-09-20T18:46:52+00:00",
+            "page": {
+              "content_hash": "042067a67ec431bc3c6a1b9fe6c683aac30dd96cbb15c8f40eabb08f63a99034",
+              "language": "en",
+              "passage_characters": 6000,
+              "published_at": null,
+              "queue_wait_ms": 0,
+              "retrieved_at": "2026-09-20T18:46:52+00:00",
+              "source": "revalidated",
+              "title": "Dengue",
+              "truncated": true,
+              "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue",
+              "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+            },
+            "published_at": null,
+            "read_status": "revalidated",
+            "title": "Dengue",
+            "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    }
+  ],
+  "warm_parallel": {
+    "calls": [
+      {
+        "elapsed_ms": 1247,
+        "http_attempts_during_call": 9,
+        "offline": false,
+        "query": "React useEffect cleanup",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930014,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 137,
+            "requests_today": 101
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://react.dev/reference/react/useEffect"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://react.dev/reference/react/useEffect",
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://react.dev/reference/react/useEffect"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "React useEffect cleanup",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:53+00:00",
+              "page": {
+                "content_hash": "6cd335fd3122d115c6175ca2152987636403ac45ae258501d9572d0995a04894",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "title": "useEffect – React",
+                "truncated": true,
+                "url": "https://react.dev/reference/react/useEffect",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "useEffect – React",
+              "url": "https://react.dev/reference/react/useEffect"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 4484,
+        "http_attempts_during_call": 17,
+        "offline": false,
+        "query": "Next.js proxy middleware",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930017,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 146,
+            "requests_today": 109
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://nextjs.org/docs/app/api-reference/file-conventions/proxy"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 343,
+                "indexed": true,
+                "resolved_url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy",
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "Next.js proxy middleware",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:57+00:00",
+              "page": {
+                "content_hash": "86763cd010fdecaa65369bdf49dedf2025529d71e98fa8762e6776407f193d72",
+                "language": null,
+                "passage_characters": 4206,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:57+00:00",
+                "source": "network",
+                "title": "https://nextjs.org/docs/app/getting-started/proxy.md",
+                "truncated": false,
+                "url": "https://nextjs.org/docs/app/getting-started/proxy.md",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "https://nextjs.org/docs/app/getting-started/proxy.md",
+              "url": "https://nextjs.org/docs/app/getting-started/proxy.md"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:54+00:00",
+              "page": {
+                "content_hash": "8fc310a9c87ce22bb528702c1c521161d31ff29ac9c6932f6eb8735e55bd13de",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "network",
+                "title": "File-system conventions: proxy.js | Next.js",
+                "truncated": true,
+                "url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "File-system conventions: proxy.js | Next.js",
+              "url": "https://nextjs.org/docs/app/api-reference/file-conventions/proxy"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 4428,
+        "http_attempts_during_call": 17,
+        "offline": false,
+        "query": "Tokio timeout",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930017,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 146,
+            "requests_today": 109
+          },
+          "discovery": {
+            "background_queued": 9,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+              "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+                "retrieved_at": "2026-09-20T18:46:55+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "Tokio timeout",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:53+00:00",
+              "page": {
+                "content_hash": "3046d7f6de5a2bf785fa9e4dbe407a04ddd391de68cb50ee7d9ffd36619872b5",
+                "language": "en",
+                "passage_characters": 2081,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "title": "timeout in tokio::time - Rust",
+                "truncated": false,
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "timeout in tokio::time - Rust",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout.html"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:55+00:00",
+              "page": {
+                "content_hash": "f8a2dc50c37186d25cb30b057e037e4a743ee0a5ab6c3104c5270eae0b2ee148",
+                "language": "en",
+                "passage_characters": 1894,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:55+00:00",
+                "source": "revalidated",
+                "title": "timeout_at in tokio::time - Rust",
+                "truncated": false,
+                "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "timeout_at in tokio::time - Rust",
+              "url": "https://docs.rs/tokio/latest/tokio/time/fn.timeout_at.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 1118,
+        "http_attempts_during_call": 9,
+        "offline": false,
+        "query": "Python asyncio TaskGroup",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930013,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 137,
+            "requests_today": 101
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://docs.python.org/3/library/asyncio-task.html"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://docs.python.org/3/library/asyncio-task.html",
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://docs.python.org/3/library/asyncio-task.html"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "Python asyncio TaskGroup",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:53+00:00",
+              "page": {
+                "content_hash": "04e8d7ae958bdc82477bab0f039b7d806ce5e8349e7c74ed73716519d48cbf08",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "title": "Coroutines and tasks — Python 3.14.7 documentation",
+                "truncated": true,
+                "url": "https://docs.python.org/3/library/asyncio-task.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "Coroutines and tasks — Python 3.14.7 documentation",
+              "url": "https://docs.python.org/3/library/asyncio-task.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 1233,
+        "http_attempts_during_call": 9,
+        "offline": false,
+        "query": "SQLite transactions isolation",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930013,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 137,
+            "requests_today": 101
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://www.sqlite.org/isolation.html"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://www.sqlite.org/isolation.html",
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://www.sqlite.org/isolation.html"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "SQLite transactions isolation",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:53+00:00",
+              "page": {
+                "content_hash": "cc773465706786574b61bbe59c574b94bf4ffca41c4371b6def5a51957fac451",
+                "language": null,
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "title": "Isolation In SQLite",
+                "truncated": true,
+                "url": "https://www.sqlite.org/isolation.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "Isolation In SQLite",
+              "url": "https://www.sqlite.org/isolation.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 4600,
+        "http_attempts_during_call": 17,
+        "offline": false,
+        "query": "PostgreSQL window functions",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930017,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 146,
+            "requests_today": 109
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://www.postgresql.org/docs/current/functions-window.html"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 26,
+                "indexed": true,
+                "resolved_url": "https://www.postgresql.org/docs/current/functions-window.html",
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://www.postgresql.org/docs/current/functions-window.html"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "PostgreSQL window functions",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:54+00:00",
+              "page": {
+                "content_hash": "e35fa9b7cb125d52f3b063547a098f0666683efc87ed05f181ed8e810a82a61a",
+                "language": "en",
+                "passage_characters": 5456,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "network",
+                "title": "PostgreSQL: Documentation: 18: 9.22. Window Functions",
+                "truncated": false,
+                "url": "https://www.postgresql.org/docs/current/functions-window.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "PostgreSQL: Documentation: 18: 9.22. Window Functions",
+              "url": "https://www.postgresql.org/docs/current/functions-window.html"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:57+00:00",
+              "page": {
+                "content_hash": "447483a8ef87d78bca10b3a0a69676838b1fa63bf7313e54e921887046593d76",
+                "language": "en",
+                "passage_characters": 4911,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:57+00:00",
+                "source": "network",
+                "title": "PostgreSQL: Documentation: 18: Chapter 9. Functions and Operators",
+                "truncated": false,
+                "url": "https://www.postgresql.org/docs/current/functions.html",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "network",
+              "title": "PostgreSQL: Documentation: 18: Chapter 9. Functions and Operators",
+              "url": "https://www.postgresql.org/docs/current/functions.html"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 4396,
+        "http_attempts_during_call": 17,
+        "offline": false,
+        "query": "Docker multi stage builds",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930017,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 146,
+            "requests_today": 109
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+              "https://docs.docker.com/build/building/multi-stage/"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://docs.docker.com/build/building/multi-stage/",
+                "retrieved_at": "2026-09-20T18:46:55+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://docs.docker.com/build/building/multi-stage/"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "Docker multi stage builds",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:53+00:00",
+              "page": {
+                "content_hash": "f2af33119b21de71d7344881adbd5682ef2b2739b0404eb0f76b94d3d895639a",
+                "language": null,
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "title": "Multi-stage builds",
+                "truncated": true,
+                "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "Multi-stage builds",
+              "url": "https://docs.docker.com/get-started/docker-concepts/building-images/multi-stage-builds/"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:55+00:00",
+              "page": {
+                "content_hash": "37de3d25bd1cd507529597dbc54930c3735d92f9e547e430fe8f6fef6b76fe96",
+                "language": null,
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:55+00:00",
+                "source": "revalidated",
+                "title": "Multi-stage builds",
+                "truncated": true,
+                "url": "https://docs.docker.com/build/building/multi-stage/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "Multi-stage builds",
+              "url": "https://docs.docker.com/build/building/multi-stage/"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 4423,
+        "http_attempts_during_call": 17,
+        "offline": false,
+        "query": "CSS grid layout",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930017,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 146,
+            "requests_today": 109
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout",
+              "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout",
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids",
+                "retrieved_at": "2026-09-20T18:46:55+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "CSS grid layout",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:53+00:00",
+              "page": {
+                "content_hash": "7d916cca296287a9c780a0c79fe5d56ac718d4b376780e8b5e216e2a335cb6a9",
+                "language": "en-US",
+                "passage_characters": 4940,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:53+00:00",
+                "source": "revalidated",
+                "title": "CSS grid layout - CSS | MDN",
+                "truncated": false,
+                "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "CSS grid layout - CSS | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Grid_layout"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:55+00:00",
+              "page": {
+                "content_hash": "81b2b4fd70c41c9bc8defee5ecd022f48e9dd6cb44fe6851c16c937ff1ff862b",
+                "language": "en-US",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:55+00:00",
+                "source": "revalidated",
+                "title": "CSS grid layout - Learn web development | MDN",
+                "truncated": true,
+                "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "CSS grid layout - Learn web development | MDN",
+              "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Grids"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 4756,
+        "http_attempts_during_call": 17,
+        "offline": false,
+        "query": "NASA Jupiter moons",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930017,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 146,
+            "requests_today": 109
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/",
+              "https://science.nasa.gov/jupiter/jupiter-moons/"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 201,
+                "indexed": true,
+                "resolved_url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/",
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/"
+              },
+              {
+                "discovered_urls": 188,
+                "indexed": true,
+                "resolved_url": "https://science.nasa.gov/jupiter/jupiter-moons/",
+                "retrieved_at": "2026-09-20T18:46:57+00:00",
+                "source": "network",
+                "status": "read",
+                "url": "https://science.nasa.gov/jupiter/jupiter-moons/"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "NASA Jupiter moons",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:54+00:00",
+              "page": {
+                "content_hash": "36ee7d45ef35523ad9859ab7b9cf99434af67653e3688600ce80cb6a6dede04a",
+                "language": "en-US",
+                "passage_characters": 3453,
+                "published_at": "2025-09-03T00:56:53+00:00",
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "network",
+                "title": "Juno Detected the Final Missing Auroral Signature from Jupiter’s Four Largest Moons - NASA Science",
+                "truncated": false,
+                "url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": "2025-09-03T00:56:53+00:00",
+              "read_status": "network",
+              "title": "Juno Detected the Final Missing Auroral Signature from Jupiter’s Four Largest Moons - NASA Science",
+              "url": "https://science.nasa.gov/missions/juno/juno-detected-the-final-missing-auroral-signature-from-jupiters-four-largest-moons/"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:57+00:00",
+              "page": {
+                "content_hash": "3b806d97860706ab50280f13ef70eae396f4190ac32241d30e61fe3fc81adf60",
+                "language": "en-US",
+                "passage_characters": 2942,
+                "published_at": "2017-11-10T07:39:14+00:00",
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:57+00:00",
+                "source": "network",
+                "title": "Jupiter Moons",
+                "truncated": false,
+                "url": "https://science.nasa.gov/jupiter/jupiter-moons/",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": "2017-11-10T07:39:14+00:00",
+              "read_status": "network",
+              "title": "Jupiter Moons",
+              "url": "https://science.nasa.gov/jupiter/jupiter-moons/"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      },
+      {
+        "elapsed_ms": 4755,
+        "http_attempts_during_call": 17,
+        "offline": false,
+        "query": "WHO dengue symptoms",
+        "result": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 5963,
+            "indexed_origins": 15,
+            "indexed_pages": 53,
+            "known_urls": 6031,
+            "last_fetch_at": 1789930017,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "priority_urls": 146,
+            "requests_today": 109
+          },
+          "discovery": {
+            "background_queued": 0,
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://www.who.int/health-topics/dengue-and-severe-dengue",
+              "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://www.who.int/health-topics/dengue-and-severe-dengue",
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://www.who.int/health-topics/dengue-and-severe-dengue"
+              },
+              {
+                "discovered_urls": 0,
+                "indexed": true,
+                "resolved_url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue",
+                "retrieved_at": "2026-09-20T18:46:57+00:00",
+                "source": "revalidated",
+                "status": "read",
+                "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
+              }
+            ],
+            "stop_reason": "indexed_sources",
+            "unvisited_domains": []
+          },
+          "query": "WHO dengue symptoms",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-20T18:46:54+00:00",
+              "page": {
+                "content_hash": "08561e62ef49d52a6d420a5ee5efce5542331c17c2fde44d37463a512e8ef511",
+                "language": "en",
+                "passage_characters": 4866,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:54+00:00",
+                "source": "revalidated",
+                "title": "Dengue and severe dengue",
+                "truncated": false,
+                "url": "https://www.who.int/health-topics/dengue-and-severe-dengue",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "Dengue and severe dengue",
+              "url": "https://www.who.int/health-topics/dengue-and-severe-dengue"
+            },
+            {
+              "indexed_at": "2026-09-20T18:46:57+00:00",
+              "page": {
+                "content_hash": "042067a67ec431bc3c6a1b9fe6c683aac30dd96cbb15c8f40eabb08f63a99034",
+                "language": "en",
+                "passage_characters": 6000,
+                "published_at": null,
+                "queue_wait_ms": 0,
+                "retrieved_at": "2026-09-20T18:46:57+00:00",
+                "source": "revalidated",
+                "title": "Dengue",
+                "truncated": true,
+                "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue",
+                "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date."
+              },
+              "published_at": null,
+              "read_status": "revalidated",
+              "title": "Dengue",
+              "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Search checks known indexed sources first. If insufficient, discovery follows selected entry pages and at most 16 relevant observed links (8 per origin, 4 waves). Navigation can use its TTL cache; fresh result reads still revalidate evidence. Pending observed links may be prioritized for the existing background crawler. This is bounded coverage, not full platform or internet search.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+          ]
+        }
+      }
+    ],
+    "http_attempts": 17,
+    "wall_ms": 4770
+  }
+}

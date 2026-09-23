@@ -37,6 +37,8 @@ impl ProviderConfig {
 #[derive(Clone, Debug)]
 pub struct ClientOptions {
     pub timeout: Duration,
+    /// Disable the total request deadline for externally supervised evaluations.
+    pub disable_request_timeout: bool,
     pub connect_timeout: Duration,
     pub max_response_bytes: usize,
     pub max_request_bytes: usize,
@@ -48,6 +50,7 @@ impl Default for ClientOptions {
     fn default() -> Self {
         Self {
             timeout: Duration::from_secs(120),
+            disable_request_timeout: false,
             connect_timeout: Duration::from_secs(10),
             max_response_bytes: 8 * 1024 * 1024,
             max_request_bytes: 8 * 1024 * 1024,
@@ -62,6 +65,7 @@ pub struct ProviderClient {
     http: reqwest::Client,
     credentials: Arc<CredentialStore>,
     options: ClientOptions,
+    redactor: Arc<fenix_core::safety::Redactor>,
 }
 
 impl ProviderClient {
@@ -82,18 +86,26 @@ impl ProviderClient {
                 "timeouts and byte limits must be positive",
             ));
         }
-        let http = reqwest::Client::builder()
+        let mut builder = reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .connect_timeout(options.connect_timeout)
-            .timeout(options.timeout)
-            .user_agent(concat!("fenix/", env!("CARGO_PKG_VERSION")))
-            .build()
-            .map_err(|_| ProviderError::Transport)?;
+            .user_agent(concat!("fenix/", env!("CARGO_PKG_VERSION")));
+        if !options.disable_request_timeout {
+            builder = builder.timeout(options.timeout);
+        }
+        let http = builder.build().map_err(|_| ProviderError::Transport)?;
         Ok(Self {
             http,
             credentials: Arc::new(credentials),
             options,
+            redactor: Arc::new(fenix_core::safety::Redactor::default()),
         })
+    }
+
+    /// Share only this account's registered credentials across model boundaries.
+    pub fn with_redactor(mut self, redactor: Arc<fenix_core::safety::Redactor>) -> Self {
+        self.redactor = redactor;
+        self
     }
 
     /// One inference request, including text and structured tool calls/results.
@@ -154,6 +166,20 @@ impl ProviderClient {
             }
             .into());
         }
+        if let Some(key) = &credential {
+            self.redactor.add(key.key.expose_secret());
+        }
+        let mut safe_request = request.clone();
+        for message in &mut safe_request.messages {
+            self.redactor
+                .message(message)
+                .map_err(ProviderError::InvalidRequest)?;
+        }
+        for tool in &mut safe_request.tools {
+            tool.description = self.redactor.text(&tool.description);
+            self.redactor.value(&mut tool.parameters);
+        }
+        let request = &safe_request;
         let streaming = preview.is_some() && provider.protocol == Protocol::OpenAiResponses;
         let mut headers = auth_headers(config.provider, credential.as_ref())?;
         let mut body = protocol::encode(provider.protocol, request)?;
@@ -219,14 +245,33 @@ impl ProviderClient {
                 .and_then(|v| v.to_str().ok())
                 .is_some_and(|v| v.split(';').next().unwrap_or("").trim() == "text/event-stream")
         {
-            return crate::streaming::read_responses(
+            let callback = preview
+                .as_mut()
+                .expect("streaming requires a preview callback");
+            let mut pending = String::new();
+            let mut safe_preview = |delta: &str| {
+                pending.push_str(delta);
+                let (consumed, safe) = self.redactor.stream_prefix(&pending, false);
+                if consumed > 0 {
+                    pending.drain(..consumed);
+                    if !safe.is_empty() {
+                        callback(&safe);
+                    }
+                }
+            };
+            let mut result = crate::streaming::read_responses(
                 response,
                 self.options.max_response_bytes,
-                preview
-                    .as_mut()
-                    .expect("streaming requires a preview callback"),
+                &mut safe_preview,
             )
-            .await;
+            .await?;
+            self.redactor
+                .message(&mut result.message)
+                .map_err(ProviderError::InvalidRequest)?;
+            if !pending.is_empty() {
+                callback(&self.redactor.text(&pending));
+            }
+            return Ok(result);
         }
         // Some compatible gateways return complete JSON even when streaming was
         // requested. Decode that same response without making another request.
@@ -240,7 +285,11 @@ impl ProviderClient {
             bytes.extend_from_slice(&chunk);
         }
         let value = serde_json::from_slice(&bytes).map_err(|_| ProviderError::MalformedResponse)?;
-        Ok(protocol::decode(provider.protocol, value)?)
+        let mut result = protocol::decode(provider.protocol, value)?;
+        self.redactor
+            .message(&mut result.message)
+            .map_err(ProviderError::InvalidRequest)?;
+        Ok(result)
     }
 }
 

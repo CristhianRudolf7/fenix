@@ -2,8 +2,7 @@ use crate::{Runtime, redaction::truncate};
 use anyhow::{Context, Result, bail};
 use serde_json::{Value, json};
 use std::{
-    fs::{File, OpenOptions},
-    io::{Read, Write},
+    io::Read,
     path::{Component, Path, PathBuf},
 };
 
@@ -57,6 +56,25 @@ impl Runtime {
         name: &str,
         args: &Value,
     ) -> Result<Value> {
+        if name == "library_export" {
+            let doc = self.store.library_document(
+                args["id"].as_str().context("Document id required")?,
+                args["revision"].as_u64(),
+            )?;
+            let path = self.file_path(
+                workspace,
+                args["path"].as_str().context("Destination path required")?,
+                true,
+            )?;
+            let bytes = self.library_original(&doc)?;
+            fenix_execution::fs::create(&path, &bytes)?;
+            return Ok(
+                json!({"path":path,"sha256":doc.sha256,"document_id":doc.id,"revision":doc.revision,"bytes":bytes.len(),"verified":true}),
+            );
+        }
+        if name.starts_with("document_") {
+            return self.documents_execute(workspace, name, args);
+        }
         if matches!(name, "files_search" | "files_glob") {
             return self.search_files(workspace, name, args);
         }
@@ -69,7 +87,11 @@ impl Runtime {
         match name {
             "files_list" => {
                 let mut entries = vec![];
-                for entry in std::fs::read_dir(path)?.take(200) {
+                use std::os::fd::AsRawFd;
+                let directory = fenix_execution::fs::directory(&path)?;
+                for entry in
+                    std::fs::read_dir(format!("/proc/self/fd/{}", directory.as_raw_fd()))?.take(200)
+                {
                     let entry = entry?;
                     let kind = entry.file_type()?;
                     entries.push(json!({"name":entry.file_name().to_string_lossy(),"kind":if kind.is_dir(){"directory"}else if kind.is_symlink(){"symlink"}else{"file"}}));
@@ -78,6 +100,8 @@ impl Runtime {
             }
             "file_read" => {
                 let text = read_text(&path)?;
+                use sha2::Digest;
+                let sha256 = format!("{:x}", sha2::Sha256::digest(text.as_bytes()));
                 let start = args["start_line"].as_u64().unwrap_or(1).max(1) as usize;
                 let limit = args["line_count"].as_u64().unwrap_or(200).clamp(1, 500) as usize;
                 let lines = text
@@ -89,22 +113,21 @@ impl Runtime {
                     .collect::<Vec<_>>()
                     .join("\n");
                 Ok(
-                    json!({"path":path,"start_line":start,"total_lines":text.lines().count(),"content":self.redactor.text(&truncate(&lines,32_000))}),
+                    json!({"path":path,"sha256":sha256,"start_line":start,"total_lines":text.lines().count(),"content":self.redactor.text(&truncate(&lines,32_000))}),
                 )
             }
             "file_write" => {
                 let content = args["content"].as_str().context("Content required")?;
+                self.check_instruction_write(&path, content)?;
                 if content.len() > MAX_FILE_BYTES as usize {
                     bail!("File exceeds 1 MiB");
                 }
-                // Creation only: overwrites must use expected-content editing.
-                if let Some(parent) = path.parent() {
-                    std::fs::create_dir_all(parent)?;
-                }
-                let mut file=OpenOptions::new().write(true).create_new(true).open(&path).context("File already exists or cannot be created; use file_edit for an existing file")?;
-                file.write_all(content.as_bytes())?;
-                file.sync_all()?;
-                Ok(json!({"path":path,"bytes":content.len(),"verified":read_text(&path)?==content}))
+                fenix_execution::fs::create(&path, content.as_bytes()).context(
+                    "File already exists or cannot be created; use file_edit for an existing file",
+                )?;
+                Ok(
+                    json!({"path":path,"bytes":content.len(),"before_sha256":null,"sha256":fenix_documents::sha256(content.as_bytes()),"verified":read_text(&path)?==content}),
+                )
             }
             "file_edit" => {
                 let expected = args["expected"]
@@ -122,20 +145,21 @@ impl Runtime {
                     bail!("Edited file would exceed 1 MiB");
                 }
                 // Re-read after approval and match again. Runtime has one tool writer.
+                self.check_instruction_write(&path, &after)?;
                 if read_text(&path)? != before {
                     bail!("File changed before editing; inspect it again");
                 }
-                let permissions = std::fs::metadata(&path)?.permissions();
-                crate::write_private(&path, &after)?;
-                std::fs::set_permissions(&path, permissions)?;
-                Ok(json!({"path":path,"bytes":after.len(),"verified":read_text(&path)?==after}))
+                fenix_execution::fs::replace(&path, before.as_bytes(), after.as_bytes())?;
+                Ok(
+                    json!({"path":path,"bytes":after.len(),"before_sha256":fenix_documents::sha256(before.as_bytes()),"sha256":fenix_documents::sha256(after.as_bytes()),"verified":read_text(&path)?==after}),
+                )
             }
             _ => bail!("Unknown file tool"),
         }
     }
 }
 pub(crate) fn read_text(path: &Path) -> Result<String> {
-    let file = File::open(path)?;
+    let file = fenix_execution::fs::open(path)?;
     let metadata = file.metadata()?;
     if !metadata.is_file() || metadata.len() > MAX_FILE_BYTES {
         bail!("Only regular UTF-8 files up to 1 MiB are supported");

@@ -14,6 +14,22 @@ async fn browser_profiles_and_credentials_are_local_and_do_not_create_chat_messa
         .await
         .unwrap();
     let app = fenix_server::router(runtime.clone(), 4173);
+    let page = app
+        .clone()
+        .oneshot(
+            Request::builder()
+                .uri("/browser")
+                .header("host", "localhost:4173")
+                .body(Body::empty())
+                .unwrap(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        page.status(),
+        StatusCode::OK,
+        "Direct navigation to the owner browser must serve the application"
+    );
     let request = |uri: &str, origin: &str, value: Value| {
         Request::builder()
             .method("POST")

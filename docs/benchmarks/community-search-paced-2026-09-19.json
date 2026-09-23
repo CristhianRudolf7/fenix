@@ -1,0 +1,919 @@
+{
+  "elapsed_ms": 130545,
+  "final": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 333,
+      "indexed_origins": 2,
+      "indexed_pages": 5,
+      "known_urls": 333,
+      "last_fetch_at": 1789823570,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 9
+    },
+    "crawler_request_budget": 48,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 60
+  },
+  "initial": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 0,
+      "indexed_origins": 0,
+      "indexed_pages": 0,
+      "known_urls": 0,
+      "last_fetch_at": null,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 0
+    },
+    "crawler_request_budget": 48,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 60
+  },
+  "method": "Temporary empty corpus; direct original-source reads and native link discovery, no background crawler, no model, no external search service. Tests source access separately from lexical topic coverage and title-based positive controls. Does not claim full platform search or answer accuracy.",
+  "paced_hn_requests": true,
+  "performed_at": "2026-09-19T13:12:50.535767963+00:00",
+  "robots_policies": [
+    {
+      "origin": "https://news.ycombinator.com",
+      "robots": "User-Agent: *\nCrawl-delay: 30\nDisallow: /collapse?\nDisallow: /context?\nDisallow: /fave?\nDisallow: /flag?\nDisallow: /hide?\nDisallow: /login\nDisallow: /logout\nDisallow: /r?\nDisallow: /reply?\nDisallow: /submitlink?\nDisallow: /vote?\nDisallow: /x?\n"
+    },
+    {
+      "origin": "https://www.reddit.com",
+      "robots": "# Welcome to Reddit's robots.txt\n# Reddit believes in an open internet, but not the misuse of public content.\n# See https://support.reddithelp.com/hc/en-us/articles/26410290525844-Public-Content-Policy Reddit's Public Content Policy for access and use restrictions to Reddit content.\n# See https://www.reddit.com/r/reddit4researchers/ for details on how Reddit continues to support research and non-commercial use.\n# policy: https://support.reddithelp.com/hc/en-us/articles/26410290525844-Public-Content-Policy\n\nUser-agent: *\nDisallow: /\n"
+    },
+    {
+      "origin": "https://github.com",
+      "robots": "# If you would like to crawl GitHub contact us via https://support.github.com?tags=dotcom-robots\n# We also provide an extensive API: https://docs.github.com\nUser-agent: GPTBot\nUser-agent: OAI-SearchBot\nUser-agent: ClaudeBot\nUser-agent: anthropic-ai\nUser-agent: PerplexityBot\nCrawl-delay: 1\nAllow: /$\nAllow: /about\nAllow: /customer-stories\nAllow: /enterprise\nAllow: /features\nAllow: /marketplace\nAllow: /mcp\nAllow: /newsroom\nAllow: /pricing\nAllow: /resources\nAllow: /security\nAllow: /solutions\nDisallow: /*/*/pulse\nDisallow: /*/*/projects\nDisallow: /*/*/forks\nDisallow: /*/*/issues/new\nDisallow: /*/*/milestones/new\nDisallow: /*/*/issues/search\nDisallow: /*/*/commits/\nDisallow: /*/*/branches\nDisallow: /*/*/contributors\nDisallow: /*/*/tags\nDisallow: /*/*/stargazers\nDisallow: /*/*/watchers\nDisallow: /*/*/network\nDisallow: /*/*/graphs\nDisallow: /*/*/compare\nDisallow: /*/tree/\nDisallow: /gist/\nDisallow: /*/download\nDisallow: /*/revisions\nDisallow: /*/commits/*?author\nDisallow: /*/commits/*?path\nDisallow: /*/comments\nDisallow: /*/archive/\nDisallow: /*/blame/\nDisallow: /*/raw/\nDisallow: /*/cache/\nDisallow: /.git/\nDisallow: */.git/\nDisallow: /*.git$\nDisallow: /search/advanced\nDisallow: /search$\nDisallow: /*.atom$\nDisallow: /ekansa/Open-Context-Data\nDisallow: /ekansa/opencontext-*\nDisallow: */tarball/\nDisallow: */zipball/\nDisallow: /*commits?author=*\nDisallow: /*report-abuse?report=*\nDisallow: /account-login\nDisallow: /Explodingstuff/\nDisallow: /copilot/\nDisallow: /copilot/c/\nDisallow: /*?source=*\nDisallow: /*&source=*\nDisallow: /*?ref_cta=*\nDisallow: /*&ref_cta=*\nDisallow: /*?plan=*\nDisallow: /*&plan=*\nDisallow: /*?return_to=*\nDisallow: /*&return_to=*\nDisallow: /*?ref_loc=*\nDisallow: /*&ref_loc=*\nDisallow: /*?setup_organization=*\nDisallow: /*&setup_organization=*\nDisallow: /*?source_repo=*\nDisallow: /*&source_repo=*\nDisallow: /*?ref_page=*\nDisallow: /*&ref_page=*\nDisallow: /*?referrer=*\nDisallow: /*&referrer=*\nDisallow: /*?report=*\nDisallow: /*&report=*\nDisallow: /*?author=*\nDisallow: /*&author=*\nDisallow: /*?since=*\nDisallow: /*&since=*\nDisallow: /*?until=*\nDisallow: /*&until=*\nDisallow: /*?tab=*\nDisallow: /*&tab=*\nDisallow: /*?q=*\nDisallow: /*&q=*\n\nUser-agent: Bytespider\nDisallow: /\n\nUser-agent: AdsBot-Google\nUser-agent: AdsBot-Google-Mobile\nDisallow: /*/*/pulse\nDisallow: /*/*/projects\nDisallow: /*/*/forks\nDisallow: /*/*/issues/new\nDisallow: /*/*/milestones/new\nDisallow: /*/*/issues/search\nDisallow: /*/*/commits/\nDisallow: /*/*/branches\nDisallow: /*/*/contributors\nDisallow: /*/*/tags\nDisallow: /*/*/stargazers\nDisallow: /*/*/watchers\nDisallow: /*/*/network\nDisallow: /*/*/graphs\nDisallow: /*/*/compare\nDisallow: /*/tree/\nDisallow: /gist/\nDisallow: /*/download\nDisallow: /*/revisions\nDisallow: /*/commits/*?author\nDisallow: /*/commits/*?path\nDisallow: /*/comments\nDisallow: /*/archive/\nDisallow: /*/blame/\nDisallow: /*/raw/\nDisallow: /*/cache/\nDisallow: /.git/\nDisallow: */.git/\nDisallow: /*.git$\nDisallow: /search/advanced\nDisallow: /search$\nDisallow: /*.atom$\nDisallow: /ekansa/Open-Context-Data\nDisallow: /ekansa/opencontext-*\nDisallow: */tarball/\nDisallow: */zipball/\nDisallow: /*commits?author=*\nDisallow: /*report-abuse?report=*\nDisallow: /account-login\nDisallow: /Explodingstuff/\nDisallow: /copilot/\nDisallow: /copilot/c/\nDisallow: /*?source=*\nDisallow: /*&source=*\nDisallow: /*?ref_cta=*\nDisallow: /*&ref_cta=*\nDisallow: /*?plan=*\nDisallow: /*&plan=*\nDisallow: /*?return_to=*\nDisallow: /*&return_to=*\nDisallow: /*?ref_loc=*\nDisallow: /*&ref_loc=*\nDisallow: /*?setup_organization=*\nDisallow: /*&setup_organization=*\nDisallow: /*?source_repo=*\nDisallow: /*&source_repo=*\nDisallow: /*?ref_page=*\nDisallow: /*&ref_page=*\nDisallow: /*?referrer=*\nDisallow: /*&referrer=*\nDisallow: /*?report=*\nDisallow: /*&report=*\nDisallow: /*?author=*\nDisallow: /*&author=*\nDisallow: /*?since=*\nDisallow: /*&since=*\nDisallow: /*?until=*\nDisallow: /*&until=*\nDisallow: /*?tab=*\nDisallow: /*&tab=*\nDisallow: /*?q=*\nDisallow: /*&q=*\n\nUser-agent: bingbot\nDisallow: /ekansa/Open-Context-Data\nDisallow: /ekansa/opencontext-*\nDisallow: /account-login\nDisallow: */tarball/\nDisallow: */zipball/\nDisallow: /Explodingstuff/\nDisallow: /copilot/\nDisallow: /copilot/c/\n\nUser-agent: adidxbot\nDisallow: /ekansa/Open-Context-Data\nDisallow: /ekansa/opencontext-*\nDisallow: /account-login\nDisallow: */tarball/\nDisallow: */zipball/\nDisallow: /Explodingstuff/\nDisallow: /copilot/\nDisallow: /copilot/c/\n\nUser-agent: BingPreview\nDisallow: /ekansa/Open-Context-Data\nDisallow: /ekansa/opencontext-*\nDisallow: /account-login\nDisallow: */tarball/\nDisallow: */zipball/\nDisallow: /Explodingstuff/\nDisallow: /copilot/\nDisallow: /copilot/c/\n\nUser-agent: baidu\ncrawl-delay: 1\n\n\nUser-agent: *\nAllow: /*?tab=achievements&achievement=*\nDisallow: /*/*/pulse\nDisallow: /*/*/projects\nDisallow: /*/*/forks\nDisallow: /*/*/issues/new\nDisallow: /*/*/milestones/new\nDisallow: /*/*/issues/search\nDisallow: /*/*/commits/\nDisallow: /*/*/branches\nDisallow: /*/*/contributors\nDisallow: /*/*/tags\nDisallow: /*/*/stargazers\nDisallow: /*/*/watchers\nDisallow: /*/*/network\nDisallow: /*/*/graphs\nDisallow: /*/*/compare\nDisallow: /*/tree/\nDisallow: /gist/\nDisallow: /*/download\nDisallow: /*/revisions\nDisallow: /*/commits/*?author\nDisallow: /*/commits/*?path\nDisallow: /*/comments\nDisallow: /*/archive/\nDisallow: /*/blame/\nDisallow: /*/raw/\nDisallow: /*/cache/\nDisallow: /.git/\nDisallow: */.git/\nDisallow: /*.git$\nDisallow: /search/advanced\nDisallow: /search$\nDisallow: /*.atom$\nDisallow: /ekansa/Open-Context-Data\nDisallow: /ekansa/opencontext-*\nDisallow: */tarball/\nDisallow: */zipball/\nDisallow: /*commits?author=*\nDisallow: /*report-abuse?report=*\nDisallow: /account-login\nDisallow: /Explodingstuff/\nDisallow: /copilot/\nDisallow: /copilot/c/\nDisallow: /*?source=*\nDisallow: /*&source=*\nDisallow: /*?ref_cta=*\nDisallow: /*&ref_cta=*\nDisallow: /*?plan=*\nDisallow: /*&plan=*\nDisallow: /*?return_to=*\nDisallow: /*&return_to=*\nDisallow: /*?ref_loc=*\nDisallow: /*&ref_loc=*\nDisallow: /*?setup_organization=*\nDisallow: /*&setup_organization=*\nDisallow: /*?source_repo=*\nDisallow: /*&source_repo=*\nDisallow: /*?ref_page=*\nDisallow: /*&ref_page=*\nDisallow: /*?referrer=*\nDisallow: /*&referrer=*\nDisallow: /*?report=*\nDisallow: /*&report=*\nDisallow: /*?author=*\nDisallow: /*&author=*\nDisallow: /*?since=*\nDisallow: /*&since=*\nDisallow: /*?until=*\nDisallow: /*&until=*\nDisallow: /*?tab=*\nDisallow: /*&tab=*\nDisallow: /*?q=*\nDisallow: /*&q=*\n"
+    }
+  ],
+  "source_checks": [
+    {
+      "elapsed_ms": 2827,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Show HN",
+        "read_pages": 0,
+        "source_urls": [
+          "https://news.ycombinator.com/rss"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 31,
+          "indexed_origins": 0,
+          "indexed_pages": 0,
+          "known_urls": 31,
+          "last_fetch_at": null,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 2
+        },
+        "query": "Show HN",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 30,
+            "indexed": false,
+            "resolved_url": "https://news.ycombinator.com/rss",
+            "status": "discovered",
+            "url": "https://news.ycombinator.com/rss"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 362,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Show HN",
+        "read_pages": 0,
+        "source_urls": [
+          "https://news.ycombinator.com/"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 115,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 115,
+          "last_fetch_at": 1789823474,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 3
+        },
+        "query": "Show HN",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T13:11:14+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "Hacker News",
+            "url": "https://news.ycombinator.com/",
+            "snippet_characters": 350
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 100,
+            "indexed": true,
+            "resolved_url": "https://news.ycombinator.com/",
+            "status": "read",
+            "url": "https://news.ycombinator.com/"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 57,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": [
+          "https://www.reddit.com/r/rust/"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 115,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 115,
+          "last_fetch_at": 1789823474,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 4
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 0,
+            "error": "robots.txt does not permit reading this URL",
+            "indexed": false,
+            "status": "failed",
+            "url": "https://www.reddit.com/r/rust/"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll.",
+          "Some explicit source URLs could not be read. Inspect source_reads; their failure does not invalidate other indexed results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": [
+          "https://www.reddit.com/r/all/.rss"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 115,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 115,
+          "last_fetch_at": 1789823474,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 4
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 0,
+            "error": "robots.txt does not permit reading this URL",
+            "indexed": false,
+            "status": "failed",
+            "url": "https://www.reddit.com/r/all/.rss"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll.",
+          "Some explicit source URLs could not be read. Inspect source_reads; their failure does not invalidate other indexed results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 5187,
+      "input": {
+        "days": null,
+        "domains": [
+          "github.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": [
+          "https://github.com/rust-lang/rust"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 215,
+          "indexed_origins": 2,
+          "indexed_pages": 2,
+          "known_urls": 215,
+          "last_fetch_at": 1789823479,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T13:11:19+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "GitHub - rust-lang/rust: Empowering everyone to build reliable and efficient software. · GitHub",
+            "url": "https://github.com/rust-lang/rust",
+            "snippet_characters": 350
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 100,
+            "indexed": true,
+            "resolved_url": "https://github.com/rust-lang/rust",
+            "status": "read",
+            "url": "https://github.com/rust-lang/rust"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    }
+  ],
+  "thread_checks": [
+    {
+      "fetch_ms": 486,
+      "last30days": {
+        "elapsed_ms": 5,
+        "input": {
+          "days": 30,
+          "domains": [
+            "news.ycombinator.com"
+          ],
+          "limit": 10,
+          "max_per_domain": 10,
+          "query": "Laya the open source version of Jev",
+          "read_pages": 0,
+          "source_urls": []
+        },
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 276,
+            "indexed_origins": 2,
+            "indexed_pages": 3,
+            "known_urls": 276,
+            "last_fetch_at": 1789823505,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 7
+          },
+          "query": "Laya the open source version of Jev",
+          "queue_wait_ms": 0,
+          "results": [],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Identical indexed content is deduplicated. At most 10 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 10 results.",
+            "The date window uses declared publication metadata only. Pages with unknown, invalid or future publication dates are excluded; indexed_at is not a publication date.",
+            "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+          ]
+        }
+      },
+      "own_thread_retrieved": true,
+      "read": {
+        "content_hash": "19e549a09dd06dfb188579ed6140630c70992d256afc74c48911df60dec32465",
+        "language": "en",
+        "published_at": null,
+        "queue_wait_ms": 0,
+        "retrieved_at": "2026-09-19T13:11:45+00:00",
+        "source": "network",
+        "title": "Laya the open source version of Jev | Hacker News",
+        "truncated": true,
+        "url": "https://news.ycombinator.com/item?id=49765348",
+        "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+        "passage_characters": 6000
+      },
+      "search": {
+        "elapsed_ms": 8,
+        "input": {
+          "days": null,
+          "domains": [
+            "news.ycombinator.com"
+          ],
+          "limit": 10,
+          "max_per_domain": 10,
+          "query": "Laya the open source version of Jev",
+          "read_pages": 0,
+          "source_urls": []
+        },
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 276,
+            "indexed_origins": 2,
+            "indexed_pages": 3,
+            "known_urls": 276,
+            "last_fetch_at": 1789823505,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 7
+          },
+          "query": "Laya the open source version of Jev",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-19T13:11:45+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "Laya the open source version of Jev | Hacker News",
+              "url": "https://news.ycombinator.com/item?id=49765348",
+              "snippet_characters": 350
+            },
+            {
+              "indexed_at": "2026-09-19T13:11:14+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "snippet_characters": 350
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Identical indexed content is deduplicated. At most 10 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 10 results."
+          ]
+        }
+      },
+      "title": "Laya the open source version of Jev | Hacker News",
+      "title_control_query": "Laya the open source version of Jev",
+      "url": "https://news.ycombinator.com/item?id=49765348"
+    },
+    {
+      "fetch_ms": 772,
+      "last30days": {
+        "elapsed_ms": 1,
+        "input": {
+          "days": 30,
+          "domains": [
+            "news.ycombinator.com"
+          ],
+          "limit": 10,
+          "max_per_domain": 10,
+          "query": "AI-generated posters don’t have to be horrible",
+          "read_pages": 0,
+          "source_urls": []
+        },
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 333,
+            "indexed_origins": 2,
+            "indexed_pages": 4,
+            "known_urls": 333,
+            "last_fetch_at": 1789823537,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 8
+          },
+          "query": "AI-generated posters don’t have to be horrible",
+          "queue_wait_ms": 0,
+          "results": [],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Identical indexed content is deduplicated. At most 10 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 10 results.",
+            "The date window uses declared publication metadata only. Pages with unknown, invalid or future publication dates are excluded; indexed_at is not a publication date.",
+            "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+          ]
+        }
+      },
+      "own_thread_retrieved": true,
+      "read": {
+        "content_hash": "2cb13891a3552a8e2271a8495a762b8f91a4ab657a39cef1e375b8861e09d530",
+        "language": "en",
+        "published_at": null,
+        "queue_wait_ms": 0,
+        "retrieved_at": "2026-09-19T13:12:17+00:00",
+        "source": "network",
+        "title": "AI-generated posters don’t have to be horrible | Hacker News",
+        "truncated": true,
+        "url": "https://news.ycombinator.com/item?id=49764791",
+        "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+        "passage_characters": 6000
+      },
+      "search": {
+        "elapsed_ms": 5,
+        "input": {
+          "days": null,
+          "domains": [
+            "news.ycombinator.com"
+          ],
+          "limit": 10,
+          "max_per_domain": 10,
+          "query": "AI-generated posters don’t have to be horrible",
+          "read_pages": 0,
+          "source_urls": []
+        },
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 333,
+            "indexed_origins": 2,
+            "indexed_pages": 4,
+            "known_urls": 333,
+            "last_fetch_at": 1789823537,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 8
+          },
+          "query": "AI-generated posters don’t have to be horrible",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-19T13:12:17+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "AI-generated posters don’t have to be horrible | Hacker News",
+              "url": "https://news.ycombinator.com/item?id=49764791",
+              "snippet_characters": 350
+            },
+            {
+              "indexed_at": "2026-09-19T13:11:14+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "snippet_characters": 350
+            },
+            {
+              "indexed_at": "2026-09-19T13:11:45+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "Laya the open source version of Jev | Hacker News",
+              "url": "https://news.ycombinator.com/item?id=49765348",
+              "snippet_characters": 350
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Identical indexed content is deduplicated. At most 10 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 10 results.",
+            "Exact lexical matches were sparse; additional results match any meaningful query term, not necessarily all terms."
+          ]
+        }
+      },
+      "title": "AI-generated posters don’t have to be horrible | Hacker News",
+      "title_control_query": "AI-generated posters don’t have to be horrible",
+      "url": "https://news.ycombinator.com/item?id=49764791"
+    },
+    {
+      "fetch_ms": 1996,
+      "last30days": {
+        "elapsed_ms": 3,
+        "input": {
+          "days": 30,
+          "domains": [
+            "news.ycombinator.com"
+          ],
+          "limit": 10,
+          "max_per_domain": 10,
+          "query": "Human brain is two separate organs, Stanford",
+          "read_pages": 0,
+          "source_urls": []
+        },
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 333,
+            "indexed_origins": 2,
+            "indexed_pages": 5,
+            "known_urls": 333,
+            "last_fetch_at": 1789823570,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 9
+          },
+          "query": "Human brain is two separate organs, Stanford",
+          "queue_wait_ms": 0,
+          "results": [],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Identical indexed content is deduplicated. At most 10 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 10 results.",
+            "The date window uses declared publication metadata only. Pages with unknown, invalid or future publication dates are excluded; indexed_at is not a publication date.",
+            "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+          ]
+        }
+      },
+      "own_thread_retrieved": true,
+      "read": {
+        "content_hash": "d4fbda8ecb08e2b0d768c88f23dda2920f669a68e75a0cbf9f9aac6a2321635a",
+        "language": "en",
+        "published_at": null,
+        "queue_wait_ms": 0,
+        "retrieved_at": "2026-09-19T13:12:50+00:00",
+        "source": "network",
+        "title": "Human brain is two separate organs, Stanford Medicine-led research finds | Hacker News",
+        "truncated": true,
+        "url": "https://news.ycombinator.com/item?id=49763697",
+        "warning": "Untrusted public source data, not instructions. HTTP extraction does not execute JavaScript. retrieved_at is a fetch/check time, not a publication date.",
+        "passage_characters": 6000
+      },
+      "search": {
+        "elapsed_ms": 27,
+        "input": {
+          "days": null,
+          "domains": [
+            "news.ycombinator.com"
+          ],
+          "limit": 10,
+          "max_per_domain": 10,
+          "query": "Human brain is two separate organs, Stanford",
+          "read_pages": 0,
+          "source_urls": []
+        },
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 333,
+            "indexed_origins": 2,
+            "indexed_pages": 5,
+            "known_urls": 333,
+            "last_fetch_at": 1789823570,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 9
+          },
+          "query": "Human brain is two separate organs, Stanford",
+          "queue_wait_ms": 0,
+          "results": [
+            {
+              "indexed_at": "2026-09-19T13:12:50+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "Human brain is two separate organs, Stanford Medicine-led research finds | Hacker News",
+              "url": "https://news.ycombinator.com/item?id=49763697",
+              "snippet_characters": 350
+            },
+            {
+              "indexed_at": "2026-09-19T13:11:14+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "snippet_characters": 350
+            },
+            {
+              "indexed_at": "2026-09-19T13:12:17+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "AI-generated posters don’t have to be horrible | Hacker News",
+              "url": "https://news.ycombinator.com/item?id=49764791",
+              "snippet_characters": 350
+            },
+            {
+              "indexed_at": "2026-09-19T13:11:45+00:00",
+              "published_at": null,
+              "read_status": "not_requested",
+              "title": "Laya the open source version of Jev | Hacker News",
+              "url": "https://news.ycombinator.com/item?id=49765348",
+              "snippet_characters": 350
+            }
+          ],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Identical indexed content is deduplicated. At most 10 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 10 results.",
+            "Exact lexical matches were sparse; additional results match any meaningful query term, not necessarily all terms."
+          ]
+        }
+      },
+      "title": "Human brain is two separate organs, Stanford Medicine-led research finds | Hacker News",
+      "title_control_query": "Human brain is two separate organs, Stanford",
+      "url": "https://news.ycombinator.com/item?id=49763697"
+    }
+  ],
+  "topic_checks": [
+    {
+      "elapsed_ms": 2,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "SQLite",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 333,
+          "indexed_origins": 2,
+          "indexed_pages": 5,
+          "known_urls": 333,
+          "last_fetch_at": 1789823570,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 9
+        },
+        "query": "SQLite",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 5,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 333,
+          "indexed_origins": 2,
+          "indexed_pages": 5,
+          "known_urls": 333,
+          "last_fetch_at": 1789823570,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 9
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T13:11:14+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "Hacker News",
+            "url": "https://news.ycombinator.com/",
+            "snippet_characters": 350
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 13,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Show HN",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 333,
+          "indexed_origins": 2,
+          "indexed_pages": 5,
+          "known_urls": 333,
+          "last_fetch_at": 1789823570,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 9
+        },
+        "query": "Show HN",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T13:11:14+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "Hacker News",
+            "url": "https://news.ycombinator.com/",
+            "snippet_characters": 350
+          },
+          {
+            "indexed_at": "2026-09-19T13:12:50+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "Human brain is two separate organs, Stanford Medicine-led research finds | Hacker News",
+            "url": "https://news.ycombinator.com/item?id=49763697",
+            "snippet_characters": 350
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 333,
+          "indexed_origins": 2,
+          "indexed_pages": 5,
+          "known_urls": 333,
+          "last_fetch_at": 1789823570,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 9
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 5,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "password manager",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 333,
+          "indexed_origins": 2,
+          "indexed_pages": 5,
+          "known_urls": 333,
+          "last_fetch_at": 1789823570,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 9
+        },
+        "query": "password manager",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 2,
+      "input": {
+        "days": null,
+        "domains": [
+          "github.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 333,
+          "indexed_origins": 2,
+          "indexed_pages": 5,
+          "known_urls": 333,
+          "last_fetch_at": 1789823570,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 9
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T13:11:19+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "GitHub - rust-lang/rust: Empowering everyone to build reliable and efficient software. · GitHub",
+            "url": "https://github.com/rust-lang/rust",
+            "snippet_characters": 350
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    }
+  ],
+  "topic_query_http_attempts": 0,
+  "evidence_retention": "Source text excerpts omitted; URLs, titles, queries, hashes where available, character counts, statuses and timing retained."
+}

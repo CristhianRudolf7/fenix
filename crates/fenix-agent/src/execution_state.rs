@@ -3,6 +3,7 @@ use crate::Runtime;
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 
 #[derive(Default, Serialize, Deserialize)]
@@ -111,7 +112,85 @@ fn normalized(text: &str) -> String {
         .to_lowercase()
 }
 
-/// Progress comes from observed process state or successful effects, never a model claim.
+/// Track observed page changes without treating fresh element refs or screenshot
+/// filenames as progress. Successful input acknowledgments alone prove no change.
+#[derive(Default)]
+pub(crate) struct BrowserProgress {
+    pages: HashMap<String, String>,
+    transfers: HashMap<String, (u64, String)>,
+    pub revision: u64,
+}
+
+impl BrowserProgress {
+    pub fn observe(
+        &mut self,
+        name: &str,
+        args: &Value,
+        output: &Value,
+        is_error: bool,
+    ) -> Option<String> {
+        if !is_error && matches!(name, "browser_wait" | "browser_check" | "browser_inspect") {
+            let transfers = output["downloads"]["transfers"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .chain(output.get("download"));
+            for transfer in transfers {
+                let Some(id) = transfer["id"].as_str() else {
+                    continue;
+                };
+                let key = json!([output["profile"], id]).to_string();
+                let bytes = transfer["received_bytes"].as_u64().unwrap_or(0);
+                let state = transfer["state"].as_str().unwrap_or("unknown");
+                let previous = self.transfers.entry(key).or_insert((0, "unknown".into()));
+                if bytes > previous.0
+                    || state != previous.1 && matches!(state, "completed" | "canceled")
+                {
+                    self.revision += 1;
+                }
+                previous.0 = previous.0.max(bytes);
+                previous.1 = state.into();
+            }
+            if output["condition"] == "download" {
+                let evidence = json!([
+                    output["download"]["id"],
+                    output["download"]["state"],
+                    output["download"]["received_bytes"],
+                    output["passed"]
+                ]);
+                return Some(format!("{:x}", Sha256::digest(evidence.to_string())));
+            }
+        }
+        if name != "browser_observe"
+            || is_error
+            || !output["url"].is_string()
+            || !output["text"].is_string()
+        {
+            return None;
+        }
+        let page = json!([output["profile"], output["tab"], args["frame"]]).to_string();
+        let elements: Vec<_> = output["elements"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|e| {
+                json!({"tag":e["tag"],"role":e["role"],"type":e["type"],
+                    "name":e["name"],"disabled":e["disabled"],"readonly":e["readonly"],
+                    "checked":e["checked"],"secret":e["secret"]})
+            })
+            .collect();
+        let evidence = json!({"url":output["url"],"title":output["title"],
+            "text":output["text"],"viewport":output["viewport"],"elements":elements});
+        let fingerprint = format!("{:x}", Sha256::digest(evidence.to_string()));
+        if self.pages.get(&page) != Some(&fingerprint) {
+            self.pages.insert(page, fingerprint.clone());
+            self.revision += 1;
+        }
+        Some(fingerprint)
+    }
+}
+
+/// Progress comes from observed runtime state or successful effects, never a model claim.
 #[derive(Default)]
 pub(crate) struct LoopGuard {
     counts: HashMap<String, usize>,
@@ -136,6 +215,98 @@ impl LoopGuard {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn page_observation(page: usize, reference: &str) -> Value {
+        json!({"profile":"personal","tab":"tab-1","url":format!("https://example.test/page/{page}"),
+            "text":format!("Course {page}"),"elements":[{"tag":"button","name":"Next","ref":reference}],
+            "screenshot":{"artifact":format!("{reference}.png")}})
+    }
+
+    #[test]
+    fn slow_downloads_are_progress_but_identical_pending_waits_are_not() {
+        let mut browser = BrowserProgress::default();
+        let mut guard = LoopGuard::default();
+        for (attempt, bytes) in [100, 200, 300, 400, 400, 400].into_iter().enumerate() {
+            let output = json!({"profile":"personal","condition":"download","passed":false,"timed_out":true,"download":{"id":"file-1","state":"inProgress","received_bytes":bytes}});
+            let fingerprint = browser
+                .observe("browser_wait", &json!({}), &output, false)
+                .unwrap();
+            let stalled = guard.observe(fingerprint, browser.revision.to_string(), false);
+            assert_eq!(stalled, attempt == 5);
+        }
+        assert_eq!(browser.revision, 4);
+        assert!(guard.counts.values().any(|n| *n == 3));
+    }
+
+    #[test]
+    fn repeated_next_clicks_continue_when_observed_pages_change() {
+        let mut browser = BrowserProgress::default();
+        let mut guard = LoopGuard::default();
+        for page in 1..=8 {
+            browser.observe(
+                "browser_observe",
+                &json!({}),
+                &page_observation(page, "ref"),
+                false,
+            );
+            assert!(!guard.observe(
+                "click-next:performed".into(),
+                browser.revision.to_string(),
+                false
+            ));
+        }
+        assert_eq!(browser.revision, 8);
+    }
+
+    #[test]
+    fn fresh_references_and_screenshots_do_not_hide_a_stalled_browser() {
+        let mut browser = BrowserProgress::default();
+        let mut guard = LoopGuard::default();
+        for attempt in 1..=3 {
+            let fingerprint = browser
+                .observe(
+                    "browser_observe",
+                    &json!({}),
+                    &page_observation(1, &format!("ref-{attempt}")),
+                    false,
+                )
+                .unwrap();
+            assert_eq!(
+                guard.observe(fingerprint, browser.revision.to_string(), false),
+                attempt == 3
+            );
+        }
+        assert_eq!(browser.revision, 1);
+        assert!(
+            browser
+                .observe(
+                    "browser_observe",
+                    &json!({}),
+                    &page_observation(2, "ref"),
+                    true
+                )
+                .is_none()
+        );
+        assert!(
+            browser
+                .observe("browser_act", &json!({}), &json!({"performed":true}), false)
+                .is_none()
+        );
+        assert_eq!(browser.revision, 1);
+    }
+
+    #[test]
+    fn switching_unchanged_tabs_is_not_observed_page_progress() {
+        let mut browser = BrowserProgress::default();
+        for _ in 0..3 {
+            for tab in ["one", "two"] {
+                let mut observation = page_observation(1, "ref");
+                observation["tab"] = json!(tab);
+                browser.observe("browser_observe", &json!({}), &observation, false);
+            }
+        }
+        assert_eq!(browser.revision, 2);
+    }
+
     #[tokio::test]
     async fn explicit_answers_survive_reopening_without_becoming_grants() {
         let dir = tempfile::tempdir().unwrap();

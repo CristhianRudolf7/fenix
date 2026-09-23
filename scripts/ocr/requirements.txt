@@ -1,0 +1,6 @@
+# CPU-only runtime. The image build also records the resolved transitive versions.
+paddleocr==3.7.0
+paddlepaddle==3.3.1
+paddlex[ocr-core]==3.7.2
+pypdfium2==5.13.0
+Pillow==12.3.0

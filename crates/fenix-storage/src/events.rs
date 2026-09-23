@@ -77,6 +77,15 @@ impl Store {
             }))?.collect::<rusqlite::Result<_>>()?)
     }
 
+    /// Recent events for a read-only observer; no subscriber cursor is advanced.
+    pub fn recent_bus_events(&self, limit: usize) -> Result<Vec<BusEvent>> {
+        let mut events = self.db()?.prepare("SELECT seq,id,topic,task_id,data,created_at FROM bus_events ORDER BY seq DESC LIMIT ?1")?
+            .query_map([limit.clamp(1, 200)], |r| Ok(BusEvent { seq:r.get(0)?,id:r.get(1)?,topic:r.get(2)?,task_id:r.get(3)?,data:parse_json(r.get(4)?)?,created_at:r.get(5)? }))?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        events.reverse();
+        Ok(events)
+    }
+
     pub fn subscriber_cursor(&self, name: &str) -> Result<i64> {
         Ok(self
             .db()?
@@ -146,6 +155,29 @@ impl Store {
         in_context: bool,
         origin: &str,
     ) -> Result<String> {
+        self.publish_addressed_message_once(message_id, task, message, in_context, origin, None)
+    }
+
+    pub fn publish_addressed_message(
+        &self,
+        task: Option<&str>,
+        message: &Message,
+        in_context: bool,
+        origin: &str,
+        destination: Option<(String, Option<String>)>,
+    ) -> Result<String> {
+        self.publish_addressed_message_once(&id(), task, message, in_context, origin, destination)
+    }
+
+    fn publish_addressed_message_once(
+        &self,
+        message_id: &str,
+        task: Option<&str>,
+        message: &Message,
+        in_context: bool,
+        origin: &str,
+        explicit_destination: Option<(String, Option<String>)>,
+    ) -> Result<String> {
         let mut db = self.db()?;
         let tx = db.transaction()?;
         if tx
@@ -182,7 +214,8 @@ impl Store {
                 .optional()
             })
             .transpose()?
-            .flatten();
+            .flatten()
+            .or(explicit_destination);
         if !text.is_empty() {
             publish(
                 &tx,

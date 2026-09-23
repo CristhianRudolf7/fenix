@@ -1,0 +1,56 @@
+{
+  "models": [
+    {
+      "name": "PP-OCRv6_small_det",
+      "revision": "106c97591b235f607453300d9fc8c1cad1b25488",
+      "files": [
+        {
+          "name": "README.md",
+          "bytes": 23234,
+          "sha256": "525eef5858b48c009772cd9df422e8a440e1cc3d0cd7e0b5d4fbe8400dc2ecd1"
+        },
+        {
+          "name": "inference.json",
+          "bytes": 229307,
+          "sha256": "89240f689a4a77aad75ef55a8df0a15c8e1d4980a327d17e58f24bbadde5aeab"
+        },
+        {
+          "name": "inference.pdiparams",
+          "bytes": 9817888,
+          "sha256": "5043d4ccc8d63402ccea8feefcee4db57077431a873e78d2191836a178a492da"
+        },
+        {
+          "name": "inference.yml",
+          "bytes": 885,
+          "sha256": "193f435274bf9f0b5f71a929bbfbcf148282df7e633b34e7c373e8f44741b516"
+        }
+      ]
+    },
+    {
+      "name": "PP-OCRv6_small_rec",
+      "revision": "bd619643acac4b9650c040234da8d944476ee3f1",
+      "files": [
+        {
+          "name": "README.md",
+          "bytes": 23473,
+          "sha256": "832f68feddefeffd63ba133b961b7c44a9603d5cde20c14c87383c9440694f7a"
+        },
+        {
+          "name": "inference.json",
+          "bytes": 208004,
+          "sha256": "f0bf53c853937a917affdd74467472167727f8ab0f0f7bded01c4a16c27e46e6"
+        },
+        {
+          "name": "inference.pdiparams",
+          "bytes": 21074618,
+          "sha256": "406e1e689c9a7fbb04178007a3fe10cf852afe7bf8bb3bc6dbb9d532b13bd907"
+        },
+        {
+          "name": "inference.yml",
+          "bytes": 150579,
+          "sha256": "ab078671bb49f06228eadccd34f1bb501e157f7a047095ffb943ba81512c77d1"
+        }
+      ]
+    }
+  ]
+}

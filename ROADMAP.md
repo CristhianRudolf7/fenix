@@ -562,12 +562,12 @@ Las preferencias y la promoción de memoria se rigen por la sección 2.1. Aquí 
 
 ### 2.19. Voz en tiempo real, administración avanzada y arnés de programación
 
-Estas ampliaciones proceden de la visión del proyecto discutida en la conversación y se sitúan aquí para mantener básico el alcance inicial.
+Estas ampliaciones proceden de la visión del proyecto discutida en la conversación. El dictado y Live con STT/TTS del navegador ya están implementados: [documentación](docs/es/live.md). / Browser dictation and Live are implemented: [documentation](docs/en/live.md).
 
-- Conversar por voz en tiempo real desde la interfaz propia, con audio progresivo, transcripción, detección de turnos e interrupciones. Más adelante, evaluar llamadas telefónicas.
+- Mejorar la voz del navegador con audio progresivo y detección de turnos e interrupciones más robusta, según pruebas en dispositivos reales. Más adelante, evaluar llamadas telefónicas.
 - Mantener independiente la conexión de voz del flujo de tareas: cambiar de pantalla o cerrar la llamada no debe borrar ni detener trabajo durable. Interrumpir la reproducción de voz no implica cancelar una tarea.
 - Administrar proyectos, tareas, permisos, modelos, presupuestos, memoria, skills, programaciones y auditoría; ofrecer historial, comparación de cambios y restauración por los niveles definidos en la sección 2.12.
-- Conservar como propuesta tecnológica de la conversación React + TypeScript + Vite para la interfaz, WebRTC y un cliente de LiveKit para voz, y Tauri para una aplicación instalada posterior. El núcleo permanece en Rust. Validar compatibilidad de audio y RAM con el uso real antes de cerrar esas decisiones.
+- React + TypeScript + Vite + Tailwind con pnpm ya están integrados; el núcleo permanece en Rust. Evaluar WebRTC/LiveKit si la voz del navegador resulta insuficiente, y Tauri para una aplicación instalada posterior. Validar compatibilidad de audio y RAM con el uso real.
 - Desarrollar el arnés de programación que pueda usar el asistente: navegación de repositorios, herramientas de edición y ejecución, validaciones, integración de resultados y, cuando haga falta, automatización del navegador. Aplicar contratos, aislamiento, presupuestos y supervisión de subagentes.
 - Evaluar modelos de bajo costo por éxito de tarea y gasto total, no sólo por precio por token. Terminal-Bench y SWE-bench son objetivos de evaluación a concretar; registrar versiones, entornos y límites. La indexación del código por símbolos o grafo se conecta con la investigación de memoria y vectorización selectiva.
 
@@ -740,7 +740,7 @@ Implemented: interactive PTY/stdin, explicitly persistent services, cursor-based
 
 Implementado: PTY/entrada interactiva, servicios persistentes explícitos, registros redactados con cursor, límites configurables, seguimientos de subagentes con el mismo contexto y descubrimiento determinista de herramientas bajo demanda. Ver [Español](docs/es/execution-harness.md).
 
-Automatic crash recovery, isolated parallel worktrees, MCP and programmatic tool composition remain separate future work. La recuperación automática tras reinicios, worktrees paralelos aislados, MCP y composición programática de herramientas siguen siendo trabajo futuro separado.
+Parallel Git worktrees and serialized local integration are implemented: [English](docs/en/parallel-worktrees.md) / [Español](docs/es/parallel-worktrees.md). Automatic crash recovery, MCP and programmatic tool composition remain future work. / Los worktrees de Git y la integración local serializada están implementados. La recuperación automática tras reinicios, MCP y la composición programática de herramientas siguen pendientes.
 
 
 ### Local browser implementation update / Actualización del navegador local
@@ -754,3 +754,25 @@ La base de navegación local ya está implementada. Quedan como ampliaciones la 
 Curated skills, actionable discovery and read-only execution are implemented; evaluate quality with paired native Terminal-Bench cohorts before claiming gains. Keep experimental changes in a separate branch and review their evidence. Semantic skill retrieval, automatic skill promotion and broader sandbox compatibility remain future work contingent on observed needs and regression results.
 
 Las mejoras de skills y ejecución requieren comparación experimental para afirmar avances. La búsqueda semántica de skills, su promoción automática y mayor compatibilidad del entorno restringido quedan pendientes de evidencia y validación.
+
+## Managed GitHub and optional personal connections / GitHub gestionado y conexiones personales opcionales
+
+Planned for future versions; not implemented yet.
+
+- Provide a GitHub identity or organization managed by Fénix so the agent can manage project repositories for nontechnical users without requiring them to create a GitHub account or sign in to GitHub.
+- Offer an optional connection to the user's own GitHub account or organization for developers who need to work with their existing project repositories and workflows.
+- Investigate the appropriate account/organization ownership and GitHub App authorization model, repository isolation per user and project, and how users can export or transfer managed repositories to their own GitHub later. Keep the managed and personally connected modes explicit for each project.
+
+Previsto para versiones futuras; todavía no implementado.
+
+- Fénix tendrá una identidad u organización de GitHub gestionada por el servicio para que el agente administre repositorios de usuarios no técnicos sin exigirles crear una cuenta ni iniciar sesión en GitHub.
+- Ofrecer una conexión opcional con la cuenta u organización de GitHub del propio usuario para programadores que necesiten trabajar con los repositorios y flujos de sus proyectos existentes.
+- Investigar la titularidad de la cuenta u organización, la autorización mediante GitHub App, el aislamiento de repositorios por usuario y proyecto y la posibilidad de exportarlos o transferirlos posteriormente al GitHub del usuario. Diferenciar explícitamente ambos modos en cada proyecto.
+
+## Godot 2D animations and agent societies / Animaciones 2D y sociedades de agentes con Godot
+
+Reference / Referencia: [Pixel Agents](https://github.com/pixel-agents-hq/pixel-agents) — animated pixel-art agents in a virtual office / agentes animados en pixel art dentro de una oficina virtual.
+
+Planned for future versions; not implemented yet. Incorporate Godot for 2D animations and interactive worlds with virtual characters that have individual goals, memories and routines, interact with one another and form simulated communities. Allow users to create and modify scenarios through chat and explore them in the right-hand panel. Keep each user's simulations isolated and their fictional events separate from personal memory and real tasks.
+
+Previsto para versiones futuras; todavía no implementado. Incorporar Godot para animaciones 2D y mundos interactivos con personajes virtuales que tengan objetivos, memorias y rutinas individuales, interactúen entre sí y formen sociedades simuladas. Permitir crear y modificar escenarios desde el chat y explorarlos en el panel derecho. Mantener las simulaciones aisladas por usuario y sus acontecimientos ficticios separados de la memoria personal y las tareas reales.

@@ -5,18 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
     <meta name="description" content="Fénix — your local personal assistant" />
+    <meta name="theme-color" content="#f7f6f2" />
+    <link rel="icon" type="image/svg+xml" href="/src/assets/favicon.svg" />
     <title>Fénix</title>
-    <link rel="stylesheet" href="/styles.css" />
-    <script type="module" src="/app.js"></script>
+
+    <script type="module" src="/src/main.tsx"></script>
   </head>
   <body>
     <div id="app">
       <div class="boot" role="status">
-        <span class="brand-mark">F</span>
+        <span class="loading-emblem" aria-hidden="true">F</span>
         <p>Fénix</p>
         <span>Conectando · Connecting…</span>
+        <span class="loading-track" aria-hidden="true"><span></span></span>
       </div>
     </div>
+    <div id="voice-root"></div>
     <div id="toast" role="status" aria-live="polite"></div>
     <dialog id="detail-dialog">
       <div class="dialog-heading">

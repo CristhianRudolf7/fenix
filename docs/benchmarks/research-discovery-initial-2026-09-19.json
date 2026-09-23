@@ -1,0 +1,309 @@
+{
+  "final_memory": {
+    "peak_rss_kib": 18752,
+    "rss_kib": 18752
+  },
+  "final_status": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 242,
+      "indexed_origins": 3,
+      "indexed_pages": 4,
+      "known_urls": 242,
+      "last_fetch_at": 1789831421,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 9
+    },
+    "crawler_request_budget": 64,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 80
+  },
+  "initial_memory": {
+    "peak_rss_kib": 11428,
+    "rss_kib": 11428
+  },
+  "method": "Four simultaneous cold-corpus queries; only original sites and discovered links. No model, no background crawler, no provider. Rust book URL is a known entry listing, not a known answer URL. Cache phase explicitly disables discovery and reads. This measures bounded discovery, not global search recall or model answer quality.",
+  "offline_http_requests": 0,
+  "offline_repeats": [
+    {
+      "elapsed_us": 4496,
+      "hits": 0,
+      "query": "ownership borrowing"
+    },
+    {
+      "elapsed_us": 4764,
+      "hits": 0,
+      "query": "Show HN"
+    },
+    {
+      "elapsed_us": 1451,
+      "hits": 0,
+      "query": "Rust"
+    },
+    {
+      "elapsed_us": 874,
+      "hits": 0,
+      "query": "transaction"
+    }
+  ],
+  "performed_at": "2026-09-19T15:23:41.148937137+00:00",
+  "searches": [
+    {
+      "elapsed_ms": 2194,
+      "request": {
+        "days": null,
+        "discover": true,
+        "domains": [
+          "doc.rust-lang.org"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "ownership borrowing",
+        "read_pages": 3,
+        "source_urls": [
+          "https://doc.rust-lang.org/book/"
+        ]
+      },
+      "result": {
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 50,
+            "indexed_origins": 2,
+            "indexed_pages": 2,
+            "known_urls": 50,
+            "last_fetch_at": 1789831360,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 7
+          },
+          "discovery": {
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [],
+            "followed_urls": 0,
+            "sources": [],
+            "unvisited_domains": []
+          },
+          "query": "ownership borrowing",
+          "queue_wait_ms": 0,
+          "results": [],
+          "source_reads": [
+            {
+              "discovered_urls": 10,
+              "indexed": true,
+              "resolved_url": "https://doc.rust-lang.org/book/",
+              "status": "read",
+              "url": "https://doc.rust-lang.org/book/"
+            }
+          ],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Live discovery is bounded to selected entry pages and at most 6 relevant observed links (2 per origin); it is not full platform or internet search. Inspect discovery.sources for blocked, timed-out or unread sources. Use relevant domains or known source_urls to focus coverage.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+            "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_ms": 62702,
+      "request": {
+        "days": 30,
+        "discover": true,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Show HN",
+        "read_pages": 3,
+        "source_urls": []
+      },
+      "result": {
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 242,
+            "indexed_origins": 3,
+            "indexed_pages": 4,
+            "known_urls": 242,
+            "last_fetch_at": 1789831421,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 9
+          },
+          "discovery": {
+            "candidates_considered": 3,
+            "enabled": true,
+            "entrypoints": [
+              "https://news.ycombinator.com/"
+            ],
+            "followed_urls": 2,
+            "sources": [
+              {
+                "discovered_urls": 100,
+                "indexed": true,
+                "resolved_url": "https://news.ycombinator.com/",
+                "status": "read",
+                "url": "https://news.ycombinator.com/"
+              },
+              {
+                "discovered_urls": 0,
+                "error": "Public page returned HTTP 429",
+                "failure_kind": "unavailable",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://news.ycombinator.com/from?site=john.hartnup.uk"
+              },
+              {
+                "discovered_urls": 100,
+                "indexed": true,
+                "resolved_url": "https://news.ycombinator.com/show",
+                "status": "read",
+                "url": "https://news.ycombinator.com/show"
+              }
+            ],
+            "unvisited_domains": []
+          },
+          "query": "Show HN",
+          "queue_wait_ms": 0,
+          "results": [],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Live discovery is bounded to selected entry pages and at most 6 relevant observed links (2 per origin); it is not full platform or internet search. Inspect discovery.sources for blocked, timed-out or unread sources. Use relevant domains or known source_urls to focus coverage.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+            "The date window uses declared publication metadata only. Pages with unknown, invalid or future publication dates are excluded; indexed_at is not a publication date.",
+            "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_ms": 83,
+      "request": {
+        "days": 30,
+        "discover": true,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 3,
+        "source_urls": []
+      },
+      "result": {
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 0,
+            "indexed_origins": 0,
+            "indexed_pages": 0,
+            "known_urls": 0,
+            "last_fetch_at": null,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 4
+          },
+          "discovery": {
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://www.reddit.com/r/all/.rss"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 0,
+                "error": "robots.txt does not permit reading this URL",
+                "failure_kind": "blocked",
+                "indexed": false,
+                "status": "failed",
+                "url": "https://www.reddit.com/r/all/.rss"
+              }
+            ],
+            "unvisited_domains": []
+          },
+          "query": "Rust",
+          "queue_wait_ms": 0,
+          "results": [],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Live discovery is bounded to selected entry pages and at most 6 relevant observed links (2 per origin); it is not full platform or internet search. Inspect discovery.sources for blocked, timed-out or unread sources. Use relevant domains or known source_urls to focus coverage.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+            "The date window uses declared publication metadata only. Pages with unknown, invalid or future publication dates are excluded; indexed_at is not a publication date.",
+            "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+          ]
+        }
+      }
+    },
+    {
+      "elapsed_ms": 2170,
+      "request": {
+        "days": null,
+        "discover": true,
+        "domains": [
+          "sqlite.org"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "transaction",
+        "read_pages": 3,
+        "source_urls": []
+      },
+      "result": {
+        "response": {
+          "backend": "local_fts5",
+          "coverage": {
+            "due_urls": 40,
+            "indexed_origins": 1,
+            "indexed_pages": 1,
+            "known_urls": 40,
+            "last_fetch_at": 1789831360,
+            "max_pages": 5000,
+            "page_limit_reached": false,
+            "requests_today": 7
+          },
+          "discovery": {
+            "candidates_considered": 0,
+            "enabled": true,
+            "entrypoints": [
+              "https://sqlite.org/"
+            ],
+            "followed_urls": 0,
+            "sources": [
+              {
+                "discovered_urls": 38,
+                "indexed": true,
+                "resolved_url": "https://sqlite.org/",
+                "status": "read",
+                "url": "https://sqlite.org/"
+              }
+            ],
+            "unvisited_domains": []
+          },
+          "query": "transaction",
+          "queue_wait_ms": 0,
+          "results": [],
+          "source_reads": [],
+          "warnings": [
+            "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+            "Live discovery is bounded to selected entry pages and at most 6 relevant observed links (2 per origin); it is not full platform or internet search. Inspect discovery.sources for blocked, timed-out or unread sources. Use relevant domains or known source_urls to focus coverage.",
+            "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+            "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+          ]
+        }
+      }
+    }
+  ],
+  "wall_ms": 62704
+}

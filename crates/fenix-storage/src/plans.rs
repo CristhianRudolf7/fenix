@@ -9,6 +9,8 @@ use std::collections::BTreeSet;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PlanNodeSpec {
+    #[serde(default = "crate::subagents::default_profile")]
+    pub profile: String,
     pub id: String,
     pub objective: String,
     pub expected_output: String,
@@ -56,7 +58,7 @@ pub(crate) fn read(db: &Connection, id: &str) -> Result<Plan> {
     Ok(serde_json::from_str(&text)?)
 }
 
-fn write(db: &Connection, plan: &Plan) -> Result<()> {
+pub(crate) fn write(db: &Connection, plan: &Plan) -> Result<()> {
     db.execute("INSERT INTO plans(id,task_id,version,status,body,updated_at) VALUES (?1,?2,?3,?4,?5,?6) ON CONFLICT(id) DO UPDATE SET version=excluded.version,status=excluded.status,body=excluded.body,updated_at=excluded.updated_at",params![plan.id,plan.task_id,plan.version,plan.status,serde_json::to_string(plan)?,plan.updated_at])?;
     Ok(())
 }
@@ -72,6 +74,14 @@ fn validate(objective: &str, constraints: &str, nodes: &[PlanNodeSpec]) -> Resul
     }
     let mut ids = BTreeSet::new();
     for n in nodes {
+        if !matches!(n.profile.as_str(), "general" | "security") {
+            bail!("Unknown milestone profile");
+        }
+        if n.profile == "security" && constraints.trim().is_empty() {
+            bail!(
+                "Security milestones require target scope and permitted operations in plan constraints"
+            );
+        }
         if n.id.is_empty()
             || n.id.len() > 80
             || !n
@@ -127,7 +137,7 @@ impl Store {
     }
 
     pub fn plan_for_task(&self, task: &str) -> Result<Option<Plan>> {
-        let id:Option<String>=self.db()?.query_row("SELECT id FROM plans WHERE task_id=?1 UNION SELECT plan_id FROM plan_workers WHERE task_id=?1 UNION SELECT r.plan_id FROM plan_review_workers w JOIN plan_reviews r ON r.id=w.review_id WHERE w.task_id=?1 LIMIT 1",[task],|r|r.get(0)).optional()?;
+        let id:Option<String>=self.db()?.query_row("SELECT id FROM plans WHERE task_id=?1 UNION SELECT plan_id FROM plan_workers WHERE task_id=?1 UNION SELECT r.plan_id FROM plan_review_workers w JOIN plan_reviews r ON r.id=w.review_id WHERE w.task_id=?1 UNION SELECT plan_id FROM completion_audits WHERE worker_id=?1 LIMIT 1",[task],|r|r.get(0)).optional()?;
         id.map(|id| self.plan(&id)).transpose()
     }
 
@@ -180,6 +190,7 @@ impl Store {
             updated_at: now(),
         };
         write(&tx, &plan)?;
+        crate::completion_audits::seed(&tx, &plan)?;
         tx.execute(
             "INSERT INTO plan_revisions VALUES (?1,1,?2,?3,'Initial plan',?4)",
             params![plan.id, serde_json::to_string(&plan)?, task, now()],
@@ -217,8 +228,7 @@ impl Store {
         let global_changed = plan.objective != objective || plan.constraints != constraints;
         let mut changed = BTreeSet::new();
         for old in &plan.nodes {
-            if old.status != "completed" && global_changed || !specs.iter().any(|s| s == &old.spec)
-            {
+            if global_changed || !specs.iter().any(|s| s == &old.spec) {
                 changed.insert(old.spec.id.clone());
             }
         }
@@ -233,7 +243,7 @@ impl Store {
                 break;
             }
         }
-        let cancelled = plan
+        let mut cancelled = plan
             .nodes
             .iter()
             .filter(|n| changed.contains(&n.spec.id) && n.status == "running")
@@ -271,6 +281,8 @@ impl Store {
         plan.nodes = nodes;
         plan.updated_at = now();
         write(&tx, &plan)?;
+        cancelled.extend(crate::completion_audits::supersede(&tx, &plan)?);
+        crate::completion_audits::seed(&tx, &plan)?;
         tx.execute(
             "INSERT INTO plan_revisions VALUES (?1,?2,?3,?4,?5,?6)",
             params![
@@ -300,6 +312,11 @@ impl Store {
             bail!("Revision is no longer applicable");
         }
         plan.status = "running".into();
+        for node in &plan.nodes {
+            if node.status == "verifying" {
+                crate::completion_audits::queue(&tx, &plan, &node.spec.id)?;
+            }
+        }
         plan.updated_at = now();
         write(&tx, &plan)?;
         publish(
@@ -324,12 +341,12 @@ impl Store {
         if plan.version != expected_version {
             bail!("Plan changed; read the current version");
         }
-        let workers = plan
+        let mut workers = plan
             .nodes
             .iter()
-            .filter(|n| n.status == "running")
+            .filter(|n| matches!(n.status.as_str(), "running" | "verifying"))
             .filter_map(|n| n.worker_id.clone())
-            .collect();
+            .collect::<Vec<_>>();
         plan.status = "cancelled".into();
         plan.version += 1;
         plan.updated_at = now();
@@ -340,6 +357,7 @@ impl Store {
             }
         }
         write(&tx, &plan)?;
+        workers.extend(crate::completion_audits::supersede(&tx, &plan)?);
         tx.execute(
             "INSERT INTO plan_revisions VALUES (?1,?2,?3,?4,'Cancellation',?5)",
             params![
@@ -371,10 +389,10 @@ impl Store {
         let mut db = self.db()?;
         let tx = db.transaction()?;
         let mut plan = read(&tx, id)?;
-        let workers = plan
+        let mut workers = plan
             .nodes
             .iter()
-            .filter(|n| n.status == "running")
+            .filter(|n| matches!(n.status.as_str(), "running" | "verifying"))
             .filter_map(|n| n.worker_id.clone())
             .collect::<Vec<_>>();
         plan.version += 1;
@@ -392,6 +410,8 @@ impl Store {
             }
         }
         write(&tx, &plan)?;
+        workers.extend(crate::completion_audits::supersede(&tx, &plan)?);
+        crate::completion_audits::seed(&tx, &plan)?;
         tx.execute(
             "INSERT INTO plan_revisions VALUES (?1,?2,?3,?4,?5,?6)",
             params![
@@ -503,7 +523,7 @@ impl Store {
             }
         }
         Ok(db
-            .prepare("SELECT task_id,node_id FROM plan_workers WHERE plan_id=?1")?
+            .prepare("SELECT task_id,node_id FROM plan_workers WHERE plan_id=?1 ORDER BY rowid")?
             .query_map([id], |r| {
                 Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
             })?
@@ -516,6 +536,7 @@ impl Store {
 
     pub fn check_plan_worker(&self, worker: &str) -> Result<()> {
         self.check_review_worker(worker)?;
+        self.check_completion_auditor(worker)?;
         let db = self.db()?;
         let pin: Option<(String, String, u64)> = db
             .query_row(
@@ -564,6 +585,8 @@ impl Store {
             return Ok(true);
         };
         let mut plan = read(&tx, &id)?;
+        let verify = job.status == "completed"
+            && crate::completion_audits::requires_node(&tx, &plan, &node, worker)?;
         let mut applied = false;
         if matches!(plan.status.as_str(), "running" | "revising") {
             if let Some(node) = plan.nodes.iter_mut().find(|n| {
@@ -571,7 +594,9 @@ impl Store {
                     && n.generation == generation
                     && n.worker_id.as_deref() == Some(worker)
             }) {
-                node.status = if job.status == "completed" {
+                node.status = if verify {
+                    "verifying"
+                } else if job.status == "completed" {
                     "completed"
                 } else {
                     "blocked"
@@ -582,6 +607,18 @@ impl Store {
             }
             plan.updated_at = now();
             write(&tx, &plan)?;
+            if applied {
+                crate::completion_audits::capture_artifacts(
+                    &tx,
+                    &plan,
+                    &node,
+                    worker,
+                    job.result.as_ref(),
+                )?;
+            }
+            if applied && verify {
+                crate::completion_audits::queue(&tx, &plan, &node)?;
+            }
         }
         tx.execute(
             "UPDATE plan_workers SET reconciled=1 WHERE task_id=?1",
@@ -610,10 +647,17 @@ impl Store {
         }
         let pending_review: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM plan_reviews WHERE plan_id=?1 AND version=?2 AND status IN ('queued','running','needs_resolution','resolving'))",params![plan.id,plan.version],|r|r.get(0))?;
         let unresolved_review: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM plan_reviews WHERE plan_id=?1 AND version=?2 AND status NOT IN ('passed','superseded'))",params![plan.id,plan.version],|r|r.get(0))?;
-        let all_done = !unresolved_review && plan.nodes.iter().all(|n| n.status == "completed");
-        let mut has_work = pending_review;
+        let executed = !unresolved_review && plan.nodes.iter().all(|n| n.status == "completed");
+        let audit_required = crate::completion_audits::needs_final(&tx, &plan)?;
+        if executed && audit_required {
+            crate::completion_audits::queue(&tx, &plan, "")?;
+        }
+        let final_audit = crate::completion_audits::final_status(&tx, &plan)?;
+        let all_done = executed && (!audit_required || final_audit.as_deref() == Some("passed"));
+        let mut has_work =
+            pending_review || matches!(final_audit.as_deref(), Some("queued" | "running"));
         for n in &plan.nodes {
-            if n.status == "running"
+            if matches!(n.status.as_str(), "running" | "verifying")
                 || n.status == "pending"
                     && n.spec.depends_on.iter().all(|d| {
                         plan.nodes

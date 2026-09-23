@@ -12,12 +12,176 @@ use serde_json::{Value, json};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio_util::sync::CancellationToken;
 
+#[cfg(test)]
+mod operational_tests {
+    use super::*;
+    use fenix_credentials::ApiKey;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use wiremock::{
+        Mock, MockServer, ResponseTemplate,
+        matchers::{method, path},
+    };
+
+    #[tokio::test]
+    async fn saved_output_search_uses_redacted_journal_and_preserves_worker_scope() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue_bound(
+            "Investigate",
+            "web",
+            None,
+            &fenix_storage::TaskBinding {
+                bound: true,
+                ..Default::default()
+            },
+        )?;
+        rt.redactor.add("privatecredentialfixture");
+        rt.record_tool_outcome(
+            &task.id,
+            "build-result",
+            "command_run",
+            &json!({}),
+            Ok(json!({"exit_code":1,"output":"diagnosticmarker privatecredentialfixture"})),
+        )?;
+        let settings = crate::config::Settings::initial(dir.path().into());
+        let cancel = CancellationToken::new();
+        let found = rt
+            .execute_tool(
+                &task.id,
+                "search",
+                &settings,
+                "task_inspect",
+                &json!({"query":"diagnosticmarker"}),
+                &cancel,
+            )
+            .await?;
+        assert_eq!(found["results"][0]["call_id"], "build-result");
+        assert!(!found.to_string().contains("privatecredentialfixture"));
+        let absent = rt
+            .execute_tool(
+                &task.id,
+                "search",
+                &settings,
+                "task_inspect",
+                &json!({"query":"privatecredentialfixture"}),
+                &cancel,
+            )
+            .await?;
+        assert_eq!(absent["results"], json!([]));
+        let worker = rt.store.create_subagent(
+            &task.id,
+            &fenix_storage::SubagentSpec {
+                profile: "general".into(),
+                objective: "Independent review".into(),
+                expected_output: "Report".into(),
+                context: String::new(),
+                constraints: String::new(),
+            },
+        )?;
+        assert!(
+            rt.execute_tool(
+                &worker.id,
+                "search",
+                &settings,
+                "task_inspect",
+                &json!({"task_id":task.id,"query":"diagnosticmarker"}),
+                &cancel
+            )
+            .await
+            .is_err()
+        );
+        assert!(
+            rt.execute_tool(
+                &task.id,
+                "search",
+                &settings,
+                "task_inspect",
+                &json!({"query":"diagnosticmarker","checkpoint_id":"ambiguous"}),
+                &cancel
+            )
+            .await
+            .is_err()
+        );
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn failed_tool_reaches_next_inference_without_duplicate_history() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let server = MockServer::start().await;
+        let count = AtomicUsize::new(0);
+        Mock::given(method("POST")).and(path("/responses")).respond_with(move |_: &wiremock::Request| {
+            let output=if count.fetch_add(1,Ordering::SeqCst)==0 {
+                json!([{"type":"function_call","call_id":"missing-file","name":"file_read","arguments":"{\"path\":\"missing.txt\"}"}])
+            } else {
+                json!([{"type":"message","role":"assistant","content":[{"type":"output_text","text":"The requested file is absent."}]}])
+            };
+            ResponseTemplate::new(200).set_body_json(json!({"id":"response","status":"completed","output":output,"usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20}}))
+        }).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        settings.coding.context_window_tokens = 65536;
+        settings.coding.compact_at_tokens = 30000;
+        let model = rt.model_connection(settings, ApiKey::new("test-operational-key")?)?;
+        let task = rt.store.enqueue_bound(
+            "Read missing.txt",
+            "web",
+            None,
+            &fenix_storage::TaskBinding {
+                bound: true,
+                ..Default::default()
+            },
+        )?;
+        rt.store.set_task_status(&task.id, "running", None)?;
+        let mut messages = vec![Message::user("Read missing.txt")];
+        rt.run_loop(&task, &model, &mut messages, &CancellationToken::new())
+            .await?;
+        let requests = server.received_requests().await.unwrap();
+        assert_eq!(requests.len(), 2);
+        let first = String::from_utf8_lossy(&requests[0].body);
+        let second = String::from_utf8_lossy(&requests[1].body);
+        assert!(!first.contains("Runtime operational snapshot"));
+        assert_eq!(second.matches("Runtime operational snapshot").count(), 1);
+        let second_body: Value = serde_json::from_slice(&requests[1].body)?;
+        assert_eq!(second_body["input"][0]["role"], "user");
+        assert!(second.contains("failed_approaches"));
+        assert!(second.contains("missing-file"));
+        assert!(
+            !messages
+                .iter()
+                .any(|m| m.text_content().contains("Runtime operational snapshot"))
+        );
+        assert_eq!(
+            rt.task_contract(&task.id)?["failed_approaches"][0]["call_id"],
+            "missing-file"
+        );
+        // A completed command with a nonzero exit is also a failure, even when
+        // the tool transport itself succeeded.
+        rt.record_tool_outcome(
+            &task.id,
+            "bad-exit",
+            "command_run",
+            &json!({"command":"build"}),
+            Ok(json!({"exit_code":2,"status":"completed"})),
+        )?;
+        assert_eq!(
+            rt.task_contract(&task.id)?["failed_approaches"][1]["call_id"],
+            "bad-exit"
+        );
+        rt.shutdown().await?;
+        Ok(())
+    }
+}
+
 impl Runtime {
-    fn record_tool_outcome(
+    pub(crate) fn record_tool_outcome(
         &self,
         task: &str,
         call_id: &str,
         name: &str,
+        args: &Value,
         result: Result<Value>,
     ) -> Result<(Value, bool)> {
         let (mut output, is_error) = match result {
@@ -39,6 +203,13 @@ impl Runtime {
                 serde_json::to_value(error.downcast_ref::<tools::ArgumentFailure>().unwrap())?,
                 true,
             ),
+            Err(error) if tools::process_reference_failure(&error).is_some() => {
+                (tools::process_reference_failure(&error).unwrap(), true)
+            }
+            Err(error) if name == "command_run" => (
+                json!({"code":"command_execution_error","category":"execution_control","error":self.redactor.text(&error.to_string()),"execution_state":"unknown","permissions_relaxed":false,"instruction":"Execution setup or policy failed. Inspect existing processes/evidence before retrying; never broaden permissions automatically."}),
+                true,
+            ),
             Ok(value) => (value, false),
             Err(error) => (
                 json!({"error":self.redactor.text(&error.to_string())}),
@@ -46,6 +217,25 @@ impl Runtime {
             ),
         };
         self.redactor.value(&mut output);
+        let uncertain_write = (is_error
+            || output["exit_code"].as_i64().is_some_and(|code| code != 0))
+            && (matches!(
+                name,
+                "command_run"
+                    | "command_input"
+                    | "file_write"
+                    | "file_edit"
+                    | "file_patch"
+                    | "document_create"
+                    | "document_edit"
+                    | "library_export"
+                    | "connector_call"
+                    | "integration_call"
+                    | "file_history"
+            ) || name.starts_with("browser_"));
+        if uncertain_write {
+            self.store.put("restart_uncertain_effects", task, &true)?;
+        }
         self.store.event(
             task,
             "tool_result",
@@ -63,6 +253,15 @@ impl Runtime {
             if evidence.len() > 16 {
                 evidence.remove(0);
             }
+            self.remember_failed_approach(
+                task,
+                call_id,
+                name,
+                args,
+                &output,
+                is_error,
+                &mut contract,
+            )?;
             self.store.put("task_contracts", task, &contract)?;
         }
         Ok((output, is_error))
@@ -156,8 +355,14 @@ impl Runtime {
             .flatten()
             .map(|s| s.execution)
             .unwrap_or_default();
-        let deadline =
-            self.execution_deadline(&task.id, Duration::from_secs(limits.task_timeout_seconds));
+        let deadline = async {
+            if limits.externally_supervised {
+                std::future::pending::<()>().await;
+            } else {
+                self.execution_deadline(&task.id, Duration::from_secs(limits.task_timeout_seconds))
+                    .await;
+            }
+        };
         tokio::pin!(deadline);
         let result = loop {
             let revision = {
@@ -231,6 +436,9 @@ impl Runtime {
             "task.finished",
             &json!({"status":status,"error":error}),
         );
+        if status == "completed" {
+            let _ = self.queue_skill_learning(&task.id);
+        }
         self.active.lock().await.remove(&task.id);
         self.progress.send_if_modified(|progress| {
             if progress.task_id.as_deref() == Some(&task.id) {
@@ -273,7 +481,10 @@ impl Runtime {
         self.store.event(&task.id,"task_started",&json!({"session_id":task.session_id,"objective":task.request,"provider":model.settings.provider,"model":model.settings.model,"reasoning_effort":model.settings.reasoning_effort,"workspace":self.task_workspace(&task.id,&model.settings.workspace)?,"binding":binding}))?;
         self.store
             .put("repository_rules_epoch", &task.id, &fenix_storage::id())?;
-        let mut messages = self.build_context(task, &model).await?;
+        let mut messages = match self.recovered_messages(&task.id)? {
+            Some(messages) => messages,
+            None => self.build_context(task, &model).await?,
+        };
         self.run_loop(task, &model, &mut messages, cancel).await?;
         Ok(())
     }
@@ -313,6 +524,7 @@ impl Runtime {
                 .unwrap_or_else(|| task.id.clone())
         };
         let mut repetition = crate::execution_state::LoopGuard::default();
+        let mut browser_progress = crate::execution_state::BrowserProgress::default();
         messages.push(Message::user(format!(
             "Persistent task contract: {}",
             self.task_contract(&task.id)?
@@ -325,12 +537,17 @@ impl Runtime {
             .store
             .get::<Vec<Value>>("task_denials", &task.id)?
             .unwrap_or_default();
-        for _ in 0..model.settings.execution.max_model_steps {
+        let step_limit = if model.settings.execution.externally_supervised {
+            usize::MAX
+        } else {
+            model.settings.execution.max_model_steps
+        };
+        for _ in 0..step_limit {
             let step = self
                 .store
                 .get::<usize>("execution_steps", &task.id)?
                 .unwrap_or(0);
-            if step >= model.settings.execution.max_model_steps {
+            if step >= step_limit {
                 break;
             }
             if delegated {
@@ -343,14 +560,33 @@ impl Runtime {
                 bail!("Task cancelled");
             }
             let catalog = self.exposed_tools(&task.id)?;
-            self.compact_active_context(task, model, messages, &catalog, cancel)
+            let operational = self.operational_context(task)?;
+            let reserved = operational.as_ref().map_or(0, |message| {
+                crate::active_context::estimated_tokens(std::slice::from_ref(message), &[])
+            });
+            self.compact_active_context(task, model, messages, &catalog, reserved, cancel)
                 .await?;
+            let recoverable = !self
+                .processes
+                .list()
+                .await
+                .iter()
+                .any(|p| p.owner == task.id && p.status == "running");
+            self.recovery_boundary(&task.id, messages, recoverable)?;
             self.execution_stage(&task.id, "inferring")?;
             let inference_started = std::time::Instant::now();
-            let mut request = model.settings.request(messages.clone());
+            let mut input = messages.clone();
+            if let Some(operational) = operational {
+                // Keep a stable request prefix, with only one transient snapshot.
+                // Never append repeated copies to durable history or checkpoints.
+                input.push(operational);
+            }
+            let input_tokens = self
+                .context_tokens(&task.id, model, messages, &catalog)?
+                .saturating_add(reserved);
+            let mut request = model.settings.request(input);
             let budget = crate::context_budget::ContextBudget::new(&model.settings);
-            let available = budget
-                .output_available(crate::active_context::estimated_tokens(messages, &catalog));
+            let available = budget.output_available(input_tokens);
             if available < 1024 {
                 bail!("Context leaves insufficient output space; adjust coding context capacity");
             }
@@ -374,6 +610,13 @@ impl Runtime {
             self.check_plan_editor(&task.id)?;
             self.store.check_plan_worker(&task.id)?;
             self.acknowledge_repository_rules(&task.id, messages)?;
+            self.anchor_usage(
+                &task.id,
+                model,
+                messages,
+                &request.tools,
+                response.usage.input_tokens,
+            )?;
             self.store.event(&task.id,"model_response",&json!({"turn_id":fenix_storage::id(),"step":step+1,"usage":response.usage,"finish_reason":response.finish_reason,"response_id":response.id,"elapsed_ms":inference_started.elapsed().as_millis()}))?;
             let mut encoded = serde_json::to_value(response.message)?;
             self.redactor.value(&mut encoded);
@@ -435,6 +678,7 @@ impl Runtime {
                 messages.push(Message::user(format!("A completion was withheld because a foreground command was still running. No action was repeated. Inspect its output and status before finishing. Processes: {}", json!(self.processes.list().await.into_iter().filter(|p| p.owner == task.id).collect::<Vec<_>>()))));
                 continue;
             }
+            self.recovery_boundary(&task.id, messages, false)?;
             if delegated {
                 self.store
                     .event(&task.id, "subagent_message", &json!({"message":message}))?;
@@ -482,13 +726,11 @@ impl Runtime {
             let tool_byte_budget = budget.tool_bytes(call_count);
             self.execution_stage(&task.id, "executing_tools")?;
             let mut finished = None;
-            // A response containing only public web reads can run as a batch.
+            // Independent, explicitly read-only calls can run as a batch.
             // Mixed/action responses retain their existing ordered execution.
-            let web_batch = calls.len() > 1
-                && calls
-                    .iter()
-                    .all(|(_, name, _)| matches!(name.as_str(), "web_search" | "web_read"));
-            let mut web_results = if web_batch {
+            let read_batch =
+                calls.len() > 1 && calls.iter().all(|(_, name, _)| tools::parallel_read(name));
+            let mut read_results = if read_batch {
                 for (call_id, name, args) in &calls {
                     self.check_plan_editor(&task.id)?;
                     self.store.check_plan_worker(&task.id)?;
@@ -515,7 +757,7 @@ impl Runtime {
                         };
                         // Persist each completed read immediately, even if a sibling
                         // is later cancelled. Transcript results remain in call order.
-                        self.record_tool_outcome(&task.id, call_id, name, result)
+                        self.record_tool_outcome(&task.id, call_id, name, args, result)
                     }
                 });
                 let results = tokio::select! {
@@ -535,15 +777,15 @@ impl Runtime {
                 }
                 self.report_progress(&task.id, Phase::Tool, Some(&name));
                 let action = json!({"tool":name,"arguments":args});
-                if !web_batch {
+                if !read_batch {
                     self.store.event(
                         &task.id,
                         "tool_started",
                         &json!({"call_id":call_id,"tool":name,"arguments":args}),
                     )?;
                 }
-                let (output, is_error) = if let Some(results) = &mut web_results {
-                    results.next().context("Missing web batch result")?
+                let (output, is_error) = if let Some(results) = &mut read_results {
+                    results.next().context("Missing read batch result")?
                 } else {
                     let result: Result<Value> = async {
                     if delegated && !self.store.pending_subagent_inputs(&task.id)?.is_empty() {
@@ -561,6 +803,12 @@ impl Runtime {
                             let report = serde_json::from_value(args["review"].clone()).context("Plan reviewers must return a structured review")?;
                             self.store.validate_review_report(&task.id, &report)?;
                         }
+                        if self.store.completion_audit_for_worker(&task.id)?.is_some() && args["status"] == "completed" {
+                            let report = serde_json::from_value(args["completion_audit"].clone()).context("Completion auditors must return a structured report")?;
+                            self.store.validate_completion_report(&task.id, &report)?;
+                            self.validate_completion_observations(&task.id, &report)?;
+                        }
+                        if self.task_profile(&task.id)? == "security" && self.store.review_for_worker(&task.id)?.is_none() { crate::security::validate_report(&args)?; }
                         finished = Some(args.clone());
                         return Ok(json!({"recorded":true}));
                     }
@@ -578,12 +826,13 @@ impl Runtime {
                         return Ok(json!({"approved":approved,"single_use":true}));
                     }
                     if denials.contains(&action) {return Ok(json!({"denied":true,"executed":false,"previously_denied":true}));}
-                    if matches!(name.as_str(), "file_write" | "file_edit" | "file_patch") {
+                    if matches!(name.as_str(), "library_export" | "document_create" | "document_edit" | "file_write" | "file_edit" | "file_patch") {
                         let workspace = self.task_workspace(&task.id, &model.settings.workspace)?;
                         let rules = self.pending_repository_rules(&task.id, &workspace, &name, &args)?;
                         if !rules.is_empty() { return Ok(json!({"executed":false,"repository_instructions":rules,"instruction":"Read this guidance before retrying; no mutation or approval consumption occurred."})); }
                     }
-                    let requires=(matches!(name.as_str(),"command_run"|"command_input") && model.settings.command_policy==ActionPolicy::Ask) || (matches!(name.as_str(),"file_write"|"file_edit"|"file_patch") && model.settings.file_write_policy==ActionPolicy::Ask);
+                    let requires=((matches!(name.as_str(),"command_run"|"command_input") || name == "integration_call" && args["action"] != "list") && model.settings.command_policy==ActionPolicy::Ask) || ((matches!(name.as_str(),"library_export" | "document_create"|"document_edit"|"file_write"|"file_edit"|"file_patch") || name == "file_history" && args["action"] == "restore" || name == "workspace_checkpoint" && args["action"] != "list" || name == "worktree_manage" && args["action"] == "integrate") && model.settings.file_write_policy==ActionPolicy::Ask);
+                    let requires = requires || name == "connector_call" && self.connector_requires_approval(&model.settings, &args);
                     if requires {
                         if let Some(index)=grants.iter().position(|g|g==&action) {grants.remove(index);self.store.put("task_grants", &task.id, &grants)?;}
                         else if !self.approve(&task.id,action.clone(),cancel).await? {denials.push(action.clone());self.store.put("task_denials", &task.id, &denials)?;return Ok(json!({"denied":true,"executed":false,"instruction":"Owner denied this exact action. Do not retry or bypass it."}));}
@@ -591,18 +840,39 @@ impl Runtime {
                     self.report_progress(&task.id, Phase::Tool, Some(&name));
                     self.execute_tool(&task.id,&source,&model.settings,&name,&args,cancel).await
                     }.await;
-                    self.record_tool_outcome(&task.id, &call_id, &name, result)?
+                    self.record_tool_outcome(&task.id, &call_id, &name, &args, result)?
                 };
-                let progress = self.processes.progress_signature(&task.id).await;
+                let browser_evidence = browser_progress.observe(&name, &args, &output, is_error);
+                let progress = format!(
+                    "{}:browser:{}",
+                    self.processes.progress_signature(&task.id).await,
+                    browser_progress.revision
+                );
                 let effect_completed = !is_error
                     && output["executed"] != false
                     && output["denied"] != true
                     && matches!(
                         name.as_str(),
-                        "file_write" | "file_edit" | "file_patch" | "command_run" | "command_input"
+                        "library_export"
+                            | "document_create"
+                            | "document_edit"
+                            | "file_write"
+                            | "file_edit"
+                            | "file_patch"
+                            | "command_run"
+                            | "workspace_checkpoint"
+                            | "integration_call"
+                            | "command_input"
                     );
                 let looping = name != "command_status"
-                    && repetition.observe(format!("{action}:{output}"), progress, effect_completed);
+                    && repetition.observe(
+                        format!(
+                            "{action}:{}",
+                            browser_evidence.unwrap_or_else(|| output.to_string())
+                        ),
+                        progress,
+                        effect_completed,
+                    );
                 let content =
                     crate::tool_receipt::bounded(output, tool_byte_budget, &task.id, &call_id);
                 let tool_message = Message {

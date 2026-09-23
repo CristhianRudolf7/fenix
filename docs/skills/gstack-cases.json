@@ -1,0 +1,132 @@
+[
+  {
+    "query": "Audit the developer onboarding from README to first successful API call",
+    "expected": "developer-experience-review",
+    "kind": "target"
+  },
+  {
+    "query": "Revisa la experiencia del desarrollador al integrar nuestro SDK",
+    "expected": "developer-experience-review",
+    "kind": "target"
+  },
+  {
+    "query": "Measure getting started friction and error recovery in our CLI",
+    "expected": "developer-experience-review",
+    "kind": "target"
+  },
+  {
+    "query": "Audita la primera integración y facilidad de instalación",
+    "expected": "developer-experience-review",
+    "kind": "target"
+  },
+  {
+    "query": "Review the developer onboarding plan before implementation",
+    "expected": "developer-experience-review",
+    "kind": "target"
+  },
+  {
+    "query": "Run configured checks and report repository health without fixes",
+    "expected": "code-health-review",
+    "kind": "target"
+  },
+  {
+    "query": "Quiero un informe de salud del código con lint y tests",
+    "expected": "code-health-review",
+    "kind": "target"
+  },
+  {
+    "query": "Code health dashboard with missing checks and actual exit status",
+    "expected": "code-health-review",
+    "kind": "target"
+  },
+  {
+    "query": "Compara el estado de checks sin inventar una puntuación global",
+    "expected": "code-health-review",
+    "kind": "target"
+  },
+  {
+    "query": "Weekly engineering retrospective of delivery and rework",
+    "expected": "engineering-retrospective",
+    "kind": "target"
+  },
+  {
+    "query": "Retrospectiva de ingeniería de las últimas dos semanas",
+    "expected": "engineering-retrospective",
+    "kind": "target"
+  },
+  {
+    "query": "Analyze engineering delivery trends and review bottlenecks",
+    "expected": "engineering-retrospective",
+    "kind": "target"
+  },
+  {
+    "query": "Analiza reprocesos y cuellos de botella del equipo de ingeniería",
+    "expected": "engineering-retrospective",
+    "kind": "target"
+  },
+  {
+    "query": "Verify deployment artifact and observe post-deploy canary errors",
+    "expected": "release-and-ci",
+    "kind": "target"
+  },
+  {
+    "query": "Actualizar documentación de comandos y configuración tras una release",
+    "expected": "technical-documentation",
+    "kind": "target"
+  },
+  {
+    "query": "Compare browser performance latency against the previous baseline",
+    "expected": "performance-diagnosis",
+    "kind": "target"
+  },
+  {
+    "query": "QA report only with screenshots and browser reproduction steps",
+    "expected": "browser-regression-testing",
+    "kind": "target"
+  },
+  {
+    "query": "Review architecture failure ownership retry compensation distribution",
+    "expected": "architecture-design",
+    "kind": "target"
+  },
+  {
+    "query": "Summarize current project progress and open commitments",
+    "expected": "project-status-review",
+    "kind": "guard"
+  },
+  {
+    "query": "Review this code diff for introduced defects",
+    "expected": "code-review",
+    "kind": "guard"
+  },
+  {
+    "query": "Diagnose why the agent repeated the same task twice",
+    "expected": "agent-workflow-diagnosis",
+    "kind": "guard"
+  },
+  {
+    "query": "Design API request and response schemas",
+    "expected": "api-contract-design",
+    "kind": "guard"
+  },
+  {
+    "query": "Create a Word report with headings and paragraphs",
+    "expected": "documents-word",
+    "kind": "guard"
+  },
+  {
+    "query": "Navigate a website and read its content",
+    "expected": "browser-navigation",
+    "kind": "guard"
+  },
+  {
+    "query": "Evaluate product demand and current customer workarounds",
+    "expected": "product-discovery",
+    "kind": "guard"
+  },
+  {
+    "query": "Verify delivered artifacts meet the original requirements",
+    "expected": "completion-verification",
+    "kind": "guard"
+  }
+]

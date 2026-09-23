@@ -80,6 +80,7 @@ fn base_request() -> ChatRequest {
         max_output_tokens: 512,
         temperature: Some(0.2),
         reasoning_effort: None,
+        flex_processing: false,
     }
 }
 
@@ -507,4 +508,15 @@ fn metadata_on_user_messages_is_rejected() {
         data: json!({}),
     });
     assert!(encode(Protocol::OpenAiChat, &request).is_err());
+}
+
+#[test]
+fn responses_flex_is_explicit_and_opt_in() {
+    let mut request =
+        fenix_core::ChatRequest::new("gpt-6-astra", vec![fenix_core::Message::user("Hello")]);
+    let normal = encode(Protocol::OpenAiResponses, &request).unwrap();
+    assert!(normal["service_tier"].is_null());
+    request.flex_processing = true;
+    let flex = encode(Protocol::OpenAiResponses, &request).unwrap();
+    assert_eq!(flex["service_tier"], "flex");
 }

@@ -1,0 +1,36 @@
+{
+  "backend": "microvm",
+  "runtime": "fenix-kata",
+  "microvm_manifest": "/etc/fenix/microvm/manifest.json",
+  "microvm_overhead_mib": 256,
+  "persistent_environments": true,
+  "registry_uid": 0,
+  "host_memory_reserve_mib": 1024,
+  "registry": "/etc/fenix/accounts.json",
+  "users_root": "/var/lib/fenix/users",
+  "volume_dir": "/var/lib/fenix/volumes",
+  "state_dir": "/var/lib/fenix-execution",
+  "socket": "/run/fenix-execution/control.sock",
+  "image": "fenix-workspace:local",
+  "instance": "production",
+  "max_executions": 8,
+  "max_runner_memory_mib": 9216,
+  "host_disk_reserve_bytes": 2147483648,
+  "host_public_ips": [],
+  "browser_executable": "/usr/bin/chromium",
+  "browser_seccomp": "/opt/fenix/isolation/seccomp-browser.json",
+  "controller_limits": {"memory_mib": 512, "pids": 128, "cpus": 1, "tmp_mib": 128},
+  "runner_limits": {"memory_mib": 2048, "pids": 512, "cpus": 2, "tmp_mib": 256, "deadline_seconds": 14400},
+  "account_limits": {"memory_mib": 5120, "pids": 1536, "cpus": 4, "concurrent": 2},
+  "checkpoint_key": "/etc/fenix/checkpoint-key.json",
+  "checkpoint_max_bytes": 33554432,
+  "checkpoint_account_bytes": 134217728,
+  "checkpoint_total_bytes": 1073741824,
+  "integrations_file": "/etc/fenix/integrations.json",
+  "accounts": {
+    "00000000-0000-4000-8000-000000000001": {
+      "uid": 61001, "gid": 61001, "disk_bytes": 21474836480,
+      "execution_seconds_per_month": 360000
+    }
+  }
+}

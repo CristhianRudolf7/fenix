@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-20T01:16:41.175414+00:00",
+  "title": "Self-hosted gVisor systrap execution: implementation and real acceptance",
+  "title_es": "Ejecución propia con gVisor systrap: implementación y pruebas reales",
+  "status": "Implemented and validated with disposable accounts; production accounts not migrated",
+  "default_backend": "gvisor",
+  "platform": "systrap",
+  "kvm_required": false,
+  "external_sandbox_subscription_required": false,
+  "host": {
+    "kernel": "6.12.107+deb13-cloud-amd64",
+    "architecture": "x86_64",
+    "kvm_device_present": false
+  },
+  "tested_bundle": {
+    "version": "runsc version release-20260914.0\nspec: 1.2.1",
+    "platform": "systrap",
+    "runtime_args": [
+      "--platform=systrap",
+      "--network=sandbox",
+      "--directfs=false",
+      "--file-access-mounts=shared",
+      "--overlay2=none",
+      "--host-uds=none",
+      "--host-fifo=none",
+      "--net-raw=false",
+      "--allow-packet-socket-write=false",
+      "--gvisor-marker-file=true",
+      "--ignore-cgroups=false",
+      "--systemd-cgroup=true",
+      "--rootless=false",
+      "--oci-seccomp=true",
+      "--allow-flag-override=false",
+      "--allow-suid=false",
+      "--debug=false",
+      "--strace=false",
+      "--profile=false",
+      "--sidecar-usage-policy=STRICT",
+      "--sidecar-release-enforcement-policy=ALWAYS",
+      "--gofer-network-namespace=new",
+      "--character-device-policy=emulated-only"
+    ],
+    "assets_sha256": {
+      "runsc": "c0f4ec0ac1198975d5cf919a78f2302426de096f69eebd33e50125c3ca42d699",
+      "sandbox-gate.py": "4de55e2e98f2837397483036f3f36be2cc2bd43adab0ab259d3ed07f173bf368",
+      "gvisor-bin/checkpointgofer": "e29be2ab32a10eb885c4a46635f47b80ad661be6f23b5d7903f11906941c7aab",
+      "gvisor-bin/gvisor-sentry-prewarmer": "3315d7ad7c2d3751d349e4976fa02da1da6fd7e41746c35622304e5fabe4fce0",
+      "gvisor-bin/gvisor_sentry": "aff3ed7dfac54b04aab14de2dde53e021402f0ba238bc7ece3ac7d4b6604b055",
+      "gvisor-bin/runsc-fd-parking": "03af90d07ea466c10ecc3e3ba839b2a59540959dd3286aea3886917cba850c11",
+      "gvisor-bin/runsc-metric-server": "02bb563cd060fe7992ccd00927024b02b70e0803b61abfa015e158d9d7e88507"
+    },
+    "host_kvm_present": false,
+    "image": "sha256:99f9b203620b10f491d97934810768ef515ecdb1917d52d2773c396f7cdae2d5"
+  },
+  "upstream_release": {
+    "tag": "release-20260914.0",
+    "url": "https://github.com/google/gvisor/releases/tag/release-20260914.0",
+    "archive_url": "https://github.com/google/gvisor/releases/download/release-20260914.0/gvisor-x86_64.tar.zstd",
+    "checksum_url": "https://github.com/google/gvisor/releases/download/release-20260914.0/SHA512SUMS",
+    "sha512": "246dec82e97fea6286bbb1bd73745841de2292224828805086aa8146094b142fd15a1c6035a54df22a5ea916f053ef69e370be80650dea7e1539e37c84646cb5",
+    "checksum_verified_before_install": true
+  },
+  "tests": [
+    {
+      "suite": "Python isolation discovery",
+      "command": "python3 -m unittest discover -s tests/isolation -v",
+      "collected": 84,
+      "passed": 45,
+      "skipped": 39,
+      "failed": 0,
+      "seconds": 1.57,
+      "note": "Discovery preceded addition of one separately executed compiler/Node acceptance case. Skipped cases require explicit runtime/root/storage opt-in."
+    },
+    {
+      "suite": "Real gVisor full acceptance",
+      "command": "sudo env FENIX_GVISOR_TESTS=1 FENIX_GVISOR_MANIFEST=PINNED_MANIFEST python3 -m unittest discover -s tests/isolation -p test_gvisor_acceptance.py -v",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 118.63,
+      "coverage": [
+        "actual Sentry executable, systrap flags, host seccomp and account cgroup",
+        "host CPU/memory/PID limits",
+        "owner-bound handles and hidden controller secrets",
+        "read-only project and selected skill mounts",
+        "project/tool-home persistence and virtualenv reuse",
+        "coherence of native host file writes and running sandbox reads",
+        "PTY input and resizing",
+        "compiled Rust relay round trip",
+        "account controller preflight and authorization revision",
+        "revocation and full descendant cleanup",
+        "recorded cgroup termination during synthetic Docker API failure",
+        "private loopback relay and host destination denial",
+        "thread compatibility with clone3 and unauthorized namespace creation still denied",
+        "Chromium inner sandbox and owner-scoped CDP"
+      ]
+    },
+    {
+      "suite": "Additional language acceptance and OCI regression",
+      "passed": 2,
+      "failed": 0,
+      "seconds": 18.189,
+      "cases": [
+        {
+          "backend": "gvisor",
+          "test": "Node worker_threads and native C compilation in the project",
+          "status": "passed"
+        },
+        {
+          "backend": "oci/runc",
+          "test": "private loopback relay and host destination denial",
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "unique_real_gvisor_cases_passed": 15,
+  "static_checks": {
+    "python_compile": "passed",
+    "installer_bash_syntax": "passed",
+    "git_diff_check": "passed"
+  },
+  "initial_failures_and_fixes": [
+    {
+      "issue": "Browser configuration was copied before the fixture supplied its seccomp path.",
+      "fix": "Runtime default is a class attribute; the adapter preserves the existing shared configuration object."
+    },
+    {
+      "issue": "The upstream OCI seccomp translator ignores errnoRet and returns EPERM for clone3 instead of the intended ENOSYS; glibc thread creation failed in the relay and browser.",
+      "source": "https://github.com/google/gvisor/blob/release-20260914.0/runsc/specutils/seccomp/seccomp.go",
+      "fix": "A trusted startup/exec gate adds native BPF that keeps clone3 denied with ENOSYS and checks that result. Existing OCI and host filters remain enabled; no privileged or no-sandbox fallback was introduced.",
+      "verification": "Dedicated real test proves threads work while clone3 and unauthorized namespace creation remain denied. Private relay and Chromium then pass."
+    }
+  ],
+  "preflight_during_validation": {
+    "eligible": true,
+    "checks": {
+      "systrap_host": {
+        "ok": true
+      },
+      "docker": {
+        "ok": true
+      },
+      "systemctl": {
+        "ok": true
+      },
+      "iptables": {
+        "ok": true
+      },
+      "mount": {
+        "ok": true
+      },
+      "umount": {
+        "ok": true
+      },
+      "bundle_and_runtime": {
+        "ok": true,
+        "version": "runsc version release-20260914.0\nspec: 1.2.1"
+      }
+    },
+    "platform": "systrap",
+    "kvm_required": false,
+    "subscription_required": false,
+    "sandbox_execution_tested": false
+  },
+  "environment_changes": {
+    "temporary_runtime_registered": true,
+    "docker_configuration_reloaded_for_setup_and_cleanup": true,
+    "validation_runtime_removed": true,
+    "validation_assets_removed": true,
+    "original_daemon_configuration_restored": true,
+    "docker_default_runtime": "runc",
+    "docker_restarted": false,
+    "production_accounts_migrated": false,
+    "paid_provider_calls": 0,
+    "accounts_used": "synthetic disposable accounts only",
+    "remaining_test_containers_or_mounts": false
+  },
+  "not_claimed": [
+    "Deployment or migration of production accounts.",
+    "ARM64 runtime acceptance; this host is x86_64.",
+    "Full LibreOffice/multimedia image build or application acceptance; existing tenant image was used.",
+    "Adversarial sandbox-escape audit, multi-tenant saturation/fairness, reboot/failover drills or latency benchmarks.",
+    "RAM snapshots, suspended-process restoration, live migration, replicated storage, Windows desktops or GPU support."
+  ],
+  "operational_notes": [
+    "Omitted backend now selects gVisor and fails closed if the pinned runtime is missing. Explicit OCI or optional Kata configurations remain available without automatic fallback.",
+    "gVisor hard memory limits include runtime overhead. Guest cgroups are virtual; enforcement was inspected on the host.",
+    "The host execution service, Docker, gateway registry, runtime assets and native Fenix file/document tools remain trusted.",
+    "The temporary runtime and downloaded archive were removed after validation; installation remains an explicit deployment step."
+  ],
+  "resumen_es": "Se cambió el backend predeterminado a gVisor systrap sin KVM. Pasaron 45 pruebas de política, 15 casos reales de gVisor y una regresión OCI. Se corrigieron la configuración del navegador y la compatibilidad de hilos conservando seccomp y el sandbox de Chromium. La configuración temporal se retiró y Docker se restauró. No se migraron cuentas reales.",
+  "implementation_sha256": {
+    "scripts/fenix_execution/gvisor.py": "5c0d4e2a5654418fc860630e627dc509e9ecf33b4a7206e590b4b17e49547b45",
+    "scripts/fenix_execution/backends.py": "772c37be1073af39876d557a6e918d51ca8946399f60259a0260b17a1e0f97cb",
+    "scripts/fenix_execution/runtime_assets.py": "ce15ad163cb96a44839bbc814a1e4cb208ecff53776976f84940512f473139d7",
+    "scripts/fenix_execution/docker.py": "8a406f146038f9db383385d96d6ab8e096f5d44a88b406087b1d5db598bef821",
+    "scripts/fenix_execution/microvm.py": "375babe97f1963741fcca8d9cbbd614e8c55facd952ed8a8833de07de8b7c402",
+    "scripts/fenix_execution/policy.py": "e36cce510bc818163051291c80b523ba8859afc3a6a77e536b36313915d9e45a",
+    "scripts/fenix_execution/service.py": "5b7cae7c3b7e9e64eeec398458bfc4c8ade3e7c8e53d3d9d71d06e4d14b9022a",
+    "scripts/sandbox-gate.py": "4de55e2e98f2837397483036f3f36be2cc2bd43adab0ab259d3ed07f173bf368",
+    "scripts/prepare-gvisor.py": "f394726be35352d7ecdb113ee07d9830a9ac573f0d93e1b908f87a8911803ecc",
+    "scripts/gvisor-preflight.py": "16bed9b27cc95aa9377be79fa22d145d266b1b0565e51fee87c6a32c0be39f9a",
+    "scripts/execution-service.py": "efb41a70bba8ca54209e734586804a3300a4783d283ea687d337e18914992c30",
+    "scripts/tenant-preflight.py": "782e019b6c830ba3192345583841339f6fcbf11a6fb3ef75f70c6c018adaf126",
+    "scripts/install-isolation.sh": "55fa516687783b0d06bb5e10cb9accadb6eb61f6ec2072c9006efc4a16660512",
+    "packaging/linux/execution.example.json": "43d91de8979da9b3a60e61e224bcb09d59a79bfd0cd78e96d9d02b1b2eb4c829",
+    "tests/isolation/test_gvisor.py": "3e3b8965cb4791107170dfa4e0ac3e2aa7fb096fbfa5c2e0a0b8adcf78262641",
+    "tests/isolation/test_gvisor_acceptance.py": "b683af2d4acc0876fe836f9e9f540cb6bb6d4804d4fd7735e6a0198bca8e7c76",
+    "tests/isolation/test_docker.py": "13b06c9850385984a2cbb4b169bcf5d5b84ce186280731c1d2ed025b5c1cdb40",
+    "tests/isolation/test_browser.py": "8171113055152f0d64fd9e1652675dbf6c73b8e178ea5962e8d4b9a43f6dac56",
+    "tests/isolation/test_execution.py": "df39214a621cfb00ee2feb3d7b14326c4da9bcbf5d9d6218e8fbf26aaf3b9273",
+    "tests/isolation/test_microvm.py": "06e03f4048cd7a0c872a123570117496c8bedabe59899532c7e2e8226a478f49"
+  },
+  "local_log_sha256": {
+    "/tmp/fenix-gvisor-final-unit-tests.log": "2dd9fc227cc7bd0f128cf3652128e7c4fbd44565f5a5c383a012788263b2f807",
+    "/tmp/fenix-gvisor-final-acceptance.log": "1c851a5ff9023ebeabbfeff40ffdf0fbcdf9ec3220d375d44cf0e2f91e2dd2d2",
+    "/tmp/fenix-gvisor-language-and-oci.log": "78432b38a1d7c46e83d87dd0792d81d9b1464dde4fa5df689aa99e30f864e9b3"
+  }
+}

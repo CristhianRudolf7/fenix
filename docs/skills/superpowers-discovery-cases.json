@@ -1,0 +1,20 @@
+[
+  {"query": "Trace the root cause of a flaky test before trying another fix", "expected": "test-driven-repair"},
+  {"query": "Depura la causa raíz de una prueba intermitente", "expected": "test-driven-repair"},
+  {"query": "Evaluate reviewer feedback before implementing the suggested changes", "expected": "code-review"},
+  {"query": "Comprueba los comentarios del revisor antes de aplicar sus sugerencias", "expected": "code-review"},
+  {"query": "Explain why the agent repeated completed work and spent so many tokens", "expected": "local-troubleshooting"},
+  {"query": "Diagnostica por qué el agente repitió trabajo terminado y gastó tantos tokens", "expected": "local-troubleshooting"},
+  {"query": "Prepare a development branch handoff without merging or deleting my worktree", "expected": "git-worktree-coordination"},
+  {"query": "Finaliza la rama y conserva el worktree para revisar los cambios", "expected": "git-worktree-coordination"},
+  {"query": "Plan deliverables with producer consumer interfaces and acceptance checks", "expected": "requirements-and-planning"},
+  {"query": "Planifica hitos con interfaces y criterios de aceptación", "expected": "requirements-and-planning"},
+  {"query": "Verify a regression test actually catches the faulty behavior", "expected": "test-strategy"},
+  {"query": "Comprueba que una prueba de regresión detecta el fallo real", "expected": "test-strategy"},
+  {"query": "Implement a utility and provide current evidence for each completion claim", "expected": "software-implementation"},
+  {"query": "Implementa un programa y verifica el entregable con evidencia de finalización", "expected": "software-implementation"},
+  {"query": "Delegate independent tasks with precise requirements and verify worker handoffs", "expected": "task-delegation"},
+  {"query": "Delega subtareas independientes y verifica los entregables de los subagentes", "expected": "task-delegation"},
+  {"query": "Evaluate a skill against baseline behavior and pressure scenarios", "expected": "skill-authoring"},
+  {"query": "Evalúa una skill frente a una línea base con escenarios de presión", "expected": "skill-authoring"}
+]

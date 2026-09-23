@@ -25,6 +25,7 @@ fn binding(project: &Project) -> TaskBinding {
 
 fn spec() -> SubagentSpec {
     SubagentSpec {
+        profile: "general".into(),
         objective: "Inspect login latency".into(),
         expected_output: "Report measured bottlenecks".into(),
         context: String::new(),

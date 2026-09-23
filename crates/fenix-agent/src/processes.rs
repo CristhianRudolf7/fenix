@@ -42,6 +42,13 @@ pub(crate) struct ProcessOptions {
     pub persistent: bool,
     #[serde(default)]
     pub read_paths: Vec<PathBuf>,
+    #[serde(default)]
+    pub workspace: Option<PathBuf>,
+    #[serde(default)]
+    pub resource_paths: Vec<PathBuf>,
+    /// Fixed image-owned PDF/OCR worker; never accepted from command_run arguments.
+    #[serde(skip)]
+    pub document_request: Option<Value>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub(crate) struct ProcessInfo {
@@ -70,6 +77,8 @@ struct Process {
     done: Notify,
     cancel: CancellationToken,
     log_path: PathBuf,
+    execution: Option<Arc<fenix_execution::Lease>>,
+    started: tokio::time::Instant,
 }
 struct ProcessState {
     status: String,
@@ -79,12 +88,14 @@ struct ProcessState {
     cursors: HashMap<String, u64>,
     log_complete: bool,
     output_error: Option<String>,
+    elapsed_ms: Option<u64>,
 }
 pub(crate) struct Processes {
     items: Mutex<HashMap<String, Arc<Process>>>,
     directory: PathBuf,
     redactor: Arc<Redactor>,
     stop: CancellationToken,
+    executor: Option<fenix_execution::Executor>,
 }
 impl Process {
     async fn output_failure(&self, error: &str) {
@@ -182,10 +193,22 @@ impl Processes {
             directory,
             redactor,
             stop,
+            executor: fenix_execution::Executor::from_environment()?,
         })
     }
     fn paths(&self, id: &str) -> Result<(PathBuf, PathBuf)> {
-        if id.len() != 36 || !id.bytes().all(|b| b.is_ascii_hexdigit() || b == b'-') {
+        let legacy = id.len() == 36
+            && id.bytes().enumerate().all(|(i, b)| {
+                if matches!(i, 8 | 13 | 18 | 23) {
+                    b == b'-'
+                } else {
+                    b.is_ascii_hexdigit()
+                }
+            });
+        let compact = id
+            .strip_prefix("p_")
+            .is_some_and(|v| v.len() == 16 && v.bytes().all(|b| b.is_ascii_hexdigit()));
+        if !legacy && !compact {
             bail!("Invalid process ID");
         }
         Ok((
@@ -238,11 +261,16 @@ impl Processes {
         lease: Option<tokio::sync::OwnedMutexGuard<()>>,
         options: ProcessOptions,
     ) -> Result<Value> {
-        if command.is_empty() || command.len() > 16_000 {
-            bail!("Command must contain 1–16000 bytes");
+        if command.is_empty() || command.chars().count() > 16_000 {
+            bail!("Command must contain 1–16000 characters");
         }
         if !(1..=604_800).contains(&timeout) {
             bail!("Process timeout must be between one second and seven days");
+        }
+        if options.document_request.is_some()
+            && (self.executor.is_none() || options.tty || options.persistent)
+        {
+            bail!("Document extraction requires the isolated execution service; no host fallback");
         }
         // Keep the supervising shell alive for ordinary background jobs as well
         // as foreground services. Group cleanup still runs on timeout/cancel.
@@ -268,7 +296,7 @@ impl Processes {
         {
             bail!("At most sixteen processes may run simultaneously");
         }
-        let id = fenix_storage::id();
+        let id = format!("p_{}", &fenix_storage::id().replace('-', "")[..16]);
         let (manifest, log_path) = self.paths(&id)?;
         let log = tokio::fs::OpenOptions::new()
             .create_new(true)
@@ -289,13 +317,53 @@ impl Processes {
             output_error: None,
         };
         crate::write_new(&manifest, &serde_json::to_string(&info)?)?;
-        let private_env = std::env::vars_os()
-            .filter_map(|(key, _)| {
-                let name = key.to_string_lossy().to_uppercase();
-                (name.contains("API_KEY") || name.contains("TOKEN") || name.contains("SECRET"))
-                    .then_some(key)
-            })
-            .collect::<Vec<_>>();
+        let remote = if let Some(executor) = &self.executor {
+            let argv = if let Some(request) = &options.document_request {
+                vec![
+                    "/opt/fenix-ocr/bin/python".into(),
+                    "-I".into(),
+                    "-u".into(),
+                    "/usr/local/lib/fenix-ocr/worker.py".into(),
+                    serde_json::to_string(request)?,
+                ]
+            } else if options.read_paths.is_empty() {
+                vec![
+                    "/bin/bash".into(),
+                    "--noprofile".into(),
+                    "--norc".into(),
+                    "-c".into(),
+                    command.into(),
+                ]
+            } else {
+                vec![
+                    "/usr/local/bin/fenix".into(),
+                    "internal-read-only".into(),
+                    command.into(),
+                    cwd.to_string_lossy().into_owned(),
+                    serde_json::to_string(&options.read_paths)?,
+                ]
+            };
+            let mut spec = fenix_execution::Specification::new(
+                task,
+                if options.document_request.is_some() {
+                    "document"
+                } else {
+                    "shell"
+                },
+                argv,
+                &cwd,
+                options.workspace.as_deref().unwrap_or(&cwd),
+                timeout,
+            );
+            spec.tty = options.tty;
+            spec.read_paths = options.read_paths.clone();
+            spec.resource_paths = options.resource_paths.clone();
+            Some(Arc::new(executor.create(spec).await?))
+        } else {
+            None
+        };
+        let timeout = remote.as_ref().map_or(timeout, |lease| lease.timeout);
+        let environment = fenix_execution::local_environment(&cwd);
         if task_cancel.is_cancelled() || self.stop.is_cancelled() {
             bail!("Task cancelled before starting command");
         }
@@ -303,33 +371,40 @@ impl Processes {
             if options.tty {
                 let (pty, pts) = pty_process::open()?;
                 pty.resize(pty_process::Size::new(24, 100))?;
-                let mut builder = pty_process::Command::new("/bin/bash")
-                    .args(["-c", command])
-                    .current_dir(&cwd)
-                    .kill_on_drop(true)
-                    .env("TERM", "xterm-256color");
-                for key in &private_env {
-                    builder = builder.env_remove(key);
+                let builder = if let Some(remote) = &remote {
+                    pty_process::Command::new(std::env::current_exe()?)
+                        .arg("internal-runner")
+                        .env_clear()
+                        .envs(remote.relay_environment())
+                } else {
+                    pty_process::Command::new("/bin/bash")
+                        .args(["--noprofile", "--norc", "-c", command])
+                        .env_clear()
+                        .envs(&environment)
                 }
+                .current_dir(&cwd)
+                .kill_on_drop(true);
                 let child = builder.spawn(pts)?;
                 let (read, write) = pty.into_split();
                 (child, Input::Terminal(write), vec![Box::new(read)])
             } else {
-                let mut builder = Command::new("/bin/bash");
+                let mut builder = if let Some(remote) = &remote {
+                    remote.command()?
+                } else {
+                    let mut builder = Command::new("/bin/bash");
+                    builder
+                        .args(["--noprofile", "--norc", "-c", command])
+                        .env_clear()
+                        .envs(&environment);
+                    builder
+                };
                 builder
-                    .args(["-c", command])
                     .current_dir(&cwd)
                     .stdin(std::process::Stdio::piped())
                     .stdout(std::process::Stdio::piped())
                     .stderr(std::process::Stdio::piped())
                     .kill_on_drop(true)
                     .process_group(0);
-                for key in &private_env {
-                    builder.env_remove(key);
-                }
-                if !options.read_paths.is_empty() {
-                    builder.env_remove("BASH_ENV").env_remove("ENV");
-                }
                 let mut child = builder.spawn().context("Could not start command")?;
                 let input = Input::Pipe(child.stdin.take().context("Missing stdin")?);
                 let readers: Vec<Box<dyn AsyncRead + Send + Unpin>> = vec![
@@ -340,6 +415,7 @@ impl Processes {
             };
         let pid = child.id().context("Missing process ID")?;
         let process = Arc::new(Process {
+            started: tokio::time::Instant::now(),
             info,
             state: Mutex::new(ProcessState {
                 status: "running".into(),
@@ -349,6 +425,7 @@ impl Processes {
                 cursors: HashMap::new(),
                 log_complete: true,
                 output_error: None,
+                elapsed_ms: None,
             }),
             input: Mutex::new(Some(input)),
             done: Notify::new(),
@@ -358,6 +435,7 @@ impl Processes {
                 task_cancel.child_token()
             },
             log_path,
+            execution: remote,
         });
         items.insert(id.clone(), process.clone());
         drop(items);
@@ -387,6 +465,13 @@ impl Processes {
             if process.info.tty {
                 let _ = tokio::task::spawn_blocking(move || kill_terminal_session(pid)).await;
             }
+            if let Some(execution) = &process.execution
+                && execution.cancel().await.is_err()
+            {
+                process
+                    .output_failure("Remote cleanup is pending; execution service will retry")
+                    .await;
+            }
             let _ = killpg(Pid::from_raw(pid as i32), Signal::SIGKILL);
             let _ = child.wait().await;
             process.input.lock().await.take();
@@ -414,6 +499,8 @@ impl Processes {
                 status.into()
             };
             state.exit_code = exit_code;
+            state.elapsed_ms =
+                Some(process.started.elapsed().as_millis().min(u64::MAX as u128) as u64);
             let mut info = process.info.clone();
             info.status = state.status.clone();
             info.exit_code = exit_code;
@@ -440,6 +527,29 @@ impl Processes {
             bail!("Process belongs to another task");
         }
         Ok(process)
+    }
+    pub async fn initial_wait(&self, owner: &str, cwd: &Path, base: u64, interactive: bool) -> u64 {
+        if interactive {
+            return base.min(100);
+        }
+        if base == 0 {
+            return 0;
+        }
+        let items = self.items.lock().await;
+        let mut estimate = base;
+        for process in items
+            .values()
+            .filter(|p| p.info.owner == owner && p.info.cwd == cwd && !p.info.persistent)
+        {
+            let state = process.state.lock().await;
+            if state.exit_code == Some(0)
+                && let Some(ms) = state.elapsed_ms
+                && ms <= 10_000
+            {
+                estimate = estimate.max(ms.saturating_add(200).min(10_000));
+            }
+        }
+        estimate.min(30_000)
     }
     pub async fn status(&self, owner: &str, reader: &str, id: &str, args: &Value) -> Result<Value> {
         if let Some(port) = args["ready_port"].as_u64()
@@ -468,14 +578,28 @@ impl Processes {
             output::read_page(&process.log_path, start, state.bytes, limit, true).await?;
         state.cursors.insert(reader.into(), next);
         let mut result = json!({"process_id":id,"status":state.status,"exit_code":state.exit_code,"output":text,"cursor":start,"next_cursor":next,"omitted_bytes":omitted,"truncated":omitted>0,"log_complete":state.log_complete,"output_error":state.output_error,"persistent":process.info.persistent,"read_paths":process.info.read_paths,"descendant_policy":if process.info.persistent {"supervised_until_cancel_or_timeout"} else {"reaped_when_shell_exits"}});
+        result["execution_mode"] = json!(if process.info.read_paths.is_empty() {
+            "workspace"
+        } else {
+            "read_only"
+        });
+        if state.exit_code.is_some_and(|code| code != 0) {
+            result["failure"] = json!({"code":"command_exit_nonzero","category":"program_exit","permissions_relaxed":false,"instruction":"Inspect the output; nonzero exit alone does not prove a permission denial or a program bug."});
+        }
         drop(state);
         if let Some(port) = args["ready_port"].as_u64() {
-            let connected = tokio::time::timeout(
-                Duration::from_millis(500),
-                tokio::net::TcpStream::connect((std::net::Ipv4Addr::LOCALHOST, port as u16)),
-            )
-            .await
-            .is_ok_and(|v| v.is_ok());
+            let connected = if let Some(execution) = &process.execution {
+                tokio::time::timeout(Duration::from_secs(5), execution.connect(port as u16))
+                    .await
+                    .is_ok_and(|v| v.is_ok())
+            } else {
+                tokio::time::timeout(
+                    Duration::from_millis(500),
+                    tokio::net::TcpStream::connect((std::net::Ipv4Addr::LOCALHOST, port as u16)),
+                )
+                .await
+                .is_ok_and(|v| v.is_ok())
+            };
             result["readiness"] = json!({"port":port,"tcp_accepting":connected,"process_running":process.state.lock().await.status == "running","scope":"TCP availability only; verify application behavior separately"});
         }
         Ok(result)
@@ -516,6 +640,9 @@ impl Processes {
         {
             let rows = args["rows"].as_u64().unwrap_or(24).clamp(1, 500) as u16;
             let columns = args["columns"].as_u64().unwrap_or(100).clamp(1, 500) as u16;
+            if let Some(remote) = &process.execution {
+                remote.resize(rows, columns).await?;
+            }
             pty.resize(pty_process::Size::new(rows, columns))?;
         }
         tokio::select! {
@@ -627,6 +754,31 @@ fn kill_terminal_session(session: u32) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn legacy_uuid_logs_remain_readable_and_owner_checked() {
+        let (_dir, processes) = fixture();
+        let id = "11111111-2222-4333-8444-555555555555";
+        let (manifest, log) = processes.paths(id).unwrap();
+        std::fs::write(manifest, json!({"process_id":id,"owner":"original-task","cwd":"/tmp","tty":false,"persistent":false,"status":"completed","exit_code":0,"log_complete":true}).to_string()).unwrap();
+        std::fs::write(log, "legacy output").unwrap();
+        let output = processes
+            .output("original-task", id, &json!({}))
+            .await
+            .unwrap();
+        assert_eq!(output["output"], "legacy output");
+        assert!(
+            processes
+                .output("another-task", id, &json!({}))
+                .await
+                .is_err()
+        );
+        assert!(
+            processes
+                .paths("../11111111-2222-4333-8444-555555555555")
+                .is_err()
+        );
+    }
+
     fn fixture() -> (tempfile::TempDir, Processes) {
         let dir = tempfile::tempdir().unwrap();
         let redactor = Arc::new(Redactor::default());
@@ -846,6 +998,31 @@ mod tests {
         assert_eq!(recovered["status"], "completed");
         assert_eq!(recovered["log_complete"], true);
         assert!(recovered["output_error"].is_null());
+    }
+    #[tokio::test]
+    async fn invalid_utf8_does_not_discard_a_buffered_secret_label() {
+        let (dir, processes) = fixture();
+        let run = processes
+            .start(
+                "task",
+                "printf '\\377password: '; sleep 0.1; printf 'synthetic-private-value\\n'",
+                dir.path(),
+                10,
+                &CancellationToken::new(),
+                None,
+                ProcessOptions::default(),
+            )
+            .await
+            .unwrap();
+        let result = complete(&processes, run["process_id"].as_str().unwrap()).await;
+        assert_eq!(result["exit_code"], 0);
+        assert!(
+            !result["output"]
+                .as_str()
+                .unwrap()
+                .contains("synthetic-private-value")
+        );
+        assert!(result["output"].as_str().unwrap().contains("[REDACTED]"));
     }
     #[tokio::test]
     async fn later_master_turns_can_read_foreground_logs_without_controlling_the_process() {

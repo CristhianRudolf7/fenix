@@ -1,0 +1,519 @@
+{
+  "elapsed_ms": 35166,
+  "final": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 131,
+      "indexed_origins": 1,
+      "indexed_pages": 1,
+      "known_urls": 131,
+      "last_fetch_at": 1789823358,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 6
+    },
+    "crawler_request_budget": 48,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 60
+  },
+  "initial": {
+    "active_downloads": 0,
+    "active_operations": 0,
+    "coverage": {
+      "due_urls": 0,
+      "indexed_origins": 0,
+      "indexed_pages": 0,
+      "known_urls": 0,
+      "last_fetch_at": null,
+      "max_pages": 5000,
+      "page_limit_reached": false,
+      "requests_today": 0
+    },
+    "crawler_request_budget": 48,
+    "crawler_running": false,
+    "enabled": true,
+    "last_error": null,
+    "max_concurrent_searches": 10,
+    "queued_operations": 0,
+    "requests_per_day": 60
+  },
+  "method": "Temporary empty corpus; direct original-source reads and native link discovery, no background crawler, no model, no external search service. Tests source access separately from lexical topic coverage and title-based positive controls. Does not claim full platform search or answer accuracy.",
+  "performed_at": "2026-09-19T13:09:18.054069979+00:00",
+  "source_checks": [
+    {
+      "elapsed_ms": 2278,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Show HN",
+        "read_pages": 0,
+        "source_urls": [
+          "https://news.ycombinator.com/rss"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 31,
+          "indexed_origins": 0,
+          "indexed_pages": 0,
+          "known_urls": 31,
+          "last_fetch_at": null,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 2
+        },
+        "query": "Show HN",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 30,
+            "indexed": false,
+            "resolved_url": "https://news.ycombinator.com/rss",
+            "status": "discovered",
+            "url": "https://news.ycombinator.com/rss"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 30008,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Show HN",
+        "read_pages": 0,
+        "source_urls": [
+          "https://news.ycombinator.com/"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 31,
+          "indexed_origins": 0,
+          "indexed_pages": 0,
+          "known_urls": 31,
+          "last_fetch_at": null,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 3
+        },
+        "query": "Show HN",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 0,
+            "error": "Web fetch timed out (30 seconds)",
+            "indexed": false,
+            "status": "failed",
+            "url": "https://news.ycombinator.com/"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll.",
+          "Some explicit source URLs could not be read. Inspect source_reads; their failure does not invalidate other indexed results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 90,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": [
+          "https://www.reddit.com/r/rust/"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 31,
+          "indexed_origins": 0,
+          "indexed_pages": 0,
+          "known_urls": 31,
+          "last_fetch_at": null,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 4
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 0,
+            "error": "robots.txt does not permit reading this URL",
+            "indexed": false,
+            "status": "failed",
+            "url": "https://www.reddit.com/r/rust/"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll.",
+          "Some explicit source URLs could not be read. Inspect source_reads; their failure does not invalidate other indexed results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 18,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": [
+          "https://www.reddit.com/r/all/.rss"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 31,
+          "indexed_origins": 0,
+          "indexed_pages": 0,
+          "known_urls": 31,
+          "last_fetch_at": null,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 4
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [
+          {
+            "discovered_urls": 0,
+            "error": "robots.txt does not permit reading this URL",
+            "indexed": false,
+            "status": "failed",
+            "url": "https://www.reddit.com/r/all/.rss"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll.",
+          "Some explicit source URLs could not be read. Inspect source_reads; their failure does not invalidate other indexed results."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 2761,
+      "input": {
+        "days": null,
+        "domains": [
+          "github.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": [
+          "https://github.com/rust-lang/rust"
+        ]
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 131,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 131,
+          "last_fetch_at": 1789823358,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T13:09:18+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "GitHub - rust-lang/rust: Empowering everyone to build reliable and efficient software. · GitHub",
+            "url": "https://github.com/rust-lang/rust",
+            "snippet_characters": 350
+          }
+        ],
+        "source_reads": [
+          {
+            "discovered_urls": 100,
+            "indexed": true,
+            "resolved_url": "https://github.com/rust-lang/rust",
+            "status": "read",
+            "url": "https://github.com/rust-lang/rust"
+          }
+        ],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    }
+  ],
+  "thread_checks": [],
+  "topic_checks": [
+    {
+      "elapsed_ms": 0,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "SQLite",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 131,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 131,
+          "last_fetch_at": 1789823358,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "SQLite",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 131,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 131,
+          "last_fetch_at": 1789823358,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "input": {
+        "days": null,
+        "domains": [
+          "news.ycombinator.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Show HN",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 131,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 131,
+          "last_fetch_at": 1789823358,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "Show HN",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 131,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 131,
+          "last_fetch_at": 1789823358,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 0,
+      "input": {
+        "days": null,
+        "domains": [
+          "reddit.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "password manager",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 131,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 131,
+          "last_fetch_at": 1789823358,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "password manager",
+        "queue_wait_ms": 0,
+        "results": [],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results.",
+          "No matching indexed pages satisfy these filters yet. Read known source URLs or allow the background crawler to build coverage; do not invent results or repeatedly poll."
+        ]
+      }
+    },
+    {
+      "elapsed_ms": 1,
+      "input": {
+        "days": null,
+        "domains": [
+          "github.com"
+        ],
+        "limit": 5,
+        "max_per_domain": 2,
+        "query": "Rust",
+        "read_pages": 0,
+        "source_urls": []
+      },
+      "response": {
+        "backend": "local_fts5",
+        "coverage": {
+          "due_urls": 131,
+          "indexed_origins": 1,
+          "indexed_pages": 1,
+          "known_urls": 131,
+          "last_fetch_at": 1789823358,
+          "max_pages": 5000,
+          "page_limit_reached": false,
+          "requests_today": 6
+        },
+        "query": "Rust",
+        "queue_wait_ms": 0,
+        "results": [
+          {
+            "indexed_at": "2026-09-19T13:09:18+00:00",
+            "published_at": null,
+            "read_status": "not_requested",
+            "title": "GitHub - rust-lang/rust: Empowering everyone to build reliable and efficient software. · GitHub",
+            "url": "https://github.com/rust-lang/rust",
+            "snippet_characters": 350
+          }
+        ],
+        "source_reads": [],
+        "warnings": [
+          "Results cover only this installation's bounded public index. Missing results do not establish absence on the internet. Source reads and crawling contact original public pages; no external search provider is used.",
+          "Identical indexed content is deduplicated. At most 2 results per requested domain (including subdomains), or normalized hostname when no domain filter matches. This diversity cap can return fewer than 5 results."
+        ]
+      }
+    }
+  ],
+  "topic_query_http_attempts": 0,
+  "evidence_retention": "Source text excerpts omitted; URLs, titles, queries, hashes where available, character counts, statuses and timing retained."
+}

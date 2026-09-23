@@ -95,13 +95,17 @@ Execution defaults to four hours for master tasks, one hour per child attempt,
 and 128 model steps per task across retries and follow-ups. These limits are
 configurable in the execution settings; they do not add a cumulative token budget.
 
-Unfinished tasks, questions and plans are marked interrupted after restart.
-Persisted events and undelivered messages remain recoverable, but effects do not
-resume automatically. Explicitly revise a saved plan after inspecting its earlier
-evidence. Original conversation and audit data remain stored. Concurrent model
-contexts exclude unfinished transcripts from other tasks; completion seals each
-task's tool-call/result groups together.
+Restart recovery admits tasks saved at complete tool boundaries and running plans
+whose active workers all qualify. Pending questions, uncertain effects and independent
+reviewers remain interrupted for inspection/replanning. IDs, counters and completed
+milestones are preserved; saved tool calls are never replayed. See
+[recovery admission and limits](harness-continuity.md#restart-recovery).
+Concurrent contexts continue to exclude incomplete transcripts from other tasks;
+completion seals each task's tool-call/result groups together.
 
 Other active tasks are supplied as compact references filtered by authorized scope,
 so natural-language edits can address a task still drafting without importing its
 uncompleted tool transcript.
+
+Completion gates and the durable task/requirement/artifact/fact ledger are documented
+in [selective completion auditing](completion-audits.md).

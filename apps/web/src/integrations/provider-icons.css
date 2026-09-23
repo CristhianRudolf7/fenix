@@ -1,0 +1,38 @@
+.provider-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: #fff;
+  color: #334155;
+}
+.provider-icon > img,
+.provider-icon > svg,
+.provider-icon .ui-icon {
+  display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+.provider-icon .icon-wrap {
+  display: flex;
+}
+.provider-icon--email {
+  color: #2563eb;
+}
+.provider-icon--web {
+  color: #0f766e;
+}
+.provider-icon--pdf {
+  color: #c83d36;
+}
+.provider-icon--office {
+  color: #ba5035;
+}
+.flow-node-symbol .ui-icon {
+  width: 24px;
+  height: 24px;
+}

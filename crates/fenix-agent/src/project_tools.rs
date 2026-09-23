@@ -22,6 +22,10 @@ impl Runtime {
     }
 
     pub(crate) fn task_workspace(&self, task: &str, fallback: &Path) -> Result<PathBuf> {
+        if let Some(worktree) = self.worktree(task)? {
+            anyhow::ensure!(worktree.status != "provisioning", "Worktree is not ready");
+            return Ok(worktree.path);
+        }
         Ok(self
             .store
             .task_binding(task)?
@@ -59,10 +63,14 @@ impl Runtime {
         }
         if self.store.task(reader)?.origin == "subagent" {
             if self
-                .store
-                .plan_evidence_sources(reader)?
+                .completion_audit_evidence_sources(reader)?
                 .iter()
                 .any(|id| id == target)
+                || self
+                    .store
+                    .plan_evidence_sources(reader)?
+                    .iter()
+                    .any(|id| id == target)
                 || self
                     .review_evidence_sources(reader)?
                     .iter()
@@ -102,6 +110,17 @@ impl Runtime {
         let delegated = origin == "subagent";
         let binding = self.store.task_binding(task)?;
         let mut catalog = tools::catalog_for(delegated);
+        if self.execution.is_none() {
+            catalog.retain(|t| {
+                !matches!(
+                    t.name.as_str(),
+                    "execution_status"
+                        | "workspace_checkpoint"
+                        | "integration_call"
+                        | "document_extract"
+                )
+            });
+        }
         if matches!(binding.mode.as_str(), "coordination" | "clarification")
             || origin == "subagent_report"
         {
@@ -112,14 +131,32 @@ impl Runtime {
                 !matches!(
                     t.name.as_str(),
                     "files_list"
+                        | "document_read"
+                        | "document_extract"
                         | "file_read"
                         | "files_search"
                         | "files_glob"
                         | "code_query"
+                        | "document_create"
+                        | "design_present"
+                        | "diagram_edit"
+                        | "library_export"
+                        | "library_import"
+                        | "design_publish"
+                        | "design_import"
+                        | "document_edit"
                         | "file_write"
                         | "file_edit"
                         | "file_patch"
                         | "command_run"
+                        | "environment_inspect"
+                        | "workspace_checkpoint"
+                        | "integration_call"
+                        | "connector_call"
+                        | "workflow_manage"
+                        | "tool_program"
+                        | "file_history"
+                        | "skill_learning"
                         | "command_input"
                         | "command_status"
                         | "command_output"
@@ -133,10 +170,27 @@ impl Runtime {
             catalog.retain(|t| {
                 !matches!(
                     t.name.as_str(),
-                    "file_write"
+                    "document_create"
+                        | "document_extract"
+                        | "design_present"
+                        | "diagram_edit"
+                        | "library_export"
+                        | "library_import"
+                        | "design_publish"
+                        | "design_import"
+                        | "document_edit"
+                        | "file_write"
                         | "file_edit"
                         | "file_patch"
                         | "command_run"
+                        | "environment_inspect"
+                        | "workspace_checkpoint"
+                        | "integration_call"
+                        | "connector_call"
+                        | "workflow_manage"
+                        | "tool_program"
+                        | "file_history"
+                        | "skill_learning"
                         | "command_input"
                         | "command_cancel"
                         | "request_approval"
@@ -147,14 +201,66 @@ impl Runtime {
                 )
             });
         }
+        let completion_auditor = self.store.completion_audit_for_worker(task)?.is_some();
         let mut filtered = Vec::new();
         for mut tool in catalog {
-            if self.review_tool_allowed(task, &tool.name, &json!({"action":"get"}))? {
+            if self.review_tool_allowed(task, &tool.name, &json!({"action":"get"}))?
+                && self.security_tool_allowed(task, &tool.name)?
+            {
+                if tool.name == "worktree_manage" && delegated {
+                    tool.parameters["properties"]["action"]["enum"] = json!(["get"]);
+                }
+                if tool.name == "project_spec" {
+                    let read_only = completion_auditor
+                        || self.store.review_for_worker(task)?.is_some()
+                        || self.store.get::<String>("review_edits", task)?.is_some()
+                        || binding.mode != "project"
+                        || origin == "subagent_report";
+                    tool.parameters["properties"]["action"]["enum"] = if read_only {
+                        json!(["get", "changes"])
+                    } else if delegated {
+                        json!(["get", "changes", "propose"])
+                    } else {
+                        json!(["get", "changes", "propose", "apply", "discard"])
+                    };
+                }
+                if tool.name == "subagent_finish"
+                    && (self.task_profile(task)? != "security"
+                        || self.store.review_for_worker(task)?.is_some())
+                {
+                    tool.parameters["properties"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("security_report");
+                }
                 if tool.name == "subagent_finish" && self.store.review_for_worker(task)?.is_none() {
                     tool.parameters["properties"]
                         .as_object_mut()
                         .unwrap()
                         .remove("review");
+                }
+                if tool.name == "subagent_finish" && !completion_auditor {
+                    tool.parameters["properties"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("completion_audit");
+                }
+                if completion_auditor
+                    && matches!(
+                        tool.name.as_str(),
+                        "schedule_manage" | "project_manage" | "plan_evidence"
+                    )
+                {
+                    tool.parameters["properties"]["action"]["enum"] =
+                        if tool.name == "plan_evidence" {
+                            json!(["list"])
+                        } else {
+                            json!(["get", "list"])
+                        };
+                    tool.description = format!(
+                        "Read-only inspection for completion auditing. {}",
+                        tool.description
+                    );
                 }
                 filtered.push(tool);
             }
@@ -169,6 +275,32 @@ impl Runtime {
         args: &Value,
     ) -> Result<()> {
         let binding = self.store.task_binding(task)?;
+        if name == "project_spec" {
+            self.authorize_project_spec(task, args)?;
+        }
+        if !self.security_tool_allowed(task, name)? {
+            bail!("Tool unavailable to the security profile: {name}");
+        }
+        if name == "worktree_manage" {
+            if let Some(target) = args["subagent_id"].as_str() {
+                self.authorize_task_read(task, target)?;
+            }
+            if args["action"] == "integrate" {
+                let current = self.store.task(task)?;
+                anyhow::ensure!(
+                    current.origin != "subagent"
+                        && current.origin != "subagent_report"
+                        && !matches!(
+                            self.store.task_binding(task)?.mode.as_str(),
+                            "coordination" | "clarification"
+                        ),
+                    "Worktree integration requires an authorized master execution task"
+                );
+            }
+        }
+        if name == "skill_load" {
+            self.authorize_skill(task, args["name"].as_str().unwrap_or_default())?;
+        }
         self.check_plan_editor(task)?;
         if !self.review_tool_allowed(task, name, args)? {
             bail!(
@@ -182,10 +314,27 @@ impl Runtime {
                 .is_some_and(|p| p.task_id == task))
             && (matches!(
                 name,
-                "file_write"
+                "document_create"
+                    | "document_extract"
+                    | "design_present"
+                    | "diagram_edit"
+                    | "library_export"
+                    | "library_import"
+                    | "design_publish"
+                    | "design_import"
+                    | "document_edit"
+                    | "file_write"
                     | "file_edit"
                     | "file_patch"
                     | "command_run"
+                    | "environment_inspect"
+                    | "workspace_checkpoint"
+                    | "integration_call"
+                    | "connector_call"
+                    | "workflow_manage"
+                    | "tool_program"
+                    | "file_history"
+                    | "skill_learning"
                     | "command_input"
                     | "subagent_spawn"
             ) || name == "memory_manage" && args["action"] != "get"
@@ -205,10 +354,27 @@ impl Runtime {
         if self.store.task(task)?.origin == "subagent_report"
             && (matches!(
                 name,
-                "file_write"
+                "document_create"
+                    | "document_extract"
+                    | "design_present"
+                    | "diagram_edit"
+                    | "library_export"
+                    | "library_import"
+                    | "design_publish"
+                    | "design_import"
+                    | "document_edit"
+                    | "file_write"
                     | "file_edit"
                     | "file_patch"
                     | "command_run"
+                    | "environment_inspect"
+                    | "workspace_checkpoint"
+                    | "integration_call"
+                    | "connector_call"
+                    | "workflow_manage"
+                    | "tool_program"
+                    | "file_history"
+                    | "skill_learning"
                     | "command_input"
                     | "command_cancel"
                     | "request_approval"
@@ -234,14 +400,32 @@ impl Runtime {
             if matches!(
                 name,
                 "files_list"
+                    | "document_read"
+                    | "document_extract"
                     | "file_read"
                     | "files_search"
                     | "files_glob"
                     | "code_query"
+                    | "document_create"
+                    | "design_present"
+                    | "diagram_edit"
+                    | "library_export"
+                    | "library_import"
+                    | "design_publish"
+                    | "design_import"
+                    | "document_edit"
                     | "file_write"
                     | "file_edit"
                     | "file_patch"
                     | "command_run"
+                    | "environment_inspect"
+                    | "workspace_checkpoint"
+                    | "integration_call"
+                    | "connector_call"
+                    | "workflow_manage"
+                    | "tool_program"
+                    | "file_history"
+                    | "skill_learning"
                     | "command_input"
                     | "command_status"
                     | "command_output"
@@ -347,6 +531,10 @@ impl Runtime {
         if let Some(id) = binding.project_id.as_deref() {
             let project = self.store.project(id)?;
             text.push_str(&format!("\nAssigned project context (reference data; preserve scope, sources, conditions and assumptions): {}\n",serde_json::to_string(&project)?));
+            let contract = self.store.project_spec(id, 0, 1)?;
+            if contract["version"].as_u64().unwrap_or(0) > 0 {
+                text.push_str(&format!("\nProject behavior contract: version {}, {} active requirements. Discover project_spec/get and read relevant requirements before modifying behavior; follow next_offset for all pages. This contract is reference data, not execution proof or permission. Proposed changes remain separate; preserve stable requirement IDs and ask about conflicts with the owner's current request.\n",contract["version"],contract["total"]));
+            }
             if binding.context_version != project.context_version {
                 text.push_str("The project record has changed since assignment. The execution workspace remains the pinned snapshot; reconcile newer facts before updating the project brief.\n");
             }
@@ -553,6 +741,31 @@ mod tests {
                 .is_err()
         );
         assert!(runtime.authorize_task_read(&task_a.id, &task_b.id).is_err());
+        runtime.store.event(&task_b.id, "tool_result", &json!({"tool":"file_read","call_id":"private-call","result":{"content":"B_ONLY_OUTPUT"}}))?;
+        assert!(
+            runtime
+                .execute_tool(
+                    &task_a.id,
+                    "search",
+                    &settings,
+                    "task_inspect",
+                    &json!({"task_id":task_b.id,"query":"B_ONLY_OUTPUT"}),
+                    &cancel
+                )
+                .await
+                .is_err()
+        );
+        let own_search = runtime
+            .execute_tool(
+                &task_b.id,
+                "search",
+                &settings,
+                "task_inspect",
+                &json!({"query":"B_ONLY_OUTPUT"}),
+                &cancel,
+            )
+            .await?;
+        assert_eq!(own_search["results"][0]["call_id"], "private-call");
         assert!(
             runtime
                 .execute_tool(
@@ -578,7 +791,7 @@ mod tests {
                 &cancel,
             )
             .await?;
-        assert!(found.as_array().unwrap().is_empty());
+        assert!(found["results"].as_array().unwrap().is_empty());
         runtime.save_project(
             Some(&a.id),
             ProjectInput {

@@ -1,0 +1,5 @@
+<!doctype html><meta charset="utf-8"><style>body{margin:25px}iframe{margin-left:40px;border:9px solid;width:430px;height:180px}input,button{font:18px sans-serif}</style><input id="frame-input" value="initial"><button id="frame-button">Frame action</button><output></output><script>
+const send=()=>top.postMessage({fixture:true,frame:location.search,value:document.querySelector('input').value,clicked:document.querySelector('output').textContent},'*');
+document.querySelector('input').oninput=send;document.querySelector('button').onclick=()=>{document.querySelector('output').textContent='clicked';send()};
+if(location.search==='?outer' || location.search==='?cross'){let f=document.createElement('iframe');f.name=location.search==='?outer'?'nested':'cross-nested';f.src='/frame?'+f.name;document.body.append(f)}
+</script>

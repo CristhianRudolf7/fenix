@@ -23,8 +23,8 @@ impl Runtime {
         let limit = args["limit"].as_u64().unwrap_or(100).clamp(1, 500) as usize;
         let regex = if name == "files_search" {
             let query = args["query"].as_str().context("Search query required")?;
-            if query.is_empty() || query.len() > 4096 {
-                bail!("Query must contain 1–4096 bytes");
+            if query.is_empty() || query.chars().count() > 4096 {
+                bail!("Query must contain 1–4096 characters");
             }
             let expression = if args["regex"].as_bool().unwrap_or(false) {
                 query.to_owned()

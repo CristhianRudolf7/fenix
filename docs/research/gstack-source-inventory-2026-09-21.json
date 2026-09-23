@@ -1,0 +1,1025 @@
+{
+  "repository": "https://github.com/garrytan/gstack",
+  "commit": "a6b3a57512ca6d5c6aa5b68f74f736195021f96e",
+  "date": "2026-09-21",
+  "method": "Static source review. No upstream setup, hooks, browser, model adapters, external services or test suite executed. Entry inventory is not a claim of line-by-line review of all source. Templates avoid repeated generated preambles; functional sections and selected runtime boundaries were examined.",
+  "entrypoints": [
+    {
+      "path": "SKILL.md",
+      "sha256": "71ae528560915907dcd557ef3059a6180050db71a36a0c2f49b1b08e63b62eb7",
+      "bytes": 15215,
+      "lines": 232,
+      "kind": "router",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "autoplan/SKILL.md",
+      "sha256": "743134ce80995a6c0a49e79996a90ee9f6bdc9b8a9a7f0136dcf364e409747a0",
+      "bytes": 68972,
+      "lines": 1107,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "benchmark/SKILL.md",
+      "sha256": "a1dbe21db129b5e0565fc3164b0cb6aed97a49782484675a809215541764394f",
+      "bytes": 29305,
+      "lines": 448,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "benchmark-models/SKILL.md",
+      "sha256": "85a9090da4521e1c237bf49287fe28510ad6f59cae7017951c53298629a01fe8",
+      "bytes": 14652,
+      "lines": 281,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "browse/SKILL.md",
+      "sha256": "851aab576c9c2bd38561117323add4458f72521f18939955f22c28b77e254c44",
+      "bytes": 30629,
+      "lines": 443,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "browser-skills/hackernews-frontpage/SKILL.md",
+      "sha256": "1a4e91d00ffdbdd38d2dc2986cf764b6d7d4d9348fdce19f2c60e92fa4a564da",
+      "bytes": 1418,
+      "lines": 52,
+      "kind": "browser-example",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "canary/SKILL.md",
+      "sha256": "f80821433175b1e2692074003b42cca6869d681e53faab1dc0bbae46e4627a9a",
+      "bytes": 53251,
+      "lines": 742,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "careful/SKILL.md",
+      "sha256": "51c821326dde69174dc62a6e5faa8b399a90a8a2d2a02cea8220935fba04dfc4",
+      "bytes": 3516,
+      "lines": 87,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "codex/SKILL.md",
+      "sha256": "f80a269d6ba65759dfbb8d13ca8b2808033054f46c802c59cbb2637aaaf2962d",
+      "bytes": 59241,
+      "lines": 907,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "context-restore/SKILL.md",
+      "sha256": "36b2d815e53e715d1a8c1dbbe1c0d0c1694daea9cc205307d91ab11522173c7a",
+      "bytes": 36767,
+      "lines": 562,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "context-save/SKILL.md",
+      "sha256": "2e51d69c348733802940a1d0b4d40d6b316548123c0b6f25e7610d0ad8d5750c",
+      "bytes": 39127,
+      "lines": 647,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "cso/SKILL.md",
+      "sha256": "14a16ce06c46b2cc539b5e689cbe59d16b1e9bd49a9bfe8da9dc7d3a6a378ab2",
+      "bytes": 17986,
+      "lines": 170,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "design-consultation/SKILL.md",
+      "sha256": "b5590cb9a99bb5128158631e4aae50fd3b1ede9da70c5998d5c74ba6dbd30daf",
+      "bytes": 71166,
+      "lines": 999,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "design-html/SKILL.md",
+      "sha256": "18b08cc7e9e0cd75befb2e9b702acb6c53f2691b7b6592917c77c319691ff9bb",
+      "bytes": 55222,
+      "lines": 903,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "design-review/SKILL.md",
+      "sha256": "7d072f4fca852a8e02bed645a13abe7c77fc7cb54cf9ac1400b49aa8a16befdd",
+      "bytes": 131929,
+      "lines": 1953,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "design-shotgun/SKILL.md",
+      "sha256": "58850e5cb9a3e3d63c9cbb98691a932d32ef0816374a5d6846a0f4dab9621a98",
+      "bytes": 53028,
+      "lines": 919,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "devex-review/SKILL.md",
+      "sha256": "2cc98719c1fe9e7091daaccb1f517ae4a388f19c340aa2fb94ce0551d61caf91",
+      "bytes": 77470,
+      "lines": 1101,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "diagram/SKILL.md",
+      "sha256": "bef0edd873cacb4ae7ceff96eff3f45f5c36f9dcb4b324c28f536d28a359be56",
+      "bytes": 16374,
+      "lines": 305,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "document-generate/SKILL.md",
+      "sha256": "d8a26731ed26e77e68895d420fe5c122eaf43fa718ec848570d262208809a891",
+      "bytes": 47271,
+      "lines": 871,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "document-release/SKILL.md",
+      "sha256": "e18d56af8946d93b64e02427f01259d1000ac2b86b304da33c9dfc3ba821b46e",
+      "bytes": 40883,
+      "lines": 607,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "freeze/SKILL.md",
+      "sha256": "b5beb26f22e55ed1cc9956a76bcd6986c4f6a262882e93fe0adbd831257e834f",
+      "bytes": 3787,
+      "lines": 101,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "gstack-upgrade/SKILL.md",
+      "sha256": "7991b58152ac693d878d72cd0ea1345827b1289b934d83d7364b7ee5cf926b26",
+      "bytes": 17549,
+      "lines": 389,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "guard/SKILL.md",
+      "sha256": "ae1ec65c42568c760bfd0c2127c2b5a668bf04e808d731d2f234f4d65a94bf06",
+      "bytes": 3401,
+      "lines": 90,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "health/SKILL.md",
+      "sha256": "5b18587bb66569f932efa5c3005f3beb14346945db7d8d57df0e4aa238e519fe",
+      "bytes": 45047,
+      "lines": 755,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "investigate/SKILL.md",
+      "sha256": "914f45187f716d711a6faa4427a4762f519e3d857ff1c88de752c9f245a1122b",
+      "bytes": 46980,
+      "lines": 729,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "ios-clean/SKILL.md",
+      "sha256": "a6094b2fc7905ee6a3cf0bd28f929b322a36d5b457d9388939c1cb4075a84af3",
+      "bytes": 33335,
+      "lines": 475,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "ios-design-review/SKILL.md",
+      "sha256": "4cd8032b7fded6a94ce4a9a3612b890ef971c915448239c7adf905caabc81e70",
+      "bytes": 34027,
+      "lines": 478,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "ios-fix/SKILL.md",
+      "sha256": "59490bbc7e4836d379670117925a1cc4d71db7b5e74e4788fa328fd5a588102b",
+      "bytes": 33156,
+      "lines": 474,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "ios-qa/SKILL.md",
+      "sha256": "a11f6931fe27f1c87234d916ef51851dc5dfa62545ebc6aec1a0e481c600214e",
+      "bytes": 43641,
+      "lines": 659,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "ios-sync/SKILL.md",
+      "sha256": "951bf3b0e2fc510b62a2c15a5a6781a82d9307df0e1d454564fd3c24d33934d7",
+      "bytes": 33809,
+      "lines": 472,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "land-and-deploy/SKILL.md",
+      "sha256": "7cb768c8dc78fbed2a591328a4c67cefbb8ca2602dcdd9225b1679ce2dbbdd1e",
+      "bytes": 72881,
+      "lines": 1046,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "landing-report/SKILL.md",
+      "sha256": "1deec3099438597c6fd5541d4bb86499754c2cd679e31a4413be2b9065a5bc48",
+      "bytes": 36422,
+      "lines": 538,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "learn/SKILL.md",
+      "sha256": "4e47062cc5e1e4a99eabe1083b5d9cb19941fb3a5bc03937a7132e10f60af1b5",
+      "bytes": 35159,
+      "lines": 572,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "make-pdf/SKILL.md",
+      "sha256": "207499c5f5bee58eb78ef3fed15a5315cf0a264f23bc4c4311e07b9012a7e6e1",
+      "bytes": 20335,
+      "lines": 424,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "office-hours/SKILL.md",
+      "sha256": "5ee1371ad5bc44f7ee4be1ba92e825a38323e337294cc4211c73174e64108745",
+      "bytes": 85630,
+      "lines": 1278,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "open-gstack-browser/SKILL.md",
+      "sha256": "12903b3d6de06e0d97a2521a9e2ad28af0b5d8b80bc0e789286e8307ac6adfac",
+      "bytes": 17260,
+      "lines": 381,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "openclaw/skills/gstack-openclaw-ceo-review/SKILL.md",
+      "sha256": "5c4442aec4ffd0673dce28bf966a2825507cdcfaebefccc027572fe0b8b7d6b6",
+      "bytes": 10576,
+      "lines": 191,
+      "kind": "openclaw-adapter",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "openclaw/skills/gstack-openclaw-investigate/SKILL.md",
+      "sha256": "ab4ef9f9482a1463cdd550333fc76be38ba5e786f901ce2888bee8452d94be20",
+      "bytes": 5469,
+      "lines": 134,
+      "kind": "openclaw-adapter",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "openclaw/skills/gstack-openclaw-office-hours/SKILL.md",
+      "sha256": "a98c457ce55cc5adca6776710d47c9ff1f0a67771d6f03e5bc56e0fcfb4ad138",
+      "bytes": 16964,
+      "lines": 373,
+      "kind": "openclaw-adapter",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "openclaw/skills/gstack-openclaw-retro/SKILL.md",
+      "sha256": "46425d5caf9220505d4ffeb88e15604895e34b8bacc147f723886051f56593b9",
+      "bytes": 9727,
+      "lines": 299,
+      "kind": "openclaw-adapter",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "pair-agent/SKILL.md",
+      "sha256": "1c23f8523f48c798c6037657a462731d8589f9189240c24bcb9a0efd91ff2b73",
+      "bytes": 44440,
+      "lines": 778,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "plan-ceo-review/SKILL.md",
+      "sha256": "9a75c4ba508a23e5bc905b0290fcabd4403ba5120e644137cf61ffa589a1945e",
+      "bytes": 79696,
+      "lines": 1179,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "plan-design-review/SKILL.md",
+      "sha256": "2e98c0b9edf60bca50c87c39f77570688f5b92ad9abc4d6bba634a10dcd84fac",
+      "bytes": 79025,
+      "lines": 1214,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "plan-devex-review/SKILL.md",
+      "sha256": "40f30099ed92492d83dfc55803e725cd1b4ec30e51457fdf9da23d8731fb729e",
+      "bytes": 68445,
+      "lines": 1152,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "plan-eng-review/SKILL.md",
+      "sha256": "d5fdb7e7e0f0bdb387c9a176a7b051b533e11f70494ace9dc1f36a16bc761e34",
+      "bytes": 57140,
+      "lines": 758,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "plan-tune/SKILL.md",
+      "sha256": "28c3a12e718c3f10e29afacc314487b822f5f198870159779c79bc72d26806b8",
+      "bytes": 56492,
+      "lines": 1032,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "qa/SKILL.md",
+      "sha256": "46862667ae0454ae3f51a3845be9d4fbdcc78151db3768936022c98977e491a7",
+      "bytes": 60647,
+      "lines": 960,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "qa-only/SKILL.md",
+      "sha256": "1bf714b7831885a86cd3c4bcea1f7f184bd0c15cce40e8be8c65ce297d80dc79",
+      "bytes": 65897,
+      "lines": 984,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "retro/SKILL.md",
+      "sha256": "3bf17b3d7d8a1415ca387020b3b96e89c23bf56aecc7edd931f43da0a008b783",
+      "bytes": 73184,
+      "lines": 1239,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "review/SKILL.md",
+      "sha256": "259f896c7bfd79fc747d20cdc96f26127fdb62c11803393ac415f70e1da98d60",
+      "bytes": 60940,
+      "lines": 979,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "scrape/SKILL.md",
+      "sha256": "89717be718b6dff8a506f70a6432b7ec3dc0002f8abad5bc2ca6d43445ab945e",
+      "bytes": 26422,
+      "lines": 418,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "setup-browser-cookies/SKILL.md",
+      "sha256": "ff4a23ffc535ccd23a8d3364ed5140cf30e235889432e32444b65c47b38cdee5",
+      "bytes": 12224,
+      "lines": 259,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "setup-deploy/SKILL.md",
+      "sha256": "382b0fb606af819ae01e294898c59a7c30f22c7b67c888ff41b783ff25a851fd",
+      "bytes": 44228,
+      "lines": 637,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "setup-gbrain/SKILL.md",
+      "sha256": "9d8c9757419df95fbee7b0d19e96cf34b0a32825f351e7cb435a0ea80e980cbd",
+      "bytes": 59529,
+      "lines": 1068,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "ship/SKILL.md",
+      "sha256": "0c76ef3ed1b4c700c740110ab52cf633f4322e017f30211afa1c1bf43782d0ff",
+      "bytes": 77680,
+      "lines": 1125,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "skillify/SKILL.md",
+      "sha256": "bb65a6e9f154809f02e2f23a976a59638a417978af76c5c56c5e1dbe322562c8",
+      "bytes": 46674,
+      "lines": 845,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "spec/SKILL.md",
+      "sha256": "c37faa9c206ccb4ac5007165319436e5e057bfb81b3f0de0bb2878fafebfc0a5",
+      "bytes": 57382,
+      "lines": 933,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "sync-gbrain/SKILL.md",
+      "sha256": "3c08c7cb32985561f90bccb87edfd2b10253fe5e5b02adcc8ae3764151270991",
+      "bytes": 53483,
+      "lines": 873,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "test/fixtures/context-bill/tree-a/alpha/SKILL.md",
+      "sha256": "62f83cef9ac668b5b148813ae23b015f8df662a4f9fab194968e1c4a7ea01f86",
+      "bytes": 727,
+      "lines": 21,
+      "kind": "fixture",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "test/fixtures/context-bill/tree-a/beta/SKILL.md",
+      "sha256": "b7f1b6821ff7d715d9994ae46e521d6128c84544e7f0e3d36b468420aa7a7071",
+      "bytes": 176,
+      "lines": 8,
+      "kind": "fixture",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    },
+    {
+      "path": "unfreeze/SKILL.md",
+      "sha256": "e0a396b1304d002e83880a780cf17e0704c3ada205f6f3f0d6e5e7cf5d15f340",
+      "bytes": 1504,
+      "lines": 48,
+      "kind": "workflow",
+      "review": "metadata-and-section-inventory; workflow templates and selected supporting sections inspected separately"
+    }
+  ],
+  "templates": [
+    {
+      "path": "SKILL.md.tmpl",
+      "sha256": "303340e1c9d609da20463c6847faf3ee500f30e3dd499ac4b3a294102f0387e5",
+      "bytes": 6534
+    },
+    {
+      "path": "autoplan/SKILL.md.tmpl",
+      "sha256": "f97bf0271ce26d0b877536194b84d95ac872395061b03ebeeee67b9dc2b20048",
+      "bytes": 26331
+    },
+    {
+      "path": "autoplan/sections/ceo-phase.md.tmpl",
+      "sha256": "c1cb79ddbede58a96ecf87a293498ce1440394dab77dbf5d54579bf7218005a4",
+      "bytes": 7864
+    },
+    {
+      "path": "autoplan/sections/design-phase.md.tmpl",
+      "sha256": "1dcd106286a2e941fd0249a1aac174367cea71cd7abfed883ec8a67f293608e4",
+      "bytes": 4819
+    },
+    {
+      "path": "autoplan/sections/dx-phase.md.tmpl",
+      "sha256": "8b73171fac4abb7e8a5caa4ad7b35c4ec928b7e7ee23846cb0a54febd953961e",
+      "bytes": 6777
+    },
+    {
+      "path": "autoplan/sections/eng-phase.md.tmpl",
+      "sha256": "c3f9c9381ddbef6c0e13f88261b5be6124ed3e603ba88127f17c1352ca864cd1",
+      "bytes": 6785
+    },
+    {
+      "path": "autoplan/sections/tasks-aggregator.md.tmpl",
+      "sha256": "dfa11ca034c30fea176cfda9bbe2e657a3ac070897ac745c79784cba5ea0ab68",
+      "bytes": 28
+    },
+    {
+      "path": "benchmark/SKILL.md.tmpl",
+      "sha256": "39cbeebaba02824c3abf0943421e57b17184135d5156138d723f6a07a1c1c7cb",
+      "bytes": 11924
+    },
+    {
+      "path": "benchmark-models/SKILL.md.tmpl",
+      "sha256": "eac159f56b39cd6c6c78e6eb0115d1a6cb1a2d0e3b22807c2915107e4af7983d",
+      "bytes": 6631
+    },
+    {
+      "path": "browse/SKILL.md.tmpl",
+      "sha256": "7f3ab4e5f2cd3df4b7c9ee49d2605e1d538f823d812d611b5a296d8cd5dfc116",
+      "bytes": 5420
+    },
+    {
+      "path": "browse/sections/command-list.md.tmpl",
+      "sha256": "8880b4f96ee720561552b1476e6c63c8550f1132960e30fab779ac23447bbe6a",
+      "bytes": 83
+    },
+    {
+      "path": "canary/SKILL.md.tmpl",
+      "sha256": "b155c2bba7244ce1a50f096f64a1075a63f27afb8d162121ba10954d0582f328",
+      "bytes": 12568
+    },
+    {
+      "path": "careful/SKILL.md.tmpl",
+      "sha256": "054c86edb5bdefc943a75b6e240b1e746c9870c2a889ffa92035862f8deb6082",
+      "bytes": 3400
+    },
+    {
+      "path": "claude-code/SKILL.md.tmpl",
+      "sha256": "4592a521816c506588d89f1bfd3b09782bd9f7733abb7b0807059d37c4c3575c",
+      "bytes": 14002
+    },
+    {
+      "path": "codex/SKILL.md.tmpl",
+      "sha256": "a5cab6e663565b9653888dbb95d5279c7c6d855ab3df831eba0436e405544c99",
+      "bytes": 15572
+    },
+    {
+      "path": "codex/sections/challenge-mode.md.tmpl",
+      "sha256": "78d5ff7eaf05aece07220c278b16662ff4475847552194860d6d774d21d7a6ce",
+      "bytes": 7441
+    },
+    {
+      "path": "codex/sections/consult-mode.md.tmpl",
+      "sha256": "99bb590e84a799c8622831c3a6f40127139157a6b146cfb27065ef5418c38e5f",
+      "bytes": 11673
+    },
+    {
+      "path": "codex/sections/review-mode.md.tmpl",
+      "sha256": "bd1ef8ef7b5b4f22b6a8673986f81942ba27648bbafe6c0b473b8a31e4893cd0",
+      "bytes": 12434
+    },
+    {
+      "path": "context-restore/SKILL.md.tmpl",
+      "sha256": "4690844edb40ad39c29220f06dab2306e5999eae989733612787fe40d40342da",
+      "bytes": 7092
+    },
+    {
+      "path": "context-save/SKILL.md.tmpl",
+      "sha256": "7410fcc1a4c7abcd50e3ab716b630eab221f640f25b15be62eb0067cf0c365b4",
+      "bytes": 9293
+    },
+    {
+      "path": "contrib/add-host/SKILL.md.tmpl",
+      "sha256": "1954bd77bde6d6ce5522f33673987e34d5eadfbac99edef57fca5dcbba941e14",
+      "bytes": 1764
+    },
+    {
+      "path": "cso/SKILL.md.tmpl",
+      "sha256": "fb1a9535752f3bb7e161feb14e61997552bed9545961d69a53a3da46e4892005",
+      "bytes": 17077
+    },
+    {
+      "path": "cso/sections/audit-phases.md.tmpl",
+      "sha256": "290d753dea227fde4f0165fe5e90e8f9853f9347286bdb92381fdff8e9337ee0",
+      "bytes": 15396
+    },
+    {
+      "path": "design-consultation/SKILL.md.tmpl",
+      "sha256": "9a2d091e32b06d95ea125a481f4898b2c9d9eca7c9ed25a5faaee217ec978268",
+      "bytes": 11028
+    },
+    {
+      "path": "design-consultation/sections/proposal-and-preview.md.tmpl",
+      "sha256": "4c06c40391fd00a23d0fd1d3de082d793381e5063e78c09ba4b32a45c071c7e6",
+      "bytes": 15511
+    },
+    {
+      "path": "design-html/SKILL.md.tmpl",
+      "sha256": "a48095c9ccb1fd637ff720562595109979db41f41b76962d1c02a6596145ad00",
+      "bytes": 19528
+    },
+    {
+      "path": "design-html/sections/detector-install-offer.md.tmpl",
+      "sha256": "5cab78a89c6ed9d150e194308c9149487a99561ff7e2a9569c7c2881f0573090",
+      "bytes": 413
+    },
+    {
+      "path": "design-html/sections/doctrine.md.tmpl",
+      "sha256": "476b80f37edb2ef0210fbc74c67e3aec22e3d08b51e7e1e93df7dd22caa307d3",
+      "bytes": 18
+    },
+    {
+      "path": "design-html/sections/pretext-patterns.md.tmpl",
+      "sha256": "7a50627fdf6e19c3e411f0d7699de99063992fed16d6647a797f8dc1078dd4f2",
+      "bytes": 4960
+    },
+    {
+      "path": "design-review/SKILL.md.tmpl",
+      "sha256": "75043d2c39a50cb535faa2b2574ffab2ee0c625866e27b155d39e70c56fc5c7f",
+      "bytes": 13467
+    },
+    {
+      "path": "design-shotgun/SKILL.md.tmpl",
+      "sha256": "c373ed5752268b991a03952bb3eccdea652652166ecd51d337e1a104cd79d7b5",
+      "bytes": 14377
+    },
+    {
+      "path": "design-shotgun/sections/doctrine.md.tmpl",
+      "sha256": "476b80f37edb2ef0210fbc74c67e3aec22e3d08b51e7e1e93df7dd22caa307d3",
+      "bytes": 18
+    },
+    {
+      "path": "devex-review/SKILL.md.tmpl",
+      "sha256": "a11a0df8280f97f7b79e1118885e58b2ea9c15ee5f5433086afd8cad2bf48713",
+      "bytes": 8933
+    },
+    {
+      "path": "diagram/SKILL.md.tmpl",
+      "sha256": "03bbc0395c7dacb0bc22df86d40d88b980b1b9f2e083bee5d647385edff3a820",
+      "bytes": 8386
+    },
+    {
+      "path": "document-generate/SKILL.md.tmpl",
+      "sha256": "83ce891719d1932ae026ef52bd20c6e11020aac1c29e3adccf76fd98a100c1af",
+      "bytes": 15940
+    },
+    {
+      "path": "document-release/SKILL.md.tmpl",
+      "sha256": "49358f01bf78fe96915385955913e08405ae4c9a3ae1cef8c1aef4c8eba71305",
+      "bytes": 8730
+    },
+    {
+      "path": "document-release/sections/release-body.md.tmpl",
+      "sha256": "6b9b9947fba4a8b49fdb323c6c85a2bbde792c36d44f0fa62e256a1ccf9e4f77",
+      "bytes": 18534
+    },
+    {
+      "path": "freeze/SKILL.md.tmpl",
+      "sha256": "882819d31dde871bc845a31bd6eb63fd345f297fa8387cbf7e5884f779c8e853",
+      "bytes": 3671
+    },
+    {
+      "path": "gstack-upgrade/SKILL.md.tmpl",
+      "sha256": "acdad3a942aa3c9c354730938264fa0322eb0e79b28ae74fb5c2cb5d0b16deea",
+      "bytes": 17429
+    },
+    {
+      "path": "guard/SKILL.md.tmpl",
+      "sha256": "291c337777d3d8086e0a7343de4db98174cf85ef54c69b12f9f04ab018380c9f",
+      "bytes": 3283
+    },
+    {
+      "path": "health/SKILL.md.tmpl",
+      "sha256": "2e5f6fc11ba8be280dcc74dddb65a70029ac72376c17c57891a19311582597ec",
+      "bytes": 15311
+    },
+    {
+      "path": "investigate/SKILL.md.tmpl",
+      "sha256": "10b2abd3dcb3b46d3d7fb9fb328bc45a5874102b763d244d81a0b693c7416bb4",
+      "bytes": 12095
+    },
+    {
+      "path": "ios-clean/SKILL.md.tmpl",
+      "sha256": "91465d957c280922a07e47e2150e4673e9b47b121731f4655b9364226104d354",
+      "bytes": 3743
+    },
+    {
+      "path": "ios-design-review/SKILL.md.tmpl",
+      "sha256": "f9c10b13b7fb65d06a92be8a947616443b2742020ffb970539a525f087efab31",
+      "bytes": 4417
+    },
+    {
+      "path": "ios-fix/SKILL.md.tmpl",
+      "sha256": "b5621a9b51d17be8f1ff42063d201abeafb2e00586a623f566118912539225bd",
+      "bytes": 3574
+    },
+    {
+      "path": "ios-qa/SKILL.md.tmpl",
+      "sha256": "c71e967b18d558788105896525f6a2ec2acce60cefea7e64405c9697ec660e4d",
+      "bytes": 12370
+    },
+    {
+      "path": "ios-sync/SKILL.md.tmpl",
+      "sha256": "ba7591b9343a458575da4da7f335b7a854a12e27f7caaed3cc821c734a87af9c",
+      "bytes": 4220
+    },
+    {
+      "path": "land-and-deploy/SKILL.md.tmpl",
+      "sha256": "085c39d5e63138671a242282ac13cf2b3c4fb419c5329d046a49899673260eb8",
+      "bytes": 23344
+    },
+    {
+      "path": "land-and-deploy/sections/first-run-validation.md.tmpl",
+      "sha256": "9c6b2f8bc85fc562f4c345364b6d660ccd94ea0aa58cc528e842ac5af73fab93",
+      "bytes": 9348
+    },
+    {
+      "path": "land-and-deploy/sections/merge-and-deploy.md.tmpl",
+      "sha256": "7120115b34320f50d7b9d2620ab5b86a2cef8fa8b098c136933ff14f133ddea4",
+      "bytes": 14170
+    },
+    {
+      "path": "land-and-deploy/sections/readiness-gate.md.tmpl",
+      "sha256": "98c7b9b8afcab9425642c12a7f571d4444aa1b2f4a68ae056cce2170c6266465",
+      "bytes": 13399
+    },
+    {
+      "path": "landing-report/SKILL.md.tmpl",
+      "sha256": "d6b78974c2ab3222d5eb6ab76cfc6123a27033bb00e14af8ada63c9f58514107",
+      "bytes": 6847
+    },
+    {
+      "path": "learn/SKILL.md.tmpl",
+      "sha256": "d7fb8321c1bb903d93e3d47d8db4fadab3c806b909c6252e0ef2f02d01866132",
+      "bytes": 5594
+    },
+    {
+      "path": "make-pdf/SKILL.md.tmpl",
+      "sha256": "930896b7bb450ddc6a77e2ad99fbe4622285bea099b6eff9d6a977fdf3db1f9a",
+      "bytes": 10368
+    },
+    {
+      "path": "office-hours/SKILL.md.tmpl",
+      "sha256": "c811d2c4145d11b41be9d6577d0d76f227778a1d156acafbd40255bec15100aa",
+      "bytes": 15953
+    },
+    {
+      "path": "office-hours/sections/design-and-handoff.md.tmpl",
+      "sha256": "df7400224f4b2a716af304cceeab97b61f8e3294242647fed57bd401dcaedd0b",
+      "bytes": 30395
+    },
+    {
+      "path": "office-hours/sections/phase-2a-startup-diagnostic.md.tmpl",
+      "sha256": "b21f9dffbeec8898e0bec66ee771d0507540dced6ea2a46be1a0cd81c422ea7d",
+      "bytes": 12937
+    },
+    {
+      "path": "office-hours/sections/phase-2b-builder-brainstorm.md.tmpl",
+      "sha256": "9e9266711261079644aa56acc1d08c4be9f18badc559247cdff9f35e48816719",
+      "bytes": 2567
+    },
+    {
+      "path": "open-gstack-browser/SKILL.md.tmpl",
+      "sha256": "86cb7b07cca74cfc24e947ea2713b80129b1f9b19f3cafda403f1a4e372cc75a",
+      "bytes": 7743
+    },
+    {
+      "path": "pair-agent/SKILL.md.tmpl",
+      "sha256": "9e03a95540c149e25f00cee74267912dda55dd58833d1bef9b5eb0d3faaaf358",
+      "bytes": 13368
+    },
+    {
+      "path": "plan-ceo-review/SKILL.md.tmpl",
+      "sha256": "15574692617651adfb77080256a2a0493ad15565bd267b72fa73f8dcbe6f9416",
+      "bytes": 29403
+    },
+    {
+      "path": "plan-ceo-review/sections/review-sections.md.tmpl",
+      "sha256": "78fe1087a4a130c3c738748638ddae245029e1461891a320e0d12055cd8c2118",
+      "bytes": 39064
+    },
+    {
+      "path": "plan-design-review/SKILL.md.tmpl",
+      "sha256": "0fe902848da11edcd77c4c0a66353bdcf1f182e54a7476690550613db6ae391b",
+      "bytes": 19928
+    },
+    {
+      "path": "plan-design-review/sections/review-sections.md.tmpl",
+      "sha256": "84343c1505e7aa8760c7c843f00f4af5e7779dce696214ec6cc4be0ad8057239",
+      "bytes": 18994
+    },
+    {
+      "path": "plan-devex-review/SKILL.md.tmpl",
+      "sha256": "11d29a46121fbb42ea934b6ef1292b6201dd9e1ee5ffd44ee73ae1ae5d386af1",
+      "bytes": 19456
+    },
+    {
+      "path": "plan-devex-review/sections/review-sections.md.tmpl",
+      "sha256": "c145872bcc5b5ef085faa25d99b3fdbc33900fff11e465f06e47aaf4aa2c1cfe",
+      "bytes": 18128
+    },
+    {
+      "path": "plan-eng-review/SKILL.md.tmpl",
+      "sha256": "25fcbd5767a617612eea85a50b8eed55025896e564efd1e07303cbfe12c07380",
+      "bytes": 14942
+    },
+    {
+      "path": "plan-eng-review/sections/review-sections.md.tmpl",
+      "sha256": "6ff9443f3fde59a8766b30f881874817cb3da4939da4415e0b9aae9acd89a549",
+      "bytes": 18602
+    },
+    {
+      "path": "plan-tune/SKILL.md.tmpl",
+      "sha256": "54551fbd340c25db44a3eead7f93a865a714f94da9e944198224aef941a3b588",
+      "bytes": 26922
+    },
+    {
+      "path": "qa/SKILL.md.tmpl",
+      "sha256": "1e36d22b188f58d98181a63ba312c317fc8f8bcd15565e3d39824ea4a483d498",
+      "bytes": 13886
+    },
+    {
+      "path": "qa/sections/qa-patterns.md.tmpl",
+      "sha256": "989d5adb8b713e89b8088bed530b8417c8a81ed771ee16d012203f2bb8cd5724",
+      "bytes": 19
+    },
+    {
+      "path": "qa/sections/test-bootstrap.md.tmpl",
+      "sha256": "96f3c95ada2d717380b04d2a7f3ae7b1cc97b5d6f5bdad3a164d34a54e03120c",
+      "bytes": 19
+    },
+    {
+      "path": "qa-only/SKILL.md.tmpl",
+      "sha256": "41e1833ac95badf4bceae440bf88036cfeb43e24c730874e5d07ad4a5471c104",
+      "bytes": 4075
+    },
+    {
+      "path": "retro/SKILL.md.tmpl",
+      "sha256": "49db266231e4cfa223eba441c1fbbd9d8e62030c158a0d0e6e468441dbebb55d",
+      "bytes": 38649
+    },
+    {
+      "path": "retro/sections/report-format.md.tmpl",
+      "sha256": "e25fa3db492ebf2c036dbf3eecc97bd71df7158d81537ca298b4c63fb02cbdcb",
+      "bytes": 5195
+    },
+    {
+      "path": "review/SKILL.md.tmpl",
+      "sha256": "c9719fef2deb27fd7c96a4715af7e8e843ba8443e7c14e56b7553e39343c4bda",
+      "bytes": 14280
+    },
+    {
+      "path": "review/sections/adversarial.md.tmpl",
+      "sha256": "65da4f6c04809389a26e07b8d3a0305753c6635322cc486219ad33d3e0546b52",
+      "bytes": 1774
+    },
+    {
+      "path": "review/sections/plan-completion.md.tmpl",
+      "sha256": "40ffb5c2b6808d398b325d20e08e82ed8268e4d267610d07e683734b2cba52ce",
+      "bytes": 306
+    },
+    {
+      "path": "review/sections/review-army.md.tmpl",
+      "sha256": "c732b138d7bf4280203bc128ee83e295bc449a48a2d0a1dde0b4fa6b7ea18917",
+      "bytes": 16
+    },
+    {
+      "path": "scrape/SKILL.md.tmpl",
+      "sha256": "b56865d2a2f79c1c95a86d5cd0662fedf030a1a468e32fec8270e0e269e8920b",
+      "bytes": 7023
+    },
+    {
+      "path": "setup-browser-cookies/SKILL.md.tmpl",
+      "sha256": "e0516bb08c8a469c4fddfbc0b156d3fcbe1aef4e0939536430582a96f95c7e97",
+      "bytes": 2724
+    },
+    {
+      "path": "setup-deploy/SKILL.md.tmpl",
+      "sha256": "b2c72a7d9427b156cd5538c151b3d9e64cf6183838645644811a794aa76ebeb9",
+      "bytes": 8960
+    },
+    {
+      "path": "setup-gbrain/SKILL.md.tmpl",
+      "sha256": "811b8d6c3cb31ffdfd3c24bf012fa183b15334d2007b84b7e896493cf6bcbefe",
+      "bytes": 27628
+    },
+    {
+      "path": "setup-gbrain/sections/brain-init.md.tmpl",
+      "sha256": "6b410f5a6b030b4ec3f7244a220c77fd808ab0f26de0add5289f38098aff94a4",
+      "bytes": 11686
+    },
+    {
+      "path": "setup-gbrain/sections/claude-md-persist.md.tmpl",
+      "sha256": "e3adb28d90f4f8592bfce913d8d96978803371072816404648cc1f604b2ab194",
+      "bytes": 3268
+    },
+    {
+      "path": "setup-gbrain/sections/engine-remediation.md.tmpl",
+      "sha256": "c971204b86b2404f5672874abcf41aaeae5283613ad60b928faa80063645077e",
+      "bytes": 3817
+    },
+    {
+      "path": "setup-gbrain/sections/transcript-gate.md.tmpl",
+      "sha256": "b3c0de20f4418477f18863859ba783990cb2f6fcca10ebf630811b328d9a4b6c",
+      "bytes": 2926
+    },
+    {
+      "path": "ship/SKILL.md.tmpl",
+      "sha256": "5cc3b0c07ad314cae7e58590f228c7e8a2d1d9da233e2f3ea9de8c515efec60c",
+      "bytes": 29624
+    },
+    {
+      "path": "ship/sections/adversarial.md.tmpl",
+      "sha256": "2a9316db42a915ecca9914efec6eed2c41b369ede737b24eebd6e435dfaf294a",
+      "bytes": 1217
+    },
+    {
+      "path": "ship/sections/apple-release.md.tmpl",
+      "sha256": "a86ff8a92a730469bd965caca8127d267842486f507fc8be47a73ddcce6fe4fa",
+      "bytes": 16939
+    },
+    {
+      "path": "ship/sections/changelog.md.tmpl",
+      "sha256": "3384256c68938f68c34aa5f5f12e0e7dfec712552456cd2561fd2dd8d4a98952",
+      "bytes": 28
+    },
+    {
+      "path": "ship/sections/greptile.md.tmpl",
+      "sha256": "47085993f7691ad65ca36751beace86df735fe1cee47f58392fda7bd803dc991",
+      "bytes": 4096
+    },
+    {
+      "path": "ship/sections/plan-completion.md.tmpl",
+      "sha256": "bede2b9ddec6a5c6043824ab5a478da5da003fb3606657b00b636ce2c212bebb",
+      "bytes": 2785
+    },
+    {
+      "path": "ship/sections/pr-body.md.tmpl",
+      "sha256": "c0979e1e58a5cf6d5c7d6e7043ea3e3c64c24f394c451b1caf8822a6d28ec985",
+      "bytes": 20403
+    },
+    {
+      "path": "ship/sections/review-army.md.tmpl",
+      "sha256": "39971bbc6eb7bc7fea8a6f291d9f347e3aa811b449b09d87cb543465b9101dab",
+      "bytes": 5067
+    },
+    {
+      "path": "ship/sections/test-coverage.md.tmpl",
+      "sha256": "46eb223a23e57d1911067d9d56ecc908048c3f4db58ad125aa22e0d2227fb059",
+      "bytes": 1987
+    },
+    {
+      "path": "ship/sections/tests.md.tmpl",
+      "sha256": "f2808b2cad6ef846df1f2e6bb9b442165224f7e4652ea49a70aff5fb798d0fed",
+      "bytes": 6080
+    },
+    {
+      "path": "skillify/SKILL.md.tmpl",
+      "sha256": "e564becd0937081929c60fabeb34ba79a12207cf659ec4ec8b44067315d7713f",
+      "bytes": 15338
+    },
+    {
+      "path": "spec/SKILL.md.tmpl",
+      "sha256": "191a6fb72be25e4851951b0437d73e8a6408cad65ab6594e2487fb79edbb0436",
+      "bytes": 19784
+    },
+    {
+      "path": "spec/sections/gate-and-file.md.tmpl",
+      "sha256": "0be4c0d5096760e8be191f3b73973085a727f7d1452d160ca3916e9d189ebb13",
+      "bytes": 13264
+    },
+    {
+      "path": "sync-gbrain/SKILL.md.tmpl",
+      "sha256": "2d422bec70f19aeba6cc803568e8cb80b33f377ce7855c298fb4157b4e775988",
+      "bytes": 23886
+    },
+    {
+      "path": "unfreeze/SKILL.md.tmpl",
+      "sha256": "079d600dcb90cc73074724c776f8482f01783dcfa9a72154a2b699cd7e4a01fe",
+      "bytes": 1386
+    }
+  ],
+  "fenix_before": 177,
+  "fenix_after": 180,
+  "new_skills": [
+    "developer-experience-review",
+    "code-health-review",
+    "engineering-retrospective"
+  ],
+  "updated_skills": [
+    "architecture-design",
+    "browser-regression-testing",
+    "frontend-design-and-accessibility",
+    "performance-diagnosis",
+    "release-and-ci",
+    "requirements-and-planning",
+    "skill-authoring",
+    "technical-documentation"
+  ]
+}

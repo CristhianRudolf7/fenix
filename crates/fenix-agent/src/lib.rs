@@ -2,31 +2,50 @@
 
 mod active_context;
 mod coding;
+mod completion_audits;
 pub mod config;
+pub mod connectors;
+mod content_safety;
 mod context;
 mod context_budget;
+pub mod designs;
+mod documents;
 mod effects;
 mod engine;
 pub mod evaluation;
 mod execution_state;
+mod file_history;
 mod files;
+#[cfg(test)]
+mod harness_improvements_tests;
+pub mod library;
+pub mod live;
 pub mod memory;
+mod operational_context;
 mod permissions;
 mod plan_reviews;
 mod planning;
 mod processes;
 pub mod progress;
+mod project_specs;
 mod project_tools;
 mod projects;
 pub mod read_only;
 pub mod redaction;
+mod restart_recovery;
 pub mod schedules;
+mod skill_learning;
 pub mod skills;
 mod subagents;
 pub mod telegram;
 mod tool_discovery;
+mod tool_program;
 mod tool_receipt;
 pub mod tools;
+mod usage_tracking;
+pub mod workflows;
+mod workspace_view;
+mod worktrees;
 
 use anyhow::{Result, bail};
 use config::ModelConnection;
@@ -50,13 +69,24 @@ use tokio::sync::{Mutex, Notify, RwLock};
 use tokio_util::sync::CancellationToken;
 
 pub struct Runtime {
+    pub(crate) worktrees: worktrees::Worktrees,
+    pub connectors: Arc<fenix_connectors::Connectors>,
+    pub(crate) workflow_lock: Mutex<()>,
+    pub(crate) workflow_active: Mutex<BTreeMap<String, CancellationToken>>,
+    pub(crate) workflow_wake: Notify,
     pub store: Arc<Store>,
     pub web: Arc<fenix_web::Web>,
     pub browser: Arc<fenix_browser::Browser>,
     pub data_dir: PathBuf,
     pub skills_dir: PathBuf,
+    pub(crate) skill_index: std::sync::Mutex<skills::SkillIndex>,
+    pub tenant_root: Option<PathBuf>,
+    pub execution: Option<fenix_execution::Executor>,
     pub redactor: Arc<Redactor>,
     pub stop: CancellationToken,
+    pub(crate) live: live::Live,
+    pub(crate) library_write: Mutex<()>,
+    pub(crate) library_wake: Notify,
     pub(crate) model: RwLock<Option<Arc<ModelConnection>>>,
     pub(crate) active: Mutex<BTreeMap<String, ActiveTask>>,
     pub(crate) plan_lock: Mutex<()>,
@@ -100,17 +130,42 @@ impl Runtime {
         };
         std::fs::create_dir_all(&skills_dir)?;
         let skills_dir = std::fs::canonicalize(skills_dir)?;
+        let tenant_root = if std::env::var("FENIX_CONTAINER").as_deref() == Ok("1") {
+            let root = std::fs::canonicalize(std::env::var("FENIX_USER_ROOT")?)?;
+            anyhow::ensure!(
+                data_dir.starts_with(&root) && skills_dir.starts_with(&root),
+                "Runtime data and skills must belong to this user"
+            );
+            Some(root)
+        } else {
+            None
+        };
+        let execution = fenix_execution::Executor::from_environment()?;
+        if let Some(executor) = &execution {
+            executor.health().await?;
+        }
         let redactor = Arc::new(Redactor::default());
         let stop = CancellationToken::new();
         let processes = Processes::new(data_dir.join("processes"), redactor.clone(), stop.clone())?;
         let runtime = Arc::new(Self {
+            worktrees: worktrees::Worktrees::default(),
+            connectors: Arc::new(fenix_connectors::Connectors::open(&data_dir)?),
+            workflow_lock: Mutex::new(()),
+            workflow_active: Mutex::new(BTreeMap::new()),
+            workflow_wake: Notify::new(),
             store,
             web: fenix_web::Web::open(&data_dir).await?,
             browser: fenix_browser::Browser::open(&data_dir)?,
             data_dir,
             skills_dir,
+            skill_index: std::sync::Mutex::new(skills::SkillIndex::default()),
+            tenant_root,
+            execution,
             redactor,
             stop,
+            live: live::Live::default(),
+            library_write: Mutex::new(()),
+            library_wake: Notify::new(),
             model: RwLock::new(None),
             active: Mutex::new(BTreeMap::new()),
             plan_lock: Mutex::new(()),
@@ -145,15 +200,30 @@ impl Runtime {
                 runtime.model_connection(settings, ApiKey::new(key)?)?,
             ));
         }
-        let interrupted = runtime.store.interrupt_unfinished()?;
+        let (interrupted, recovered) = runtime.recover_restart()?;
         runtime.skip_missed_schedules().await?;
+        runtime.recover_workflow_runs()?;
         if interrupted > 0 {
-            runtime.notify(None,&format!("El servicio se reinició. {interrupted} tarea(s) quedaron interrumpidas; puedes consultar su historial. Sus acciones no se han reanudado."))?;
+            runtime.notify(None,&format!("El servicio se reinició. {recovered} tarea(s) continúan desde un punto guardado sin repetir acciones. {} tarea(s) requieren revisión de su historial.", interrupted.saturating_sub(recovered)))?;
         }
         Ok(runtime)
     }
 
+    pub(crate) fn validate_user_workspace(&self, path: &Path) -> Result<()> {
+        if let Some(root) = &self.tenant_root {
+            anyhow::ensure!(
+                path.starts_with(root.join("workspace")) || path.starts_with(root.join("projects")),
+                "Workspace must belong to the authenticated user"
+            );
+        }
+        Ok(())
+    }
+
     pub fn start(self: &Arc<Self>) -> Vec<tokio::task::JoinHandle<()>> {
+        let runtime = self.clone();
+        let workflows = tokio::spawn(async move {
+            runtime.workflow_worker().await;
+        });
         let runtime = self.clone();
         let worker = tokio::spawn(async move {
             runtime.worker().await;
@@ -173,12 +243,17 @@ impl Runtime {
         let runtime = self.clone();
         let events = tokio::spawn(async move { runtime.event_worker().await });
         let runtime = self.clone();
+        let learning = tokio::spawn(async move { runtime.skill_learning_worker().await });
+        let runtime = self.clone();
         let memory = tokio::spawn(async move { runtime.memory_worker().await });
+        let runtime = self.clone();
+        let library = tokio::spawn(async move { runtime.library_worker().await });
         let browser = self.browser.clone();
         let stop = self.stop.clone();
         let browser = tokio::spawn(async move { browser.maintain(stop).await });
         vec![
-            worker, scheduler, telegram, subagents, planner, events, browser, memory,
+            worker, scheduler, telegram, subagents, planner, events, browser, memory, library,
+            workflows, learning,
         ]
     }
 
@@ -277,7 +352,7 @@ impl Runtime {
         let active_tasks = self.active.lock().await.keys().cloned().collect::<Vec<_>>();
         let active = active_tasks.first();
         Ok(
-            json!({"ready":self.model.read().await.is_some(),"session_id":self.store.session_id(),"settings":settings,"default_settings":config::Settings::initial(std::env::current_dir()?),"active_task":active,"active_tasks":active_tasks,"plans":self.plan_views()?,"pending":pending,"pending_requests":pending_requests,"subagents":self.subagent_views()?,"projects":self.project_catalog()?,"focus_project_id":self.store.conversation_focus()?,"timezone":"America/Lima","tool_count":tools::catalog().len(),"telegram":self.telegram_settings()?,"skills_directory":self.skills_dir}),
+            json!({"ready":self.model.read().await.is_some(),"session_id":self.store.session_id(),"event_cursor":self.store.recent_bus_events(1)?.last().map(|e| e.seq).unwrap_or(0),"settings":settings,"default_settings":config::Settings::initial(std::env::current_dir()?),"active_task":active,"active_tasks":active_tasks,"plans":self.plan_views()?,"pending":pending,"pending_requests":pending_requests,"subagents":self.subagent_views()?,"projects":self.project_catalog()?,"focus_project_id":self.store.conversation_focus()?,"timezone":"America/Lima","tool_count":tools::catalog().len(),"telegram":self.telegram_settings()?,"skills_directory":self.skills_dir}),
         )
     }
 
@@ -321,3 +396,5 @@ pub fn write_private(path: &Path, content: &str) -> Result<()> {
     }
     Ok(())
 }
+
+mod security;

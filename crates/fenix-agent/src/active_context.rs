@@ -62,10 +62,12 @@ impl Runtime {
         model: &ModelConnection,
         messages: &mut Vec<Message>,
         tools: &[ToolDefinition],
+        reserved_input_tokens: usize,
         cancel: &CancellationToken,
     ) -> Result<()> {
-        let budget = crate::context_budget::ContextBudget::new(&model.settings);
-        let before = estimated_tokens(messages, tools);
+        let mut budget = crate::context_budget::ContextBudget::new(&model.settings);
+        budget.input_limit = budget.input_limit.saturating_sub(reserved_input_tokens);
+        let before = self.context_tokens(&task.id, model, messages, tools)?;
         if before < budget.input_limit {
             return Ok(());
         }
@@ -420,9 +422,16 @@ mod integration_tests {
             Message::text(Role::Assistant, "previous observation ".repeat(600)),
         ];
         assert!(estimated_tokens(&messages, &[]) >= 30_000);
-        rt.compact_active_context(&task, &model, &mut messages, &[], &CancellationToken::new())
-            .await
-            .unwrap();
+        rt.compact_active_context(
+            &task,
+            &model,
+            &mut messages,
+            &[],
+            0,
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
         assert!(estimated_tokens(&messages, &[]) < 30_000);
         boundaries(&messages).unwrap();
         assert!(messages.iter().any(|m| m.text_content().contains(&task.id)));
@@ -431,12 +440,43 @@ mod integration_tests {
     #[tokio::test]
     async fn compaction_preserves_contract_pairs_and_recoverable_originals() {
         let (_dir, rt, model, task, _server) = fixture("completed").await;
+        let mut contract = rt.task_contract(&task.id).unwrap();
+        rt.remember_failed_approach(
+            &task.id,
+            "earlier-test",
+            "command_run",
+            &json!({"command":"test parser"}),
+            &json!({"exit_code":1,"output":"Unicode regression"}),
+            false,
+            &mut contract,
+        )
+        .unwrap();
+        rt.store.put("task_contracts", &task.id, &contract).unwrap();
+        let snapshot = rt.operational_context(&task).unwrap().unwrap();
+        let reserve = estimated_tokens(std::slice::from_ref(&snapshot), &[]);
         let mut messages = history();
         let original = messages.clone();
         let original_size = estimated_tokens(&messages, &[]);
-        rt.compact_active_context(&task, &model, &mut messages, &[], &CancellationToken::new())
-            .await
-            .unwrap();
+        rt.compact_active_context(
+            &task,
+            &model,
+            &mut messages,
+            &[],
+            reserve,
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+        assert!(
+            rt.operational_context(&task)
+                .unwrap()
+                .unwrap()
+                .text_content()
+                .contains("Unicode regression")
+        );
+        assert!(
+            estimated_tokens(&messages, &[]) + reserve < model.settings.coding.compact_at_tokens
+        );
         assert!(estimated_tokens(&messages, &[]) < original_size);
         assert!(
             messages
@@ -500,9 +540,16 @@ mod integration_tests {
             Message::text(Role::Assistant, "Reasoning data ".repeat(12000)),
         );
         let original = messages.clone();
-        rt.compact_active_context(&task, &model, &mut messages, &[], &CancellationToken::new())
-            .await
-            .unwrap();
+        rt.compact_active_context(
+            &task,
+            &model,
+            &mut messages,
+            &[],
+            0,
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
         boundaries(&messages).unwrap();
         assert!(estimated_tokens(&messages, &[]) < estimated_tokens(&original, &[]));
         let events = rt.store.events(&task.id, 0, 100).unwrap();
@@ -538,9 +585,16 @@ mod integration_tests {
         {
             *content = json!({"text":"large evidence ".repeat(15000)});
         }
-        rt.compact_active_context(&task, &model, &mut messages, &[], &CancellationToken::new())
-            .await
-            .unwrap();
+        rt.compact_active_context(
+            &task,
+            &model,
+            &mut messages,
+            &[],
+            0,
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
         boundaries(&messages).unwrap();
         assert!(estimated_tokens(&messages, &[]) < 30000);
         assert!(

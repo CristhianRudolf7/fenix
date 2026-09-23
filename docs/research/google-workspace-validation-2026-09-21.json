@@ -1,0 +1,114 @@
+{
+  "validated_at_utc": "2026-09-21T05:40:42.391200+00:00",
+  "scope": "Original native Google Workspace connector improvements, Integrations controls and Fenix skill workflows.",
+  "reference": {
+    "repository": "https://github.com/googleworkspace/cli",
+    "commit": "a3768d0e82ad83cca2da97724e46bea4ff0e6dbd",
+    "date": "2026-03-31T18:51:15Z"
+  },
+  "implementation": "Fenix-owned Rust/React/skill code; no upstream CLI, skills or authentication store installed.",
+  "catalog": {
+    "total_skills": 187,
+    "added": [
+      "google-workspace-workflows"
+    ],
+    "updated": [
+      "calendar-scheduling",
+      "email-workflows",
+      "forms-and-surveys",
+      "google-docs",
+      "google-drive",
+      "google-sheets",
+      "google-slides",
+      "meeting-notes",
+      "personal-organization",
+      "team-messaging"
+    ]
+  },
+  "checks": {
+    "connectors": {
+      "passed": 19,
+      "failed": 0,
+      "ignored": 1,
+      "ignored_note": "The public Discovery test was run separately and passed.",
+      "command": "CARGO_TARGET_DIR=/dev/shm/fenix-workspace-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 TMPDIR=/dev/shm cargo test -p fenix-connectors --locked"
+    },
+    "skills": {
+      "passed": 37,
+      "failed": 0,
+      "routing_cases_added": 8,
+      "stock_migrations_verified": 10,
+      "command": "CARGO_TARGET_DIR=/dev/shm/fenix-workspace-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 TMPDIR=/dev/shm cargo test -p fenix-agent --lib skills:: --locked"
+    },
+    "server": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 1,
+      "command": "CARGO_TARGET_DIR=/dev/shm/fenix-workspace-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 TMPDIR=/dev/shm cargo test -p fenix-server --test workflows --test integrations --locked"
+    },
+    "web": {
+      "typecheck": "passed (standard and strict TypeScript)",
+      "production_build": "passed",
+      "existing_browser_cases_passed": 8,
+      "workspace_browser_cases_passed": 2,
+      "unique_browser_cases_passed": 10,
+      "command": "pnpm --dir apps/web build; pnpm --dir apps/web exec playwright test tests/google-workspace.spec.js tests/workflows.spec.js tests/integrations.spec.js tests/oauth.spec.js",
+      "note": "The eight existing browser cases passed on the initial run; the two new Workspace cases passed on their final focused run after test-selector corrections. Screenshots were visually inspected at 390x844."
+    },
+    "skill_entrypoints": {
+      "validated": 11,
+      "validator": "skill-creator/scripts/quick_validate.py"
+    },
+    "public_discovery": {
+      "passed": 1,
+      "services": 11,
+      "scope_presets": "All read/write preset scope names exist in current official Discovery documents.",
+      "anonymous": true,
+      "command": "TMPDIR=/dev/shm cargo test -p fenix-connectors --locked live_google_discovery -- --ignored --nocapture",
+      "observed": [
+        "drive v3 revision \"20260913\"",
+        "docs v1 revision \"20260918\"",
+        "sheets v4 revision \"20260909\"",
+        "slides v1 revision \"20260914\"",
+        "gmail v1 revision \"20260917\"",
+        "calendar v3 revision \"20260826\"",
+        "tasks v1 revision \"20260915\"",
+        "people v1 revision \"20260916\"",
+        "forms v1 revision \"20260913\"",
+        "chat v1 revision \"20260915\"",
+        "meet v2 revision \"20260915\""
+      ]
+    }
+  },
+  "limits": [
+    "No authenticated Google account operations or real message delivery were performed.",
+    "Meet reads existing accessible artifacts; it does not record or transcribe new meetings.",
+    "Tests are functional/contract/regression checks, not a model intelligence benchmark.",
+    "No production deployment or account authorization was performed.",
+    "Google API enablement, quotas, account policies and Workspace licensing still apply."
+  ],
+  "source_sha256": {
+    "crates/fenix-connectors/src/lib.rs": "adeb057a3144eeeb6ee620ce0b3d979b80bfb2a1145e8e0b6ad35d74012224b0",
+    "crates/fenix-connectors/src/http.rs": "4d58de6eae212cd90bf9eed60d611bbbcbf0e0aa451c607d2394878fe53fdfa7",
+    "crates/fenix-connectors/src/oauth.rs": "7fc47b1ff2c7e9621db54b313f7e12ec10d46430208f6763c929bd8b4d401c7d",
+    "crates/fenix-connectors/src/google.rs": "73c06df5e89b0d275013ab348a3ace97de0ae62cdaaed4cf904e5ad33cb19d30",
+    "crates/fenix-connectors/src/google/mail.rs": "80cad2a6e64cba1be8b5fcd1bea3ed18a8f094af926b4ed17ce642eeaa50154a",
+    "crates/fenix-connectors/src/google/tests.rs": "d40accaa15716ef98c4b9c0324699fcab2c23d1903d578c0b5214ccfcb00c5d3",
+    "apps/web/src/integrations/ConnectorCatalog.tsx": "f3011cc5e1b1130234384ad3ea7f83670dd783938d40353c46725a90459b7b06",
+    "apps/web/src/integrations/integrations.css": "441176b78ada67cf42fe43b6f23a0ca306cd1dc7ada112d4a5f10f18e6baf7b1",
+    "apps/web/tests/google-workspace.spec.js": "e3f154309e8ae15a67a485245fc2a4b12049782cfa1f22e0767750cd3e347c0e",
+    "crates/fenix-agent/src/skills/google_workspace_tests.rs": "251c6044439649cf3ae45cd331705e184cae6500d008121537733d3b6980d5ee",
+    "resources/skills/google-workspace-workflows/SKILL.md": "00cfb804949550bb3e96ecbb9daf2ebeaf1abc78f10b8ffd2bb874bb2987a6f4",
+    "resources/skills/google-workspace-workflows/references/native-operations.md": "c029be85bcdc0ff4b5158ababe50ef3e5e3ae4e965669bfc973ba6492ffc7d1b",
+    "resources/skills/personal-organization/SKILL.md": "abc2e0386be90618dcbd104111539adb8de8fc201a40ffa27d6d40d17849cd59",
+    "resources/skills/team-messaging/SKILL.md": "2215ee158454e6e82d5dc2b02eb8c60070cacc6b77afd5083f2bdd504149716d",
+    "resources/skills/forms-and-surveys/SKILL.md": "bb516819a80e6d58746ae7f9566b1770115c0058a46c652645b73e37ceaf6bf0",
+    "resources/skills/meeting-notes/SKILL.md": "7eea34ec73c18591de95739fadfe31d7fe625db2ca72b10a5fc354ec4ddb337e",
+    "resources/skills/calendar-scheduling/SKILL.md": "082597985efff6a7c8913b73918c5d0a1e04730b0270c6e06fbf51b76ebf4140",
+    "resources/skills/email-workflows/SKILL.md": "b53ee069b6045c7c2d574292e852b293f6305d34d4f0430cb371eea3e78290d2",
+    "resources/skills/google-slides/SKILL.md": "53cc48931411020b60c8633d65e916214f950b40463a9829b54035b2010f9379",
+    "resources/skills/google-sheets/SKILL.md": "63cbe151e2aef9cc99907a5bb228e9fc8a68e00fde3a29ac83f8609698730d2f",
+    "resources/skills/google-docs/SKILL.md": "7126fbfd76fe2b13b193586a6a0473d1fe8b85f77ea0531584552e741a934c1f",
+    "resources/skills/google-drive/SKILL.md": "f303f56cac77570c9f0ee9c8844c2e3c3a9c612954493c3980a7f39dbc8e06b5"
+  }
+}

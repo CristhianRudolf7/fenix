@@ -2,6 +2,20 @@
 
 ## Unreleased / Sin publicar
 
+- Serve production frontend files through a separate Caddy/systemd service; Rust no longer embeds web assets. Publish UI updates atomically without recompiling or restarting the agent. [Deployment](docs/en/frontend-deployment.md). / Frontend separado con Caddy/systemd; Rust ya no incluye los archivos web. Publicación de interfaz sin recompilar ni reiniciar el agente. [Despliegue](docs/es/frontend-deployment.md).
+
+- Keep mobile navigation in a dismissible left drawer and make the chat composer compact, preserving desktop routes and keyboard navigation. / Mantiene la navegación móvil en un panel lateral izquierdo y reduce la altura del cuadro de mensaje, conservando las rutas y la navegación por teclado.
+
+- Deployed on 2026-09-22: improve short-command waits, explicit execution modes, exact process references, project environment diagnostics, essential coding tools and dependency-safe read batches. [Details](docs/en/coding-harness-reliability.md). / Desplegado el 22 de septiembre de 2026: mejora la espera de comandos cortos, modos de ejecución explícitos, referencias de procesos, diagnóstico del entorno, herramientas básicas y lecturas agrupadas respetando dependencias. [Detalles](docs/es/coding-harness-reliability.md).
+
+- Automatically activate reviewed learned skills without approval, retain recoverable revisions, protect manual edits, find related procedures before drafting, and archive unused unprotected learned skills. / Activa skills aprendidos revisados sin aprobación, conserva revisiones recuperables, protege ediciones manuales, busca procedimientos relacionados y archiva los aprendidos sin uso que no estén protegidos.
+
+- Add provider-usage context anchors, declarative tool programs, safe-boundary restart recovery, private file versions/restoration and selective skill learning with reviewed candidates. See [behavior and limits](docs/en/harness-continuity.md). / Añade contexto basado en consumo, programas declarativos de herramientas, recuperación desde puntos seguros, versiones/restauración de archivos y aprendizaje selectivo mediante candidatos revisados. Véanse [funcionamiento y límites](docs/es/harness-continuity.md).
+
+- Add scoped relational memory retrieval, match evidence, kind-aware recency, revision-bound contradiction proposals, non-destructive health checks and a reproducible retrieval evaluator. / Añade recuperación relacional por ámbito, evidencia de coincidencias, vigencia por tipo, propuestas de contradicciones ligadas a revisiones, diagnóstico no destructivo y evaluación reproducible de recuperación.
+
+- **Pending deployment verification:** validate the firewall on the actual infrastructure, including allowed/blocked destinations, DNS restrictions and execution termination when protection is lost. Local tests have passed, but this live check has not been performed. See [validation limits](docs/en/security-boundaries.md). / **Pendiente de comprobar en el despliegue:** verificar el firewall en la infraestructura real, incluidos destinos permitidos/bloqueados, restricciones de DNS y detención de ejecuciones al perder la protección. Las pruebas locales pasaron, pero esta comprobación real todavía no se ha realizado. Véanse los [límites de validación](docs/es/security-boundaries.md).
+
 - Add native Rust benchmark execution, isolated reports and a Harbor transport adapter. / Evaluación nativa en Rust, informes aislados y adaptador para Harbor.
 - Reserve response capacity, bound tool batches and recover from context-summary failures and truncated generations without replaying effects. / Reserva de contexto, salidas acotadas y recuperación sin repetir efectos.
 - Supervise background services, wait for dependent commands, detect loops using observed progress and persist task contracts and explicit answers. / Supervisión de servicios, espera de comandos, detección de bucles según progreso y contratos con respuestas persistentes.

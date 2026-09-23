@@ -83,12 +83,17 @@ LSP is not a sandbox. Use installed commands, for example:
 
 Entries also accept `initialization_options`. Extensions must not overlap. Sessions
 start lazily and are isolated by canonical workspace and server configuration.
-The pool keeps at most four sessions and 32 open files per session, serializes
-queries, bounds framing/output, and kills failed or cancelled sessions and their
-process groups. Configuration changes and shutdown close the sessions.
+The pool keeps at most four sessions and 32 open files per session. Queries to the
+same server/workspace serialize; different projects or worktrees run concurrently.
+At capacity the least recently used **idle** session is evicted. Active sessions
+and their waiters are never evicted; if all four are busy, a fifth workspace gets
+an explicit retryable busy error. Framing/output and waits remain bounded. Failed
+or cancelled queries discard their server process group. Configuration changes
+cancel active queries and permit fresh sessions with the new configuration.
 
 `code_query` accepts `path`, `operation` (`definition`, `references`, `hover`,
-`symbols`, `implementation`, `diagnostics`), and optional 1-based `line` and
+`symbols`, `symbol_outline`, `find_symbol`, `read_symbol`, `implementation`,
+`diagnostics`), and optional 1-based `line` and
 `character` (UTF-16 code units). Capabilities depend on the configured server.
 Writes, edits and patches request diagnostics for up to four changed files when
 a matching server is configured; larger patches disclose deferred files. Reads
@@ -96,6 +101,58 @@ refresh document contents before queries. Pull diagnostics are supported; push
 diagnostics may return `pending` while the server works. Server failure is
 reported separately from an already-completed file mutation. Diagnostics do not
 replace compilation, tests or checking the user's intended behavior.
+
+### Progressive symbol navigation
+
+1. Locate candidate files with `files_glob` or `files_search`.
+2. Use `code_query` with `symbol_outline` for compact symbol paths, kinds and
+   ranges. `limit` defaults to 50 (maximum 100); `offset` and `next_offset` allow
+   paging. `symbols` retains the original raw LSP result for compatibility.
+3. Use `find_symbol` with `name_path: "Class/method"` to select a component suffix,
+   or `"/Class/method"` to require the exact full path. Matching is case-sensitive,
+   not fuzzy. Search is within the requested file, not a global repository index.
+4. Use `read_symbol` for one unambiguous body, a file SHA-256 and LSP ranges.
+   `max_bytes` defaults to 16 KiB and caps at 32 KiB; `truncated` is explicit.
+   Never treat a truncated body as complete edit context. For overloaded symbols,
+   inspect the returned ranges and use ordinary position/file reads; names are
+   never silently resolved to an arbitrary candidate.
+5. `definition`, `references`, `hover` and `implementation` also accept a unique
+   `name_path` instead of cursor coordinates. `include_context: true` adds up to
+   20 excerpts to location results (five lines / 1,000 bytes each). Excerpts pass
+   the normal workspace, worktree and private-file checks; external dependency
+   locations may be returned by LSP but their contents are not read. Excerpts are
+   snapshots, not proof that all references are complete.
+
+Returned **ranges are zero-based UTF-16**, unlike the tool's one-based input
+coordinates. Excerpt `start_line` is one-based. Invalid ranges and half-surrogate
+positions fail explicitly. The client advertises hierarchical document symbols
+and rejects a server that selects another position encoding. Flat symbol results
+are supported using `containerName` where supplied by the server.
+
+Each session caches at most eight document-symbol responses of at most 128 KiB
+each. Before querying, it rereads its open buffers using the existing protected
+file reader, detects same-size changes, synchronizes changed buffers, notifies
+the server about changed/deleted open files and invalidates symbols. Deleted or
+unreadable buffers are closed and reported as an error, not reused silently. The
+requested file is read after obtaining the session lock and checked again after
+the response; concurrent changes require a retry. This is **bounded open-file
+refresh**, not a filesystem watcher: indexing unopened files and dependency
+changes remains the configured server's responsibility. No whole-repository
+scan, persistent symbol database, embeddings or background model calls are added.
+
+Semantic navigation does not replace editing controls. Use `file_edit` or
+`file_patch` after reading sufficient context; existing approvals, repository
+instructions and worktree integration still apply. Cross-file LSP rename and a
+separate semantic-edit transaction system are deliberately not introduced.
+Protocol reference: [LSP specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/).
+
+Validation (2026-09-21): 39 selected unit/regression tests passed, covering symbol
+navigation, UTF-16/CRLF ranges, cache invalidation, independent/queued queries,
+session cancellation/reconfiguration, access boundaries, tool discovery, skill
+upgrades and worktree integration. The stdio protocol tests use a deterministic
+fixture; the optional real Python language-server test was skipped because its
+executable was not configured. These checks do not establish benchmark gains or
+compatibility with every language server.
 
 ## Active-task compaction
 

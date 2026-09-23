@@ -10,7 +10,7 @@ use std::{
     },
     time::Duration,
 };
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::{Notify, mpsc, oneshot};
 use tokio_util::sync::CancellationToken;
 
 type Pending = Arc<Mutex<HashMap<u64, oneshot::Sender<Result<Value>>>>>;
@@ -19,6 +19,9 @@ pub struct Cdp {
     pending: Pending,
     next: AtomicU64,
     pub events: Arc<Mutex<VecDeque<Value>>>,
+    pub downloads: Arc<Mutex<crate::downloads::Downloads>>,
+    dialogs: Arc<Mutex<HashMap<String, Value>>>,
+    dialog_changed: Arc<Notify>,
     stop: CancellationToken,
 }
 impl Cdp {
@@ -30,12 +33,35 @@ impl Cdp {
             tokio_tungstenite::connect_async_with_config(endpoint, Some(config), true)
                 .await
                 .context("Could not connect to the local browser")?;
+        Self::from_socket(socket)
+    }
+    pub async fn connect_stream<S>(endpoint: &str, stream: S) -> Result<Self>
+    where
+        S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send + 'static,
+    {
+        let config = tokio_tungstenite::tungstenite::protocol::WebSocketConfig::default()
+            .max_message_size(Some(16 * 1024 * 1024))
+            .max_frame_size(Some(16 * 1024 * 1024));
+        let (socket, _) =
+            tokio_tungstenite::client_async_with_config(endpoint, stream, Some(config)).await?;
+        Self::from_socket(socket)
+    }
+    fn from_socket<S>(socket: tokio_tungstenite::WebSocketStream<S>) -> Result<Self>
+    where
+        S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send + 'static,
+    {
         let (mut writer, mut reader) = socket.split();
         let (tx, mut rx) = mpsc::channel::<Value>(32);
         let pending: Pending = Arc::default();
         let replies = pending.clone();
         let events: Arc<Mutex<VecDeque<Value>>> = Arc::default();
         let observed = events.clone();
+        let downloads = Arc::new(Mutex::new(crate::downloads::Downloads::default()));
+        let transfers = downloads.clone();
+        let dialogs: Arc<Mutex<HashMap<String, Value>>> = Arc::default();
+        let active_dialogs = dialogs.clone();
+        let dialog_changed = Arc::new(Notify::new());
+        let notify_dialog = dialog_changed.clone();
         let stop = CancellationToken::new();
         let stopped = stop.clone();
         tokio::spawn(async move {
@@ -57,6 +83,17 @@ impl Cdp {
                                 let _ = reply.send(result);
                             }
                         } else if matches!(value["method"].as_str(), Some("Runtime.exceptionThrown" | "Network.loadingFailed" | "Page.javascriptDialogOpening" | "Page.javascriptDialogClosed" | "Browser.downloadWillBegin" | "Browser.downloadProgress")) {
+                            if let Some(session) = value["sessionId"].as_str() {
+                                match value["method"].as_str() {
+                                    Some("Page.javascriptDialogOpening") => {
+                                        active_dialogs.lock().unwrap().insert(session.into(), json!({"type":value["params"]["type"]}));
+                                        notify_dialog.notify_waiters();
+                                    }
+                                    Some("Page.javascriptDialogClosed") => { active_dialogs.lock().unwrap().remove(session); }
+                                    _ => {}
+                                }
+                            }
+                            transfers.lock().unwrap().observe(&value);
                             let mut queue = observed.lock().unwrap();
                             if queue.len() == 100 { queue.pop_front(); }
                             // Never retain console arguments, response bodies, cookies or request headers.
@@ -74,8 +111,25 @@ impl Cdp {
             pending,
             next: AtomicU64::new(1),
             events,
+            downloads,
+            dialogs,
+            dialog_changed,
             stop,
         })
+    }
+    pub fn dialog(&self, session: &str) -> Option<Value> {
+        self.dialogs.lock().unwrap().get(session).cloned()
+    }
+    pub async fn wait_dialog(&self, session: &str) -> Value {
+        loop {
+            let notified = self.dialog_changed.notified();
+            tokio::pin!(notified);
+            notified.as_mut().enable();
+            if let Some(dialog) = self.dialog(session) {
+                return dialog;
+            }
+            notified.await;
+        }
     }
     pub async fn call(&self, session: Option<&str>, method: &str, params: Value) -> Result<Value> {
         let id = self.next.fetch_add(1, Ordering::Relaxed);

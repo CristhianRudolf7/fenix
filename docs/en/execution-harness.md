@@ -34,6 +34,11 @@ processes may run simultaneously. PTY session members and the original process
 group are terminated during cleanup; a program deliberately escaping the session
 is outside this process manager's isolation guarantees.
 
+Git execution subagents now receive [isolated worktrees](parallel-worktrees.md).
+Their filesystem commands use a per-worktree effect lease. The engine stops their
+managed processes before integration; shared services and non-Git execution retain
+the behavior described above.
+
 ## Output and recovery
 
 `command_status` returns new output by default, with a cursor per reading task.

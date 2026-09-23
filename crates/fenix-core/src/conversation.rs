@@ -14,6 +14,9 @@ pub struct ChatRequest {
     /// Provider-specific opt-in. Responses models supporting reasoning accept this.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reasoning_effort: Option<ReasoningEffort>,
+    /// Request OpenAI Flex explicitly; never upgrade silently to standard pricing.
+    #[serde(default)]
+    pub flex_processing: bool,
 }
 
 impl ChatRequest {
@@ -25,6 +28,7 @@ impl ChatRequest {
             max_output_tokens: 1024,
             temperature: None,
             reasoning_effort: None,
+            flex_processing: false,
         }
     }
 }

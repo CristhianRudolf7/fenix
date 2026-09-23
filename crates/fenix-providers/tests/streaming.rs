@@ -20,6 +20,46 @@ fn event(value: serde_json::Value) -> String {
 }
 
 #[tokio::test]
+async fn preview_masks_split_credentials_and_rejects_unsafe_replay() {
+    let server = MockServer::start().await;
+    let secret = "sk-abcdefghijklmnopqrstuvwxyz";
+    let mut body = String::new();
+    for delta in [
+        "Working\nPassword: ",
+        "'private ",
+        "value'\n",
+        "sk-abc",
+        "defghijklmnopqrstuvwxyz",
+        "\n",
+    ] {
+        body.push_str(&event(
+            json!({"type":"response.output_text.delta","delta":delta}),
+        ));
+    }
+    body.push_str(&event(json!({"type":"response.completed","response":{"id":"r1","status":"completed","output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":format!("Working\nPassword: 'private value'\n{secret}\n")}]}]}})));
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(200).set_body_raw(body, "text/event-stream"))
+        .mount(&server)
+        .await;
+    let mut preview = String::new();
+    let result = client(ClientOptions::default())
+        .complete_with_preview(
+            &ProviderConfig::new(ProviderId::OpenAi).with_base_url(server.uri()),
+            None,
+            &ChatRequest::new("test", vec![Message::user("Hello")]),
+            &mut |delta| {
+                assert!(!delta.contains("private"));
+                assert!(!delta.contains("sk-"));
+                preview.push_str(delta);
+            },
+        )
+        .await;
+    assert!(result.is_err());
+    assert!(preview.contains("[REDACTED]"));
+    assert!(!preview.contains(secret));
+}
+
+#[tokio::test]
 #[ignore = "Opt-in billable OpenAI streaming check; requires OPENAI_API_KEY"]
 async fn live_openai_preview_matches_the_completed_response() {
     let key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY must be configured privately");

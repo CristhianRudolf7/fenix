@@ -1,0 +1,2563 @@
+{
+  "review_date_utc": "2026-09-19",
+  "catalog": {
+    "repository": "VoltAgent/awesome-openclaw-skills",
+    "commit": "4367aac4da2a6202b56cf6dfdbab91076bbb8a1d",
+    "parsed_entries": 5196,
+    "distinct_urls": 5193,
+    "category_counts": {
+      "ai-and-llms": 160,
+      "apple-apps-and-services": 43,
+      "browser-and-automation": 311,
+      "calendar-and-scheduling": 66,
+      "clawdbot-tools": 35,
+      "cli-utilities": 170,
+      "coding-agents-and-ides": 1162,
+      "communication": 147,
+      "data-and-analytics": 36,
+      "devops-and-cloud": 376,
+      "gaming": 26,
+      "git-and-github": 156,
+      "health-and-fitness": 84,
+      "image-and-video-generation": 170,
+      "ios-and-macos-development": 29,
+      "marketing-and-sales": 106,
+      "media-and-streaming": 84,
+      "moltbook": 35,
+      "notes-and-pkm": 70,
+      "pdf-and-documents": 103,
+      "personal-development": 50,
+      "productivity-and-tasks": 208,
+      "search-and-research": 343,
+      "security-and-passwords": 53,
+      "self-hosted-and-automation": 32,
+      "shopping-and-e-commerce": 46,
+      "smart-home-and-iot": 40,
+      "speech-and-transcription": 43,
+      "transportation": 109,
+      "web-and-frontend-development": 903
+    },
+    "malformed_bullets": [
+      {
+        "category": "productivity-and-tasks",
+        "display_name": "proactive-soul",
+        "reason": "Malformed link target starts with an extra [ and points to an unrelated-looking ppt-ooxml-tool slug; not followed."
+      }
+    ]
+  },
+  "scope": {
+    "all_listings_inventoried": true,
+    "selected_entrypoints_attempted": 28,
+    "selected_entrypoints_read_in_full": 27,
+    "all_catalog_skill_bodies_read": false,
+    "upstream_executable_audit": false,
+    "source_mirror": "clawskills.sh",
+    "historical_github_archive_lookup": "https://api.github.com/repos/openclaw/skills/commits/main returned HTTP 404; not used as verified provenance"
+  },
+  "category_triage": [
+    {
+      "category": "ai-and-llms",
+      "entries": 160,
+      "fenix_destinations": [
+        "model-selection",
+        "ml-training",
+        "ml-inference-deployment",
+        "rag-evaluation"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "apple-apps-and-services",
+      "entries": 43,
+      "fenix_destinations": [
+        "desktop-automation",
+        "knowledge-workspace-connectors",
+        "calendar-scheduling"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "browser-and-automation",
+      "entries": 311,
+      "fenix_destinations": [
+        "browser-navigation",
+        "web-data-extraction"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "calendar-and-scheduling",
+      "entries": 66,
+      "fenix_destinations": [
+        "calendar-scheduling",
+        "scheduled-workflows",
+        "memory-and-reminders"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "clawdbot-tools",
+      "entries": 35,
+      "fenix_destinations": [
+        "agent-workflow-diagnosis",
+        "skill-source-review"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "cli-utilities",
+      "entries": 170,
+      "fenix_destinations": [
+        "shell-automation",
+        "local-file-work",
+        "environment-and-dependencies"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "coding-agents-and-ides",
+      "entries": 1162,
+      "fenix_destinations": [
+        "software-implementation",
+        "test-driven-repair",
+        "task-delegation"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "communication",
+      "entries": 147,
+      "fenix_destinations": [
+        "email-workflows",
+        "team-messaging",
+        "professional-writing"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "data-and-analytics",
+      "entries": 36,
+      "fenix_destinations": [
+        "data-analysis",
+        "data-pipelines",
+        "web-data-extraction"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "devops-and-cloud",
+      "entries": 376,
+      "fenix_destinations": [
+        "cloud-deployment",
+        "container-workflows",
+        "kubernetes-operations"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "gaming",
+      "entries": 26,
+      "fenix_destinations": [
+        "game-development"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "git-and-github",
+      "entries": 156,
+      "fenix_destinations": [
+        "git-recovery-and-change-management",
+        "git-worktree-coordination",
+        "code-review"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "health-and-fitness",
+      "entries": 84,
+      "fenix_destinations": [
+        "wearable-data-analysis",
+        "meal-planning"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "image-and-video-generation",
+      "entries": 170,
+      "fenix_destinations": [
+        "image-workflows",
+        "video-editing"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "ios-and-macos-development",
+      "entries": 29,
+      "fenix_destinations": [
+        "mobile-app-development",
+        "mobile-app-testing"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "marketing-and-sales",
+      "entries": 106,
+      "fenix_destinations": [
+        "marketing-content",
+        "content-calendar",
+        "sales-opportunities",
+        "crm-workflows"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "media-and-streaming",
+      "entries": 84,
+      "fenix_destinations": [
+        "audio-production",
+        "video-editing"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "moltbook",
+      "entries": 35,
+      "fenix_destinations": [
+        "team-messaging",
+        "api-integration"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "notes-and-pkm",
+      "entries": 70,
+      "fenix_destinations": [
+        "knowledge-base-maintenance",
+        "feed-monitoring",
+        "learning-and-tutoring"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "pdf-and-documents",
+      "entries": 103,
+      "fenix_destinations": [
+        "pdf-workflows",
+        "documents-word",
+        "documents-spreadsheets",
+        "documents-presentations"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "personal-development",
+      "entries": 50,
+      "fenix_destinations": [
+        "personal-organization",
+        "learning-and-tutoring"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "productivity-and-tasks",
+      "entries": 208,
+      "fenix_destinations": [
+        "personal-organization",
+        "scheduled-workflows",
+        "issue-tracker-workflows"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "search-and-research",
+      "entries": 343,
+      "fenix_destinations": [
+        "web-research",
+        "literature-review",
+        "systematic-review",
+        "feed-monitoring"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "security-and-passwords",
+      "entries": 53,
+      "fenix_destinations": [
+        "skill-source-review",
+        "identity-access-review",
+        "dependency-and-secret-audit"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "self-hosted-and-automation",
+      "entries": 32,
+      "fenix_destinations": [
+        "process-and-service-management",
+        "container-workflows",
+        "scheduled-workflows"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "shopping-and-e-commerce",
+      "entries": 46,
+      "fenix_destinations": [
+        "purchase-comparison",
+        "procurement-and-vendors"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "smart-home-and-iot",
+      "entries": 40,
+      "fenix_destinations": [
+        "smart-home-control",
+        "weather-briefing",
+        "3d-printing-preparation"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "speech-and-transcription",
+      "entries": 43,
+      "fenix_destinations": [
+        "audio-transcription",
+        "audio-production",
+        "invoice-and-expense-records"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "transportation",
+      "entries": 109,
+      "fenix_destinations": [
+        "travel-planning",
+        "geospatial-analysis",
+        "weather-briefing"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    },
+    {
+      "category": "web-and-frontend-development",
+      "entries": 903,
+      "fenix_destinations": [
+        "frontend-design-and-accessibility",
+        "web-animation",
+        "game-development"
+      ],
+      "scope": "Category-level candidate routing, not an individual audit or a claim that every vendor integration exists."
+    }
+  ],
+  "selected_candidates": [
+    {
+      "id": "steipete/blogwatcher",
+      "url": "https://clawskills.sh/skills-markdown/steipete/blogwatcher.md",
+      "retrieved_utc": "2026-09-19T17:27:31.609670+00:00",
+      "status": 200,
+      "bytes": 1221,
+      "sha256": "c22cd0c2c61891df92e3fb18a3ec5952cbffd5d1e06455cde78753e0cc8d3e32",
+      "etag": "\"8055199685a5f4b08d73a20eb548ea69\"",
+      "fenix_skills": [
+        "feed-monitoring"
+      ],
+      "decision": "Adapt entry identity and new-post tracking; no Go CLI install.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "dimitripantzos/rss-reader",
+      "url": "https://clawskills.sh/skills-markdown/dimitripantzos/rss-reader.md",
+      "retrieved_utc": "2026-09-19T17:27:31.615555+00:00",
+      "status": 200,
+      "bytes": 3638,
+      "sha256": "8dc837e1c639b304a2e9ed5db48aca29011305c768718292a76015534719dd69",
+      "etag": "\"edbdca1d997c41b69e7b026bffb518d5\"",
+      "fenix_skills": [
+        "feed-monitoring"
+      ],
+      "decision": "Adapt categories and bounded updates; no automatic heartbeat, guessed dates or missing JS helpers.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "odysseus0/feed-digest",
+      "url": "https://clawskills.sh/skills-markdown/odysseus0/feed-digest.md",
+      "retrieved_utc": "2026-09-19T17:27:31.618714+00:00",
+      "status": 200,
+      "bytes": 2187,
+      "sha256": "8ce3d1d92f48a822ea2ad0fdea9b9b0fb602b83c167c02f90b9e691a55d566b2",
+      "etag": "\"8b9e341c0e96403c7a9015451e1c920d\"",
+      "fenix_skills": [
+        "feed-monitoring"
+      ],
+      "decision": "Adapt article reading and digest selection; preserve separate read and delivery state instead of marking every triaged item read.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "noblepayne/tabstack-extractor",
+      "url": "https://clawskills.sh/skills-markdown/noblepayne/tabstack-extractor.md",
+      "retrieved_utc": "2026-09-19T17:27:31.634025+00:00",
+      "status": 200,
+      "bytes": 7135,
+      "sha256": "b0ac26a0d839493ba086011114d4799fc2bcb133b4b83ad79d6fba4396ccea82",
+      "etag": "\"e5bbba9257b9b0d5f312df82a9bd1cb5\"",
+      "fenix_skills": [
+        "web-data-extraction"
+      ],
+      "decision": "Adapt schema-first extraction and pagination; no paid API dependency, remote installer execution or assumed personal context.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "techlaai/anycrawl",
+      "url": "https://clawskills.sh/skills-markdown/techlaai/anycrawl.md",
+      "retrieved_utc": "2026-09-19T17:27:31.634999+00:00",
+      "status": 200,
+      "bytes": 6930,
+      "sha256": "ce3b9bb93b586250da18f7b56c726ce7d69bde95d324b2bea0fef0173e826a19",
+      "etag": "\"4c53815283f73f02523f3d2d3805873e\"",
+      "fenix_skills": [
+        "web-data-extraction"
+      ],
+      "decision": "Adapt bounded collection and job/result identity; retain native Fénix public-search/access boundaries, no hosted search replacement.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "ktpriyatham/browser-ladder",
+      "url": "https://clawskills.sh/skills-markdown/ktpriyatham/browser-ladder.md",
+      "retrieved_utc": "2026-09-19T17:27:31.867086+00:00",
+      "status": 200,
+      "bytes": 4815,
+      "sha256": "e7229a1f54e2954f1d35eb97d1898f28df65bb04c3b9cc151f1358bfd6380579",
+      "etag": "\"ba1fd9bf7bf97b6814714615bc27dc6b\"",
+      "fenix_skills": [
+        "web-data-extraction"
+      ],
+      "decision": "Use static reading then native rendering when needed; do not escalate to paid browsers or access-control bypass.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "ouyangabel/linux-desktop",
+      "url": "https://clawskills.sh/skills-markdown/ouyangabel/linux-desktop.md",
+      "retrieved_utc": "2026-09-19T17:27:31.873040+00:00",
+      "status": 200,
+      "bytes": 5474,
+      "sha256": "4ace874401372f4b7c4a344f86966a68bb6f1e4f7b0fd7e3f4bb4170fff3fb09",
+      "etag": "\"383e8bc255d344ec1ba0a26823612e36\"",
+      "fenix_skills": [
+        "desktop-automation"
+      ],
+      "decision": "Adapt observation/action verification; distinguish X11 from Wayland and replace blind sleeps/coordinates with fresh evidence.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "s3rous/desktop-guardian",
+      "url": "https://clawskills.sh/skills-markdown/s3rous/desktop-guardian.md",
+      "retrieved_utc": "2026-09-19T17:27:31.885890+00:00",
+      "status": 200,
+      "bytes": 4694,
+      "sha256": "30c48152a9c98c06bc04dd02527f5ae0ca42b97f0ba7859447190545bff5580c",
+      "etag": "\"c9bff3c6b51b0a130f1fa26d24ff4b9a\"",
+      "fenix_skills": [
+        "desktop-automation"
+      ],
+      "decision": "Adapt application/window targeting; exclude persistent guardian, auto-closing apps and auto-dismissing dialogs.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "chris6970barbarian-hue/glitch-homeassistant",
+      "url": "https://clawskills.sh/skills-markdown/chris6970barbarian-hue/glitch-homeassistant.md",
+      "retrieved_utc": "2026-09-19T17:27:31.934076+00:00",
+      "status": 200,
+      "bytes": 2621,
+      "sha256": "39486e9866c696ceb48f61e8c324d6b3288624cee674ea2068c90bfa4b898136",
+      "etag": "\"203f2677b20952dfe5dcce99b0a75e85\"",
+      "fenix_skills": [
+        "smart-home-control"
+      ],
+      "decision": "Adapt device capabilities and services; resolve exact targets and verify state, without copying token-bearing shell examples.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "maxsumrall/homey",
+      "url": "https://clawskills.sh/skills-markdown/maxsumrall/homey.md",
+      "retrieved_utc": "2026-09-19T17:27:31.960760+00:00",
+      "status": 200,
+      "bytes": 5848,
+      "sha256": "ae18bb17de18e44e9f3f301eb445c2be69c9b5f5250d8be97d9800fc8b6b463e",
+      "etag": "\"49b1425ebacfc7fdf4d6aff0a5d74ad5\"",
+      "fenix_skills": [
+        "smart-home-control"
+      ],
+      "decision": "Retain capability ranges and ambiguous-name resolution; existing connection is required, no controller installed.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "lstpsche/openmeteo-weather",
+      "url": "https://clawskills.sh/skills-markdown/lstpsche/openmeteo-weather.md",
+      "retrieved_utc": "2026-09-19T17:27:32.025688+00:00",
+      "status": 200,
+      "bytes": 7413,
+      "sha256": "1e7cb60f0ffdd6dd7711cf6807f18632b934a0e8b68e6ecb7495115087007dfa",
+      "etag": "\"c2531039fe5efd35c17e4f4d6db14ef4\"",
+      "fenix_skills": [
+        "weather-briefing"
+      ],
+      "decision": "Adapt bounded variables, location and local dates; separate observations/models, units and valid times.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "dimitryvin/aviation-weather",
+      "url": "https://clawskills.sh/skills-markdown/dimitryvin/aviation-weather.md",
+      "retrieved_utc": "2026-09-19T17:27:32.044102+00:00",
+      "status": 200,
+      "bytes": 1861,
+      "sha256": "45294eac352391fe122b1c020800c8f9fe4430c9b425c9d5e72f9a4bf6971857",
+      "etag": "\"478e550225243fe11143978659905fdf\"",
+      "fenix_skills": [
+        "weather-briefing"
+      ],
+      "decision": "Retain source/time awareness; exclude personal airport defaults and any claim of a complete operational flight briefing.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "edkief/kokoro-tts",
+      "url": "https://clawskills.sh/skills-markdown/edkief/kokoro-tts.md",
+      "retrieved_utc": "2026-09-19T17:27:32.047399+00:00",
+      "status": 200,
+      "bytes": 1543,
+      "sha256": "79fac3c48e8008b9ab69338da7d3827931ef1a5cd32d31e8cf0940988fb9a711",
+      "etag": "\"da1c5cde2b87e55df90e134f33e32fcd\"",
+      "fenix_skills": [
+        "audio-production"
+      ],
+      "decision": "Adapt available voice/engine discovery; do not assume localhost service, personal voice defaults or MEDIA attachment semantics.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "udiedrichsen/audio-gen",
+      "url": "https://clawskills.sh/skills-markdown/udiedrichsen/audio-gen.md",
+      "retrieved_utc": "2026-09-19T17:27:32.072964+00:00",
+      "status": 200,
+      "bytes": 15270,
+      "sha256": "e21cd0608d8f899cc46e70db1fce3d794d0f0564f433007d4189fd9de2bb7899",
+      "etag": "\"a8fd60e41a98e37daa1fc77331c9f66b\"",
+      "fenix_skills": [
+        "audio-production"
+      ],
+      "decision": "Adapt scripted narration workflow; use measured sample/output duration, actual TTS syntax and existing authorization rather than fixed speech rate and repeated approvals.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "neal-collab/auto-whisper-safe",
+      "url": "https://clawskills.sh/skills-markdown/neal-collab/auto-whisper-safe.md",
+      "retrieved_utc": "2026-09-19T17:27:32.121517+00:00",
+      "status": 200,
+      "bytes": 4214,
+      "sha256": "1e0cde4c959229de605c96e29e15916a2322ede9f5d9114037be6f051b6f165e",
+      "etag": "\"f5819e0b48f8cca27c7ba06c41d8e6d6\"",
+      "fenix_skills": [
+        "audio-transcription"
+      ],
+      "decision": "Adapt bounded chunking, source offsets and join review; do not adopt universal no-OOM or seamless-merge promises.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "stanlee000/norman-monthly-reconciliation",
+      "url": "https://clawskills.sh/skills-markdown/stanlee000/norman-monthly-reconciliation.md",
+      "retrieved_utc": "2026-09-19T17:27:32.145592+00:00",
+      "status": 200,
+      "bytes": 2423,
+      "sha256": "a0119ed4b77c2a99335627148b2e86f853bc5e6b275ddb3b0afa75c01c0396af",
+      "etag": "\"0ddce92123c4fdd9b63a5b8c8035aa32\"",
+      "fenix_skills": [
+        "invoice-and-expense-records"
+      ],
+      "decision": "Adapt pending evidence, partial payments and residual balances; no automatic verification, tax submission or outreach.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "gowtham1984/financial-reconciler",
+      "url": "https://clawskills.sh/skills-markdown/gowtham1984/financial-reconciler.md",
+      "retrieved_utc": "2026-09-19T17:27:32.145900+00:00",
+      "status": 200,
+      "bytes": 7118,
+      "sha256": "777f32b2897924a361c77f9c22f59a12a604df89901bba7906eeaced0777bd72",
+      "etag": "\"5323603d68f9b6de6754aa1c7ed6b141\"",
+      "fenix_skills": [
+        "invoice-and-expense-records"
+      ],
+      "decision": "Adapt local normalized statements and duplicate accounting; no guessed locale/category, universal bank parser or global personal database.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "asleep123/caldav-calendar",
+      "url": "https://clawskills.sh/skills-markdown/asleep123/caldav-calendar.md",
+      "retrieved_utc": "2026-09-19T17:27:32.192338+00:00",
+      "status": 200,
+      "bytes": 3478,
+      "sha256": "63b956dec3a22bc0207fccf258beae90c6648339b568798fe42ac3b797c4ed27",
+      "etag": "\"fd69ead23cfb05bab52861a809f53713\"",
+      "fenix_skills": [
+        "calendar-scheduling"
+      ],
+      "decision": "Adapt cache/sync distinction and identity; no unconditional bidirectional sync, cache deletion or remote-wins conflict policy.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "billylui/calendar-scheduling",
+      "url": "https://clawskills.sh/skills-markdown/billylui/calendar-scheduling.md",
+      "retrieved_utc": "2026-09-19T17:27:32.208766+00:00",
+      "status": 200,
+      "bytes": 11769,
+      "sha256": "2a7ed64fe02aa8f4326837130b965bee508249398ccb9600a793dd4913dc6ca8",
+      "etag": "\"95582e8c6a4fe03f7c9f2a0648ef2fcf\"",
+      "fenix_skills": [
+        "calendar-scheduling"
+      ],
+      "decision": "Adapt explicit local-time resolution and provider boundaries; no new MCP server or claim of atomic booking without runtime support.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "gyroninja/anki-connect",
+      "url": "https://clawskills.sh/skills-markdown/gyroninja/anki-connect.md",
+      "retrieved_utc": "2026-09-19T17:27:32.256363+00:00",
+      "status": 200,
+      "bytes": 654,
+      "sha256": "99e76607782909410001f40616fcaaa5d87649dad5cefe2a60c5821999b3d5c5",
+      "etag": "\"26a8906567199b3f08a49a8eedb42ca8\"",
+      "fenix_skills": [
+        "learning-and-tutoring"
+      ],
+      "decision": "Add note/card identity, duplicate policy and preservation of scheduling history; connector still required.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "kjaylee/game-dev-rust-godot",
+      "url": "https://clawskills.sh/skills-markdown/kjaylee/game-dev-rust-godot.md",
+      "retrieved_utc": "2026-09-19T17:27:32.287474+00:00",
+      "status": 200,
+      "bytes": 8021,
+      "sha256": "2ba4e7126d101bafea6cdab1a3726e039d28bb5684d48b99740e7df232b23dcb",
+      "etag": "\"3eb1d47eeec1a007bb48f756ab660ae4\"",
+      "fenix_skills": [
+        "game-development"
+      ],
+      "decision": "Adapt playable-loop/export validation; reject personal engine restrictions, asset servers and mandatory publication workflow.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "jhauga/game-engine",
+      "url": "https://clawskills.sh/skills-markdown/jhauga/game-engine.md",
+      "retrieved_utc": "2026-09-19T17:27:32.293358+00:00",
+      "status": 200,
+      "bytes": 6322,
+      "sha256": "9bd6611736885dc12391ed17bc7f4f26e9dd39bf61c756f70317c4f1562466f8",
+      "etag": "\"e64f87e4d0bb60a18932ebe595a005fa\"",
+      "fenix_skills": [
+        "game-development"
+      ],
+      "decision": "Adapt loop/input/collision/state verification and target testing; no full engine or templates copied.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "filipe-m-almeida/health-sync",
+      "url": "https://clawskills.sh/skills-markdown/filipe-m-almeida/health-sync.md",
+      "retrieved_utc": "2026-09-19T17:27:32.315795+00:00",
+      "status": 200,
+      "bytes": 4103,
+      "sha256": "25094013561bca791c5fdc2bc59454a0fc15f0d40dd50887896057e8728c3560",
+      "etag": "\"276a8476f9822603a2d7b85e74844299\"",
+      "fenix_skills": [
+        "wearable-data-analysis"
+      ],
+      "decision": "Adapt schema/coverage/provenance; accept explicitly dated exports, no forced sync or credential archive import.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "mjrussell/fitbit",
+      "url": "https://clawskills.sh/skills-markdown/mjrussell/fitbit.md",
+      "retrieved_utc": "2026-09-19T17:27:32.341379+00:00",
+      "status": 200,
+      "bytes": 2184,
+      "sha256": "8374284e3110c0e87e2842881f017fa96049447f6723ae08eb2b5916632f7d05",
+      "etag": "\"1956cdb2de0d7d11693101e576381f52\"",
+      "fenix_skills": [
+        "wearable-data-analysis"
+      ],
+      "decision": "Adapt read-only metric access and freshness; verify session date attribution, units and duplicate devices.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "leegitw/failure-memory",
+      "url": "https://clawskills.sh/skills-markdown/leegitw/failure-memory.md",
+      "retrieved_utc": "2026-09-19T17:27:32.346365+00:00",
+      "status": 200,
+      "bytes": 11068,
+      "sha256": "45a6cb724012570935c266687b3d0870b02a2f450884ecdafae294019c820811",
+      "etag": "\"be2acec7c5fb121931e373930560339d\"",
+      "fenix_skills": [
+        "agent-workflow-diagnosis",
+        "memory-and-reminders"
+      ],
+      "decision": "Existing native traces and scoped evidence-backed memory already cover the useful mechanism. No second learning store or threshold-based automatic global rules.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "trypto1019/arc-skill-health-monitor",
+      "url": "https://clawskills.sh/skills-markdown/trypto1019/arc-skill-health-monitor.md",
+      "retrieved_utc": "2026-09-19T17:27:32.434104+00:00",
+      "status": 200,
+      "bytes": 1955,
+      "sha256": "4fdc863616f9e7162ececf533933e9ae6864ad686d60fc0ceff9a2f01035c568",
+      "etag": "\"60f2d5d0781d8471c7a10f033c636abf\"",
+      "fenix_skills": [
+        "agent-workflow-diagnosis",
+        "observability-and-slos"
+      ],
+      "decision": "Existing diagnosis/observability cover measurement. No monitor that reruns arbitrary skill commands or new automatic webhook alerts.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "bowen31337/agent-wal",
+      "url": "https://clawskills.sh/skills-markdown/bowen31337/agent-wal.md",
+      "retrieved_utc": "2026-09-19T17:27:32.508326+00:00",
+      "status": 200,
+      "bytes": 3058,
+      "sha256": "b7811f7835a0df57abdbc8840acc1f400a330f392782854ffb51dae285e2e556",
+      "etag": "\"bda8ae0869604998ac86f46d7f02c80b\"",
+      "fenix_skills": [
+        "memory-and-reminders"
+      ],
+      "decision": "Native storage/history/plans already persist state. No parallel WAL or mandatory writes before every response.",
+      "review_depth": "Full downloaded entrypoint read; linked executables/references not audited or executed",
+      "verified_author_revision": false
+    },
+    {
+      "id": "globalcaos/agent-memory-ultimate",
+      "url": "https://clawskills.sh/skills-markdown/globalcaos/agent-memory-ultimate.md",
+      "retrieved_utc": "2026-09-19T17:27:32.513618+00:00",
+      "error": "HTTP Error 404: Not Found",
+      "fenix_skills": [
+        "memory-and-reminders"
+      ],
+      "decision": "Download returned 404. Entry body and runtime were not reviewed; no claims adopted.",
+      "review_depth": "Unavailable; body not read",
+      "verified_author_revision": false
+    }
+  ],
+  "implementation": {
+    "catalog_before": 156,
+    "catalog_after": 164,
+    "added": [
+      "feed-monitoring",
+      "web-data-extraction",
+      "desktop-automation",
+      "smart-home-control",
+      "audio-production",
+      "weather-briefing",
+      "game-development",
+      "wearable-data-analysis"
+    ],
+    "updated": [
+      "calendar-scheduling",
+      "learning-and-tutoring",
+      "audio-transcription",
+      "invoice-and-expense-records",
+      "skill-source-review",
+      "scheduled-workflows"
+    ],
+    "affected_artifacts": [
+      {
+        "path": "resources/skills/feed-monitoring/SKILL.md",
+        "bytes": 3211,
+        "sha256": "995dd2812454413968f5a6f4631dcc76d22097db346e993a9c5146e46894b7d3"
+      },
+      {
+        "path": "resources/skills/feed-monitoring/references/snapshots.md",
+        "bytes": 1592,
+        "sha256": "90c4f61dfb2388663effe1d7dd0b6443c686bed05286f7e1d28da926de22eb50"
+      },
+      {
+        "path": "resources/skills/feed-monitoring/scripts/compare_feeds.py",
+        "bytes": 5882,
+        "sha256": "49d04b3fe748e3409c1bb84ad2e1e3cffd46201e9abaf37b3b33f118d76cffbe"
+      },
+      {
+        "path": "resources/skills/web-data-extraction/SKILL.md",
+        "bytes": 3215,
+        "sha256": "4d3ebcf919d15793496c7337055bce27559758c595144fbfd6e610739f781ab4"
+      },
+      {
+        "path": "resources/skills/desktop-automation/SKILL.md",
+        "bytes": 2821,
+        "sha256": "3b074d5a142647a7bba244b22162046e6ba1026c9aa780aa39f2a11d29eec22a"
+      },
+      {
+        "path": "resources/skills/smart-home-control/SKILL.md",
+        "bytes": 2775,
+        "sha256": "f12b9f13cc609e8e43200285025916eb7dd0023cf0ecd64e89d6662effcb6354"
+      },
+      {
+        "path": "resources/skills/audio-production/SKILL.md",
+        "bytes": 3022,
+        "sha256": "f0028021be436fda5a01c5dfa07297422a127d4f4a6289d00297b0f7c1a89ded"
+      },
+      {
+        "path": "resources/skills/audio-production/references/render-checks.md",
+        "bytes": 1308,
+        "sha256": "c2d1e1d964a121f3c550bc9a128dfd39d3c2beb1a2b04d3feafcbb98d3bb740f"
+      },
+      {
+        "path": "resources/skills/weather-briefing/SKILL.md",
+        "bytes": 2820,
+        "sha256": "e2797b8855505a03f1f31a7b67f258c67845ab82198eb5337f6cc98650280fab"
+      },
+      {
+        "path": "resources/skills/game-development/SKILL.md",
+        "bytes": 3171,
+        "sha256": "da60ec8c2bc5d98ebbfb42c38158d34a11830a8909fb86e694833b6325bdcd6e"
+      },
+      {
+        "path": "resources/skills/wearable-data-analysis/SKILL.md",
+        "bytes": 3019,
+        "sha256": "1a83d9e0f9bd72da2474aa270d43cda4ac8d0bb12fae92457623935171c1fd06"
+      },
+      {
+        "path": "resources/skills/calendar-scheduling/SKILL.md",
+        "bytes": 2345,
+        "sha256": "56c09d615cb00b40d0f8737049cff1bba73a7387e8603eeca07aff3cfb38423f"
+      },
+      {
+        "path": "resources/skills/calendar-scheduling/references/time-and-sync.md",
+        "bytes": 1540,
+        "sha256": "2c107c87c1c5e69188e9fd21237ef32564e155e3b6e95db1f02719205248235e"
+      },
+      {
+        "path": "resources/skills/calendar-scheduling/scripts/local_time_candidates.py",
+        "bytes": 1592,
+        "sha256": "828ba3657aedf82684630501ad5e0472c8b0ce61abbc30fbbf1a4e1c54f6cf47"
+      },
+      {
+        "path": "resources/skills/learning-and-tutoring/SKILL.md",
+        "bytes": 1819,
+        "sha256": "0792e8fe1a0ab3627dda517f4d4a10fe5af5d12deefe79cd6dea5d6e32e81114"
+      },
+      {
+        "path": "resources/skills/learning-and-tutoring/references/retrieval-practice.md",
+        "bytes": 1505,
+        "sha256": "beaf5dfc30d4f2485f508a5be65302d1af16810ca7bb618d33dcadc57c6ec9ac"
+      },
+      {
+        "path": "resources/skills/audio-transcription/SKILL.md",
+        "bytes": 1940,
+        "sha256": "c4ed4a4c297fb351017e24db8c478f7745a38869dcd33b6627540c811a96f1d5"
+      },
+      {
+        "path": "resources/skills/audio-transcription/references/chunks-and-subtitles.md",
+        "bytes": 1402,
+        "sha256": "bda8535cd6493628b9113fe5da60c2c3d5f5fafa1252efb18e8feea438a0a78b"
+      },
+      {
+        "path": "resources/skills/audio-transcription/scripts/check_srt.py",
+        "bytes": 2729,
+        "sha256": "92008345cfda1c2298cc809b59781bf2f681385685df59e7717e469fab1cc360"
+      },
+      {
+        "path": "resources/skills/invoice-and-expense-records/SKILL.md",
+        "bytes": 2357,
+        "sha256": "aa4737907c238821fecb40f9309b940911688ce6dedf66927a3ff01de9639263"
+      },
+      {
+        "path": "resources/skills/invoice-and-expense-records/references/statement-records.md",
+        "bytes": 1787,
+        "sha256": "d668b339a691447888a33360c0dcd33dad79e512dfd35ba2ad21e2a59c3e131f"
+      },
+      {
+        "path": "resources/skills/invoice-and-expense-records/scripts/reconcile_statement.py",
+        "bytes": 4135,
+        "sha256": "7d70b1ce72a63ee0c733e725481449fae9c1af036d9a914998b74e92757bc8cf"
+      },
+      {
+        "path": "resources/skills/skill-source-review/SKILL.md",
+        "bytes": 2483,
+        "sha256": "e731400e592b8649383eda76644b9c41a523f4b9fe4dbc3970ab3fa8af26d3d7"
+      },
+      {
+        "path": "resources/skills/scheduled-workflows/SKILL.md",
+        "bytes": 1656,
+        "sha256": "bdab5098939455f57de6e0bd01c9b3b0daee72187540baebd94c2f6ea2863c12"
+      }
+    ],
+    "upstream_skill_text_or_runtime_vendored": false,
+    "live_service_deployed": false,
+    "new_native_connector_installed": false,
+    "migration_snapshots": [
+      {
+        "skill": "calendar-scheduling",
+        "path": "crates/fenix-agent/tests/fixtures/skills/openclaw-expansion-v1/calendar-scheduling.md",
+        "sha256": "f5e17215b49dd5c5c5edda0b56868ed5a1a62192d0f205d2e48dc1525a357ea8"
+      },
+      {
+        "skill": "learning-and-tutoring",
+        "path": "crates/fenix-agent/tests/fixtures/skills/openclaw-expansion-v1/learning-and-tutoring.md",
+        "sha256": "1febe7711fb78d4067ce6b8b37a72e9b8ae42159d00481bc7d9da6a161ec3b9a"
+      },
+      {
+        "skill": "audio-transcription",
+        "path": "crates/fenix-agent/tests/fixtures/skills/openclaw-expansion-v1/audio-transcription.md",
+        "sha256": "314c7beb3be573a06e7b6627da6bac330b4f79ac398506657f8ff7f48381e9df"
+      },
+      {
+        "skill": "invoice-and-expense-records",
+        "path": "crates/fenix-agent/tests/fixtures/skills/openclaw-expansion-v1/invoice-and-expense-records.md",
+        "sha256": "fab561344ef60df2d4557a8c67d9b4d47477675e3bd6ac1f24b94891af4af0fc"
+      },
+      {
+        "skill": "skill-source-review",
+        "path": "crates/fenix-agent/tests/fixtures/skills/openclaw-expansion-v1/skill-source-review.md",
+        "sha256": "d7c082a9fefa2bb70430f91e3eabdbcc21348d10e8421cf2de1999428691d449"
+      },
+      {
+        "skill": "scheduled-workflows",
+        "path": "crates/fenix-agent/tests/fixtures/skills/openclaw-expansion-v1/scheduled-workflows.md",
+        "sha256": "e0e7edc5f88aa124cbca17ee5a2c570a9ea59ae3c507f4f21773b113a2f154ab"
+      }
+    ]
+  },
+  "validation": {
+    "native_skill_tests": {
+      "passed": 23,
+      "failed": 0,
+      "seconds": 29.51,
+      "command": "cargo test -p fenix-agent --lib skills:: --locked -- --nocapture"
+    },
+    "helpers": {
+      "passed": 23,
+      "failed": 0,
+      "seconds": 0.818,
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 tests/skills/test_openclaw_helpers.py",
+      "cases": [
+        "test_clis_emit_json_preserve_inputs_and_expose_non_success (__main__.CliTests.test_clis_emit_json_preserve_inputs_and_expose_non_success)",
+        "test_atom_namespace_xml_base_and_dates (__main__.FeedTests.test_atom_namespace_xml_base_and_dates)",
+        "test_duplicate_identity_conflicts_are_not_silently_merged (__main__.FeedTests.test_duplicate_identity_conflicts_are_not_silently_merged)",
+        "test_feed_identity_mismatch (__main__.FeedTests.test_feed_identity_mismatch)",
+        "test_initial_scan_and_idempotent_comparison (__main__.FeedTests.test_initial_scan_and_idempotent_comparison)",
+        "test_late_arrivals_and_edits_do_not_depend_on_high_water_date (__main__.FeedTests.test_late_arrivals_and_edits_do_not_depend_on_high_water_date)",
+        "test_missing_identity_and_unsupported_xml_fail (__main__.FeedTests.test_missing_identity_and_unsupported_xml_fail)",
+        "test_unknown_dates_and_invalid_link_scheme (__main__.FeedTests.test_unknown_dates_and_invalid_link_scheme)",
+        "test_accounts_with_same_transaction_id_remain_separate (__main__.StatementTests.test_accounts_with_same_transaction_id_remain_separate)",
+        "test_conflicting_duplicate_and_currency_mismatch_fail (__main__.StatementTests.test_conflicting_duplicate_and_currency_mismatch_fail)",
+        "test_exact_decimal_balance (__main__.StatementTests.test_exact_decimal_balance)",
+        "test_large_values_keep_small_decimal_contributions (__main__.StatementTests.test_large_values_keep_small_decimal_contributions)",
+        "test_pending_is_excluded_and_duplicates_reported (__main__.StatementTests.test_pending_is_excluded_and_duplicates_reported)",
+        "test_unresolved_balance_and_ambiguous_amount_formats (__main__.StatementTests.test_unresolved_balance_and_ambiguous_amount_formats)",
+        "test_bom_and_crlf (__main__.SubtitleTests.test_bom_and_crlf)",
+        "test_empty_invalid_indices_intervals_and_duration (__main__.SubtitleTests.test_empty_invalid_indices_intervals_and_duration)",
+        "test_overlap_is_reported_not_erased (__main__.SubtitleTests.test_overlap_is_reported_not_erased)",
+        "test_valid_global_times_and_media_bound (__main__.SubtitleTests.test_valid_global_times_and_media_bound)",
+        "test_fall_back_preserves_two_different_instants (__main__.TimeTests.test_fall_back_preserves_two_different_instants)",
+        "test_half_hour_transition_is_not_assumed_to_be_an_hour (__main__.TimeTests.test_half_hour_transition_is_not_assumed_to_be_an_hour)",
+        "test_invalid_input_does_not_guess (__main__.TimeTests.test_invalid_input_does_not_guess)",
+        "test_lima_has_one_known_instant (__main__.TimeTests.test_lima_has_one_known_instant)",
+        "test_spring_gap_and_skipped_civil_day (__main__.TimeTests.test_spring_gap_and_skipped_civil_day)"
+      ]
+    },
+    "audio_processing": {
+      "status": "passed",
+      "fixture": "Two generated tones, 1 and 2 seconds; no speech synthesis",
+      "expected_pcm_duration_seconds": 3,
+      "encoded_probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "mp3",
+            "sample_rate": "48000",
+            "channels": 1
+          }
+        ],
+        "format": {
+          "duration": "3.024000"
+        }
+      },
+      "decode_exit_code": 0,
+      "listening_review": false,
+      "tts_tested": false,
+      "ffmpeg_version": "ffmpeg version 7.1.5-0+deb13u1 Copyright (c) 2000-2026 the FFmpeg developers"
+    },
+    "clippy": {
+      "status": "passed",
+      "seconds": 26.86,
+      "command": "cargo clippy -p fenix-agent --lib --tests --locked -- -D warnings"
+    },
+    "retrieval_metrics": [
+      {
+        "phase": "baseline",
+        "kind": "new",
+        "cases": 32,
+        "top1": 0,
+        "top3": 0,
+        "expected_available": false
+      },
+      {
+        "phase": "baseline",
+        "kind": "existing",
+        "cases": 10,
+        "top1": 3,
+        "top3": 4,
+        "expected_available": true
+      },
+      {
+        "phase": "baseline",
+        "kind": "guard",
+        "cases": 12,
+        "top1": 11,
+        "top3": 11,
+        "expected_available": true
+      },
+      {
+        "phase": "candidate",
+        "kind": "new",
+        "cases": 32,
+        "top1": 31,
+        "top3": 32,
+        "expected_available": true
+      },
+      {
+        "phase": "candidate",
+        "kind": "existing",
+        "cases": 10,
+        "top1": 8,
+        "top3": 10,
+        "expected_available": true
+      },
+      {
+        "phase": "candidate",
+        "kind": "guard",
+        "cases": 12,
+        "top1": 12,
+        "top3": 12,
+        "expected_available": true
+      }
+    ],
+    "retrieval_rows": [
+      {
+        "expected": "feed-monitoring",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Check these RSS feeds for new posts without marking them read.",
+        "rank": null,
+        "results": [
+          "web-research",
+          "marketing-content",
+          "employee-onboarding"
+        ]
+      },
+      {
+        "expected": "feed-monitoring",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Revisa novedades de mis feeds Atom y prepara un resumen.",
+        "rank": null,
+        "results": [
+          "conversation-recap",
+          "web-research",
+          "release-and-ci"
+        ]
+      },
+      {
+        "expected": "feed-monitoring",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Compare the RSS snapshot with the previous item identifiers.",
+        "rank": null,
+        "results": [
+          "backup-and-restore",
+          "bibliography-management",
+          "customer-support"
+        ]
+      },
+      {
+        "expected": "feed-monitoring",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Detecta artículos actualizados sin perder el estado de lectura.",
+        "rank": null,
+        "results": [
+          "project-status-review",
+          "scheduled-workflows",
+          "personal-organization"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Extract product records from these paginated pages into a sourced CSV.",
+        "rank": null,
+        "results": [
+          "meeting-notes",
+          "data-analysis",
+          "marketing-content"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Extrae datos estructurados de estas páginas con paginación.",
+        "rank": null,
+        "results": [
+          "api-integration",
+          "pdf-workflows",
+          "documents-word"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Scrape this authorized catalog with row provenance and missing fields.",
+        "rank": null,
+        "results": [
+          "ml-dataset-preparation",
+          "crm-workflows",
+          "data-quality-audit"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Recopila los anuncios de esta web y detecta páginas repetidas.",
+        "rank": null,
+        "results": [
+          "web-research",
+          "local-troubleshooting",
+          "pdf-workflows"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Use the desktop application to export this file through its dialog.",
+        "rank": null,
+        "results": [
+          "google-drive",
+          "mobile-app-development",
+          "parametric-cad"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Automatiza esta aplicación de escritorio comprobando la ventana activa.",
+        "rank": null,
+        "results": [
+          "network-diagnostics",
+          "software-implementation",
+          "web-research"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Click the save button in the native desktop app using fresh screen evidence.",
+        "rank": null,
+        "results": [
+          "mobile-app-development",
+          "browser-navigation",
+          "analytics-instrumentation"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Controla el ratón y teclado de una aplicación nativa de Linux.",
+        "rank": null,
+        "results": [
+          "mobile-app-testing",
+          "frontend-design-and-accessibility",
+          "network-diagnostics"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Set the living room lights to 30 percent in Home Assistant.",
+        "rank": null,
+        "results": [
+          "web-research",
+          "shell-automation",
+          "experiment-and-benchmark-design"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Cambia el termostato de la casa y verifica su estado real.",
+        "rank": null,
+        "results": [
+          "literature-review",
+          "git-worktree-coordination",
+          "ml-demo-apps"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Check which Homey device matches this room before running a scene.",
+        "rank": null,
+        "results": [
+          "mobile-app-testing",
+          "browser-navigation",
+          "ml-training"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Controla las bombillas inteligentes usando el dispositivo exacto.",
+        "rank": null,
+        "results": [
+          "mobile-app-development",
+          "mobile-app-testing",
+          "environment-and-dependencies"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Generate a narrated audio file from this script with the available TTS engine.",
+        "rank": null,
+        "results": [
+          "audio-transcription",
+          "shell-automation",
+          "video-editing"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Crea una narración de voz y mezcla la música sin tapar el diálogo.",
+        "rank": null,
+        "results": [
+          "audio-transcription",
+          "documents-word",
+          "text-processing-and-parsing"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Produce a podcast audio track and verify the actual exported duration.",
+        "rank": null,
+        "results": [
+          "video-editing",
+          "audio-transcription",
+          "browser-ml-inference"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Convierte este texto a voz en un archivo de audio.",
+        "rank": null,
+        "results": [
+          "audio-transcription",
+          "local-file-work",
+          "video-editing"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "What is the hourly rain forecast for Lima tomorrow?",
+        "rank": null,
+        "results": [
+          "time-series-forecasting",
+          "calendar-scheduling",
+          "architecture-design"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Consulta el pronóstico de viento y lluvia para este fin de semana.",
+        "rank": null,
+        "results": [
+          "time-series-forecasting",
+          "sql-analysis-and-optimization",
+          "project-status-review"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Compare current weather observations with the forecast for this location.",
+        "rank": null,
+        "results": [
+          "time-series-forecasting",
+          "purchase-comparison",
+          "travel-planning"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Resume las alertas meteorológicas vigentes de esta zona.",
+        "rank": null,
+        "results": [
+          "observability-and-slos",
+          "scheduled-workflows",
+          "privacy-and-compliance"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Build a playable game with a stable physics loop and restart state.",
+        "rank": null,
+        "results": [
+          "kubernetes-operations",
+          "data-pipelines",
+          "background-jobs"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Crea un videojuego en Godot con colisiones y controles táctiles.",
+        "rank": null,
+        "results": [
+          "network-diagnostics",
+          "threat-modeling",
+          "text-processing-and-parsing"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Fix the game physics changing with frame rate.",
+        "rank": null,
+        "results": [
+          "api-integration",
+          "web-animation",
+          "local-troubleshooting"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Implementa un juego Canvas con pausa, puntuación y reinicio.",
+        "rank": null,
+        "results": [
+          "software-implementation",
+          "mcp-integration",
+          "web-animation"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Summarize sleep and activity from this Fitbit export with missing-day coverage.",
+        "rank": null,
+        "results": [
+          "calendar-scheduling",
+          "contract-review",
+          "google-drive"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Analiza mis registros de Oura sin duplicar las sesiones de sueño.",
+        "rank": null,
+        "results": [
+          "text-processing-and-parsing",
+          "phishing-triage",
+          "browser-navigation"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Compare wearable step totals from two devices without double counting.",
+        "rank": null,
+        "results": [
+          "data-pipelines",
+          "mobile-app-testing",
+          "parametric-cad"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": false,
+        "kind": "new",
+        "phase": "baseline",
+        "query": "Resume datos de Garmin indicando días incompletos y unidades.",
+        "rank": null,
+        "results": [
+          "web-research",
+          "database-migrations",
+          "data-quality-audit"
+        ]
+      },
+      {
+        "expected": "calendar-scheduling",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Schedule a meeting across daylight saving time and check ambiguous local times.",
+        "rank": null,
+        "results": [
+          "meeting-notes",
+          "scheduled-workflows",
+          "personal-organization"
+        ]
+      },
+      {
+        "expected": "calendar-scheduling",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Prepara un evento CalDAV sin sincronizar cambios ajenos.",
+        "rank": null,
+        "results": [
+          "cloud-file-sync",
+          "code-review",
+          "git-recovery-and-change-management"
+        ]
+      },
+      {
+        "expected": "learning-and-tutoring",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Create Anki flashcards from my notes without duplicate cards.",
+        "rank": null,
+        "results": [
+          "project-status-review",
+          "meeting-notes",
+          "dashboard-design"
+        ]
+      },
+      {
+        "expected": "learning-and-tutoring",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Prepara tarjetas de repaso para estudiar con repetición espaciada.",
+        "rank": 1,
+        "results": [
+          "learning-and-tutoring",
+          "shell-automation",
+          "release-and-ci"
+        ]
+      },
+      {
+        "expected": "audio-transcription",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Transcribe a long recording in chunks with global subtitle timestamps.",
+        "rank": 1,
+        "results": [
+          "audio-transcription",
+          "video-editing",
+          "meeting-notes"
+        ]
+      },
+      {
+        "expected": "audio-transcription",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Comprueba un archivo SRT y marca solapamientos de subtítulos.",
+        "rank": 1,
+        "results": [
+          "audio-transcription",
+          "video-editing",
+          "scheduled-workflows"
+        ]
+      },
+      {
+        "expected": "invoice-and-expense-records",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Reconcile this bank statement against receipts without treating transfers as expenses.",
+        "rank": null,
+        "results": [
+          "competitive-research",
+          "privacy-and-compliance",
+          "cloud-cost-review"
+        ]
+      },
+      {
+        "expected": "invoice-and-expense-records",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Concilia los movimientos bancarios y conserva pagos parciales.",
+        "rank": null,
+        "results": [
+          "payment-and-billing",
+          "document-comparison",
+          "cloud-cost-review"
+        ]
+      },
+      {
+        "expected": "skill-source-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Review this community skill and distinguish its index listing from source evidence.",
+        "rank": 3,
+        "results": [
+          "web-research",
+          "package-build-and-install",
+          "skill-source-review"
+        ]
+      },
+      {
+        "expected": "skill-source-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "baseline",
+        "query": "Revisa una skill y sus dependencias sin ejecutar sus instaladores.",
+        "rank": null,
+        "results": [
+          "environment-and-dependencies",
+          "dependency-and-secret-audit",
+          "code-review"
+        ]
+      },
+      {
+        "expected": "web-research",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Busca fuentes originales sobre esta noticia reciente.",
+        "rank": 1,
+        "results": [
+          "web-research",
+          "issue-tracker-workflows",
+          "repository-navigation"
+        ]
+      },
+      {
+        "expected": "browser-navigation",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Open this website and fill the requested form.",
+        "rank": 1,
+        "results": [
+          "browser-navigation",
+          "forms-and-surveys",
+          "seo-review"
+        ]
+      },
+      {
+        "expected": "financial-modeling",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Build a cash-flow forecast with base and downside scenarios.",
+        "rank": 1,
+        "results": [
+          "financial-modeling",
+          "time-series-forecasting",
+          "skill-authoring"
+        ]
+      },
+      {
+        "expected": "memory-and-reminders",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Guarda esta preferencia en la memoria del proyecto.",
+        "rank": 1,
+        "results": [
+          "memory-and-reminders",
+          "project-status-review",
+          "cpp-development"
+        ]
+      },
+      {
+        "expected": "scheduled-workflows",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Configura una tarea recurrente con zona horaria y política de solapamiento.",
+        "rank": null,
+        "results": [
+          "calendar-scheduling",
+          "privacy-and-compliance",
+          "agent-workflow-diagnosis"
+        ]
+      },
+      {
+        "expected": "video-editing",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Trim this video and preserve its audio stream.",
+        "rank": 1,
+        "results": [
+          "video-editing",
+          "audio-transcription",
+          "knowledge-base-maintenance"
+        ]
+      },
+      {
+        "expected": "frontend-design-and-accessibility",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Improve keyboard focus and labels in this responsive web form.",
+        "rank": 1,
+        "results": [
+          "frontend-design-and-accessibility",
+          "web-presentations",
+          "web-animation"
+        ]
+      },
+      {
+        "expected": "ml-training",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Run SFT and DPO training with held-out data and saved adapters.",
+        "rank": 1,
+        "results": [
+          "ml-training",
+          "ml-dataset-preparation",
+          "experiment-and-benchmark-design"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Create a dimensioned STEP part and verify its volume.",
+        "rank": 1,
+        "results": [
+          "parametric-cad",
+          "documents-presentations",
+          "cad-drawing-and-fabrication"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Revisa estudios con un protocolo de revisión sistemática.",
+        "rank": 1,
+        "results": [
+          "systematic-review",
+          "scientific-writing",
+          "code-review"
+        ]
+      },
+      {
+        "expected": "code-review",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Revisa este diff sin cambiar código.",
+        "rank": 1,
+        "results": [
+          "code-review",
+          "test-driven-repair",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "agent-workflow-diagnosis",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "baseline",
+        "query": "Diagnose why the agent repeated a completed task.",
+        "rank": 1,
+        "results": [
+          "agent-workflow-diagnosis",
+          "local-troubleshooting",
+          "test-driven-repair"
+        ]
+      },
+      {
+        "expected": "feed-monitoring",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Check these RSS feeds for new posts without marking them read.",
+        "rank": 1,
+        "results": [
+          "feed-monitoring",
+          "web-research",
+          "marketing-content"
+        ]
+      },
+      {
+        "expected": "feed-monitoring",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Revisa novedades de mis feeds Atom y prepara un resumen.",
+        "rank": 1,
+        "results": [
+          "feed-monitoring",
+          "conversation-recap",
+          "web-research"
+        ]
+      },
+      {
+        "expected": "feed-monitoring",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Compare the RSS snapshot with the previous item identifiers.",
+        "rank": 1,
+        "results": [
+          "feed-monitoring",
+          "backup-and-restore",
+          "bibliography-management"
+        ]
+      },
+      {
+        "expected": "feed-monitoring",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Detecta artículos actualizados sin perder el estado de lectura.",
+        "rank": 1,
+        "results": [
+          "feed-monitoring",
+          "project-status-review",
+          "scheduled-workflows"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Extract product records from these paginated pages into a sourced CSV.",
+        "rank": 1,
+        "results": [
+          "web-data-extraction",
+          "meeting-notes",
+          "data-analysis"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Extrae datos estructurados de estas páginas con paginación.",
+        "rank": 2,
+        "results": [
+          "api-integration",
+          "web-data-extraction",
+          "pdf-workflows"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Scrape this authorized catalog with row provenance and missing fields.",
+        "rank": 1,
+        "results": [
+          "web-data-extraction",
+          "ml-dataset-preparation",
+          "crm-workflows"
+        ]
+      },
+      {
+        "expected": "web-data-extraction",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Recopila los anuncios de esta web y detecta páginas repetidas.",
+        "rank": 1,
+        "results": [
+          "web-data-extraction",
+          "local-troubleshooting",
+          "web-research"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Use the desktop application to export this file through its dialog.",
+        "rank": 1,
+        "results": [
+          "desktop-automation",
+          "google-drive",
+          "mobile-app-development"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Automatiza esta aplicación de escritorio comprobando la ventana activa.",
+        "rank": 1,
+        "results": [
+          "desktop-automation",
+          "network-diagnostics",
+          "software-implementation"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Click the save button in the native desktop app using fresh screen evidence.",
+        "rank": 1,
+        "results": [
+          "desktop-automation",
+          "mobile-app-development",
+          "browser-navigation"
+        ]
+      },
+      {
+        "expected": "desktop-automation",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Controla el ratón y teclado de una aplicación nativa de Linux.",
+        "rank": 1,
+        "results": [
+          "desktop-automation",
+          "mobile-app-testing",
+          "frontend-design-and-accessibility"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Set the living room lights to 30 percent in Home Assistant.",
+        "rank": 1,
+        "results": [
+          "smart-home-control",
+          "web-research",
+          "shell-automation"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Cambia el termostato de la casa y verifica su estado real.",
+        "rank": 1,
+        "results": [
+          "smart-home-control",
+          "literature-review",
+          "git-worktree-coordination"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Check which Homey device matches this room before running a scene.",
+        "rank": 1,
+        "results": [
+          "smart-home-control",
+          "mobile-app-testing",
+          "browser-navigation"
+        ]
+      },
+      {
+        "expected": "smart-home-control",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Controla las bombillas inteligentes usando el dispositivo exacto.",
+        "rank": 1,
+        "results": [
+          "smart-home-control",
+          "mobile-app-development",
+          "mobile-app-testing"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Generate a narrated audio file from this script with the available TTS engine.",
+        "rank": 1,
+        "results": [
+          "audio-production",
+          "game-development",
+          "audio-transcription"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Crea una narración de voz y mezcla la música sin tapar el diálogo.",
+        "rank": 1,
+        "results": [
+          "audio-production",
+          "audio-transcription",
+          "documents-word"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Produce a podcast audio track and verify the actual exported duration.",
+        "rank": 1,
+        "results": [
+          "audio-production",
+          "audio-transcription",
+          "video-editing"
+        ]
+      },
+      {
+        "expected": "audio-production",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Convierte este texto a voz en un archivo de audio.",
+        "rank": 1,
+        "results": [
+          "audio-production",
+          "audio-transcription",
+          "local-file-work"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "What is the hourly rain forecast for Lima tomorrow?",
+        "rank": 1,
+        "results": [
+          "weather-briefing",
+          "time-series-forecasting",
+          "calendar-scheduling"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Consulta el pronóstico de viento y lluvia para este fin de semana.",
+        "rank": 1,
+        "results": [
+          "weather-briefing",
+          "time-series-forecasting",
+          "sql-analysis-and-optimization"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Compare current weather observations with the forecast for this location.",
+        "rank": 1,
+        "results": [
+          "weather-briefing",
+          "time-series-forecasting",
+          "purchase-comparison"
+        ]
+      },
+      {
+        "expected": "weather-briefing",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Resume las alertas meteorológicas vigentes de esta zona.",
+        "rank": 1,
+        "results": [
+          "weather-briefing",
+          "observability-and-slos",
+          "privacy-and-compliance"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Build a playable game with a stable physics loop and restart state.",
+        "rank": 1,
+        "results": [
+          "game-development",
+          "kubernetes-operations",
+          "data-pipelines"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Crea un videojuego en Godot con colisiones y controles táctiles.",
+        "rank": 1,
+        "results": [
+          "game-development",
+          "network-diagnostics",
+          "threat-modeling"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Fix the game physics changing with frame rate.",
+        "rank": 1,
+        "results": [
+          "game-development",
+          "api-integration",
+          "web-animation"
+        ]
+      },
+      {
+        "expected": "game-development",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Implementa un juego Canvas con pausa, puntuación y reinicio.",
+        "rank": 1,
+        "results": [
+          "game-development",
+          "software-implementation",
+          "mcp-integration"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Summarize sleep and activity from this Fitbit export with missing-day coverage.",
+        "rank": 1,
+        "results": [
+          "wearable-data-analysis",
+          "weather-briefing",
+          "contract-review"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Analiza mis registros de Oura sin duplicar las sesiones de sueño.",
+        "rank": 1,
+        "results": [
+          "wearable-data-analysis",
+          "text-processing-and-parsing",
+          "phishing-triage"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Compare wearable step totals from two devices without double counting.",
+        "rank": 1,
+        "results": [
+          "wearable-data-analysis",
+          "data-pipelines",
+          "mobile-app-testing"
+        ]
+      },
+      {
+        "expected": "wearable-data-analysis",
+        "expected_available": true,
+        "kind": "new",
+        "phase": "candidate",
+        "query": "Resume datos de Garmin indicando días incompletos y unidades.",
+        "rank": 1,
+        "results": [
+          "wearable-data-analysis",
+          "web-research",
+          "database-migrations"
+        ]
+      },
+      {
+        "expected": "calendar-scheduling",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Schedule a meeting across daylight saving time and check ambiguous local times.",
+        "rank": 1,
+        "results": [
+          "calendar-scheduling",
+          "meeting-notes",
+          "scheduled-workflows"
+        ]
+      },
+      {
+        "expected": "calendar-scheduling",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Prepara un evento CalDAV sin sincronizar cambios ajenos.",
+        "rank": 2,
+        "results": [
+          "cloud-file-sync",
+          "calendar-scheduling",
+          "code-review"
+        ]
+      },
+      {
+        "expected": "learning-and-tutoring",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Create Anki flashcards from my notes without duplicate cards.",
+        "rank": 1,
+        "results": [
+          "learning-and-tutoring",
+          "project-status-review",
+          "meeting-notes"
+        ]
+      },
+      {
+        "expected": "learning-and-tutoring",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Prepara tarjetas de repaso para estudiar con repetición espaciada.",
+        "rank": 1,
+        "results": [
+          "learning-and-tutoring",
+          "shell-automation",
+          "release-and-ci"
+        ]
+      },
+      {
+        "expected": "audio-transcription",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Transcribe a long recording in chunks with global subtitle timestamps.",
+        "rank": 1,
+        "results": [
+          "audio-transcription",
+          "video-editing",
+          "audio-production"
+        ]
+      },
+      {
+        "expected": "audio-transcription",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Comprueba un archivo SRT y marca solapamientos de subtítulos.",
+        "rank": 1,
+        "results": [
+          "audio-transcription",
+          "video-editing",
+          "scheduled-workflows"
+        ]
+      },
+      {
+        "expected": "invoice-and-expense-records",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Reconcile this bank statement against receipts without treating transfers as expenses.",
+        "rank": 1,
+        "results": [
+          "invoice-and-expense-records",
+          "competitive-research",
+          "privacy-and-compliance"
+        ]
+      },
+      {
+        "expected": "invoice-and-expense-records",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Concilia los movimientos bancarios y conserva pagos parciales.",
+        "rank": 1,
+        "results": [
+          "invoice-and-expense-records",
+          "payment-and-billing",
+          "cloud-cost-review"
+        ]
+      },
+      {
+        "expected": "skill-source-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Review this community skill and distinguish its index listing from source evidence.",
+        "rank": 2,
+        "results": [
+          "web-research",
+          "skill-source-review",
+          "package-build-and-install"
+        ]
+      },
+      {
+        "expected": "skill-source-review",
+        "expected_available": true,
+        "kind": "existing",
+        "phase": "candidate",
+        "query": "Revisa una skill y sus dependencias sin ejecutar sus instaladores.",
+        "rank": 1,
+        "results": [
+          "skill-source-review",
+          "environment-and-dependencies",
+          "dependency-and-secret-audit"
+        ]
+      },
+      {
+        "expected": "web-research",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Busca fuentes originales sobre esta noticia reciente.",
+        "rank": 1,
+        "results": [
+          "web-research",
+          "issue-tracker-workflows",
+          "repository-navigation"
+        ]
+      },
+      {
+        "expected": "browser-navigation",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Open this website and fill the requested form.",
+        "rank": 1,
+        "results": [
+          "browser-navigation",
+          "seo-review",
+          "forms-and-surveys"
+        ]
+      },
+      {
+        "expected": "financial-modeling",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Build a cash-flow forecast with base and downside scenarios.",
+        "rank": 1,
+        "results": [
+          "financial-modeling",
+          "skill-authoring",
+          "time-series-forecasting"
+        ]
+      },
+      {
+        "expected": "memory-and-reminders",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Guarda esta preferencia en la memoria del proyecto.",
+        "rank": 1,
+        "results": [
+          "memory-and-reminders",
+          "project-status-review",
+          "cpp-development"
+        ]
+      },
+      {
+        "expected": "scheduled-workflows",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Configura una tarea recurrente con zona horaria y política de solapamiento.",
+        "rank": 1,
+        "results": [
+          "scheduled-workflows",
+          "calendar-scheduling",
+          "privacy-and-compliance"
+        ]
+      },
+      {
+        "expected": "video-editing",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Trim this video and preserve its audio stream.",
+        "rank": 1,
+        "results": [
+          "video-editing",
+          "audio-production",
+          "audio-transcription"
+        ]
+      },
+      {
+        "expected": "frontend-design-and-accessibility",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Improve keyboard focus and labels in this responsive web form.",
+        "rank": 1,
+        "results": [
+          "frontend-design-and-accessibility",
+          "web-presentations",
+          "web-animation"
+        ]
+      },
+      {
+        "expected": "ml-training",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Run SFT and DPO training with held-out data and saved adapters.",
+        "rank": 1,
+        "results": [
+          "ml-training",
+          "ml-dataset-preparation",
+          "experiment-and-benchmark-design"
+        ]
+      },
+      {
+        "expected": "parametric-cad",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Create a dimensioned STEP part and verify its volume.",
+        "rank": 1,
+        "results": [
+          "parametric-cad",
+          "documents-presentations",
+          "cad-drawing-and-fabrication"
+        ]
+      },
+      {
+        "expected": "systematic-review",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Revisa estudios con un protocolo de revisión sistemática.",
+        "rank": 1,
+        "results": [
+          "systematic-review",
+          "scientific-writing",
+          "code-review"
+        ]
+      },
+      {
+        "expected": "code-review",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Revisa este diff sin cambiar código.",
+        "rank": 1,
+        "results": [
+          "code-review",
+          "test-driven-repair",
+          "security-code-review"
+        ]
+      },
+      {
+        "expected": "agent-workflow-diagnosis",
+        "expected_available": true,
+        "kind": "guard",
+        "phase": "candidate",
+        "query": "Diagnose why the agent repeated a completed task.",
+        "rank": 1,
+        "results": [
+          "agent-workflow-diagnosis",
+          "local-troubleshooting",
+          "test-driven-repair"
+        ]
+      }
+    ],
+    "corpus": {
+      "cases": 54,
+      "written_before_entrypoint_edits": true,
+      "queries_changed_after_first_run": false,
+      "held_out": false,
+      "first_run_expected_top3": 52,
+      "final_expected_top3": 54,
+      "first_run_expected_top1": 49,
+      "final_expected_top1": 51,
+      "changes_after_first_run": "Improved Spanish source-review description/aliases and added scheduled-workflows to revised parents with recurrence/overlap aliases. Final gate requires every expected skill in top three; no baseline-miss exemption."
+    },
+    "test_source_hashes": [
+      {
+        "path": "tests/skills/test_openclaw_helpers.py",
+        "sha256": "b334beecd39422f5be475a1aa5ba422c64a613ddefd602a9f7ed5525b3f3303f"
+      },
+      {
+        "path": "crates/fenix-agent/src/skills/openclaw_expansion_tests.rs",
+        "sha256": "202cb6b1154fb3f53b5a44403dd6a4f7cd73e1f2e2869d9ebb8135e76272b1eb"
+      },
+      {
+        "path": "docs/skills/openclaw-expansion-cases.json",
+        "sha256": "7fcdd0ed9813670a3818279733ec120b058b1b45e88a91b734a92881f0fd373d"
+      }
+    ],
+    "environment": {
+      "python": "3.13.5",
+      "cargo_profile": {
+        "CARGO_PROFILE_DEV_DEBUG": "0",
+        "CARGO_PROFILE_TEST_DEBUG": "0",
+        "CARGO_INCREMENTAL": "0"
+      }
+    },
+    "live_llm_ab_evaluation": false,
+    "task_success_or_cost_improvement_measured": false,
+    "not_executed": [
+      "Upstream installers and scripts",
+      "Live desktop GUI",
+      "Smart-home devices",
+      "Wearable accounts",
+      "Calendar connectors",
+      "Anki import",
+      "TTS or listening review",
+      "Game engine build or gameplay",
+      "Hosted scraping service",
+      "Full application test suite"
+    ],
+    "static_checks": {
+      "status": "passed",
+      "validated_skills": 164,
+      "resource_files": 53,
+      "catalog_languages": [
+        "en",
+        "es"
+      ],
+      "checked_local_links": 657,
+      "checked_markdown_files": 35,
+      "verified_artifact_hashes": 33,
+      "migration_snapshots": 6,
+      "prior_migration_hashes_preserved": true,
+      "checks": [
+        "skill-creator format",
+        "string metadata",
+        "directory/name agreement",
+        "resource size and bundle limits",
+        "no symlinks or bytecode caches",
+        "bilingual catalog membership and category counts",
+        "artifact bytes and hashes",
+        "migration snapshots and registry",
+        "local Markdown file targets"
+      ]
+    },
+    "rustfmt": {
+      "status": "passed",
+      "command": "rustfmt --edition 2024 --config skip_children=true --check crates/fenix-agent/src/skills.rs crates/fenix-agent/src/skills/openclaw_expansion_tests.rs"
+    },
+    "diff_whitespace": {
+      "status": "passed",
+      "scope": "Task-related tracked changes; git diff --check"
+    },
+    "catalog_inventory": {
+      "path": "docs/skills/openclaw-catalog-inventory.json",
+      "sha256": "8b4b47ed56cede8ecfab206bf88f9010aada628b9f9740d6ca7992e87875c8a6"
+    },
+    "candidate_matrix": {
+      "path": "docs/skills/openclaw-review-matrix.md",
+      "sha256": "c0a70c424ebad44c11e143977751d3dbb89730532c596adf954b69a96319e622"
+    }
+  }
+}

@@ -6,6 +6,8 @@ After=network.target
 Type=simple
 ExecStart=%h/.local/bin/fenix --data-dir %h/.local/share/fenix/.fenix
 WorkingDirectory=%h/.local/share/fenix
+Environment=FENIX_WEB_DIST=%h/.local/share/fenix/web
+EnvironmentFile=-%h/.config/fenix/server.env
 UMask=0077
 Restart=on-failure
 RestartSec=5

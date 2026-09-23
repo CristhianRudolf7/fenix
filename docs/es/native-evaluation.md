@@ -10,6 +10,8 @@ significa que haya aprobado la tarea.
 ## Uso
 
 ```bash
+pnpm --dir apps/web install --frozen-lockfile
+pnpm --dir apps/web build
 cargo build --locked -p fenix-server
 ./target/debug/fenix eval /ruta/config.json /ruta/intento-nuevo
 ```
@@ -106,3 +108,9 @@ redactados sigan recuperables. Si las instrucciones y el contrato por sí solos
 no caben, se informa del problema y se conserva un checkpoint.
 
 Si se inicia explícitamente mediante el cargador `ld-linux` empaquetado, `binary_sha256` calcula el hash del programa evaluado y no el del cargador. `binary_path` y `process_image_path` registran ambas identidades. Los manifiestos anteriores bajo ese cargador no contienen esta corrección: utiliza el protocolo externo del binario congelado para su hash y no reescribas los informes históricos.
+
+## Evaluaciones supervisadas externamente
+
+Para una evaluación cuyo ejecutor externo controla la cancelación, usa `settings.execution.externally_supervised: true`. Esta opción desactiva el plazo de la tarea principal, el máximo de pasos del modelo y el timeout HTTP total del proveedor. Por defecto permanece desactivada. En este modo, `timeout_seconds: 0` desactiva también el temporizador de la evaluación. Se conservan cancelación e informes. Siguen aplicándose los tiempos de conexión inicial, la capacidad del proveedor, controles de herramientas, políticas de recuperación y plazos oficiales del benchmark: no es cómputo ilimitado.
+
+Configura el contexto según la capacidad verificada del proveedor y una salida menor que ese contexto; cada solicitud sigue ajustándose al espacio estimado restante. El máximo configurable de salida es 1.048.576 tokens. Cambiar varios ajustes a la vez no permite atribuir el resultado a uno solo. Conserva configuración, hash del binario, errores de infraestructura y costos conocidos.

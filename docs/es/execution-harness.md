@@ -33,6 +33,11 @@ posteriores. No constituyen un sandbox ni un worktree aislado. Se admiten hasta
 la sesión PTY; un programa que escape deliberadamente de ella queda fuera de esa
 garantía de aislamiento.
 
+Los subagentes que ejecutan tareas en Git ahora reciben [worktrees aislados](parallel-worktrees.md).
+Sus comandos de archivos tienen bloqueos independientes. El motor detiene sus
+procesos antes de integrar; los servicios compartidos y las carpetas sin Git
+conservan el comportamiento anterior.
+
 ## Salidas incrementales
 
 `command_status` entrega únicamente novedades por defecto, con cursor por tarea

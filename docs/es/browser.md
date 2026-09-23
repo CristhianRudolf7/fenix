@@ -1,5 +1,6 @@
 # Navegador local
 
+
 [English — full technical reference](../en/browser.md)
 
 Fénix controla Chromium instalado en esta máquina mediante un controlador CDP propio
@@ -9,7 +10,7 @@ nuevo. Su sandbox permanece habilitado; actualízalo con el sistema operativo.
 
 ## Uso y sesiones
 
-En **Navegador**, crea un perfil como `personal`, introduce una URL y pulsa Abrir.
+En **[Navegador](/browser)**, crea un perfil como `personal`, introduce una URL y pulsa Abrir.
 Puedes hacer clic en la pantalla, escribir, pegar y desplazarte. Completa allí las
 contraseñas, QR, MFA o CAPTCHA. Activa **Permitir acceso al agente** cuando quieras
 que Fénix use ese perfil. **Tomar control** impide nuevas acciones del agente; una
@@ -72,3 +73,25 @@ reabrir el proceso. La página de reapertura no vuelve a crear los datos de sesi
 En una observación con dos pestañas se sumaron 1165 MiB de RSS; no es el pico ni la
 memoria exclusiva, ni una medición de WhatsApp o de una universidad. No se usaron
 cuentas reales.
+
+## Búsqueda y navegación
+
+La barra de `/browser` abre URLs HTTP(S). Pide la investigación en la conversación:
+el agente usa `web_search` / `web_read` y puede abrir un resultado con el navegador
+cuando necesita interactuar. La API local sigue siendo `POST /api/web/search`, sin
+proveedor externo. Consulta los [límites de cobertura](web-search.md).
+
+Las descargas tienen ID, estado y bytes recibidos independientes del historial de
+eventos. Una espera vencida puede indicar que siguen pendientes: espera por el
+mismo ID sin repetir el clic. Una descarga cancelada devuelve estado terminal.
+La finalización se comprueba con el archivo local, incluso tras reiniciar Chromium.
+El registro conserva como máximo 128 transferencias. Consulta la
+[revisión](browser-automation-review.md) y la [auditoría](browser-workflow-audit.md).
+
+## Pruebas de regresión ampliadas
+
+La [auditoría del navegador](browser-regression-audit.md) documenta la matriz de
+casos difíciles, el formulario React, las pruebas responsivas y cómo reproducirlas.
+Antes de ejecutar todas las pruebas ignoradas, compila el formulario con
+`node apps/web/tests/fixtures/build-browser-controlled.mjs`. La prueba del formulario
+público de Selenium requiere internet.

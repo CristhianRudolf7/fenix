@@ -3,9 +3,13 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
+from urllib.parse import unquote, urlparse
 
 documents = {}
 versions = {}
+symbol_requests = 0
+workspace = None
 
 def send(value):
     data = json.dumps(dict(jsonrpc="2.0", **value)).encode()
@@ -26,6 +30,7 @@ while True:
     method = message.get("method")
     params = message.get("params", {})
     if method == "initialize":
+        workspace = Path(unquote(urlparse(params["rootUri"]).path))
         send({"id": message["id"], "result": {"capabilities": {"textDocumentSync": 2, "definitionProvider": True, "hoverProvider": True, "documentSymbolProvider": True, "diagnosticProvider": {}}}})
     elif method == "textDocument/didOpen":
         doc = params["textDocument"]
@@ -45,9 +50,17 @@ while True:
     elif method == "textDocument/hover":
         uri = params["textDocument"]["uri"]
         if "SLOW" in documents[uri]:
+            (workspace / "slow-started").write_text("started")
             time.sleep(20)
-        send({"id": message["id"], "result": {"contents": documents[uri], "pid": os.getpid(), "version": versions[uri], "position": params["position"]}})
+        send({"id": message["id"], "result": {"contents": documents[uri], "pid": os.getpid(), "version": versions[uri], "position": params["position"], "documents": documents, "symbol_requests": symbol_requests}})
     elif method in ("textDocument/definition", "textDocument/references", "textDocument/implementation"):
         send({"id": message["id"], "result": [{"uri": params["textDocument"]["uri"], "range": {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": 1}}}]})
     elif method == "textDocument/documentSymbol":
-        send({"id": message["id"], "result": []})
+        symbol_requests += 1
+        text = documents[params["textDocument"]["uri"]]
+        result = []
+        if text.startswith("fn run"):
+            span = {"start": {"line": 0, "character": 0}, "end": {"line": 0, "character": len(text.splitlines()[0].encode("utf-16-le")) // 2}}
+            selection = {"start": {"line": 0, "character": 3}, "end": {"line": 0, "character": 6}}
+            result = [{"name": "Module", "kind": 2, "range": span, "selectionRange": selection, "children": [{"name": "run", "kind": 12, "range": span, "selectionRange": selection}]}]
+        send({"id": message["id"], "result": result})

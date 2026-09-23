@@ -1,0 +1,63 @@
+{
+  "validated_at_utc": "2026-09-21T09:35:39.926600+00:00",
+  "scope": "Original Fenix skill instructions for specification consistency and requirement reconciliation; no new runtime enforcement.",
+  "reference": {
+    "repository": "https://github.com/github/spec-kit",
+    "commit": "d4229c071c7ea3885b43e8a7739847300f618f13",
+    "ideas": [
+      "requirement quality review",
+      "cross-artifact consistency",
+      "bounded corrective work from observed specification gaps"
+    ]
+  },
+  "skills": {
+    "requirements-and-planning": "1.3.0",
+    "software-implementation": "1.5.0",
+    "completion-verification": "1.1.0"
+  },
+  "checks": {
+    "native_skills": {
+      "command": "PATH=/home/Rudy/.cargo/bin:$PATH CARGO_TARGET_DIR=/dev/shm/fenix-workspace-target CARGO_PROFILE_DEV_DEBUG=0 CARGO_INCREMENTAL=0 TMPDIR=/dev/shm cargo test -p fenix-agent --lib skills:: --locked",
+      "passed": 39,
+      "failed": 0,
+      "ignored": 0,
+      "new_tests": 2,
+      "new_discovery_queries": 5,
+      "previous_stock_migrations": 3,
+      "test_seconds": 139.42
+    },
+    "skill_metadata": {
+      "validator": "skill-creator/scripts/quick_validate.py",
+      "passed": 3
+    },
+    "local_links": {
+      "documents_checked": 8,
+      "result": "passed"
+    },
+    "rustfmt": "passed for the new test module",
+    "unchanged_during_validation": [
+      "resources/skills-legacy-hashes.json",
+      "crates/fenix-agent/src/skills/specification_tests.rs",
+      "resources/skills/requirements-and-planning/SKILL.md",
+      "resources/skills/software-implementation/SKILL.md",
+      "resources/skills/completion-verification/SKILL.md",
+      "resources/skills/requirements-and-planning/references/specification-consistency.md",
+      "resources/skills/completion-verification/references/requirement-reconciliation.md"
+    ],
+    "additional_run": "The same 39 cases also passed in a recent existing test executable; exact bytes of all three updated skills, both new references and migration registry were checked in that binary. Counted as 39 unique tests, not 78."
+  },
+  "limits": [
+    "No model behavior or intelligence benchmark was run.",
+    "Instructions guide task decisions; runtime constraints remain enforced by existing tools.",
+    "No production installation, deployment or restart was performed."
+  ],
+  "source_sha256": {
+    "resources/skills-legacy-hashes.json": "76b7463354fa73cf5dae494424062dfe3cc2b78f15349b987b036f8d5eefc145",
+    "crates/fenix-agent/src/skills/specification_tests.rs": "a6b340c7f77fdb0ea5ae8cb2708c595ac47c7f3f27f1c3000ce6a978227a7d3d",
+    "resources/skills/requirements-and-planning/SKILL.md": "0bc5ded91c0648faa8fc757c420c1d2f8cb1e05df5d27277bf1a0f81414e4f88",
+    "resources/skills/software-implementation/SKILL.md": "e5429afbbbcbeb3594c3dc6b98b168ea33913c0937301116de6212540da18173",
+    "resources/skills/completion-verification/SKILL.md": "97ded8b7174af73db56a3d2d2e3d9550313ca484bc71a60c36c9e377fd847781",
+    "resources/skills/requirements-and-planning/references/specification-consistency.md": "e2ae0008f9d8dfb4433f7a582099d68808fac9fe5a66803c662d25529ff8d66b",
+    "resources/skills/completion-verification/references/requirement-reconciliation.md": "8a59094027bf0744f17c3e09687fc66383fb5bc9264ad02317f6676fad26ee2a"
+  }
+}

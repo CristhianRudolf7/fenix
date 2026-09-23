@@ -1,0 +1,811 @@
+/* Original template compositions. These selectors never style application chrome. */
+.slides-view:has(> .composed-slide) {
+  container-type: inline-size;
+}
+.slide.composed-slide {
+  --composition-paper: var(--template-bg);
+  --composition-ink: var(--template-fg);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr auto auto;
+  min-height: 62.5cqw;
+  aspect-ratio: auto;
+  padding: 5.5%;
+  gap: 24px;
+  border-radius: 0;
+  isolation: isolate;
+}
+.composition-kicker,
+.composition-folio {
+  grid-column: 1/-1;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font:
+    10px/1.5 Arial,
+    sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  z-index: 2;
+}
+.composition-heading {
+  align-self: center;
+  z-index: 2;
+  min-width: 0;
+}
+.slide.composed-slide h2 {
+  font-size: clamp(28px, 6.9cqw, 76px);
+  line-height: 1;
+  letter-spacing: -0.055em;
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+}
+.composition-copy {
+  z-index: 2;
+  grid-column: 1;
+  min-width: 0;
+}
+.slide.composed-slide p {
+  font-size: clamp(12px, 1.8cqw, 19px);
+  line-height: 1.5;
+  margin: 0 0 0.5em;
+}
+.composition-visual {
+  grid-column: 2;
+  grid-row: 2/4;
+  align-self: center;
+  min-width: 0;
+  color: var(--composition-accent, var(--template-accent));
+}
+.composition-scene {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.composition-folio {
+  font-size: 9px;
+  align-self: end;
+}
+.composition-copy ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3cqw;
+}
+.composition-copy li {
+  border-top: 1px solid currentColor;
+  padding-top: 2cqw;
+}
+.composition-copy li b {
+  font-size: 4cqw;
+  display: block;
+  margin-bottom: 2cqw;
+}
+.slide.composed-slide.scene-steps .composition-copy {
+  grid-column: 1/-1;
+}
+.composed-slide.scene-steps .composition-visual {
+  display: none;
+}
+.composed-slide.scene-steps .composition-heading {
+  grid-column: 1/-1;
+}
+.slide.composed-slide.scene-steps {
+  grid-template-rows: auto auto 1fr auto;
+}
+.composed-slide.scene-statement .composition-heading {
+  grid-column: 1/-1;
+  max-width: 87%;
+}
+.composed-slide.scene-statement .composition-copy {
+  grid-column: 1/-1;
+  max-width: 75%;
+}
+.composed-slide.scene-statement .composition-visual {
+  position: absolute;
+  width: 38%;
+  bottom: 6%;
+  right: 5.5%;
+  opacity: 0.15;
+  z-index: -1;
+}
+/* A field atlas: fine coordinates and a full-width contour drawing. */
+.slide.composition-research-atlas {
+  background: #fff;
+  color: #162c38;
+  --composition-paper: #fff;
+  --composition-ink: #162c38;
+  --composition-accent: #24706b;
+  background-image:
+    linear-gradient(#224b3810 1px, transparent 1px),
+    linear-gradient(90deg, #224b3810 1px, transparent 1px);
+  background-size: 5cqw 5cqw;
+  grid-template-columns: 1.25fr 1fr;
+}
+.composition-research-atlas .composition-kicker {
+  border-bottom: 2px solid #162c38;
+  padding-bottom: 2cqw;
+}
+.slide.composition-research-atlas h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+}
+.composition-research-atlas .composition-visual {
+  align-self: end;
+  margin-left: -14%;
+  width: 125%;
+}
+/* A venture story: a giant opening line above an exploded product stack. */
+.slide.composition-venture-stack {
+  grid-template-columns: 1fr 1.1fr;
+  grid-template-rows: auto auto 1fr auto;
+}
+.composition-venture-stack .composition-heading {
+  grid-column: 1/-1;
+  max-width: 92%;
+}
+.slide.composition-venture-stack h2 {
+  font-size: 8.7cqw;
+  max-width: 85%;
+  line-height: 0.98;
+}
+.composition-venture-stack .composition-visual {
+  grid-row: 3;
+  align-self: end;
+  margin-top: -13%;
+}
+.composition-venture-stack .composition-copy {
+  max-width: 85%;
+  align-self: center;
+  border-left: 3px solid var(--template-accent);
+  padding-left: 3cqw;
+}
+/* Business review: an offset green spine with a ledger on paper. */
+.slide.composition-business-ledger {
+  padding-left: 16%;
+  background: #fff;
+  color: #173d33;
+  --composition-paper: #fff;
+  --composition-accent: #173d33;
+  grid-template-columns: 1fr 1fr;
+  border-left: clamp(20px, 5vw, 70px) solid #173d33;
+}
+.composition-business-ledger .composition-heading {
+  grid-column: 1/-1;
+}
+.slide.composition-business-ledger h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 7cqw;
+}
+.composition-business-ledger .composition-visual {
+  grid-row: 3;
+  align-self: end;
+}
+.composition-business-ledger .composition-copy {
+  align-self: center;
+}
+.composition-business-ledger .composition-kicker {
+  border-bottom: 1px solid #173d3377;
+  padding-bottom: 2cqw;
+}
+/* Workshop: pinned notes, ruled paper and a stamped title. */
+.slide.composition-workshop-notes {
+  background: #fff8e9;
+  color: #372f2a;
+  --composition-paper: #fff8e9;
+  --composition-ink: #b64329;
+  --composition-accent: #f6ca55;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent 0 29px,
+    #8b8c871c 29px 30px
+  );
+  gap: 3cqw;
+}
+.slide.composition-workshop-notes h2 {
+  font-size: 7.5cqw;
+  transform: rotate(-3deg);
+  background: #fff8e9;
+  padding: 2cqw;
+  border: 2px solid #372f2a;
+  box-shadow: 8px 8px 0 #372f2a;
+}
+.composition-workshop-notes .composition-copy {
+  background: #fff;
+  padding: 2.5cqw;
+  border: 1px solid #372f2a;
+  max-width: 95%;
+}
+/* Product launch: centered headline, then a wide product stage. */
+.slide.composition-product-stage {
+  grid-template-columns: 1fr;
+  gap: 2.5cqw;
+  --composition-paper: #eff3ff;
+  --composition-ink: #1535cd;
+  --composition-accent: #1535cd;
+}
+.composition-product-stage .composition-heading {
+  grid-column: 1;
+  text-align: center;
+}
+.slide.composition-product-stage h2 {
+  font-size: 7.2cqw;
+  white-space: normal;
+  max-width: 80%;
+  margin: auto;
+}
+.composition-product-stage .composition-copy {
+  grid-column: 1;
+  text-align: center;
+  max-width: 80%;
+  margin: auto;
+}
+.composition-product-stage .composition-visual {
+  grid-column: 1;
+  grid-row: 4;
+  width: 75%;
+  margin: auto;
+}
+.composition-product-stage .composition-folio {
+  grid-row: 5;
+}
+.composition-product-stage.scene-cover {
+  padding-bottom: 2%;
+}
+/* An architectural proposal: narrow reading column and measured elevation. */
+.slide.composition-studio-arch {
+  background: #eee9e1;
+  color: #37342d;
+  grid-template-columns: 1.15fr 1fr;
+  --composition-accent: #785a42;
+  --composition-paper: #eee9e1;
+  border: 1px solid #bcb3a5;
+}
+.composition-studio-arch .composition-kicker {
+  border-top: 5px solid #37342d;
+  padding-top: 2cqw;
+}
+.slide.composition-studio-arch h2 {
+  font-family: Georgia, serif;
+  font-size: 7cqw;
+  font-weight: 400;
+  line-height: 1.08;
+}
+.composition-studio-arch .composition-visual {
+  border-left: 1px solid #bcb3a5;
+  height: 100%;
+  display: flex;
+  padding-left: 2cqw;
+}
+.composition-studio-arch .composition-folio {
+  border-top: 1px solid #bcb3a5;
+  padding-top: 2cqw;
+}
+/* Keynote poster: large type is the artwork; a striped strip anchors the page. */
+.slide.composition-type-poster {
+  background: #e7f363;
+  color: #1a2226;
+  --composition-accent: #1a2226;
+  grid-template-columns: 3fr 1fr;
+  gap: 3cqw;
+}
+.composition-type-poster .composition-heading {
+  grid-column: 1/-1;
+}
+.slide.composition-type-poster h2 {
+  font-size: 9cqw;
+  text-transform: uppercase;
+  font-weight: 900;
+  white-space: normal;
+  letter-spacing: -0.07em;
+  max-width: 95%;
+}
+.composition-type-poster .composition-visual {
+  grid-column: 2;
+  grid-row: 3;
+  overflow: hidden;
+  max-height: 12cqw;
+}
+.composition-type-poster .composition-copy {
+  border-top: 3px solid;
+  padding-top: 2cqw;
+}
+/* Welcome booklet: a framed welcome card and a collage of three people. */
+.slide.composition-welcome-collage {
+  background: #dcebe0;
+  color: #173d33;
+  --composition-accent: #c05e42;
+  --composition-paper: #fff5df;
+  --composition-ink: #173d33;
+  grid-template-columns: 1fr 1fr;
+}
+.composition-welcome-collage .composition-heading {
+  background: #fff5df;
+  padding: 3cqw;
+  transform: rotate(-2deg);
+  border-radius: 2px;
+  box-shadow: 1cqw 1cqw 0 #173d33;
+}
+.slide.composition-welcome-collage h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 6.4cqw;
+}
+.composition-welcome-collage .composition-visual {
+  align-self: end;
+  transform: rotate(5deg);
+}
+/* A technical blueprint: a dimensioned border and isometric architecture. */
+.slide.composition-systems-blueprint {
+  background: #123c6c;
+  color: #f5f8fe;
+  --composition-accent: #a6d8ed;
+  background-image:
+    linear-gradient(#fff1 1px, transparent 1px),
+    linear-gradient(90deg, #fff1 1px, transparent 1px);
+  background-size: 24px 24px;
+  border: 12px solid #123c6c;
+  outline: 1px solid #ffffff77;
+  outline-offset: -20px;
+}
+.slide.composition-systems-blueprint h2 {
+  font: 500 5.8cqw/1.12 monospace;
+  letter-spacing: -0.06em;
+}
+.composition-systems-blueprint .composition-kicker,
+.composition-systems-blueprint .composition-folio {
+  font-family: monospace;
+}
+/* Culture journal: a wide landscape cut between serif headline and caption. */
+.slide.composition-culture-journal {
+  background: #f3ecdf;
+  color: #2e3b32;
+  grid-template-columns: 1fr;
+  gap: 2cqw;
+  padding: 4% 6%;
+  --composition-accent: #a45736;
+}
+.composition-culture-journal .composition-heading {
+  grid-column: 1;
+}
+.slide.composition-culture-journal h2 {
+  font:
+    400 7cqw/1.02 Georgia,
+    serif;
+  white-space: normal;
+  text-align: center;
+}
+.composition-culture-journal .composition-visual {
+  grid-column: 1;
+  grid-row: 3;
+  height: 23cqw;
+  overflow: hidden;
+}
+.composition-culture-journal .composition-scene {
+  height: 100%;
+  object-fit: cover;
+}
+.composition-culture-journal .composition-copy {
+  grid-column: 1;
+  grid-row: 4;
+  text-align: center;
+  max-width: 85%;
+  margin: auto;
+}
+.composition-culture-journal .composition-folio {
+  grid-row: 5;
+  border-top: 1px solid;
+  padding-top: 1cqw;
+}
+/* Data and diagrams sit on white paper, including their exported covers. */
+.template-chart[class*="frame-"],
+.template-diagram[class*="frame-"] {
+  background: #fff;
+  color: #1b2939;
+  border: 1px solid #edf0f2;
+  border-radius: 0;
+  padding: 5%;
+}
+.template-chart[class*="frame-"] .template-frame-emblem,
+.template-diagram[class*="frame-"] .template-frame-emblem {
+  display: none;
+}
+.template-chart[class*="frame-"] .template-frame-heading {
+  border-bottom: 1px solid #dce2e8;
+  padding-bottom: 3%;
+  margin-bottom: 2%;
+}
+.template-chart[class*="frame-"] .template-frame-heading h2 {
+  font-size: 4.1cqw;
+  letter-spacing: -0.035em;
+}
+.template-chart[class*="frame-"] .template-frame-heading span,
+.template-diagram[class*="frame-"] .template-frame-heading span {
+  color: #667384;
+}
+.template-chart[class*="frame-"] .template-frame-content {
+  padding: 0;
+  border-radius: 0;
+}
+.composed-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  color: #1b2939;
+  font-family: Arial, sans-serif;
+}
+.template-chart[class*="frame-"] .chart-view .data-grid {
+  max-width: none;
+  margin-top: 1%;
+  padding-top: 2%;
+}
+.template-chart[class*="frame-"] .data-grid td {
+  padding: 9px 14px;
+}
+.template-chart[class*="frame-"] footer {
+  color: #637180;
+}
+.template-diagram[class*="frame-"] .template-frame-heading {
+  border-left: 5px solid #2157ac;
+  padding-left: 3cqw;
+}
+.template-diagram[class*="frame-"] .template-frame-content {
+  padding: 2% 0;
+}
+.template-diagram[class*="frame-"] .diagram-canvas {
+  padding: 12px 0;
+}
+/* Eight document structures, preserving the full editable source text. */
+.template-document[class*="document-"]:not(.document-classic) {
+  background: #fff;
+  color: #26332e;
+  border-radius: 0;
+}
+.document-executive-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3cqw;
+  border-left: 8cqw solid #173d33 !important;
+  padding: 6% !important;
+}
+.document-executive-columns header,
+.document-executive-columns h2,
+.document-executive-columns footer {
+  grid-column: 1/-1;
+}
+.document-executive-columns .template-document-rule {
+  display: none;
+}
+.document-executive-columns section:first-of-type {
+  grid-column: 1/-1;
+  background: #edf3ee;
+  padding: 3cqw;
+}
+.document-academic-paper {
+  border-top: 0 !important;
+  column-count: 2;
+  column-gap: 5cqw;
+}
+.document-academic-paper header,
+.document-academic-paper h2,
+.document-academic-paper footer {
+  column-span: all;
+}
+.document-academic-paper h2 {
+  font-size: 5cqw !important;
+  text-align: center;
+  max-width: 100%;
+}
+.document-academic-paper section {
+  display: block;
+  break-inside: avoid;
+  padding: 2cqw 0 !important;
+}
+.document-academic-paper .template-document-rule {
+  display: none;
+}
+.document-academic-paper section:first-of-type {
+  column-span: all;
+  font-style: italic;
+}
+.document-meeting-ledger {
+  border: 1px solid #d3dcd6 !important;
+  background: repeating-linear-gradient(
+    #fff 0 31px,
+    #eef1ee 31px 32px
+  ) !important;
+}
+.document-meeting-ledger h2 {
+  font-family: Arial, sans-serif !important;
+  font-size: 6cqw !important;
+  font-weight: 700 !important;
+}
+.document-meeting-ledger section {
+  grid-template-columns: 45px 1fr !important;
+  background: #ffffffce;
+  border-bottom: 1px solid #a9bbb1;
+  padding: 4cqw 0 !important;
+}
+.document-project-poster h2 {
+  font-family: Arial, sans-serif !important;
+  font-size: 9cqw !important;
+  font-weight: 800 !important;
+  max-width: 95%;
+  background: #f6dc5d;
+  padding: 4cqw;
+  margin-left: -4cqw !important;
+}
+.document-project-poster section {
+  grid-template-columns: 65px 1fr !important;
+}
+.document-project-poster .template-section-number {
+  font-size: 4cqw !important;
+  color: #262d31 !important;
+}
+.document-proposal-letter {
+  padding-left: 20% !important;
+  border-left: 1px solid #bdad9b !important;
+  background: linear-gradient(90deg, #eee7db 14%, white 14%) !important;
+}
+.document-proposal-letter header {
+  font-family: Georgia, serif;
+}
+.document-proposal-letter h2 {
+  font-style: italic;
+  font-size: 7cqw !important;
+  max-width: 100%;
+}
+.document-procedure-steps {
+  border-top: 12px solid #153e69 !important;
+}
+.document-procedure-steps section {
+  border: 0 !important;
+  border-left: 2px solid #b6c8db !important;
+  margin-left: 2cqw;
+  padding: 3cqw !important;
+  grid-template-columns: 38px 1fr !important;
+}
+.document-procedure-steps .template-section-number {
+  background: #153e69;
+  color: #fff !important;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  margin-left: -5cqw;
+}
+.document-case-editorial {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4cqw;
+}
+.document-case-editorial header,
+.document-case-editorial h2,
+.document-case-editorial footer {
+  grid-column: 1/-1;
+}
+.document-case-editorial h2 {
+  max-width: 100%;
+  font-size: 8cqw !important;
+  line-height: 0.98 !important;
+}
+.document-case-editorial .template-document-rule {
+  display: none;
+}
+.document-case-editorial section:first-of-type {
+  grid-column: 1/-1;
+  display: block;
+  background: #a4432e;
+  color: #fff;
+  padding: 4cqw !important;
+}
+.document-case-editorial section:first-of-type h3 {
+  font:
+    4cqw Georgia,
+    serif !important;
+}
+.document-case-editorial section:first-of-type .template-section-number {
+  display: none;
+}
+.document-guide-chapters {
+  border: 0 !important;
+  background: #e6eedf !important;
+  padding: 6% !important;
+}
+.document-guide-chapters h2 {
+  font-family: Arial, sans-serif !important;
+  font-size: 9cqw !important;
+  font-weight: 800 !important;
+}
+.document-guide-chapters section {
+  border: 0 !important;
+  background: #fff;
+  padding: 3cqw !important;
+  margin: 2cqw 0;
+  box-shadow: 5px 5px 0 #becfb4;
+}
+/* Spreadsheet covers vary by purpose as well as color. */
+.template-spreadsheet[class*="frame-"] {
+  border-radius: 0;
+  background: #fff;
+  color: #25352f;
+  padding: 5%;
+}
+.template-spreadsheet[class*="frame-"] .template-frame-content {
+  border: 1px solid #dbe3dd;
+  border-radius: 0;
+  padding: 2%;
+}
+.frame-budget-ledger {
+  border-top: 14px solid #173d33;
+}
+.frame-budget-ledger .template-frame-heading {
+  font-family: Georgia, serif;
+}
+.frame-task-board .template-frame-heading {
+  background: #1535cd;
+  color: #fff;
+  padding: 4cqw;
+  margin: -5.6% -5.6% 5%;
+}
+.frame-task-board .data-grid td:last-child {
+  font-weight: 700;
+  color: #2354b0;
+  background: #f0f4ff;
+}
+.frame-expense-receipt {
+  max-width: 740px;
+  margin: auto;
+  border-top: 6px dashed #858585;
+  border-bottom: 6px dashed #858585;
+  font-family: monospace;
+}
+.frame-expense-receipt .template-frame-heading {
+  display: block;
+  text-align: center;
+}
+.frame-expense-receipt .template-frame-emblem {
+  display: none;
+}
+.frame-inventory-label {
+  border: 12px solid #f0d55c;
+}
+.frame-inventory-label .template-frame-heading h2 {
+  font-family: monospace;
+  text-transform: uppercase;
+}
+.frame-inventory-label .data-grid td:first-child {
+  font-family: monospace;
+  font-weight: 700;
+  background: #faf3d2;
+}
+.frame-evidence-notebook {
+  padding-left: 14% !important;
+  background: linear-gradient(90deg, #e1e9e5 9%, white 9%) !important;
+}
+.frame-evidence-notebook .template-frame-heading h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  font-size: 5cqw;
+}
+.frame-content-calendar .template-frame-heading {
+  border-top: 3px solid #b24f32;
+  padding-top: 3cqw;
+}
+.frame-content-calendar .data-grid td:first-child {
+  font-size: 16px;
+  font-weight: 700;
+  color: #b24f32;
+}
+.frame-vendor-matrix .data-grid th {
+  background: #263c55;
+  color: white;
+}
+.frame-vendor-matrix .data-grid td:nth-child(2n) {
+  background: #eaf0f7;
+}
+.frame-experiment-terminal {
+  background: #182a2e !important;
+  color: #dbf2db !important;
+  font-family: monospace;
+}
+.frame-experiment-terminal .template-frame-content {
+  background: #f5fff7;
+}
+.frame-experiment-terminal .template-frame-heading h2 {
+  font-family: monospace;
+}
+@container (max-width:450px) {
+  .slide.composed-slide {
+    gap: 18px;
+    padding: 7%;
+    min-height: 350px;
+    grid-template-columns: 1fr;
+  }
+  .composition-kicker,
+  .composition-folio {
+    font-size: 8px;
+    gap: 8px;
+  }
+  .slide.composed-slide h2 {
+    font-size: 32px;
+    max-width: 100%;
+    white-space: normal;
+  }
+  .composition-heading,
+  .composition-copy {
+    grid-column: 1 !important;
+    max-width: 100% !important;
+  }
+  .composed-slide .composition-visual {
+    grid-column: 1;
+    grid-row: auto;
+    width: 70%;
+    max-height: 180px;
+    justify-self: end;
+    align-self: center;
+    margin: 0;
+    opacity: 0.85;
+  }
+  .composed-slide .composition-scene {
+    max-height: 180px;
+  }
+  .slide.composed-slide p {
+    font-size: 13px;
+  }
+  .composition-copy ol {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .composition-copy li {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 12px;
+    padding-top: 14px;
+  }
+  .composition-copy li b {
+    font-size: 22px;
+  }
+  .composed-slide .composition-folio {
+    grid-row: auto;
+  }
+  .slide.composition-business-ledger {
+    border-left-width: 20px;
+  }
+  .composition-product-stage .composition-visual {
+    width: 100%;
+    justify-self: center;
+  }
+  .composed-slide.scene-statement .composition-visual {
+    position: static;
+    display: none;
+  }
+  .template-document {
+    column-count: 1;
+    display: block;
+  }
+  .template-document h2 {
+    font-size: 30px !important;
+  }
+  .document-executive-columns section {
+    margin-bottom: 20px;
+  }
+  .document-case-editorial section {
+    margin-bottom: 20px;
+  }
+}
+
+.slide.composition-product-stage h2 {
+  font-size: 6cqw;
+  max-width: 100%;
+}
+@container (max-width:450px) {
+  .slide.composition-product-stage h2 {
+    font-size: 32px;
+  }
+}

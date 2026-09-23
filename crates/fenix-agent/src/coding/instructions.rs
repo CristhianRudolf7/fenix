@@ -32,14 +32,15 @@ impl Runtime {
                 continue;
             }
             let candidate = self.file_path(workspace, &candidate.to_string_lossy(), false)?;
-            let content = read_text(&candidate)?;
-            size += content.len();
-            if content.len() > 32_000 || size > 64_000 {
+            let original = read_text(&candidate)?;
+            let content = fenix_core::content_trust::instruction_view(&original);
+            size += original.len();
+            if original.len() > 32_000 || size > 64_000 {
                 bail!(
                     "Repository instructions exceed the 32 KB file / 64 KB chain limit; shorten AGENTS.md"
                 );
             }
-            rules.push(json!({"path":candidate,"scope":directory,"sha256":format!("{:x}",Sha256::digest(content.as_bytes())),"content":self.redactor.text(&content)}));
+            rules.push(json!({"path":candidate,"scope":directory,"sha256":format!("{:x}",Sha256::digest(original.as_bytes())),"content":self.redactor.text(&content),"trust":"repository_guidance_only","risk_flagged":fenix_core::content_trust::instruction_risk(&original)}));
         }
         Ok(rules)
     }

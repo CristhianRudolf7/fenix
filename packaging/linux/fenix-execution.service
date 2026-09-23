@@ -1,0 +1,28 @@
+[Unit]
+Description=Fenix host execution and credential service
+After=docker.service network-online.target local-fs.target
+Requires=docker.service
+Before=fenix-user@.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3 -I /opt/fenix/isolation/execution-service.py /etc/fenix/execution.json
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=90
+UMask=0077
+RuntimeDirectory=fenix-execution
+RuntimeDirectoryMode=0755
+StateDirectory=fenix-execution
+StateDirectoryMode=0700
+# Mount staging must be visible to dockerd. Do not introduce a private mount
+# namespace through PrivateTmp, ProtectSystem or ReadWritePaths here.
+PrivateMounts=false
+NoNewPrivileges=true
+LimitNOFILE=8192
+MemoryMax=768M
+TasksMax=256
+
+[Install]
+WantedBy=multi-user.target

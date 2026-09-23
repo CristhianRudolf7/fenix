@@ -1,0 +1,8 @@
+FROM debian:trixie-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git python3 python3-venv nodejs npm ripgrep build-essential procps chromium && rm -rf /var/lib/apt/lists/*
+# Preserve Chromium's own sandbox. Unsupported hosts fail closed; no wrapper
+# disables it. Browser workloads run in separate execution containers.
+RUN printf '#!/bin/sh\nexec /usr/bin/chromium "$@"\n' > /usr/local/bin/fenix-chromium && chmod 755 /usr/local/bin/fenix-chromium
+COPY fenix /usr/local/bin/fenix
+ENV FENIX_CONTAINER=1
+ENTRYPOINT ["/usr/local/bin/fenix"]

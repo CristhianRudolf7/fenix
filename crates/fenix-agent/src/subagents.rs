@@ -78,6 +78,7 @@ impl Runtime {
             bail!("Only a running master task can delegate work");
         }
         let mut spec = SubagentSpec {
+            profile: args["profile"].as_str().unwrap_or("general").to_owned(),
             objective: required_text(args, "objective", 8_000)?,
             expected_output: required_text(args, "expected_output", 8_000)?,
             context: optional_text(args, "context", 24_000)?,
@@ -95,6 +96,7 @@ impl Runtime {
         self.subagents.wake.notify_one();
         Ok(json!({
             "subagent_id": job.id,
+            "profile": job.spec.profile,
             "project_id": job.project_id,
             "status": job.status,
             "objective": job.spec.objective,
@@ -155,6 +157,7 @@ impl Runtime {
                     "project_id": job.project_id,
                     "parent_task_id": job.parent_task_id,
                     "spec": {
+                        "profile": job.spec.profile,
                         "objective": truncate(&job.spec.objective, 1_000),
                         "expected_output": truncate(&job.spec.expected_output, 1_000),
                     },
@@ -164,6 +167,7 @@ impl Runtime {
                     "updated_at": job.updated_at,
                     "result": result,
                     "detail_url": format!("/api/tasks/{}", job.id),
+                    "worktree": self.worktree(&job.id).ok().flatten(),
                 })
             })
             .collect::<Vec<_>>();
@@ -340,13 +344,30 @@ impl Runtime {
             .await
             .clone()
             .ok_or_else(|| anyhow::anyhow!("Model is not configured"))?;
-        let mut messages = match self
-            .store
-            .get::<Vec<fenix_core::Message>>("subagent_context", &job.id)?
+        if let Err(error) = self
+            .prepare_worktree(&job.id, &model.settings.workspace)
+            .await
         {
-            Some(messages) => messages,
-            None => self.build_subagent_context(&job, &model).await?,
-        };
+            self.store.finish_subagent(
+                &job.id,
+                "blocked",
+                &failure_report(
+                    "blocked",
+                    &self
+                        .redactor
+                        .text(&format!("Could not prepare isolated workspace: {error}")),
+                ),
+            )?;
+            return Ok(());
+        }
+        let mut messages =
+            match self.recovered_messages(&job.id)?.or(self
+                .store
+                .get::<Vec<fenix_core::Message>>("subagent_context", &job.id)?)
+            {
+                Some(messages) => messages,
+                None => self.build_subagent_context(&job, &model).await?,
+            };
         let attempt_timeout =
             Duration::from_secs(model.settings.execution.subagent_timeout_seconds);
         let mut count_attempt = job.attempts == 0;
@@ -432,9 +453,16 @@ impl Runtime {
             } else {
                 self.settle_task(&job.id).await;
             }
+            // Persistent development servers must also stop before capturing Git changes.
+            if self.worktree(&job.id)?.is_some() {
+                self.settle_task(&job.id).await;
+            }
+            let candidate = self.finish_worktree(&job.id, candidate, &cancel).await;
             self.clear_pending(&job.id).await;
             let candidate = if cancel.is_cancelled() {
-                self.subagent_cancelled_report()
+                let mut report = self.subagent_cancelled_report();
+                report["worktree"] = candidate.get("worktree").cloned().unwrap_or(Value::Null);
+                report
             } else {
                 candidate
             };
@@ -477,7 +505,9 @@ impl Runtime {
         if self.stop.is_cancelled() {
             return Ok(());
         }
-        if self.store.review_for_worker(id)?.is_some() {
+        if self.store.review_for_worker(id)?.is_some()
+            || self.store.completion_audit_for_worker(id)?.is_some()
+        {
             self.bus_wake.notify_waiters();
             return Ok(());
         }

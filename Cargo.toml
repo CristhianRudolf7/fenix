@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers", "crates/fenix-storage", "crates/fenix-web", "crates/fenix-browser", "crates/fenix-agent", "apps/server"]
+members = ["crates/fenix-connectors", "crates/fenix-execution", "crates/fenix-documents", "crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers", "crates/fenix-storage", "crates/fenix-web", "crates/fenix-browser", "crates/fenix-agent", "apps/server"]
 resolver = "2"
 
 [workspace.package]
@@ -10,6 +10,9 @@ publish = false
 repository = "https://github.com/CristhianRudolf7/fenix"
 
 [workspace.dependencies]
+fenix-connectors = { path = "crates/fenix-connectors" }
+fenix-execution = { path = "crates/fenix-execution" }
+fenix-documents = { path = "crates/fenix-documents" }
 fenix-core = { path = "crates/fenix-core" }
 fenix-credentials = { path = "crates/fenix-credentials" }
 fenix-providers = { path = "crates/fenix-providers" }

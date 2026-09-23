@@ -1,0 +1,172 @@
+{
+  "date": "2026-09-20",
+  "scope": "Source integration and synthetic CPU validation; no production migration",
+  "versions": {
+    "paddleocr": "3.7.0",
+    "paddlepaddle": "3.3.1",
+    "paddlex": "3.7.2",
+    "pypdfium2": "5.13.0",
+    "python": "3.13.5"
+  },
+  "models": [
+    "PP-OCRv6_small_det",
+    "PP-OCRv6_small_rec"
+  ],
+  "checks": {
+    "agent_library": {
+      "passed": 110,
+      "ignored": 1
+    },
+    "worker_contracts": {
+      "passed": 10,
+      "real_pdf_parser": true,
+      "ocr_doubles": true
+    },
+    "isolation_suite": {
+      "passed": 49,
+      "skipped": 40,
+      "note": "40 opt-in runtime/storage acceptance tests skipped; policy tests and integrity regression passed."
+    },
+    "document_policy": {
+      "passed": 3
+    },
+    "real_cpu_smoke": {
+      "passed": 1,
+      "inputs": [
+        "synthetic PNG",
+        "synthetic scanned PDF"
+      ],
+      "expected_text": [
+        "Factura FENIX 2026",
+        "123.45"
+      ]
+    },
+    "offline_container": {
+      "exit_code": 0,
+      "runtime": "runc",
+      "network": "none",
+      "uid": 61001,
+      "read_only_root": true,
+      "read_only_input": true,
+      "capabilities": "none",
+      "no_new_privileges": true,
+      "memory": "3 GiB",
+      "cpu_limit": 2,
+      "pids_limit": 256,
+      "tmp_limit": "256 MiB",
+      "results": [
+        {
+          "event": "document",
+          "pages": 1,
+          "selected_pages": [
+            1,
+            1
+          ],
+          "sha256": "353f6a7f3a404e45ad99c143e00a4fc084da79f65d0ec9604d5ad3bcb2740708",
+          "model": [
+            "PP-OCRv6_small_det",
+            "PP-OCRv6_small_rec"
+          ],
+          "coordinate_system": "normalized_top_left_after_exif_orientation"
+        },
+        {
+          "event": "block",
+          "page": 1,
+          "source": "ocr",
+          "index": 0,
+          "text": "Factura FENIX 2026",
+          "score": 0.9992884397506714,
+          "polygon": [
+            [
+              0.0325,
+              0.1575
+            ],
+            [
+              0.375,
+              0.1575
+            ],
+            [
+              0.375,
+              0.2625
+            ],
+            [
+              0.0325,
+              0.2625
+            ]
+          ]
+        },
+        {
+          "event": "block",
+          "page": 1,
+          "source": "ocr",
+          "index": 1,
+          "text": "Total: 123.45 EUR",
+          "score": 0.9962276220321655,
+          "polygon": [
+            [
+              0.03166666666666667,
+              0.355
+            ],
+            [
+              0.3433333333333333,
+              0.355
+            ],
+            [
+              0.3433333333333333,
+              0.46
+            ],
+            [
+              0.03166666666666667,
+              0.46
+            ]
+          ]
+        },
+        {
+          "event": "page",
+          "page": 1,
+          "source": "ocr",
+          "status": "complete",
+          "blocks": 2,
+          "warnings": [
+            "reading_order_and_table_structure_not_verified",
+            "orientation_and_handwriting_not_verified"
+          ]
+        },
+        {
+          "event": "summary",
+          "status": "complete",
+          "pages_processed": 1,
+          "next_page": null,
+          "sha256": "353f6a7f3a404e45ad99c143e00a4fc084da79f65d0ec9604d5ad3bcb2740708",
+          "scope": "selected_pages_only",
+          "untrusted_content": true
+        }
+      ]
+    },
+    "model_fetch_hash_verification": "passed for all pinned files",
+    "skill_validation": "passed",
+    "cargo_clippy_agent_lib": "passed with -D warnings",
+    "cargo_check_server": "passed",
+    "frontend_typescript": "passed",
+    "changed_file_formatting": "passed (rustfmt and Prettier)",
+    "git_diff_check": "passed"
+  },
+  "fixes_discovered": [
+    "Paddle CPU inference with oneDNN failed on unsupported PIR ArrayAttribute<DoubleAttribute>; plain CPU inference with enable_mkldnn=False passed.",
+    "Existing gVisor same-size sidecar mutation test failed because metadata timestamps could collide; unchanged() now verifies pinned SHA-256 values, with a constant-metadata regression test."
+  ],
+  "limitations": [
+    "Synthetic smoke only, not an accuracy, multilingual, load or throughput benchmark.",
+    "OCR-specific gVisor/Kata acceptance and complete agent-to-broker-to-OCR end-to-end run not performed.",
+    "Container smoke mounted the pinned environment and models read-only into an existing tenant image; the final Dockerfile image has not been built (host disk space is insufficient).",
+    "No production accounts, runtime registration, live image or service were changed.",
+    "No durable OCR queue, reusable result cache, searchable PDF export, table reconstruction or automatic scan rotation."
+  ],
+  "files": {
+    "scripts/ocr/worker.py": "4053f2aebedd25f9185d2cc4a3acebec0634de3c891cc6a7ccb822d8e41423c9",
+    "scripts/ocr/models.lock.json": "b355cd057033a5c7bf7f919d74cca431359fff18b7667fbaf8d04d591f8bcc0b",
+    "scripts/ocr/requirements.lock.txt": "f8c42474563e47677d2eecc7d87b7fa2dc7334fa23c985dee9b42cc45d677548",
+    "packaging/linux/Dockerfile.ocr": "d8802b59ce4690f69712ebf5c42f2ca8c74bbd7c88eef4d74faacc348c3d3473",
+    "resources/skills/pdf-workflows/SKILL.md": "74e3f1dcf0d077f046a8a6f1a4bf701d0f22b291b59789c1f189f66a848bd614"
+  }
+}

@@ -1,3 +1,5 @@
+#[path = "support/completion.rs"]
+mod completion;
 use fenix_agent::{Runtime, config::Settings};
 use fenix_storage::TaskBinding;
 use serde_json::{Value, json};
@@ -51,6 +53,11 @@ fn has_result(body: &Value, call_id: &str) -> bool {
 
 async fn fixture() -> (tempfile::TempDir, Arc<Runtime>, MockServer) {
     let dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        dir.path().join("audit-fixture.txt"),
+        "A deterministic report fixture",
+    )
+    .unwrap();
     let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
         .await
         .unwrap();
@@ -67,6 +74,26 @@ async fn fixture() -> (tempfile::TempDir, Arc<Runtime>, MockServer) {
         .await
         .unwrap();
     server.reset().await;
+    let store = runtime.store.clone();
+    Mock::given(method("POST"))
+        .and(path("/responses"))
+        .and(|request: &Request| {
+            serde_json::from_slice::<Value>(&request.body)
+                .ok()
+                .is_some_and(|b| {
+                    b["tools"]
+                        .as_array()
+                        .is_some_and(|ts| ts.iter().any(|t| t["name"] == "completion_audit_read"))
+                })
+        })
+        .respond_with(move |request: &Request| {
+            let body: Value = serde_json::from_slice(&request.body).unwrap();
+            ResponseTemplate::new(200)
+                .set_body_json(completion::response(&body, &store).expect("Audit fixture"))
+        })
+        .with_priority(1)
+        .mount(&server)
+        .await;
     (dir, runtime, server)
 }
 

@@ -21,6 +21,8 @@ pub struct ScheduleInput {
     pub cron: Option<String>,
     #[serde(default)]
     pub project_id: Option<String>,
+    #[serde(default)]
+    pub workflow_id: Option<String>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Schedule {
@@ -91,9 +93,17 @@ impl ScheduleInput {
         {
             bail!("Supply a schedule name and content within the size limits");
         }
-        if !matches!(self.mode.as_str(), "reminder" | "task") {
-            bail!("Schedule mode must be reminder or task");
+        if !matches!(self.mode.as_str(), "reminder" | "task" | "workflow") {
+            bail!("Schedule mode must be reminder, task or workflow");
         }
+        anyhow::ensure!(
+            self.mode == "workflow" || self.workflow_id.is_none(),
+            "Only workflow schedules accept a workflow ID"
+        );
+        anyhow::ensure!(
+            self.mode != "workflow" || self.workflow_id.as_deref().is_some_and(|id| !id.is_empty()),
+            "Workflow ID required"
+        );
         if self.next(Utc::now())?.is_none() {
             bail!("Schedule must have a future execution");
         }
@@ -157,6 +167,12 @@ impl Runtime {
             self.redactor.value(&mut args);
             let spec: ScheduleInput = serde_json::from_value(args)?;
             spec.validate()?;
+            if let Some(id) = &spec.workflow_id {
+                anyhow::ensure!(
+                    self.workflow(id)?.spec.project_id == spec.project_id,
+                    "Workflow and schedule must belong to the same project"
+                );
+            }
             let previous = if action == "update" {
                 Some(
                     self.store
@@ -268,7 +284,26 @@ impl Runtime {
             // Advance durably before effects: no automatic replay after process failure.
             schedule.last_result = Some("Dispatching".into());
             self.store.put("schedules", &schedule.id, &schedule)?;
-            let result = if schedule.spec.mode == "reminder" {
+            let result = if schedule.spec.mode == "workflow" {
+                match self
+                    .enqueue_workflow(
+                        schedule
+                            .spec
+                            .workflow_id
+                            .as_deref()
+                            .context("Workflow ID required")?,
+                        false,
+                        Some(&schedule.id),
+                    )
+                    .await
+                {
+                    Ok(run) => {
+                        self.pin_schedule_destination(&run.task_id, &schedule.id)?;
+                        Ok(format!("Queued workflow execution {}", run.id))
+                    }
+                    Err(error) => Err(error),
+                }
+            } else if schedule.spec.mode == "reminder" {
                 let project = schedule
                     .spec
                     .project_id

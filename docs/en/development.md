@@ -127,6 +127,8 @@ or charges that have already occurred.
 ## Local checks
 
 ```sh
+pnpm --dir apps/web install --frozen-lockfile
+pnpm --dir apps/web build
 cargo test --workspace --all-targets --locked
 cargo test --workspace --doc --locked
 cargo fmt --all --check

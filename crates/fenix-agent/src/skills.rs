@@ -1,11 +1,30 @@
+#[cfg(test)]
+mod google_workspace_tests;
+#[cfg(test)]
+mod specification_tests;
 use crate::Runtime;
+pub mod bundle;
+#[cfg(test)]
+mod cybersecurity_tests;
+#[cfg(test)]
+mod ecc_tests;
+#[cfg(test)]
+mod gstack_tests;
+#[cfg(test)]
+mod openclaw_expansion_tests;
+#[cfg(test)]
+mod repository_expansion_tests;
+#[cfg(test)]
+mod ten_repository_tests;
+#[cfg(test)]
+mod youtube_tests;
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeSet, HashMap, HashSet},
     fs::{self, OpenOptions},
     io::{Read, Write},
-    os::unix::fs::{OpenOptionsExt, PermissionsExt},
+    os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
 };
 
@@ -116,76 +135,119 @@ pub struct Skill {
     pub name: String,
     pub description: String,
     pub version: String,
+    #[serde(default)]
+    pub category: String,
     pub enabled: bool,
     #[serde(default)]
     pub required_tools: Vec<String>,
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(default)]
+    pub aliases: Vec<String>,
 }
 
-const DEFAULTS: [(&str, &str); 14] = [
-    (
-        "software-implementation",
-        include_str!("../../../resources/skills/software-implementation/SKILL.md"),
-    ),
-    (
-        "repository-navigation",
-        include_str!("../../../resources/skills/repository-navigation/SKILL.md"),
-    ),
-    (
-        "test-driven-repair",
-        include_str!("../../../resources/skills/test-driven-repair/SKILL.md"),
-    ),
-    (
-        "environment-and-dependencies",
-        include_str!("../../../resources/skills/environment-and-dependencies/SKILL.md"),
-    ),
-    (
-        "process-and-service-management",
-        include_str!("../../../resources/skills/process-and-service-management/SKILL.md"),
-    ),
-    (
-        "package-build-and-install",
-        include_str!("../../../resources/skills/package-build-and-install/SKILL.md"),
-    ),
-    (
-        "sql-analysis-and-optimization",
-        include_str!("../../../resources/skills/sql-analysis-and-optimization/SKILL.md"),
-    ),
-    (
-        "text-processing-and-parsing",
-        include_str!("../../../resources/skills/text-processing-and-parsing/SKILL.md"),
-    ),
-    (
-        "git-recovery-and-change-management",
-        include_str!("../../../resources/skills/git-recovery-and-change-management/SKILL.md"),
-    ),
-    (
-        "browser-navigation",
-        include_str!("../../../resources/skills/browser-navigation/SKILL.md"),
-    ),
-    (
-        "memory-and-reminders",
-        include_str!("../../../resources/skills/memory-and-reminders/SKILL.md"),
-    ),
-    (
-        "local-file-work",
-        include_str!("../../../resources/skills/local-file-work/SKILL.md"),
-    ),
-    (
-        "conversation-recap",
-        include_str!("../../../resources/skills/conversation-recap/SKILL.md"),
-    ),
-    (
-        "local-troubleshooting",
-        include_str!("../../../resources/skills/local-troubleshooting/SKILL.md"),
-    ),
-];
+// Persist parsed postings, not prompt bodies. Fingerprints avoid rereading unchanged files.
+#[derive(Clone, Serialize, Deserialize)]
+struct IndexedSkill {
+    name: String,
+    fingerprint: String,
+    hash: String,
+    skill: Option<Skill>,
+    error: Option<String>,
+    counts: HashMap<String, f64>,
+    length: usize,
+}
+#[derive(Default)]
+pub(crate) struct SkillIndex {
+    initialized: bool,
+    entries: HashMap<String, IndexedSkill>,
+}
+const INDEX_KIND: &str = "skill_index_v2";
+fn words(text: &str) -> Vec<String> {
+    text.to_lowercase()
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|s| !s.is_empty())
+        .map(str::to_owned)
+        .collect()
+}
+fn metadata(text: &str) -> Result<serde_yaml_ng::Value> {
+    if let Some(rest) = text
+        .strip_prefix("---\n")
+        .or_else(|| text.strip_prefix("---\r\n"))
+    {
+        let end = rest
+            .lines()
+            .scan(0, |offset, line| {
+                let start = *offset;
+                *offset += line.len()
+                    + if rest.as_bytes().get(start + line.len()) == Some(&b'\r') {
+                        2
+                    } else {
+                        1
+                    };
+                Some((start, line))
+            })
+            .find(|(_, line)| *line == "---")
+            .map(|(offset, _)| offset)
+            .context("Unclosed skill YAML frontmatter")?;
+        Ok(serde_yaml_ng::from_str(&rest[..end])?)
+    } else {
+        // Compatibility with early manually installed skills without frontmatter.
+        let header = text
+            .lines()
+            .take_while(|line| !line.trim().is_empty())
+            .collect::<Vec<_>>()
+            .join("\n");
+        Ok(serde_yaml_ng::from_str(&header).unwrap_or_default())
+    }
+}
+fn string_field(value: &serde_yaml_ng::Value, key: &str) -> Option<String> {
+    let field = if value[key].is_null() {
+        &value["metadata"][key]
+    } else {
+        &value[key]
+    };
+    match field {
+        serde_yaml_ng::Value::String(s) => Some(s.clone()),
+        serde_yaml_ng::Value::Number(n) => Some(n.to_string()),
+        _ => None,
+    }
+}
+fn list_field(value: &serde_yaml_ng::Value, key: &str) -> Vec<String> {
+    let field = if value[key].is_null() {
+        &value["metadata"][key]
+    } else {
+        &value[key]
+    };
+    let values = match field {
+        serde_yaml_ng::Value::Sequence(v) => v
+            .iter()
+            .filter_map(|v| v.as_str().map(str::to_owned))
+            .collect(),
+        serde_yaml_ng::Value::String(s) => s.split(',').map(|s| s.trim().to_owned()).collect(),
+        _ => Vec::<String>::new(),
+    };
+    values
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .take(32)
+        .map(|s| crate::redaction::truncate(&s, 120))
+        .collect()
+}
+
+include!(concat!(env!("OUT_DIR"), "/bundled_skills.rs"));
 
 impl Runtime {
     pub fn install_resources(&self) -> Result<()> {
         migrate_legacy_skills(&self.data_dir.join("skills"), &self.skills_dir)?;
-        for (name, content) in DEFAULTS {
+        let legacy_hashes: HashMap<String, Vec<String>> =
+            serde_json::from_str(include_str!("../../../resources/skills-legacy-hashes.json"))?;
+        for &(name, content) in DEFAULTS {
             let path = self.skills_dir.join(name);
             std::fs::create_dir_all(&path)?;
+            if !fs::symlink_metadata(&path)?.is_dir() {
+                bail!("Bundled skill directory cannot be a symlink: {name}");
+            }
             let file = path.join("SKILL.md");
             let previous = match name {
                 "memory-and-reminders" => Some(include_str!(
@@ -202,12 +264,58 @@ impl Runtime {
                 )),
                 _ => None,
             };
-            if previous.is_some_and(|old| {
-                std::fs::read_to_string(&file).is_ok_and(|current| current == old)
-            }) {
+            let current = fs::symlink_metadata(&file)
+                .is_ok_and(|metadata| metadata.is_file())
+                .then(|| fs::read_to_string(&file).ok())
+                .flatten();
+            let is_original = current.as_ref().is_some_and(|current| {
+                use sha2::{Digest, Sha256};
+                previous == Some(current.as_str())
+                    || legacy_hashes.get(name).is_some_and(|hashes| {
+                        hashes.contains(&format!("{:x}", Sha256::digest(current.as_bytes())))
+                    })
+            });
+            if is_original {
                 crate::write_private(&file, content)?;
             } else {
                 crate::write_new(&file, content)?;
+            }
+        }
+        for &(relative, content) in SKILL_RESOURCES {
+            let target = self.skills_dir.join(relative);
+            let mut parent = self.skills_dir.clone();
+            for component in Path::new(relative).parent().unwrap().components() {
+                parent.push(component);
+                match fs::symlink_metadata(&parent) {
+                    Ok(metadata) if !metadata.is_dir() => {
+                        bail!(
+                            "Skill resource parent is not a directory: {}",
+                            parent.display()
+                        );
+                    }
+                    Ok(_) => {}
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                        fs::create_dir(&parent)?;
+                        fs::set_permissions(&parent, fs::Permissions::from_mode(0o700))?;
+                    }
+                    Err(error) => return Err(error.into()),
+                }
+            }
+            // Preserve customized references; creation never follows an existing link.
+            match OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o600)
+                .open(&target)
+            {
+                Ok(mut file) => {
+                    if let Err(error) = file.write_all(content).and_then(|()| file.sync_all()) {
+                        let _ = fs::remove_file(&target);
+                        return Err(error.into());
+                    }
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
+                Err(error) => return Err(error.into()),
             }
         }
         let dir = self.data_dir.join("instructions");
@@ -238,9 +346,20 @@ impl Runtime {
         }
         Ok(())
     }
-    pub fn skills(&self) -> Result<Vec<Skill>> {
-        let mut skills = vec![];
-        for entry in std::fs::read_dir(&self.skills_dir)? {
+    fn indexed_skills(&self) -> Result<Vec<IndexedSkill>> {
+        use sha2::{Digest, Sha256};
+        let mut index = self
+            .skill_index
+            .lock()
+            .map_err(|_| anyhow::anyhow!("Skill index poisoned"))?;
+        if !index.initialized {
+            for entry in self.store.records::<IndexedSkill>(INDEX_KIND)? {
+                index.entries.insert(entry.name.clone(), entry);
+            }
+            index.initialized = true;
+        }
+        let mut seen = BTreeSet::new();
+        for entry in fs::read_dir(&self.skills_dir)? {
             let entry = entry?;
             if !entry.file_type()?.is_dir() {
                 continue;
@@ -250,33 +369,170 @@ impl Runtime {
                 continue;
             }
             let path = entry.path().join("SKILL.md");
-            if !path.is_file() || std::fs::metadata(&path)?.len() > 32_000 {
+            let Ok(stat) = fs::metadata(&path) else {
+                continue;
+            };
+            if !stat.is_file() {
                 continue;
             }
-            let text = self.read_skill(&name)?;
-            let description =
-                field(&text, "description").unwrap_or_else(|| "Manually installed skill".into());
-            let version = field(&text, "version").unwrap_or_else(|| "1.0.0".into());
-            let enabled = self
-                .store
-                .get::<bool>("skill_enabled", &name)?
-                .unwrap_or(true);
-            skills.push(Skill {
-                name,
-                description: crate::redaction::truncate(&description, 512),
-                version: crate::redaction::truncate(&version, 80),
-                enabled,
-                required_tools: field(&text, "required_tools")
-                    .unwrap_or_default()
-                    .split(',')
-                    .map(str::trim)
-                    .filter(|s| valid_name(s))
-                    .map(str::to_owned)
-                    .collect(),
-            });
+            seen.insert(name.clone());
+            let canonical = fs::canonicalize(&path)?;
+            let fingerprint = format!(
+                "{}:{}:{}:{}:{}:{}:{}:{}",
+                canonical.display(),
+                stat.dev(),
+                stat.ino(),
+                stat.len(),
+                stat.mtime(),
+                stat.mtime_nsec(),
+                stat.ctime(),
+                stat.ctime_nsec()
+            );
+            if index
+                .entries
+                .get(&name)
+                .is_some_and(|s| s.fingerprint == fingerprint)
+            {
+                continue;
+            }
+            let mut record = IndexedSkill {
+                name: name.clone(),
+                fingerprint,
+                hash: String::new(),
+                skill: None,
+                error: None,
+                counts: HashMap::new(),
+                length: 0,
+            };
+            let parsed = (|| -> Result<()> {
+                let text = self.read_skill(&name)?;
+                record.hash = format!("{:x}", Sha256::digest(text.as_bytes()));
+                let meta = metadata(&text)?;
+                let skill = Skill {
+                    name: name.clone(),
+                    description: crate::redaction::truncate(
+                        &string_field(&meta, "description")
+                            .unwrap_or_else(|| "Manually installed skill".into()),
+                        512,
+                    ),
+                    version: crate::redaction::truncate(
+                        &string_field(&meta, "version").unwrap_or_else(|| "1.0.0".into()),
+                        80,
+                    ),
+                    enabled: true,
+                    category: string_field(&meta, "category").unwrap_or_default(),
+                    required_tools: list_field(&meta, "required_tools")
+                        .into_iter()
+                        .filter(|s| valid_name(s))
+                        .collect(),
+                    tags: list_field(&meta, "tags"),
+                    aliases: list_field(&meta, "aliases"),
+                };
+                for (text, weight) in [
+                    (&skill.name, 5.0),
+                    (&skill.description, 3.0),
+                    (&skill.tags.join(" "), 4.0),
+                    (&skill.aliases.join(" "), 4.0),
+                    (&text, 1.0),
+                ] {
+                    for word in words(text) {
+                        *record.counts.entry(word).or_default() += weight;
+                        record.length += 1;
+                    }
+                }
+                record.skill = Some(skill);
+                Ok(())
+            })();
+            if let Err(error) = parsed {
+                record.error = Some(error.to_string());
+            }
+            self.store.put(INDEX_KIND, &name, &record)?;
+            index.entries.insert(name, record);
         }
-        skills.sort_by(|a, b| a.name.cmp(&b.name));
-        Ok(skills)
+        let removed: Vec<_> = index
+            .entries
+            .keys()
+            .filter(|n| !seen.contains(*n))
+            .cloned()
+            .collect();
+        for name in removed {
+            self.store.delete(INDEX_KIND, &name)?;
+            index.entries.remove(&name);
+        }
+        let mut entries: Vec<_> = index.entries.values().cloned().collect();
+        for entry in &mut entries {
+            if let Some(skill) = &mut entry.skill {
+                skill.enabled = self
+                    .store
+                    .get::<bool>("skill_enabled", &skill.name)?
+                    .unwrap_or(true);
+            }
+        }
+        entries.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(entries)
+    }
+    pub fn skills(&self) -> Result<Vec<Skill>> {
+        Ok(self
+            .indexed_skills()?
+            .into_iter()
+            .filter_map(|e| e.skill)
+            .collect())
+    }
+    pub(crate) fn list_skills_for_profile(
+        &self,
+        profile: Option<&str>,
+        offset: usize,
+        limit: usize,
+    ) -> Result<serde_json::Value> {
+        let entries = self
+            .indexed_skills()?
+            .into_iter()
+            .filter(|e| {
+                profile.is_none_or(|p| {
+                    e.skill
+                        .as_ref()
+                        .is_some_and(|s| crate::security::skill_allowed(p, s))
+                })
+            })
+            .collect::<Vec<_>>();
+        let limit = limit.clamp(1, 20);
+        let page = entries
+            .iter()
+            .skip(offset)
+            .take(limit)
+            .map(|e| serde_json::json!({"name":e.name,"skill":e.skill,"error":e.error}))
+            .collect::<Vec<_>>();
+        let next = offset.saturating_add(page.len());
+        Ok(
+            serde_json::json!({"skills":page,"total":entries.len(),"next_offset":(next < entries.len()).then_some(next)}),
+        )
+    }
+    pub(crate) fn skill_resource(&self, name: &str, resource: &str) -> Result<String> {
+        self.skill_load(name)?; // Enabled-state and entrypoint validation apply to references too.
+        let relative = Path::new(resource);
+        if relative.is_absolute()
+            || relative
+                .components()
+                .any(|c| !matches!(c, std::path::Component::Normal(_)))
+        {
+            bail!("Skill resource must be a relative path without traversal");
+        }
+        let root = fs::canonicalize(self.skills_dir.join(name))?;
+        let path = fs::canonicalize(root.join(relative))?;
+        if !path.starts_with(&root)
+            || !root.starts_with(&self.skills_dir)
+            || fs::metadata(&path)?.len() > 32_000
+        {
+            bail!("Resource outside skill or too large");
+        }
+        let mut text = String::new();
+        fenix_execution::fs::open(&path)?
+            .take(32_001)
+            .read_to_string(&mut text)?;
+        if text.len() > 32_000 {
+            bail!("Skill resource too large");
+        }
+        Ok(self.redactor.text(&text))
     }
     fn read_skill(&self, name: &str) -> Result<String> {
         if !valid_name(name) {
@@ -286,7 +542,16 @@ impl Runtime {
         if !path.starts_with(&self.skills_dir) || std::fs::metadata(&path)?.len() > 32_000 {
             bail!("Skill must be inside the skills directory and at most 32000 bytes");
         }
-        Ok(self.redactor.text(&std::fs::read_to_string(path)?))
+        let file = fenix_execution::fs::open(&path)?;
+        if !file.metadata()?.is_file() {
+            bail!("Skill must be a regular file");
+        }
+        let mut text = String::new();
+        file.take(32_001).read_to_string(&mut text)?;
+        if text.len() > 32_000 {
+            bail!("Skill grew beyond 32000 bytes");
+        }
+        Ok(self.redactor.text(&text))
     }
     pub fn skill_load(&self, name: &str) -> Result<String> {
         let skill = self
@@ -300,50 +565,82 @@ impl Runtime {
         self.read_skill(name)
     }
     /// Field-aware lexical retrieval; bodies are indexed but not returned until loaded.
+    #[cfg(test)]
     pub(crate) fn search_skills(&self, query: &str, limit: usize) -> Result<serde_json::Value> {
+        self.search_skills_for_profile(None, query, limit)
+    }
+    pub(crate) fn search_skills_for_profile(
+        &self,
+        profile: Option<&str>,
+        query: &str,
+        limit: usize,
+    ) -> Result<serde_json::Value> {
         if query.len() > 1000 {
             bail!("Skill query exceeds 1000 bytes");
         }
         let terms: BTreeSet<_> = query
             .to_lowercase()
             .split(|c: char| !c.is_alphanumeric())
-            .filter(|s| !s.is_empty())
+            .filter(|s| {
+                !s.is_empty()
+                    && !matches!(
+                        *s,
+                        "the"
+                            | "a"
+                            | "an"
+                            | "and"
+                            | "or"
+                            | "for"
+                            | "with"
+                            | "to"
+                            | "of"
+                            | "in"
+                            | "no"
+                            | "such"
+                            | "please"
+                            | "el"
+                            | "la"
+                            | "los"
+                            | "las"
+                            | "un"
+                            | "una"
+                            | "de"
+                            | "del"
+                            | "en"
+                            | "con"
+                            | "para"
+                            | "por"
+                            | "que"
+                            | "quiero"
+                    )
+            })
             .map(str::to_owned)
             .collect();
         let mut documents = Vec::new();
         let mut frequency: HashMap<String, usize> = HashMap::new();
-        for skill in self.skills()?.into_iter().filter(|s| s.enabled) {
-            let body = self.read_skill(&skill.name)?;
-            let fields = [
-                (skill.name.as_str(), 5.0),
-                (skill.description.as_str(), 3.0),
-                (body.as_str(), 1.0),
-            ];
-            let mut counts: HashMap<String, f64> = HashMap::new();
-            let mut length = 0;
-            for (text, weight) in fields {
-                for word in text
-                    .to_lowercase()
-                    .split(|c: char| !c.is_alphanumeric())
-                    .filter(|s| !s.is_empty())
-                {
-                    *counts.entry(word.to_owned()).or_default() += weight;
-                    length += 1;
-                }
+        let mut skipped = Vec::new();
+        for entry in self.indexed_skills()? {
+            let Some(skill) = entry.skill else {
+                skipped.push(entry.name);
+                continue;
+            };
+            if !skill.enabled || profile.is_some_and(|p| !crate::security::skill_allowed(p, &skill))
+            {
+                continue;
             }
-            for word in counts.keys() {
+            for word in entry.counts.keys() {
                 *frequency.entry(word.clone()).or_default() += 1;
             }
-            documents.push((skill, counts, length));
+            documents.push((skill, entry.counts, entry.length, entry.hash));
         }
         let count = documents.len() as f64;
         let average = documents
             .iter()
-            .map(|(_, _, length)| *length as f64)
+            .map(|(_, _, length, _)| *length as f64)
             .sum::<f64>()
             / count.max(1.0);
         let mut ranked = Vec::new();
-        for (skill, counts, length) in documents {
+        for (skill, counts, length, hash) in documents {
             // Saturate weighted frequency together so a generic description word
             // cannot overwhelm a distinctive term present only in a skill body.
             let score: f64 = terms
@@ -355,17 +652,27 @@ impl Runtime {
                     idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * length as f64 / average.max(1.0)))
                 })
                 .sum();
-            if score > 0.0 || terms.is_empty() {
-                ranked.push((score, skill));
+            if score > 0.0 {
+                ranked.push((score, skill, hash));
             }
         }
-        ranked.sort_by(|(a, sa), (b, sb)| b.total_cmp(a).then_with(|| sa.name.cmp(&sb.name)));
+        ranked.sort_by(|(a, sa, _), (b, sb, _)| b.total_cmp(a).then_with(|| sa.name.cmp(&sb.name)));
+        let mut hashes = HashSet::new();
+        ranked.retain(|(_, _, hash)| hashes.insert(hash.clone()));
         Ok(
-            serde_json::json!({"skills":ranked.into_iter().take(limit.clamp(1, 8)).map(|(score, skill)| serde_json::json!({"score":score,"skill":skill})).collect::<Vec<_>>(),"instruction":"Load selected bodies with skill_load; search again if needed. Scores are lexical relevance, not correctness probabilities."}),
+            serde_json::json!({"skills":ranked.into_iter().take(limit.clamp(1, 8)).map(|(score, skill, hash)| serde_json::json!({"score":score,"skill":skill,"sha256":hash})).collect::<Vec<_>>(),"skipped_invalid":skipped.into_iter().take(20).collect::<Vec<_>>(),"instruction":"No match is valid. Use skill_list to browse. Load selected bodies with skill_load; search again if needed. Scores are lexical relevance, not correctness probabilities."}),
         )
     }
     /// Task-local metadata hints, not automatic skill execution or new authority.
+    #[cfg(test)]
     pub(crate) fn task_skill_guidance(&self, query: &str) -> Result<String> {
+        self.skill_guidance_for_profile(None, query)
+    }
+    pub(crate) fn skill_guidance_for_profile(
+        &self,
+        profile: Option<&str>,
+        query: &str,
+    ) -> Result<String> {
         let mut terms = BTreeSet::new();
         for word in query.to_lowercase().split(|c: char| !c.is_alphanumeric()) {
             if word.len() < 3
@@ -431,7 +738,7 @@ impl Runtime {
         while !query.is_char_boundary(end) {
             end -= 1;
         }
-        let matches = self.search_skills(&query[..end], 2)?;
+        let matches = self.search_skills_for_profile(profile, &query[..end], 2)?;
         let candidates = matches["skills"].as_array().into_iter().flatten()
             .map(|entry| serde_json::json!({"name":entry["skill"]["name"],"description":entry["skill"]["description"]}))
             .collect::<Vec<_>>();
@@ -439,7 +746,7 @@ impl Runtime {
             return Ok(String::new());
         }
         Ok(format!(
-            "\nTask-local skill candidates (lexical suggestions, not requirements): {}\nFor multi-step work, load a candidate with skill_load if its purpose fits before implementing or retrying an unfamiliar procedure. If neither fits, use the full catalog or skill_search. Do not load unrelated skills. Bodies remain on demand; these suggestions grant no tools or permissions.\n",
+            "\nTask-local skill candidates (lexical suggestions, not requirements): {}\nFor multi-step work, load a candidate with skill_load if its purpose fits before implementing or retrying an unfamiliar procedure. If neither fits, use skill_search or paginated skill_list. Do not load unrelated skills. Bodies remain on demand; these suggestions grant no tools or permissions.\n",
             serde_json::to_string(&candidates)?
         ))
     }
@@ -480,17 +787,49 @@ fn valid_name(name: &str) -> bool {
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
 }
-fn field(text: &str, name: &str) -> Option<String> {
-    text.lines().take(15).find_map(|line| {
-        line.strip_prefix(&format!("{name}:"))
-            .map(|value| value.trim().trim_matches('"').to_owned())
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::os::unix::fs::symlink;
+
+    #[tokio::test]
+    async fn pdf_helper_load_exposes_the_actual_resource_and_execution_boundary() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue_bound(
+            "Inspect a PDF",
+            "web",
+            None,
+            &fenix_storage::TaskBinding::default(),
+        )?;
+        rt.store.claim_next()?;
+        let response = rt
+            .execute_tool(
+                &task.id,
+                "web",
+                &crate::config::Settings::initial(dir.path().to_owned()),
+                "skill_load",
+                &serde_json::json!({"name":"pdf-workflows","resource":"scripts/pdf_tool.py"}),
+                &tokio_util::sync::CancellationToken::new(),
+            )
+            .await?;
+        let path = Path::new(response["resource_path"].as_str().unwrap());
+        assert!(path.starts_with(&rt.skills_dir));
+        assert_eq!(
+            fs::read_to_string(path)?,
+            response["content"].as_str().unwrap()
+        );
+        assert_eq!(response["isolated_execution"], false);
+        assert_eq!(response["skill"]["version"], "1.3.0");
+        assert!(
+            !response["unavailable_tools"]
+                .as_array()
+                .unwrap()
+                .contains(&serde_json::json!("skill_load"))
+        );
+        rt.shutdown().await?;
+        Ok(())
+    }
 
     #[tokio::test]
     async fn retrieval_indexes_bodies_and_respects_enabled_state() -> Result<()> {
@@ -652,6 +991,766 @@ mod tests {
             "manual instructions"
         );
         assert!(!shared.join("shared").exists());
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod metadata_tests {
+    use super::*;
+    use serde_json::json;
+    #[tokio::test]
+    async fn malformed_skill_does_not_break_library_and_resources_are_contained() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
+        let broken = rt.skills_dir.join("broken");
+        fs::create_dir(&broken)?;
+        fs::write(
+            broken.join("SKILL.md"),
+            "---\ndescription: [not closed\n---\n",
+        )?;
+        assert!(!rt.skills()?.iter().any(|s| s.name == "broken"));
+        assert_eq!(
+            rt.search_skills("spreadsheet", 3)?["skipped_invalid"],
+            json!(["broken"])
+        );
+        let references = rt.skills_dir.join("documents-word/references");
+        fs::create_dir(&references)?;
+        fs::write(
+            references.join("guide.md"),
+            "Load this guide only on demand",
+        )?;
+        assert!(
+            rt.skill_resource("documents-word", "references/guide.md")?
+                .contains("on demand")
+        );
+        assert!(
+            rt.skill_resource("documents-word", "../documents-spreadsheets/SKILL.md")
+                .is_err()
+        );
+        std::os::unix::fs::symlink(dir.path(), references.join("escape"))?;
+        assert!(
+            rt.skill_resource(
+                "documents-word",
+                "references/escape/data/instructions/AGENTS.md"
+            )
+            .is_err()
+        );
+        rt.set_skill_enabled("documents-word", false)?;
+        assert!(
+            rt.skill_resource("documents-word", "references/guide.md")
+                .is_err()
+        );
+        Ok(())
+    }
+    #[test]
+    fn yaml_supports_multiline_and_crlf() -> Result<()> {
+        let value = metadata(
+            "---\r\nname: demo\r\ndescription: >\r\n  first line\r\n  second line\r\n---\r\nBody",
+        )?;
+        assert_eq!(
+            string_field(&value, "description").unwrap().trim(),
+            "first line second line"
+        );
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod library_tests {
+    use super::*;
+    use sha2::{Digest, Sha256};
+
+    const SPECIALIZED_WORKFLOWS: &[&str] = &[
+        "agent-workflow-diagnosis",
+        "completion-verification",
+        "review-feedback",
+    ];
+    const WORKFLOW_PARENT_BASELINES: &[(&str, &str)] = &[
+        (
+            "code-review",
+            include_str!("../tests/fixtures/skills/workflow-v2/code-review.md"),
+        ),
+        (
+            "local-troubleshooting",
+            include_str!("../tests/fixtures/skills/workflow-v2/local-troubleshooting.md"),
+        ),
+        (
+            "software-implementation",
+            include_str!("../tests/fixtures/skills/workflow-v2/software-implementation.md"),
+        ),
+    ];
+
+    #[tokio::test]
+    async fn specialized_workflows_preserve_neighboring_task_routing() -> Result<()> {
+        let cases: Vec<serde_json::Value> = serde_json::from_str(include_str!(
+            "../../../docs/skills/workflow-boundary-cases.json"
+        ))?;
+        let dir = tempfile::tempdir()?;
+        let skills = dir.path().join("skills");
+        let rt = Runtime::open(&dir.path().join("data"), Some(&skills)).await?;
+        let mut failures = Vec::new();
+        for phase in ["baseline", "candidate"] {
+            for &name in SPECIALIZED_WORKFLOWS {
+                rt.set_skill_enabled(name, phase == "candidate")?;
+            }
+            if phase == "baseline" {
+                for &(name, previous) in WORKFLOW_PARENT_BASELINES {
+                    fs::write(skills.join(name).join("SKILL.md"), previous)?;
+                }
+            } else {
+                rt.install_resources()?;
+                for &(name, _) in WORKFLOW_PARENT_BASELINES {
+                    let expected = DEFAULTS.iter().find(|(n, _)| *n == name).unwrap().1;
+                    assert_eq!(rt.skill_load(name)?, expected);
+                }
+            }
+            for case in &cases {
+                let query = case["query"].as_str().unwrap();
+                let expected = case[if phase == "baseline" {
+                    "baseline"
+                } else {
+                    "expected"
+                }]
+                .as_str()
+                .unwrap();
+                let results = rt.search_skills(query, 3)?;
+                let names: Vec<_> = results["skills"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|row| row["skill"]["name"].as_str().unwrap())
+                    .collect();
+                let rank = names
+                    .iter()
+                    .position(|name| *name == expected)
+                    .map(|i| i + 1);
+                println!(
+                    "workflow-boundary: {}",
+                    serde_json::json!({
+                        "phase": phase, "query": query, "expected": expected, "rank": rank,
+                        "guard": case["guard"].as_bool().unwrap_or(false), "results": names
+                    })
+                );
+                if phase == "candidate" {
+                    if rank.is_none() {
+                        failures.push(format!("{query}: expected {expected}; got {names:?}"));
+                    }
+                    if case["guard"] == true
+                        && names
+                            .iter()
+                            .take(2)
+                            .any(|name| SPECIALIZED_WORKFLOWS.contains(name))
+                    {
+                        failures.push(format!("Unrelated workflow offered for {query}: {names:?}"));
+                    }
+                }
+            }
+        }
+        for &name in SPECIALIZED_WORKFLOWS {
+            assert!(!rt.skill_load(name)?.is_empty());
+            rt.set_skill_enabled(name, false)?;
+            rt.install_resources()?;
+            assert!(rt.skill_load(name).is_err());
+        }
+        for &(name, previous) in WORKFLOW_PARENT_BASELINES {
+            fs::write(
+                skills.join(name).join("SKILL.md"),
+                format!("{previous}\nOwner customization.\n"),
+            )?;
+        }
+        rt.install_resources()?;
+        for &(name, previous) in WORKFLOW_PARENT_BASELINES {
+            assert_eq!(
+                rt.skill_load(name)?,
+                format!("{previous}\nOwner customization.\n")
+            );
+        }
+        rt.shutdown().await?;
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        Ok(())
+    }
+
+    const WORKFLOW_BASELINES: &[(&str, &str)] = &[
+        (
+            "code-review",
+            include_str!("../tests/fixtures/skills/workflow-v1/code-review.md"),
+        ),
+        (
+            "git-worktree-coordination",
+            include_str!("../tests/fixtures/skills/workflow-v1/git-worktree-coordination.md"),
+        ),
+        (
+            "local-troubleshooting",
+            include_str!("../tests/fixtures/skills/workflow-v1/local-troubleshooting.md"),
+        ),
+        (
+            "requirements-and-planning",
+            include_str!("../tests/fixtures/skills/workflow-v1/requirements-and-planning.md"),
+        ),
+        (
+            "skill-authoring",
+            include_str!("../tests/fixtures/skills/workflow-v1/skill-authoring.md"),
+        ),
+        (
+            "software-implementation",
+            include_str!("../tests/fixtures/skills/workflow-v1/software-implementation.md"),
+        ),
+        (
+            "task-delegation",
+            include_str!("../tests/fixtures/skills/workflow-v1/task-delegation.md"),
+        ),
+        (
+            "test-driven-repair",
+            include_str!("../tests/fixtures/skills/workflow-v1/test-driven-repair.md"),
+        ),
+        (
+            "test-strategy",
+            include_str!("../tests/fixtures/skills/workflow-v1/test-strategy.md"),
+        ),
+    ];
+
+    #[tokio::test]
+    async fn workflow_requests_discover_existing_skills() -> Result<()> {
+        let cases: Vec<serde_json::Value> = serde_json::from_str(include_str!(
+            "../../../docs/skills/superpowers-discovery-cases.json"
+        ))?;
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
+        let mut failures = Vec::new();
+        for phase in ["baseline", "candidate"] {
+            for &name in SPECIALIZED_WORKFLOWS {
+                rt.set_skill_enabled(name, phase == "candidate")?;
+            }
+            if phase == "baseline" {
+                for &(name, previous) in WORKFLOW_BASELINES {
+                    fs::write(
+                        dir.path().join("skills").join(name).join("SKILL.md"),
+                        previous,
+                    )?;
+                }
+            } else {
+                rt.install_resources()?;
+            }
+            for case in &cases {
+                let query = case["query"].as_str().unwrap();
+                let original_expected = case["expected"].as_str().unwrap();
+                // The historical corpus predates the split of these two workflows.
+                let expected = match (phase, original_expected) {
+                    ("candidate", "code-review") => "review-feedback",
+                    ("candidate", "local-troubleshooting") => "agent-workflow-diagnosis",
+                    _ => original_expected,
+                };
+                let results = rt.search_skills(query, 3)?;
+                let names: Vec<_> = results["skills"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|row| row["skill"]["name"].as_str().unwrap())
+                    .collect();
+                let rank = names
+                    .iter()
+                    .position(|name| *name == expected)
+                    .map(|i| i + 1);
+                println!(
+                    "workflow-discovery: {}",
+                    serde_json::json!({
+                        "phase": phase, "query": query, "expected": expected, "rank": rank, "results": names
+                    })
+                );
+                if phase == "candidate" && rank.is_none() {
+                    failures.push(format!("{query}: expected {expected}; got {names:?}"));
+                }
+            }
+        }
+        rt.shutdown().await?;
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn workflow_upgrade_preserves_customizations_and_activation() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let skills = dir.path().join("skills");
+        let rt = Runtime::open(&dir.path().join("data"), Some(&skills)).await?;
+
+        for &(name, previous) in WORKFLOW_BASELINES {
+            fs::write(skills.join(name).join("SKILL.md"), previous)?;
+            rt.set_skill_enabled(name, false)?;
+        }
+        rt.install_resources()?;
+        for &(name, previous) in WORKFLOW_BASELINES {
+            let expected = DEFAULTS.iter().find(|(n, _)| *n == name).unwrap().1;
+            assert_ne!(previous, expected, "{name} must exercise an actual upgrade");
+            assert_eq!(
+                fs::read_to_string(skills.join(name).join("SKILL.md"))?,
+                expected
+            );
+            assert!(rt.skill_load(name).is_err(), "{name} must remain disabled");
+            rt.set_skill_enabled(name, true)?;
+            assert_eq!(rt.skill_load(name)?, expected);
+            fs::write(
+                skills.join(name).join("SKILL.md"),
+                format!("{previous}\nOwner customization.\n"),
+            )?;
+        }
+        rt.install_resources()?;
+        for &(name, previous) in WORKFLOW_BASELINES {
+            assert_eq!(
+                rt.skill_load(name)?,
+                format!("{previous}\nOwner customization.\n")
+            );
+        }
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn workflow_references_are_available_on_demand() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
+        for (name, resource) in [
+            (
+                "test-driven-repair",
+                "references/root-cause-investigation.md",
+            ),
+            (
+                "software-implementation",
+                "references/completion-evidence.md",
+            ),
+            ("code-review", "references/review-feedback.md"),
+            (
+                "local-troubleshooting",
+                "references/agent-workflow-diagnosis.md",
+            ),
+            ("skill-authoring", "references/behavioral-evaluation.md"),
+            ("pdf-workflows", "scripts/pdf_tool.py"),
+        ] {
+            let relative = format!("{name}/{resource}");
+            let expected = SKILL_RESOURCES
+                .iter()
+                .find(|(path, _)| *path == relative)
+                .unwrap()
+                .1;
+            assert_eq!(rt.skill_resource(name, resource)?.as_bytes(), expected);
+            let metadata = rt.search_skills(name, 3)?;
+            assert!(
+                !metadata
+                    .to_string()
+                    .contains(std::str::from_utf8(expected)?)
+            );
+            rt.set_skill_enabled(name, false)?;
+            assert!(rt.skill_resource(name, resource).is_err());
+        }
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[test]
+    fn real_library_has_consistent_metadata_and_distinct_content() -> Result<()> {
+        let mut hashes = HashSet::new();
+        let tools: HashSet<_> = crate::tools::catalog()
+            .into_iter()
+            .map(|tool| tool.name)
+            .collect();
+        assert_eq!(DEFAULTS.len(), 187);
+        for &(name, content) in DEFAULTS {
+            let data = metadata(content)?;
+            assert_eq!(data["name"].as_str(), Some(name));
+            let description = data["description"].as_str().unwrap();
+            assert!(
+                !description.is_empty() && description.len() <= 512,
+                "{name}"
+            );
+            assert!(content.len() < 32_000, "{name}");
+            assert!(hashes.insert(format!("{:x}", Sha256::digest(content))));
+            for field in [
+                "version",
+                "category",
+                "tags",
+                "aliases",
+                "required_tools",
+                "requires",
+                "effects",
+            ] {
+                assert!(
+                    data["metadata"][field]
+                        .as_str()
+                        .is_some_and(|s| !s.is_empty()),
+                    "{name}: {field}"
+                );
+            }
+            for heading in [
+                "Scope",
+                "Inputs",
+                "Workflow",
+                "Verification",
+                "Limits",
+                "Español",
+            ] {
+                assert!(
+                    content.contains(&format!("\n## {heading}\n")),
+                    "{name}: {heading}"
+                );
+            }
+            for tool in list_field(&data, "required_tools") {
+                assert!(
+                    tools.contains(&tool),
+                    "{name}: nonexistent native tool {tool}"
+                );
+            }
+            assert!(!name.starts_with("catalog-"));
+            assert!(!content.contains("Private body marker"));
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn real_office_research_and_engineering_requests_find_their_skills() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
+        // Real user requests against the bundled library, not generated filler entries.
+        let mut failures = Vec::new();
+        for (query, expected) in [
+            (
+                "Busca en internet información sobre astronomía",
+                "web-research",
+            ),
+            ("Last 30 Days Reddit Hacker News", "web-research"),
+            (
+                "Busca opiniones recientes en Reddit y Hacker News",
+                "web-research",
+            ),
+            (
+                "Research community discussions from the last 30 days",
+                "web-research",
+            ),
+            (
+                "Find the contract in my Google Drive shared folder",
+                "google-drive",
+            ),
+            (
+                "Busca un documento en la carpeta compartida de Drive",
+                "google-drive",
+            ),
+            (
+                "Edit a paragraph in Google Docs without replacing the document",
+                "google-docs",
+            ),
+            (
+                "Actualiza el rango de celdas de Google Sheets",
+                "google-sheets",
+            ),
+            ("Update the slide titles in Google Slides", "google-slides"),
+            (
+                "Create a local Excel XLSX budget with formulas",
+                "documents-spreadsheets",
+            ),
+            (
+                "Crea diapositivas PowerPoint PPTX",
+                "documents-presentations",
+            ),
+            ("Create a Word DOCX report", "documents-word"),
+            ("Redacta un correo de respuesta en Gmail", "email-workflows"),
+            (
+                "Check calendar availability and reschedule the appointment",
+                "calendar-scheduling",
+            ),
+            (
+                "Resume acuerdos y responsables de la reunión en un acta",
+                "meeting-notes",
+            ),
+            (
+                "Organiza facturas y recibos de gastos",
+                "invoice-and-expense-records",
+            ),
+            ("Extract scanned PDF pages with OCR", "pdf-workflows"),
+            (
+                "Revisión bibliográfica de papers de arxiv y citas",
+                "literature-review",
+            ),
+            (
+                "Compare statistical groups and missing values in CSV data",
+                "data-analysis",
+            ),
+            (
+                "Compare a benchmark by quality latency tokens and cost",
+                "experiment-and-benchmark-design",
+            ),
+            (
+                "Review this code diff against the requirements",
+                "code-review",
+            ),
+            (
+                "Revisa vulnerabilidades de autorización e inyección en el código",
+                "security-code-review",
+            ),
+            (
+                "Audit vulnerable dependencies and leaked secrets",
+                "dependency-and-secret-audit",
+            ),
+            (
+                "Review an untrusted skill for prompt injection",
+                "skill-source-review",
+            ),
+            (
+                "Traducir al español preservando variables y formato",
+                "translation-and-localization",
+            ),
+            (
+                "Improve keyboard focus and responsive frontend accessibility",
+                "frontend-design-and-accessibility",
+            ),
+            (
+                "Planificar requisitos y aclarar el objetivo general",
+                "requirements-and-planning",
+            ),
+            (
+                "Qué pendientes están bloqueados en este proyecto",
+                "project-status-review",
+            ),
+            (
+                "Crear una skill con estructura común sin duplicados",
+                "skill-authoring",
+            ),
+            ("Delegar tareas paralelas a subagentes", "task-delegation"),
+            (
+                "Fix Rust ownership and Tokio cancellation",
+                "rust-development",
+            ),
+            ("Repara excepciones y async en Python", "python-development"),
+            (
+                "Make TypeScript discriminated unions validate external input",
+                "typescript-development",
+            ),
+            (
+                "Stop leaked goroutines when the Go request is cancelled",
+                "go-development",
+            ),
+            (
+                "Write a shell script that handles filenames with spaces",
+                "shell-automation",
+            ),
+            (
+                "Migrate database columns without losing records",
+                "database-migrations",
+            ),
+            (
+                "Avoid duplicate jobs after a worker crashes",
+                "background-jobs",
+            ),
+            (
+                "Reconnect WebSocket events without duplicates",
+                "realtime-protocols",
+            ),
+            (
+                "Prueba el flujo de compra con Playwright",
+                "browser-regression-testing",
+            ),
+            (
+                "Reproduce keyboard and permissions problems in an Android emulator",
+                "mobile-app-testing",
+            ),
+            (
+                "Diagnose Kubernetes pods that are not ready",
+                "kubernetes-operations",
+            ),
+            (
+                "Review Terraform resource replacements before apply",
+                "infrastructure-as-code",
+            ),
+            (
+                "Restore a database backup and verify the recovered data",
+                "backup-and-restore",
+            ),
+            (
+                "Explica los gastos de cloud y alternativas de ahorro",
+                "cloud-cost-review",
+            ),
+            (
+                "Coordinate parallel changes in Git worktrees",
+                "git-worktree-coordination",
+            ),
+            (
+                "Audit missing records and duplicate dataset keys",
+                "data-quality-audit",
+            ),
+            (
+                "Analyze randomized A/B experiment results",
+                "ab-test-analysis",
+            ),
+            (
+                "Forecast weekly demand with backtesting",
+                "time-series-forecasting",
+            ),
+            (
+                "Check geographic coordinate systems and spatial joins",
+                "geospatial-analysis",
+            ),
+            (
+                "Prepare training data without leakage between splits",
+                "ml-dataset-preparation",
+            ),
+            (
+                "Validate schema-constrained JSON from an LLM",
+                "structured-llm-output",
+            ),
+            (
+                "Review the methodology and claims in this manuscript",
+                "peer-review",
+            ),
+            (
+                "Corrige las citas y claves del archivo BibTeX",
+                "bibliography-management",
+            ),
+            (
+                "Compare suppliers and renewal contract costs",
+                "procurement-and-vendors",
+            ),
+            (
+                "Prepara una guía de entrevistas para contratar personal",
+                "hiring-and-interviews",
+            ),
+            (
+                "Update the Jira issue status without duplicate tickets",
+                "issue-tracker-workflows",
+            ),
+            (
+                "Reconcile duplicate CRM contacts and companies",
+                "crm-workflows",
+            ),
+            (
+                "Update Confluence page blocks preserving neighboring content",
+                "knowledge-workspace-connectors",
+            ),
+            (
+                "Sincroniza archivos locales con una carpeta cloud sin borrar conflictos",
+                "cloud-file-sync",
+            ),
+            (
+                "Cut this video and preserve audio synchronization",
+                "video-editing",
+            ),
+            (
+                "Transcribe audio with timestamps and mark inaudible passages",
+                "audio-transcription",
+            ),
+            (
+                "Plan a travel itinerary with flight connections",
+                "travel-planning",
+            ),
+            (
+                "Teach fractions with worked examples and feedback",
+                "learning-and-tutoring",
+            ),
+            (
+                "Remove private data and hidden metadata before sharing a document",
+                "privacy-redaction",
+            ),
+            (
+                "Assess a suspicious phishing email without opening its attachment",
+                "phishing-triage",
+            ),
+            (
+                "Handle duplicate Stripe payment webhooks without charging twice",
+                "payment-and-billing",
+            ),
+        ] {
+            let results = rt.search_skills(query, 3)?;
+            let names: Vec<_> = results["skills"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|row| row["skill"]["name"].as_str().unwrap())
+                .collect();
+            if !names.contains(&expected) {
+                failures.push(format!("{query}: expected {expected}; got {names:?}"));
+            }
+            let guidance = rt.task_skill_guidance(query)?;
+            assert!(guidance.len() < 2_000, "Guidance must remain metadata-only");
+            assert!(!guidance.contains("## Workflow"));
+        }
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert!(
+            rt.search_skills("", 8)?["skills"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
+        assert!(
+            rt.search_skills("xylophonicquux", 8)?["skills"]
+                .as_array()
+                .unwrap()
+                .is_empty()
+        );
+        rt.set_skill_enabled("google-drive", false)?;
+        assert!(
+            !rt.search_skills("Google Drive", 8)?["skills"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|s| s["skill"]["name"] == "google-drive")
+        );
+        assert!(rt.skill_load("google-drive").is_err());
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn hash_upgrade_only_replaces_the_exact_pre_library_release() -> Result<()> {
+        use std::os::unix::fs::symlink;
+        let dir = tempfile::tempdir()?;
+        let skills = dir.path().join("skills");
+        let rt = Runtime::open(&dir.path().join("data"), Some(&skills)).await?;
+        let previous = include_str!("../tests/fixtures/skills/conversation-recap-v1.md");
+        let file = skills.join("conversation-recap/SKILL.md");
+        fs::write(&file, previous)?;
+        rt.set_skill_enabled("conversation-recap", false)?;
+        rt.install_resources()?;
+        assert_eq!(
+            fs::read_to_string(&file)?,
+            include_str!("../../../resources/skills/conversation-recap/SKILL.md")
+        );
+        assert!(rt.skill_load("conversation-recap").is_err());
+        let custom = format!("{previous}\nOwner's additional instruction.\n");
+        fs::write(&file, &custom)?;
+        rt.install_resources()?;
+        assert_eq!(fs::read_to_string(&file)?, custom);
+        let outside = dir.path().join("owner.md");
+        fs::write(&outside, previous)?;
+        fs::remove_file(&file)?;
+        symlink(&outside, &file)?;
+        rt.install_resources()?;
+        assert_eq!(fs::read_to_string(outside)?, previous);
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn bundled_references_install_and_preserve_user_changes() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let data = dir.path().join("data");
+        let skills = dir.path().join("skills");
+        let rt = Runtime::open(&data, Some(&skills)).await?;
+        assert!(
+            rt.skill_resource("google-drive", "references/connection-checklist.md")?
+                .contains("OAuth")
+        );
+        assert!(
+            rt.skill_resource("literature-review", "references/evidence-table.md")?
+                .contains("Comparator")
+        );
+        fs::write(
+            skills.join("google-drive/references/connection-checklist.md"),
+            "Owner connection notes",
+        )?;
+        rt.install_resources()?;
+        assert_eq!(
+            rt.skill_resource("google-drive", "references/connection-checklist.md")?,
+            "Owner connection notes"
+        );
+        assert!(!skills.join("test-driven-repair/SKILL.v1.md").exists());
+        rt.shutdown().await?;
         Ok(())
     }
 }

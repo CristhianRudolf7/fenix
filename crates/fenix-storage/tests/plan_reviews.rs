@@ -54,6 +54,7 @@ fn child(store: &Store, plan: &Plan, objective: &str) -> String {
         .create_subagent(
             &plan.task_id,
             &SubagentSpec {
+                profile: "general".into(),
                 objective: objective.into(),
                 expected_output: "Evidence".into(),
                 context: String::new(),
@@ -90,6 +91,7 @@ fn selective_gates_cover_dependants_but_leave_independent_work_available() {
             .create_subagent(
                 &reviewer,
                 &SubagentSpec {
+                    profile: "general".into(),
                     objective: "Nested reviewer".into(),
                     expected_output: "Review".into(),
                     context: String::new(),

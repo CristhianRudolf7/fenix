@@ -1,0 +1,18 @@
+[Unit]
+Description=Fenix account API gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/lib/fenix/fenix gateway %h/.config/fenix/accounts.json
+Environment=FENIX_GATEWAY_PORT=4174
+Environment=FENIX_WEB_DIST=
+EnvironmentFile=-%h/.config/fenix/server.env
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+
+[Install]
+WantedBy=default.target

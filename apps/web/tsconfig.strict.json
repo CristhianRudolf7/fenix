@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noImplicitAny": true
+  },
+  "include": [
+    "src/design",
+    "src/skills",
+    "src/browser",
+    "src/integrations",
+    "src/live",
+    "src/components",
+    "src/login.tsx",
+    "vite.config.ts",
+    "src/documents",
+    "src/workspace",
+    "src/workflows"
+  ]
+}

@@ -180,7 +180,7 @@ impl Runtime {
 
     pub(crate) fn plan_views(&self) -> Result<Value> {
         Ok(json!(self.store.plans()?.into_iter().take(50).map(|plan| Ok(json!({
-            "id":plan.id,"task_id":plan.task_id,"project_id":plan.project_id,"version":plan.version,"status":plan.status,"objective":truncate(&plan.objective,1000),"updated_at":plan.updated_at,
+            "id":plan.id,"task_id":plan.task_id,"project_id":plan.project_id,"version":plan.version,"status":plan.status,"objective":truncate(&plan.objective,1000),"updated_at":plan.updated_at,"completion_audits":self.store.completion_audits(&plan.id)?.into_iter().filter(|a|a.version==plan.version).collect::<Vec<_>>(),"evidence_summary":self.completion_evidence_summary(&plan)?,
             "nodes":plan.nodes.iter().map(|node|json!({"id":node.spec.id,"objective":truncate(&node.spec.objective,600),"expected_output":truncate(&node.spec.expected_output,600),"depends_on":node.spec.depends_on,"status":node.status,"worker_id":node.worker_id})).collect::<Vec<_>>(),
             "reviews":self.store.plan_reviews(&plan.id)?.iter().filter(|r|r.version==plan.version).map(|r|json!({"id":r.id,"status":r.status,"round":r.round,"node_ids":r.node_ids,"reason":truncate(&r.reason,1000),"reviewers":r.assignments.iter().map(|a|json!({"role":a.role,"specialty":a.request.specialty,"worker_id":a.worker_id})).collect::<Vec<_>>() })).collect::<Vec<_>>()
         }))).collect::<Result<Vec<_>>>()?))
@@ -267,6 +267,10 @@ impl Runtime {
                 args["constraints"].as_str().unwrap_or(""),
                 specs()?,
             )?;
+            if args["audit_required"] == true {
+                self.store
+                    .put("completion_audit_required", &plan.id, &true)?;
+            }
             if let Err(error) = self.begin_plan_review(&plan, args, None) {
                 self.store.cancel_plan(&plan.id, plan.version, task)?;
                 return Err(error);
@@ -299,7 +303,7 @@ impl Runtime {
         self.authorize_task_read(task, &current.task_id)?;
         if action == "get" {
             return Ok(
-                json!({"plan":current,"revisions":self.store.plan_history(id)?,"reviews":self.store.plan_reviews(id)?,"brief":self.store.get::<fenix_storage::PlanBrief>("plan_briefs",id)?.unwrap_or_default()}),
+                json!({"plan":current,"revisions":self.store.plan_history(id)?,"reviews":self.store.plan_reviews(id)?,"brief":self.store.get::<fenix_storage::PlanBrief>("plan_briefs",id)?.unwrap_or_default(),"completion_audits":self.store.completion_audits(id)?,"evidence_summary":self.completion_evidence_summary(&current)?}),
             );
         }
         let version = args["expected_version"]
@@ -375,6 +379,9 @@ impl Runtime {
         self.stop_plan_workers(&self.store.superseded_plan_workers(id)?)
             .await?;
         let plan = self.store.activate_plan_revision(id, plan.version)?;
+        if args["audit_required"] == true {
+            self.store.put("completion_audit_required", id, &true)?;
+        }
         self.supersede_plan_reviews(id, Some(task)).await?;
         if let Err(error) = self.begin_plan_review(&plan, args, previous_review.as_ref()) {
             let (_, workers) = self.store.pause_plan_for_edit(
@@ -442,6 +449,8 @@ impl Runtime {
                 }
             }
             let plan = self.store.plan(&plan.id)?;
+            self.completion_audit_cycle(&plan).await?;
+            let plan = self.store.plan(&plan.id)?;
             self.plan_review_cycle(&plan).await?;
             if plan.status != "running" {
                 continue;
@@ -475,6 +484,7 @@ impl Runtime {
                     break;
                 }
                 let spec = SubagentSpec {
+                    profile: node.spec.profile.clone(),
                     objective: node.spec.objective.clone(),
                     expected_output: node.spec.expected_output.clone(),
                     context: truncate(&context.to_string(), 24000),
@@ -537,6 +547,34 @@ impl Runtime {
             .store
             .bus_events(self.store.subscriber_cursor("plan_notifications")?, 100)?
         {
+            if event.topic == "plan.audit_updated" {
+                let audit = &event.data["audit"];
+                let label = match audit["status"].as_str() {
+                    Some("queued") => {
+                        Some("Resultado ejecutado; pendiente de verificación independiente")
+                    }
+                    Some("passed") => Some("Verificación de resultado completada"),
+                    Some("blocked") => Some(
+                        "Resultado pendiente: la auditoría encontró dudas, fallos o evidencia insuficiente",
+                    ),
+                    _ => None,
+                };
+                if let Some(label) = label {
+                    self.publish_once(
+                        &event.id,
+                        event.task_id.as_deref(),
+                        &format!(
+                            "{label} · plan {} · {}\n{}",
+                            audit["plan_id"].as_str().unwrap_or(""),
+                            audit["node_id"]
+                                .as_str()
+                                .filter(|s| !s.is_empty())
+                                .unwrap_or("resultado completo"),
+                            truncate(audit["report"]["summary"].as_str().unwrap_or(""), 2000)
+                        ),
+                    )?;
+                }
+            }
             if event.topic == "plan.review_updated"
                 && matches!(
                     event.data["status"].as_str(),

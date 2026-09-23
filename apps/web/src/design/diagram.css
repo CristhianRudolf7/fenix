@@ -1,0 +1,116 @@
+.diagram-explorer {
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.diagram-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.diagram-controls output {
+  min-width: 42px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.diagram-canvas.diagram-viewport {
+  position: relative;
+  height: clamp(300px, 52vh, 680px);
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  background-color: #fafbf9;
+  background-image: radial-gradient(#b4bfb650 1px, transparent 1px);
+  background-size: 18px 18px;
+  padding: 0;
+}
+.diagram-canvas.diagram-viewport:active {
+  cursor: grabbing;
+}
+.diagram-canvas.diagram-viewport:focus-visible {
+  outline: 2px solid #2e7053;
+  outline-offset: -3px;
+}
+.diagram-canvas.diagram-viewport img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  min-width: 0;
+  transform-origin: 0 0;
+  user-select: none;
+  pointer-events: none;
+}
+.diagram-progress {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #fafbf9bf;
+  pointer-events: none;
+}
+.diagram-hint {
+  font-size: 11px;
+  line-height: 1.6;
+  padding: 10px 14px;
+  margin: 0;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+.diagram-outline {
+  padding: 12px;
+  border-top: 1px solid var(--line);
+}
+.diagram-outline input {
+  width: 100%;
+}
+.diagram-node-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 170px;
+  overflow: auto;
+  padding: 10px 0;
+}
+.diagram-node-list button[aria-pressed="true"] {
+  background: #e2efe6;
+  color: #1f5135;
+  border-color: #80a88c;
+}
+.diagram-node-detail {
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.diagram-node-detail h3 {
+  margin: 0 0 8px;
+}
+.diagram-node-detail p {
+  white-space: pre-wrap;
+}
+.diagram-explorer:fullscreen {
+  overflow: auto;
+  border-radius: 0;
+}
+.diagram-explorer:fullscreen .diagram-viewport {
+  height: 72vh;
+}
+@media (max-width: 600px) {
+  .diagram-canvas.diagram-viewport {
+    height: 45vh;
+  }
+  .diagram-controls button {
+    padding: 6px 8px;
+  }
+}
