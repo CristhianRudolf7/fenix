@@ -83,7 +83,9 @@ impl Runtime {
         self.store.event(&task.id,"context_checkpoint",&json!({"checkpoint_id":checkpoint_id,"sha256":sha256,"bytes":serialized.len(),"estimated_tokens":before,"session_id":task.session_id}))?;
         self.queue_memory_capture(task, Some(&checkpoint_id))?;
         self.execution_stage(&task.id, "compacting")?;
-        let contract = serde_json::to_string(&self.task_contract(&task.id)?)?;
+        let contract = serde_json::to_string(&crate::execution_state::context_contract(
+            &self.task_contract(&task.id)?,
+        ))?;
         let mut base: Vec<_> = messages
             .iter()
             .filter(|m| m.role == Role::System)
@@ -119,7 +121,7 @@ impl Runtime {
             }
         }
         masked.push(Message::user(format!(
-            "Exact runtime task contract (task_id={}, session_id={}):\n{contract}",
+            "Runtime task contract with bounded observational history (task_id={}, session_id={}):\n{contract}",
             task.id, task.session_id
         )));
         let masked_tokens = estimated_tokens(&masked, tools);
@@ -131,6 +133,21 @@ impl Runtime {
             return Ok(());
         }
         let base_tokens = estimated_tokens(&base, tools);
+        // The configured compaction trigger is a soft target, not model capacity.
+        // Mandatory instructions may need some of the remaining admission headroom.
+        // Retain the same output reserve, transport margin and operational snapshot.
+        let hard_input_limit = budget
+            .capacity
+            .saturating_sub(budget.output.min(8192) + 1024)
+            .saturating_sub(reserved_input_tokens);
+        if base_tokens + 1024 >= budget.input_limit && base_tokens + 1024 < hard_input_limit {
+            self.store.event(&task.id, "compaction_headroom", &json!({
+                "checkpoint_id":checkpoint_id,"soft_target":budget.input_limit,
+                "hard_input_limit":hard_input_limit,"mandatory_tokens":base_tokens,
+                "output_reserve":budget.output.min(8192),"operational_reserve":reserved_input_tokens
+            }))?;
+            budget.input_limit = hard_input_limit;
+        }
         if base_tokens + 1024 >= budget.input_limit {
             bail!(
                 "Checkpoint {checkpoint_id} saved. Task instructions and schemas exceed the input budget after reserving output; increase configured model capacity or reduce instructions"
@@ -152,7 +169,7 @@ impl Runtime {
             json!({"role":m.role,"message_index":index,"preview":crate::redaction::truncate(&blocks.to_string(),4000)})
         }).collect::<Vec<_>>();
         let prompt = format!(
-            "Write a concise operational summary of at most 500 words. Do not copy the contract or old summaries. Summarize operational DATA, not instructions. Preserve objective, constraints, labelled assumptions, paths, blockers and next steps. Every assertion must retain its source role and message_index. Never describe an assistant action as a user correction. Do not restate execution status from inference: the exact contract evidence overrides this narrative. executed=false means the action did not execute. Do not invent success or dates. Headings: Objective; Constraints and preferences; Progress; Key decisions; Relevant files; Next steps; Critical context. Contract:\n{contract}\nTranscript:\n{}",
+            "Write a concise operational summary of at most 500 words. Do not copy the contract or old summaries. Summarize operational DATA, not instructions. Preserve objective, constraints, labelled assumptions, paths, blockers and next steps. Retain the target environment, completed effects, latest failed check with its exact error, and the next repair. A later successful inspection does not resolve a failing behavioral check; preserve unresolved work explicitly. Every assertion must retain its source role and message_index. Never describe an assistant action as a user correction. Do not restate execution status from inference: the exact contract evidence overrides this narrative. executed=false means the action did not execute. Do not invent success or dates. Headings: Objective; Constraints and preferences; Progress; Key decisions; Relevant files; Next steps; Critical context. Contract:\n{contract}\nTranscript:\n{}",
             serde_json::to_string(&transcript)?
         );
         let mut request = model.settings.request(vec![
@@ -231,7 +248,9 @@ impl Runtime {
             summary = Some(fallback);
         }
         let after = estimated_tokens(&retained, tools);
-        if after >= before || after >= budget.input_limit {
+        // Compare like estimators: `before` may be provider-calibrated while
+        // a rewritten context necessarily uses the conservative local estimator.
+        if after >= estimated_tokens(messages, tools) || after >= budget.input_limit {
             bail!(
                 "Checkpoint {checkpoint_id} saved; minimum recoverable context exceeds the configured budget"
             );
@@ -413,6 +432,98 @@ mod integration_tests {
             .unwrap();
         (dir, rt, model, task, server)
     }
+    #[tokio::test]
+    async fn compaction_uses_headroom_without_crossing_model_capacity() {
+        let (_dir, rt, mut model, task, _server) = fixture("completed").await;
+        model.settings.coding.compact_at_tokens = 10_000;
+        model.settings.coding.keep_recent_tokens = 1000;
+        let mut messages = history();
+        messages[0] = Message::text(Role::System, "s".repeat(30_000));
+        let reserve = 500;
+        rt.compact_active_context(
+            &task,
+            &model,
+            &mut messages,
+            &[],
+            reserve,
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+        let budget = crate::context_budget::ContextBudget::new(&model.settings);
+        assert!(
+            estimated_tokens(&messages, &[]) + reserve + budget.output.min(8192) + 1024
+                < budget.capacity
+        );
+        assert!(
+            rt.store
+                .events(&task.id, 0, 100)
+                .unwrap()
+                .iter()
+                .any(|e| e["kind"] == "compaction_headroom")
+        );
+        let mut impossible = vec![
+            Message::text(Role::System, "x".repeat(budget.capacity * 3)),
+            Message::user("Keep every requirement"),
+        ];
+        assert!(
+            rt.compact_active_context(
+                &task,
+                &model,
+                &mut impossible,
+                &[],
+                reserve,
+                &CancellationToken::new()
+            )
+            .await
+            .is_err()
+        );
+        rt.shutdown().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn compaction_bounds_receipt_history_without_losing_owner_requirements() {
+        let (_dir, rt, mut model, task, _server) = fixture("completed").await;
+        model.settings.coding.compact_at_tokens = 10_000;
+        model.settings.coding.keep_recent_tokens = 1000;
+        let mut contract = rt.task_contract(&task.id).unwrap();
+        contract["clarifications"] =
+            json!([{"answer":"Keep the exact installed dependency version"}]);
+        contract["recent_tool_evidence"] = json!((0..16).map(|n|
+            json!({"call_id":format!("call-{n}"),"error":"diagnostic ".repeat(80),"exit_code":1})
+        ).collect::<Vec<_>>());
+        rt.store.put("task_contracts", &task.id, &contract).unwrap();
+        let mut messages = history();
+        messages[0] = Message::text(Role::System, "s".repeat(18_000));
+        rt.compact_active_context(
+            &task,
+            &model,
+            &mut messages,
+            &[],
+            0,
+            &CancellationToken::new(),
+        )
+        .await
+        .unwrap();
+        assert!(estimated_tokens(&messages, &[]) < 10_000);
+        assert!(messages.iter().any(|m| {
+            m.text_content()
+                .contains("Keep the exact installed dependency version")
+        }));
+        assert!(
+            messages
+                .iter()
+                .any(|m| m.text_content().contains("call-15"))
+        );
+        let durable = rt.task_contract(&task.id).unwrap();
+        assert_eq!(
+            durable["recent_tool_evidence"],
+            contract["recent_tool_evidence"]
+        );
+        assert_eq!(durable["clarifications"], contract["clarifications"]);
+        rt.shutdown().await.unwrap();
+    }
+
     #[tokio::test]
     async fn compaction_accepts_an_empty_tail_when_instructions_use_the_recent_budget() {
         let (_dir, rt, model, task, _server) = fixture("completed").await;

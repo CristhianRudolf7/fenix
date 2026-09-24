@@ -1,7 +1,12 @@
+import phoenixMarkup from "../assets/favicon.svg?raw";
+
 /** Shared, local vector icons for React and the existing DOM controllers. */
 const paths: Record<string, string> = {
+  user: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2",
+  download: "M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5",
+  close: "M6 6l12 12M18 6 6 18",
   documents: "M5 3h10l4 4v14H5V3Zm10 0v5h4M8 12h8M8 16h6",
-  menu: "M3 5h18v14H3V5Zm5 0v14M12 9h5M12 13h5",
+  menu: "M3 6h18M3 12h18M3 18h18",
   chat: "M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-2 2v-9.5A8.5 8.5 0 0 1 10.5 4H13a8 8 0 0 1 8 7.5ZM7 10h9M7 14h6",
   projects:
     "M3 7V5a2 2 0 0 1 2-2h5l3 3h6a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z",
@@ -54,8 +59,8 @@ export function Icon({ name }: { name: string }) {
   );
 }
 
-export const flameMarkup =
-  '<svg class="flame" width="28" height="34" viewBox="0 0 32 40" fill="currentColor" aria-hidden="true" focusable="false"><path d="M25 1c2 9-3 13-11 17C7 21 5 26 8 33 1 28 1 19 8 14 15 9 21 9 25 1Z"/><path d="M29 13c1 9-3 14-11 18-4 2-5 5-3 9-7-5-6-11 1-16 6-4 10-5 13-11Z"/></svg>';
+// One vector source for the favicon, brand, avatars and loading emblem.
+export const flameMarkup = phoenixMarkup;
 
 export function Flame() {
   return (

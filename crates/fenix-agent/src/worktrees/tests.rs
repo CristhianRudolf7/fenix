@@ -371,8 +371,7 @@ async fn commands_really_run_in_parallel_and_cannot_select_another_checkout() ->
     runtime.prepare_worktree(&b, &repo).await?;
     let settings = crate::config::Settings::initial(repo.clone());
     let stop = CancellationToken::new();
-    let command =
-        json!({"command":"printf ready; sleep 3; printf done", "cwd":".","timeout_seconds":10});
+    let command = json!({"command":"printf ready; sleep 3; printf done", "cwd":".","timeout_seconds":10,"yield_ms":0});
     let first = runtime
         .execute_tool(&a, "test", &settings, "command_run", &command, &stop)
         .await?;

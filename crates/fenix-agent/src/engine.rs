@@ -45,6 +45,36 @@ mod operational_tests {
         )?;
         let settings = crate::config::Settings::initial(dir.path().into());
         let cancel = CancellationToken::new();
+        let page = rt
+            .execute_tool(
+                &task.id,
+                "page",
+                &settings,
+                "task_inspect",
+                &json!({"after":0,"limit":1}),
+                &cancel,
+            )
+            .await?;
+        assert!(page.get("contract").is_none());
+        assert_eq!(page["events"].as_array().unwrap().len(), 1);
+        assert_eq!(page["next_after"], page["events"][0]["seq"]);
+        let next = rt
+            .execute_tool(
+                &task.id,
+                "next",
+                &settings,
+                "task_inspect",
+                &json!({"after":page["next_after"],"limit":1}),
+                &cancel,
+            )
+            .await?;
+        assert!(
+            next["events"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .all(|event| event["seq"].as_i64().unwrap() > page["next_after"].as_i64().unwrap())
+        );
         let found = rt
             .execute_tool(
                 &task.id,
@@ -102,6 +132,120 @@ mod operational_tests {
             .await
             .is_err()
         );
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn execution_cannot_complete_with_a_progress_only_final_answer() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let server = MockServer::start().await;
+        let count = AtomicUsize::new(0);
+        Mock::given(method("POST")).and(path("/responses")).respond_with(move |_: &wiremock::Request| {
+            let output = match count.fetch_add(1, Ordering::SeqCst) {
+                0 => json!([{"type":"function_call","call_id":"write","name":"file_write","arguments":json!({"path":"artifact.txt","content":"partial work"}).to_string()}]),
+                1 => json!([{"type":"message","role":"assistant","content":[{"type":"output_text","text":"I have not finished the requested verification."}]}]),
+                _ => json!([{"type":"function_call","call_id":"finish","name":"task_finish","arguments":json!({"status":"blocked","summary":"Partial artifact saved; external fixture unavailable.","blockers":"Required fixture is unavailable"}).to_string()}]),
+            };
+            ResponseTemplate::new(200).set_body_json(json!({"id":"response","status":"completed","output":output,"usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20}}))
+        }).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        settings.file_write_policy = ActionPolicy::Allow;
+        settings.coding.context_window_tokens = 65536;
+        settings.coding.compact_at_tokens = 30000;
+        let model = rt.model_connection(settings, ApiKey::new("test-completion-key")?)?;
+        let task = rt.store.enqueue_bound(
+            "Create and verify artifact.txt",
+            "web",
+            None,
+            &fenix_storage::TaskBinding {
+                bound: true,
+                ..Default::default()
+            },
+        )?;
+        rt.store.set_task_status(&task.id, "running", None)?;
+        let mut messages = vec![Message::user(task.request.clone())];
+        let result = rt
+            .run_loop(&task, &model, &mut messages, &CancellationToken::new())
+            .await?;
+        assert_eq!(result["status"], "blocked");
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("artifact.txt"))?,
+            "partial work"
+        );
+        assert_eq!(server.received_requests().await.unwrap().len(), 3);
+        let events = rt.store.events(&task.id, 0, 100)?;
+        assert!(
+            events
+                .iter()
+                .any(|e| e["kind"] == "premature_completion" && e["data"]["published"] == false)
+        );
+        assert!(events.iter().any(|e| e["kind"] == "tool_result"
+            && e["data"]["tool"] == "task_finish"
+            && e["data"]["result"]["status"] == "blocked"));
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn master_can_release_turn_only_for_its_own_active_delegation() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let binding = fenix_storage::TaskBinding {
+            bound: true,
+            ..Default::default()
+        };
+        let task = rt
+            .store
+            .enqueue_bound("Build and verify", "web", None, &binding)?;
+        let other = rt
+            .store
+            .enqueue_bound("Unrelated work", "web", None, &binding)?;
+        let spec = fenix_storage::SubagentSpec {
+            profile: "general".into(),
+            objective: "Verify build".into(),
+            expected_output: "Evidence".into(),
+            context: String::new(),
+            constraints: String::new(),
+        };
+        rt.store.create_subagent(&other.id, &spec)?;
+        assert!(!rt.store.has_active_delegation(&task.id)?);
+        let worker = rt.store.create_subagent(&task.id, &spec)?;
+        assert!(rt.store.has_active_delegation(&task.id)?);
+        rt.store
+            .put("explicit_execution_outcome", &task.id, &true)?;
+        let server = MockServer::start().await;
+        Mock::given(method("POST")).and(path("/responses")).respond_with(
+            ResponseTemplate::new(200).set_body_json(json!({
+                "id":"handoff","status":"completed","output":[{"type":"message","role":"assistant",
+                "content":[{"type":"output_text","text":"Verification is running; I will report its result."}]}],
+                "usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20}
+            }))
+        ).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        let model = rt.model_connection(settings, ApiKey::new("test-handoff-key")?)?;
+        let result = rt
+            .run_loop(
+                &task,
+                &model,
+                &mut vec![Message::user(task.request.clone())],
+                &CancellationToken::new(),
+            )
+            .await?;
+        assert_eq!(result["status"], "delegated");
+        assert_eq!(server.received_requests().await.unwrap().len(), 1);
+        assert_eq!(rt.store.task(&worker.id)?.status, "queued");
+        assert!(
+            !rt.store
+                .events(&task.id, 0, 100)?
+                .iter()
+                .any(|e| e["kind"] == "premature_completion")
+        );
+        rt.store.set_task_status(&worker.id, "completed", None)?;
+        assert!(!rt.store.has_active_delegation(&task.id)?);
         rt.shutdown().await?;
         Ok(())
     }
@@ -241,6 +385,12 @@ impl Runtime {
             "tool_result",
             &json!({"call_id":call_id,"tool":name,"result":output,"is_error":is_error}),
         )?;
+        if matches!(
+            name,
+            "command_run" | "command_input" | "file_write" | "file_edit" | "file_patch"
+        ) {
+            self.store.put("explicit_execution_outcome", task, &true)?;
+        }
         if name != "task_contract" {
             let mut contract = self.task_contract(task)?;
             if !contract["recent_tool_evidence"].is_array() {
@@ -403,7 +553,27 @@ impl Runtime {
             );
         };
         let (status, error) = match result {
-            Ok(()) => ("completed", None),
+            Ok(outcome) => match outcome["status"].as_str() {
+                Some("blocked") => (
+                    "blocked",
+                    Some(
+                        outcome["blockers"]
+                            .as_str()
+                            .unwrap_or("Execution blocked")
+                            .to_owned(),
+                    ),
+                ),
+                Some("failed") => (
+                    "failed",
+                    Some(
+                        outcome["blockers"]
+                            .as_str()
+                            .unwrap_or("Execution failed")
+                            .to_owned(),
+                    ),
+                ),
+                _ => ("completed", None),
+            },
             Err(error) => {
                 let status = if self.stop.is_cancelled() {
                     "interrupted"
@@ -436,7 +606,14 @@ impl Runtime {
             "task.finished",
             &json!({"status":status,"error":error}),
         );
-        if status == "completed" {
+        if status == "completed"
+            && !self
+                .store
+                .get::<bool>("execution_handoff", &task.id)
+                .ok()
+                .flatten()
+                .unwrap_or(false)
+        {
             let _ = self.queue_skill_learning(&task.id);
         }
         self.active.lock().await.remove(&task.id);
@@ -467,7 +644,7 @@ impl Runtime {
         }
     }
 
-    async fn run_task(self: &Arc<Self>, task: &Task, cancel: &CancellationToken) -> Result<()> {
+    async fn run_task(self: &Arc<Self>, task: &Task, cancel: &CancellationToken) -> Result<Value> {
         self.report_progress(&task.id, Phase::Preparing, None);
         let model = self
             .model
@@ -485,8 +662,7 @@ impl Runtime {
             Some(messages) => messages,
             None => self.build_context(task, &model).await?,
         };
-        self.run_loop(task, &model, &mut messages, cancel).await?;
-        Ok(())
+        self.run_loop(task, &model, &mut messages, cancel).await
     }
 
     pub(crate) async fn run_subagent_attempt(
@@ -526,8 +702,8 @@ impl Runtime {
         let mut repetition = crate::execution_state::LoopGuard::default();
         let mut browser_progress = crate::execution_state::BrowserProgress::default();
         messages.push(Message::user(format!(
-            "Persistent task contract: {}",
-            self.task_contract(&task.id)?
+            "Persistent task contract (bounded observational history): {}",
+            crate::execution_state::context_contract(&self.task_contract(&task.id)?)
         )));
         let mut grants = self
             .store
@@ -678,6 +854,21 @@ impl Runtime {
                 messages.push(Message::user(format!("A completion was withheld because a foreground command was still running. No action was repeated. Inspect its output and status before finishing. Processes: {}", json!(self.processes.list().await.into_iter().filter(|p| p.owner == task.id).collect::<Vec<_>>()))));
                 continue;
             }
+            let handoff =
+                calls.is_empty() && !delegated && self.store.has_active_delegation(&task.id)?;
+            if calls.is_empty()
+                && !delegated
+                && !handoff
+                && self
+                    .store
+                    .get::<bool>("explicit_execution_outcome", &task.id)?
+                    .unwrap_or(false)
+            {
+                self.store.event(&task.id, "premature_completion", &json!({"message":message,"published":false,"reason":"missing_explicit_outcome"}))?;
+                self.recover_execution(&task.id, "completion_without_outcome", json!({"instruction":"An execution task needs an explicit outcome, not a progress-only final answer."}))?;
+                messages.push(Message::user("Your final response did not finish the execution task. Continue the remaining authorized work: inspect errors, repair actionable failures and run the requested checks. Do not merely restate pending work. When genuinely finished, call task_finish alone with completed and observed evidence; if no authorized path remains, use blocked/failed with a concrete blocker. Ask the owner only for a genuinely missing decision or authorization. Do not repeat completed effects."));
+                continue;
+            }
             self.recovery_boundary(&task.id, messages, false)?;
             if delegated {
                 self.store
@@ -716,6 +907,16 @@ impl Runtime {
                     return Ok(
                         json!({"status":"blocked","summary":text,"blockers":"The subagent ended without an explicit subagent_finish outcome.","artifacts":"","evidence":format!("task_inspect task_id={}",task.id)}),
                     );
+                }
+                if handoff {
+                    // Complete the conversational turn, not its independently tracked work.
+                    self.store.put("execution_handoff", &task.id, &true)?;
+                    self.store.publish_event(
+                        Some(&task.id),
+                        "task.delegated",
+                        &json!({"task_id":task.id,"work_status":"in_progress"}),
+                    )?;
+                    return Ok(json!({"status":"delegated"}));
                 }
                 return Ok(json!({"status":"completed"}));
             }
@@ -795,6 +996,16 @@ impl Runtime {
                     if let Some(receipt) = self.ensure_tool_loaded(&task.id, &name)? { return Ok(receipt); }
                     tools::validate_for(delegated, &name,&args)?;
                     self.authorize_project_tool(&task.id, &name, &args)?;
+                    if name == "task_finish" {
+                        if delegated { bail!("Subagents must use subagent_finish"); }
+                        if call_count != 1 { bail!("Finish must be the only tool call in its response"); }
+                        if self.processes.has_running(&task.id).await { bail!("Wait for foreground commands before finishing"); }
+                        if args["summary"].as_str().is_none_or(|s| s.trim().is_empty()) { bail!("A concrete outcome summary is required"); }
+                        let field = if args["status"] == "completed" { "evidence" } else { "blockers" };
+                        if args[field].as_str().is_none_or(|s| s.trim().is_empty()) { bail!("An execution outcome requires {field}"); }
+                        finished = Some(args.clone());
+                        return Ok(json!({"recorded":true,"status":args["status"]}));
+                    }
                     if name == "subagent_finish" {
                         if call_count != 1 { bail!("Finish must be the only tool call in its response"); }
                         if self.processes.has_running(&task.id).await { bail!("Inspect or cancel running commands before reporting an outcome"); }
@@ -912,6 +1123,15 @@ impl Runtime {
                 self.store.save_subagent_context(&task.id, messages, 0)?;
             }
             if let Some(result) = finished {
+                if !delegated {
+                    let summary = Message::text(
+                        Role::Assistant,
+                        result["summary"].as_str().unwrap_or_default(),
+                    );
+                    self.store
+                        .publish_message(Some(&task.id), &summary, true, "agent")?;
+                    self.bus_wake.notify_waiters();
+                }
                 return Ok(result);
             }
         }

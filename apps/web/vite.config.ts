@@ -12,6 +12,18 @@ export default defineConfig({
     react(),
     tailwindcss(),
     {
+      name: "fenix-loading-mark",
+      transformIndexHtml(html) {
+        return html.replace(
+          "<!-- fenix-loading-mark -->",
+          readFileSync(
+            new URL("./src/assets/favicon.svg", import.meta.url),
+            "utf8",
+          ),
+        );
+      },
+    },
+    {
       name: "fenix-pdf-assets",
       generateBundle() {
         this.emitFile({

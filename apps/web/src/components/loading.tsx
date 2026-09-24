@@ -17,14 +17,6 @@ export function Loading({ label }: { label?: string }) {
         <Flame />
       </span>
       <span className="loading-label">{text}</span>
-      <span className="loading-track" aria-hidden="true">
-        <span />
-      </span>
-      <div className="loading-skeleton" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-      </div>
     </div>
   );
 }

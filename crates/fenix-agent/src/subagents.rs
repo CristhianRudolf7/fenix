@@ -433,7 +433,7 @@ impl Runtime {
                         let delay = match provider_error {
                             ProviderError::RateLimited {
                                 retry_after: Some(delay),
-                            } => (*delay).min(Duration::from_secs(30)),
+                            } => *delay,
                             _ => Duration::from_secs(1 << job.attempts.saturating_sub(1)),
                         };
                         self.store.event(&job.id, "subagent_retry", &json!({

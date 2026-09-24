@@ -7,6 +7,48 @@ providers, tools, context management and background workers with a fresh databas
 and built-in skills. The benchmark owns its task containers and official verifier.
 A completed assistant turn is **not** a passing benchmark result.
 
+## Context configuration
+
+New configurations default to a 200,000-token context window with compaction at
+160,000 tokens. Explicit saved settings are preserved; operators must use a
+capacity supported by their configured model. This does not increase benchmark
+execution time or guarantee task completion.
+
+## Delegation and blocked evaluation
+
+Workers receive the original parent request and its owner updates as reference
+inside the durable contract only when both bindings are resolved and share the
+same general/project scope. The assignment remains the execution boundary;
+parent transcripts are not copied. Changing scope removes the inherited source.
+A running plan with no queued/running tasks and a worker awaiting user input
+ends evaluation as `requires_user_input` after the configured waiting interval.
+The evaluator does not invent answers to continue the task.
+
+## Event-driven command waiting
+
+Foreground commands wait in Rust for process completion, without model polling.
+A review is returned after 120 seconds or 60 seconds without output. Silence is
+only advisory; neither threshold cancels the process. Command timeouts, task
+cancellation and shutdown remain authoritative. Interactive terminals and
+persistent services yield quickly. Use `yield_ms=0` for an immediate command
+return and `command_status` with `wait_ms=0` for a snapshot. Output continues
+to be collected in the process log while the tool waits. This is an
+in-process notification, not an external HTTP webhook.
+
+## Explicit execution outcomes
+
+Tasks that run commands or modify files close through the master-only `task_finish`
+tool. The model reports `completed` with observed evidence, or `blocked`/`failed`
+with a concrete blocker. The engine rejects a plain final response after execution
+and asks the model to continue or report an explicit outcome; this recovery is
+bounded by the existing recovery policy. It also rejects finishing while a
+foreground command is running. The summary is delivered directly, without an
+additional model call. Ordinary conversation keeps its normal completion path;
+subagents continue to use `subagent_finish`.
+
+This is an outcome protocol, not an independent correctness check: supplied
+evidence can still be wrong. Official benchmark verification remains necessary.
+
 ## Run one isolated attempt
 
 Build the frontend first (`pnpm --dir apps/web install --frozen-lockfile` and
@@ -170,3 +212,9 @@ When started explicitly through the bundled `ld-linux` loader, `binary_sha256` h
 For an evaluation whose outer runner owns cancellation, set `settings.execution.externally_supervised` to `true`. This opt-in disables the foreground task deadline, model-step ceiling and total provider HTTP request timeout. Defaults remain bounded. An evaluation may then set `timeout_seconds` to `0` to disable its own timer. Cancellation and reporting still work. Connection establishment timeouts, provider capacity, tool safety/size checks, recovery policies and the external benchmark deadlines still apply; this is not unlimited computation.
 
 Set context capacity to the provider's verified capacity and choose a smaller output ceiling; requests are still clamped to remaining estimated context. The supported output configuration ceiling is 1,048,576 tokens. Do not claim a controlled model-only comparison when changing these settings together. Keep configuration, binary hash, infrastructure failures and all known costs in the evaluation record.
+
+### Delegated turn completion and evaluation credentials
+A master may release its conversational turn with a progress message while its own subagents or plan remain active. The runtime records a delegated outcome; the background work keeps its independent status and report path. Foreground commands still prevent closing, and unrelated or completed workers cannot justify a handoff. Skill learning is skipped for these incomplete handoffs.
+The local evaluation recorder can alternate two host-only credentials. It forwards rate-limit headers and honors a shared cooldown on HTTP 429; rotation does not increase shared account quotas. Subagent retries honor the full provider Retry-After duration.
+
+Event pagination with task_inspect(after=0, then next_after) returns event-only pages without repeating the full contract. For tightly coupled package repairs, keep diagnosis, repair and consumer verification in one execution assignment and retain final substantial-work auditing.

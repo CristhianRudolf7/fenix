@@ -1,0 +1,80 @@
+/* Wings of fire: shared brand geometry; movement only signals loading. */
+.flame {
+  --phoenix-color: currentColor;
+  display: block;
+  overflow: visible;
+  flex-shrink: 0;
+}
+.loading-emblem {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  color: var(--accent, #b84d35);
+}
+.loading-emblem .flame {
+  width: 76px;
+  height: 76px;
+}
+.loading-emblem .phoenix-wing-left,
+.loading-emblem .phoenix-feather-left {
+  transform-origin: 60px 72px;
+  animation: phoenix-wing-left 1.4s ease-in-out infinite;
+}
+.loading-emblem .phoenix-wing-right,
+.loading-emblem .phoenix-feather-right {
+  transform-origin: 70px 72px;
+  animation: phoenix-wing-right 1.4s ease-in-out infinite;
+}
+.loading-emblem .phoenix-feather-left,
+.loading-emblem .phoenix-feather-right {
+  animation-delay: -70ms;
+}
+.loading-emblem .phoenix-bird {
+  animation: phoenix-flight 1.4s ease-in-out infinite;
+}
+.loading-emblem .phoenix-bird-tail {
+  transform-origin: 65px 84px;
+  animation: phoenix-tail 1.4s ease-in-out infinite;
+}
+@keyframes phoenix-wing-left {
+  0%,
+  100% {
+    transform: rotate(17deg) scaleX(0.92);
+  }
+  50% {
+    transform: rotate(-16deg) scaleX(1.03);
+  }
+}
+@keyframes phoenix-wing-right {
+  0%,
+  100% {
+    transform: rotate(-17deg) scaleX(0.92);
+  }
+  50% {
+    transform: rotate(16deg) scaleX(1.03);
+  }
+}
+@keyframes phoenix-flight {
+  0%,
+  100% {
+    transform: translateY(3px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes phoenix-tail {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-emblem .flame * {
+    animation: none;
+  }
+}

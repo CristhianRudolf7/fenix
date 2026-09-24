@@ -94,8 +94,8 @@ impl Default for CodingSettings {
     fn default() -> Self {
         Self {
             language_servers: Vec::new(),
-            context_window_tokens: 32_768,
-            compact_at_tokens: 22_000,
+            context_window_tokens: 200_000,
+            compact_at_tokens: 160_000,
             keep_recent_tokens: 6_000,
         }
     }

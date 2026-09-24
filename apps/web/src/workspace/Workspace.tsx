@@ -8,6 +8,7 @@ import {
 } from "react";
 import { createRoot } from "react-dom/client";
 import { Loading } from "../components/loading";
+import { Icon } from "../components/icons";
 import { Markdown } from "../components/markdown";
 import { Viewer } from "../design/viewers";
 import type { Visual } from "../design/types";
@@ -81,6 +82,7 @@ function Workspace() {
   useEffect(() => {
     tabs.current
       ?.querySelector('[aria-selected="true"]')
+      ?.closest(".workspace-tab")
       ?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [s.active]);
   useEffect(() => {
@@ -112,27 +114,8 @@ function Workspace() {
   }, [s.explorer, s.visible]);
   return (
     <>
-      {!s.visible && (
-        <button className="workspace-launcher" onClick={showExplorer}>
-          ▱ {tr("Files", "Archivos")}
-        </button>
-      )}
       {s.visible && (
         <header className="workspace-chrome">
-          <div className="workspace-heading">
-            <strong>{tr("Workspace", "Espacio de trabajo")}</strong>
-            <div>
-              <button onClick={showExplorer}>
-                ▱ {tr("Files", "Archivos")}
-              </button>
-              <button
-                aria-label={tr("Close workspace", "Cerrar espacio de trabajo")}
-                onClick={hideWorkspace}
-              >
-                ×
-              </button>
-            </div>
-          </div>
           <div
             className="workspace-tabs"
             role="tablist"
@@ -180,10 +163,28 @@ function Workspace() {
                   aria-label={`${tr("Close", "Cerrar")} ${t.title || t.path || t.id}`}
                   onClick={() => closeTab(t.key)}
                 >
-                  ×
+                  <Icon name="close" />
                 </button>
               </div>
             ))}
+          </div>
+          <div className="workspace-actions">
+            <button
+              className="subtle icon-button"
+              aria-label={tr("Open folders", "Abrir carpetas")}
+              onClick={showExplorer}
+            >
+              <Icon name="projects" />
+            </button>
+            <button
+              className="subtle icon-button"
+              id="workspace-back"
+              aria-label={tr("Back to chat", "Volver al chat")}
+              title={tr("Back to chat", "Volver al chat")}
+              onClick={hideWorkspace}
+            >
+              <Icon name="arrow" />
+            </button>
           </div>
         </header>
       )}
@@ -207,31 +208,21 @@ function Explorer() {
   const active = activeTarget();
   const initialProject = active ? active.project_id || "" : s.project || "";
   const [project, setProject] = useState(initialProject),
-    [category, setCategory] = useState("files"),
     [path, setPath] = useState(
       locations.get(`${s.session}:${initialProject}:files`) || "",
     ),
     [query, setQuery] = useState(""),
     [entries, setEntries] = useState<Entry[]>([]),
     [projects, setProjects] = useState<{ id: string; name: string }[]>([]),
-    [selected, setSelected] = useState<Entry | null>(null),
     [next, setNext] = useState<number | null>(null),
     [offset, setOffset] = useState(0),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(true);
-  const dialog = useRef<HTMLDivElement>(null),
-    input = useRef<HTMLInputElement>(null);
-  const favoriteKey = `fenix-workspace-favorites:${s.session}`;
-  const [favorites, setFavorites] = useState<Target[]>(() => {
-    try {
-      return JSON.parse(sessionStorage.getItem(favoriteKey) || "[]");
-    } catch {
-      return [];
-    }
-  });
+  const dialog = useRef<HTMLDivElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
-    input.current?.focus();
+    closeButton.current?.focus({ preventScroll: true });
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
@@ -268,79 +259,20 @@ function Explorer() {
     let valid = true;
     setBusy(true);
     setError("");
-    setSelected(null);
     const timer = setTimeout(() => {
       void (async () => {
-        const p = project ? `&project_id=${encodeURIComponent(project)}` : "";
-        let rows: Entry[] = [];
-        let more: number | null = null;
-        if (category === "files") {
-          const data = await api<{
-            entries: Entry[];
-            next_offset: number | null;
-          }>(
-            fileUrl(
-              "files",
-              { kind: "file", path, project_id: project },
-              offset,
-            ) + `&query=${encodeURIComponent(query)}`,
-          );
-          rows = data.entries;
-          more = data.next_offset;
-        } else if (category === "library") {
-          const d = await api<{
-            documents: {
-              id: string;
-              title: string;
-              project_id: string | null;
-              bytes: number;
-              updated_at: string;
-            }[];
-            next_offset: number | null;
-          }>(`/api/documents?offset=${offset}${p}`);
-          rows = d.documents.map((v) => ({
-            name: v.title,
-            bytes: v.bytes,
-            modified: Date.parse(v.updated_at) / 1000,
-            target: {
-              kind: "library",
-              id: v.id,
-              title: v.title,
-              project_id: v.project_id,
-            },
-          }));
-          more = d.next_offset;
-        } else if (category === "design") {
-          const d = await api<{
-            designs: {
-              id: string;
-              title: string;
-              project_id: string | null;
-              updated_at: string;
-            }[];
-            next_offset: number | null;
-          }>(`/api/design/artifacts?offset=${offset}${p}`);
-          rows = d.designs
-            .filter((v) => (v.project_id || "") === project)
-            .map((v) => ({
-              name: v.title,
-              modified: Date.parse(v.updated_at) / 1000,
-              target: {
-                kind: "design",
-                id: v.id,
-                title: v.title,
-                project_id: v.project_id,
-              },
-            }));
-          more = d.next_offset;
-        } else
-          rows = (category === "favorites" ? favorites : s.tabs)
-            .filter((v) => (v.project_id || "") === project)
-            .map((v) => ({ name: v.title || v.path || v.id || "", target: v }));
-        if (category !== "files" && query)
-          rows = rows.filter((v) =>
-            v.name.toLowerCase().includes(query.toLowerCase()),
-          );
+        const data = await api<{
+          entries: Entry[];
+          next_offset: number | null;
+        }>(
+          fileUrl(
+            "files",
+            { kind: "file", path, project_id: project },
+            offset,
+          ) + `&query=${encodeURIComponent(query)}`,
+        );
+        const rows = data.entries;
+        const more = data.next_offset;
         if (valid) {
           setEntries((old) => (offset ? [...old, ...rows] : rows));
           setNext(more);
@@ -357,10 +289,11 @@ function Explorer() {
       valid = false;
       clearTimeout(timer);
     };
-  }, [project, category, path, query, offset, favorites]);
+  }, [project, path, query, offset]);
   function navigate(destination: string) {
     locations.set(`${s.session}:${project}:files`, destination);
     setPath(destination);
+    setQuery("");
     setOffset(0);
   }
   function open(e: Entry) {
@@ -377,15 +310,6 @@ function Explorer() {
       },
     );
   }
-  const chosen =
-    selected && !selected.directory
-      ? selected.target || {
-          kind: "file" as const,
-          path: selected.path,
-          title: selected.name,
-          project_id: project || null,
-        }
-      : null;
   return (
     <div
       className="workspace-modal-backdrop"
@@ -426,6 +350,7 @@ function Explorer() {
             </select>
           </div>
           <button
+            ref={closeButton}
             onClick={closeExplorer}
             aria-label={tr("Close explorer", "Cerrar explorador")}
           >
@@ -434,7 +359,7 @@ function Explorer() {
         </header>
         <div className="workspace-explorer-toolbar">
           <button
-            disabled={category !== "files" || !path}
+            disabled={!path}
             aria-label={tr("Parent folder", "Carpeta superior")}
             onClick={() => navigate(path.split("/").slice(0, -1).join("/"))}
           >
@@ -444,31 +369,29 @@ function Explorer() {
             <button onClick={() => navigate("")}>
               {tr("Project", "Proyecto")}
             </button>
-            {category === "files" &&
-              path
-                .split("/")
-                .filter(Boolean)
-                .map((p, i) => (
-                  <span key={i}>
-                    {" "}
-                    /{" "}
-                    <button
-                      onClick={() =>
-                        navigate(
-                          path
-                            .split("/")
-                            .slice(0, i + 1)
-                            .join("/"),
-                        )
-                      }
-                    >
-                      {p}
-                    </button>
-                  </span>
-                ))}
+            {path
+              .split("/")
+              .filter(Boolean)
+              .map((p, i) => (
+                <span key={i}>
+                  {" "}
+                  /{" "}
+                  <button
+                    onClick={() =>
+                      navigate(
+                        path
+                          .split("/")
+                          .slice(0, i + 1)
+                          .join("/"),
+                      )
+                    }
+                  >
+                    {p}
+                  </button>
+                </span>
+              ))}
           </nav>
           <input
-            ref={input}
             aria-label={tr("Find files", "Buscar archivos")}
             placeholder={tr("Search this folder…", "Buscar en esta carpeta…")}
             value={query}
@@ -479,27 +402,6 @@ function Explorer() {
           />
         </div>
         <div className="workspace-explorer-body">
-          <nav aria-label={tr("Locations", "Ubicaciones")}>
-            {[
-              ["files", "Project files", "Archivos del proyecto"],
-              ["library", "Library", "Biblioteca"],
-              ["design", "Designs", "Diseños"],
-              ["recent", "Open files", "Abiertos"],
-              ["favorites", "Favorites", "Favoritos"],
-            ].map(([id, en, es]) => (
-              <button
-                key={id}
-                aria-pressed={category === id}
-                onClick={() => {
-                  setCategory(id);
-                  setOffset(0);
-                  setQuery("");
-                }}
-              >
-                {tr(en, es)}
-              </button>
-            ))}
-          </nav>
           <div className="workspace-file-list">
             {error && <p role="alert">{error}</p>}
             {busy && !offset ? (
@@ -513,17 +415,13 @@ function Explorer() {
                 </div>
                 {entries.map((e, i) => (
                   <button
-                    className={`workspace-file-row ${selected === e ? "selected" : ""}`}
-                    key={`${e.path || e.target?.id}:${i}`}
-                    aria-pressed={selected === e}
-                    onClick={() => setSelected(e)}
-                    onDoubleClick={() => open(e)}
-                    onKeyDown={(ev) => {
-                      if (ev.key === "Enter") open(e);
-                    }}
+                    className="workspace-file-row"
+                    key={`${e.path}:${i}`}
+                    onClick={() => open(e)}
                   >
                     <span>
-                      {e.directory ? "▱" : "▤"} {e.name}
+                      <Icon name={e.directory ? "projects" : "documents"} />{" "}
+                      {e.name}
                     </span>
                     <small>
                       {e.modified
@@ -556,54 +454,6 @@ function Explorer() {
             )}
           </div>
         </div>
-        <footer>
-          <div>
-            <strong>
-              {selected?.name || tr("Choose a file", "Elige un archivo")}
-            </strong>
-            <small>
-              {tr("Opens in the right panel", "Se abrirá en el panel derecho")}
-            </small>
-          </div>
-          {chosen && (
-            <button
-              onClick={() => {
-                const key = JSON.stringify([
-                  chosen.kind,
-                  chosen.id,
-                  chosen.path,
-                  chosen.project_id,
-                ]);
-                const has = favorites.some(
-                  (f) =>
-                    JSON.stringify([f.kind, f.id, f.path, f.project_id]) ===
-                    key,
-                );
-                const next = has
-                  ? favorites.filter(
-                      (f) =>
-                        JSON.stringify([f.kind, f.id, f.path, f.project_id]) !==
-                        key,
-                    )
-                  : [...favorites, chosen];
-                setFavorites(next);
-                sessionStorage.setItem(favoriteKey, JSON.stringify(next));
-              }}
-            >
-              ☆ {tr("Favorite", "Favorito")}
-            </button>
-          )}
-          <button onClick={closeExplorer}>{tr("Cancel", "Cancelar")}</button>
-          <button
-            className="primary"
-            disabled={!selected || busy}
-            onClick={() => selected && open(selected)}
-          >
-            {selected?.directory
-              ? tr("Open folder", "Abrir carpeta")
-              : tr("Open file", "Abrir archivo")}
-          </button>
-        </footer>
       </div>
     </div>
   );
@@ -664,12 +514,14 @@ function FilePanel() {
       aria-label={tr("File preview", "Vista del archivo")}
     >
       <header className="design-panel-head">
-        <div>
-          <h2>{tab.title || tab.path}</h2>
-          <small>{tab.path}</small>
-        </div>
-        <a href={url} download={tab.title || tab.path?.split("/").at(-1)}>
-          {tr("Download", "Descargar")}
+        <a
+          href={url}
+          download={tab.title || tab.path?.split("/").at(-1)}
+          className="subtle icon-button"
+          aria-label={tr("Download", "Descargar")}
+          title={tr("Download", "Descargar")}
+        >
+          <Icon name="download" />
         </a>
       </header>
       <div className="workspace-file-body">
@@ -716,12 +568,6 @@ function FilePanel() {
             )}
             {office && (
               <>
-                <p className="muted">
-                  {tr(
-                    "Extracted Office content; layout is not reproduced and formulas are not recalculated.",
-                    "Contenido extraído de Office: no reproduce el diseño visual ni recalcula las fórmulas.",
-                  )}
-                </p>
                 {slidePart && (
                   <label>
                     {tr("Slide", "Diapositiva")}{" "}

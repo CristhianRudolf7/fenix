@@ -219,8 +219,8 @@ function modelForm(setup = false) {
     <p class="muted">${t("Configure installed language servers. Fénix starts these commands with your user permissions; it never installs servers automatically. Leave [] to disable LSP.", "Configura servidores de lenguaje instalados. Fénix inicia estos comandos con tus permisos de usuario; no instala servidores automáticamente. Deja [] para desactivar LSP.")}</p>
     <label for="language-servers">${t("Language servers (JSON)", "Servidores de lenguaje (JSON)")}</label>
     <textarea id="language-servers" rows="6" spellcheck="false" placeholder='[{"name":"rust","command":["rust-analyzer"],"extensions":["rs"]}]'>${escape(JSON.stringify(config.coding?.language_servers || [], null, 2))}</textarea>
-    ${input("context_window_tokens", t("Model context capacity (tokens)", "Capacidad de contexto del modelo (tokens)"), config.coding?.context_window_tokens ?? 32768, 'type="number" min="16384" max="2000000" required')}
-    ${input("compact_at_tokens", t("Compact active context at (estimated tokens)", "Compactar contexto activo al llegar a (tokens estimados)"), config.coding?.compact_at_tokens ?? 22000, 'type="number" min="8000" required')}
+    ${input("context_window_tokens", t("Model context capacity (tokens)", "Capacidad de contexto del modelo (tokens)"), config.coding?.context_window_tokens ?? 200000, 'type="number" min="16384" max="2000000" required')}
+    ${input("compact_at_tokens", t("Compact active context at (estimated tokens)", "Compactar contexto activo al llegar a (tokens estimados)"), config.coding?.compact_at_tokens ?? 160000, 'type="number" min="8000" required')}
     ${input("keep_recent_tokens", t("Recent context to retain (estimated tokens)", "Contexto reciente a conservar (tokens estimados)"), config.coding?.keep_recent_tokens ?? 6000, 'type="number" min="1000" required')}
     <p class="muted">${t("Set capacity to your model's supported context. These are context limits, not a spending budget. Original context is saved before summarizing.", "Usa la capacidad admitida por tu modelo. Son límites de contexto, no un presupuesto de gasto. El contexto original se guarda antes de resumir.")}</p></details>
     <details><summary>${t("Execution limits", "Límites de ejecución")}</summary>
@@ -272,14 +272,16 @@ async function render() {
     labels,
   });
   window.dispatchEvent(new Event("fenix:view"));
-  $("#page").innerHTML = renderToStaticMarkup(
-    Loading({ label: t("Preparing your space…", "Preparando tu espacio…") }),
-  );
+  if (state.page !== "chat") {
+    $("#page").innerHTML = renderToStaticMarkup(
+      Loading({ label: t("Preparing your space…", "Preparando tu espacio…") }),
+    );
+  }
   const views = {
     chat: renderChat,
+    projects: renderProjects,
     design: () => renderDesign(state.language),
     documents: () => renderLibrary(state.language),
-    projects: renderProjects,
     memory: renderMemory,
     skills: renderSkills,
     browser: () => renderBrowser(state.language),
@@ -294,14 +296,37 @@ async function render() {
     toast(errorMessage(error));
   }
 }
-function renderChat() {
+async function renderChat() {
   renderChatLayout(state.language, state.status.settings.model);
   renderChatDesigns(state.language);
   renderChatLibrary(state.language);
-  refreshMessages(true);
+  const layout = $(".chat-layout");
   drawReplyReference();
   updateActivityStrip();
   drawLiveMessage();
+  try {
+    await refreshMessages(true);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => resolve()),
+    );
+  } catch (error) {
+    if (layout.isConnected) {
+      const list = layout.querySelector("#message-list");
+      list.innerHTML = `<p role="alert">${escape(t("Could not load messages.", "No se pudieron cargar los mensajes."))}</p><button class="chat-history-retry">${t("Try again", "Reintentar")}</button>`;
+      list
+        .querySelector("button")
+        .addEventListener("click", () => void render());
+    }
+    toast(errorMessage(error));
+  } finally {
+    if (layout.isConnected) {
+      const scroll = layout.querySelector("#chat-scroll");
+      scroll.scrollTop = scroll.scrollHeight;
+      layout.classList.remove("chat-history-loading");
+      layout.setAttribute("aria-busy", "false");
+      layout.querySelector(".chat-history-skeleton")?.remove();
+    }
+  }
 }
 function chatRequest(): CreationRequest {
   return {
@@ -376,7 +401,6 @@ async function refreshMessages(force = false) {
 function drawMessages() {
   const messages = [...state.messages.values()].sort((a, b) => a.seq - b.seq);
   $(".load-older").hidden = !messages.length;
-  $("#conversation-context").hidden = !messages.length;
   $("#message-list").innerHTML = messages.length
     ? messages
         .map(
@@ -610,36 +634,28 @@ window.addEventListener("pageshow", (event: any) => {
 
 let viewLoadSequence = 0;
 async function renderProjects() {
-  if (state.page !== "projects") return;
   const target = $("#page");
   const sequence = ++viewLoadSequence;
-  state.projects = await api("/projects");
-  if (
-    state.page !== "projects" ||
-    target !== $("#page") ||
-    sequence !== viewLoadSequence
-  )
-    return;
-  target.innerHTML = `<div class="content">${heading(t("Each project, in context.", "Cada proyecto, con su contexto."), t("Keep objectives and decisions separate while talking in the same conversation. Mention a project by its name or alias when you need it.", "Mantén separados los objetivos y decisiones, conversando siempre en el mismo chat. Menciona el nombre o alias de un proyecto cuando lo necesites."))}<div class="grid"><section class="card"><div class="row spread"><h2>${t("Your projects", "Tus proyectos")}</h2><button data-action="refresh-projects">${t("Refresh", "Actualizar")}</button></div><div id="project-list"></div></section><form class="card" id="project-form"><h2 id="project-form-title">${t("Create a project", "Crear un proyecto")}</h2><input type="hidden" id="project-id">${input("project-name", t("Name", "Nombre"), "", "required maxlength=200")}${input("project-aliases", t("Aliases, separated by commas", "Alias, separados por comas"), "", "maxlength=2000")}${field(`<label for="project-description">${t("Description", "Descripción")}</label>`, '<textarea id="project-description" rows="3" maxlength="4000"></textarea>')}${input("project-workspace", t("Project folder (optional)", "Carpeta del proyecto (opcional)"), "", 'placeholder="/home/user/projects/example"')}${field(`<label for="project-brief">${t("Project context", "Contexto del proyecto")}</label>`, `<textarea id="project-brief" rows="12" maxlength="16000" placeholder="${escape(t("Objective\nConstraints and preferences\nProgress\nKey decisions\nRelevant files\nNext steps\nCritical context", "Objetivo\nRestricciones y preferencias\nProgreso\nDecisiones clave\nArchivos relevantes\nPróximos pasos\nContexto crítico"))}"></textarea>`, t("Keep the decisions and constraints that apply to this project. An optional folder supports projects with local files.", "Conserva las decisiones y restricciones de este proyecto. La carpeta es opcional y sirve para proyectos con archivos locales."))}<button class="primary" type="submit">${t("Save project", "Guardar proyecto")}</button><button class="subtle" type="button" data-action="clear-project">${t("New project", "Nuevo proyecto")}</button><p class="form-status" id="project-status"></p></form></div></div>`;
-  drawProjects();
-}
-function drawProjects() {
-  const node = $("#project-list");
-  if (!node) return;
-  node.innerHTML = state.projects.length
-    ? state.projects
-        .map(
-          (project) =>
-            `<article class="record"><h3>${escape(project.name)}</h3><p>${escape(project.description)}</p>${project.aliases?.length ? `<p class="muted">${t("Aliases", "Alias")}: ${escape(project.aliases.join(", "))}</p>` : ""}<small>${t("Updated", "Actualizado")}: ${date(project.updated_at)}${project.workspace ? `<br>${escape(project.workspace)}` : ""}</small><div class="actions"><button data-edit-project="${escape(project.id)}">${t("Edit", "Editar")}</button><button data-project-details="${escape(project.id)}">${t("View progress", "Ver progreso")}</button></div></article>`,
-        )
-        .join("")
-    : empty(
-        t("Your first project", "Tu primer proyecto"),
-        t(
-          "Create a project to give its work a name and its own context. General conversation remains available.",
-          "Crea un proyecto para darle un nombre y contexto propio a su trabajo. La conversación general sigue disponible.",
-        ),
-      );
+  try {
+    const projects = await api("/projects");
+    if (
+      state.page !== "projects" ||
+      sequence !== viewLoadSequence ||
+      !target.isConnected
+    )
+      return;
+    state.projects = projects;
+    target.innerHTML = `<div class="content projects-overview">
+      <header class="projects-intro"><div><div class="eyebrow">${t("YOUR WORKSPACE", "TU ESPACIO")}</div><h1>${t("Your projects", "Tus proyectos")}</h1><p>${t("A view of your ideas, their context and where they live.", "Tus ideas, su contexto y el espacio donde toman forma.")}</p></div><span class="projects-count">${projects.length} ${t("projects", "proyectos")}</span></header>
+      ${projects.length ? `<div class="projects-grid">${projects.map((project) => `<article class="project-summary"><div class="project-summary-icon" aria-hidden="true">${iconMarkup("projects")}</div><h2>${escape(project.name)}</h2><p class="project-summary-description">${escape(project.description || t("No description yet.", "Aún no hay descripción."))}</p>${project.aliases?.length ? `<div class="project-aliases">${project.aliases.map((alias) => `<span>${escape(alias)}</span>`).join("")}</div>` : ""}<footer>${project.workspace ? `<div class="project-location">${iconMarkup("projects")}<span>${escape(project.workspace)}</span></div>` : ""}<small>${t("Updated", "Actualizado")} · ${date(project.updated_at)}</small></footer></article>`).join("")}</div>` : `<div class="projects-empty"><span aria-hidden="true">${iconMarkup("projects")}</span><h2>${t("Your next idea starts here", "Tu próxima idea empieza aquí")}</h2><p>${t("Your projects will appear here when they are available.", "Tus proyectos aparecerán aquí cuando estén disponibles.")}</p></div>`}
+    </div>`;
+  } catch (error) {
+    if (state.page !== "projects" || !target.isConnected) return;
+    target.innerHTML = `<div class="content"><p role="alert">${escape(t("Could not load projects.", "No se pudieron cargar los proyectos."))}</p><button class="projects-retry">${t("Try again", "Reintentar")}</button></div>`;
+    target
+      .querySelector("button")
+      .addEventListener("click", () => void renderProjects());
+  }
 }
 function projectOptions(selected = "") {
   return `<option value="">${t("General memory", "Memoria general")}</option>${state.projects.map((project) => `<option value="${escape(project.id)}" ${project.id === selected ? "selected" : ""}>${escape(project.name)}</option>`).join("")}`;
@@ -970,42 +986,6 @@ document.addEventListener("click", async (event: any) => {
       state.replyTo = null;
       drawReplyReference();
     }
-    if (button.dataset.action === "refresh-projects") {
-      state.projects = await api("/projects");
-      drawProjects();
-    }
-    if (button.dataset.action === "clear-project") {
-      $("#project-form").reset();
-      $("#project-id").value = "";
-      $("#project-form-title").textContent = t(
-        "Create a project",
-        "Crear un proyecto",
-      );
-      $("#project-status").textContent = "";
-    }
-    if (button.dataset.editProject) {
-      const { project } = await api(`/projects/${button.dataset.editProject}`);
-      $("#project-id").value = project.id;
-      $("#project-name").value = project.name;
-      $("#project-aliases").value = project.aliases.join(", ");
-      $("#project-description").value = project.description;
-      $("#project-workspace").value = project.workspace || "";
-      $("#project-brief").value = project.brief;
-      $("#project-form-title").textContent = t(
-        "Edit project",
-        "Editar proyecto",
-      );
-      $("#project-name").focus();
-    }
-    if (button.dataset.projectDetails) {
-      const { project, tasks } = await api(
-        `/projects/${button.dataset.projectDetails}`,
-      );
-      showDetail(
-        project.name,
-        `${project.brief ? `<div class="markdown-content">${markdownHtml(project.brief)}</div>` : ""}<h3>${t("Recent tasks", "Tareas recientes")}</h3>${tasks.length ? tasks.map((task) => `<article class="record"><div class="row spread"><h3>${escape(task.request)}</h3><span class="badge">${escape(statusName(task.status))}</span></div><small>${date(task.updated_at)}</small><div class="actions"><button data-task="${escape(task.id)}">${t("Inspect", "Inspeccionar")}</button></div></article>`).join("") : `<p class="muted">${t("No tasks yet. Mention this project in the conversation to start.", "Aún no hay tareas. Menciona este proyecto en la conversación para comenzar.")}</p>`}`,
-      );
-    }
     if (button.dataset.action === "older") {
       const oldest = Math.min(
         ...[...state.messages.values()].map((m) => m.seq),
@@ -1221,29 +1201,6 @@ document.addEventListener("submit", async (event: any) => {
       if (!offerDesignCreation(request, sendChatRequest))
         await sendChatRequest(request);
     }
-    if (form.id === "project-form") {
-      const id = $("#project-id").value;
-      await api(id ? `/projects/${id}` : "/projects", {
-        method: id ? "PUT" : "POST",
-        body: {
-          name: $("#project-name").value,
-          aliases: $("#project-aliases")
-            .value.split(",")
-            .map((alias) => alias.trim())
-            .filter(Boolean),
-          description: $("#project-description").value,
-          workspace: $("#project-workspace").value.trim() || null,
-          brief: $("#project-brief").value,
-        },
-      });
-      await renderProjects();
-      toast(
-        t(
-          "Project saved. Continue in the same conversation.",
-          "Proyecto guardado. Continúa en la misma conversación.",
-        ),
-      );
-    }
     if (form.id === "memory-search")
       await loadMemories($("#memory-query").value);
     if (form.id === "memory-form") {
@@ -1373,10 +1330,6 @@ async function poll() {
     if (["chat", "design"].includes(state.page) && status.ready)
       void refreshDesigns();
     if (state.page === "activity" && status.ready) drawTaskActivity();
-    if (state.page === "projects" && status.ready) {
-      if (projectsChanged) state.projects = await api("/projects");
-      drawProjects();
-    }
     if ($("#connection-state"))
       $("#connection-state").textContent = t("Connected", "Conectado");
     if ($("#connection-state"))
@@ -1394,13 +1347,15 @@ async function poll() {
   }
 }
 async function boot() {
-  renderSetupMarkup(
-    renderToStaticMarkup(
-      Loading({
-        label: t("Connecting to your space…", "Conectando con tu espacio…"),
-      }),
-    ),
-  );
+  // Keep the initial phoenix mounted while authentication and startup finish.
+  // Only retries need to replace the error screen with a loading state.
+  if (!document.querySelector("#app .boot[role='status']")) {
+    renderSetupMarkup(
+      renderToStaticMarkup(
+        Loading({ label: t("Connecting to Fénix…", "Conectando con Fénix…") }),
+      ),
+    );
+  }
   try {
     [state.status, state.providers] = await Promise.all([
       api("/status"),

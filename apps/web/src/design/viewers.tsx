@@ -358,12 +358,6 @@ function Slides({
           →
         </button>
       </div>
-      {slide.notes && (
-        <details>
-          <summary>Notes / Notas</summary>
-          <p>{slide.notes}</p>
-        </details>
-      )}
     </div>
   );
 }
@@ -457,7 +451,6 @@ export function Viewer({
   }
   return (
     <>
-      {c.caption && !c.theme && <p className="design-note">{c.caption}</p>}
       {c.extraction?.next_offset != null && (
         <p role="status">
           Partial preview / Vista parcial: {c.extraction.next_offset} /{" "}

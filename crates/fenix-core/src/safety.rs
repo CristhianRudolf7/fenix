@@ -16,7 +16,7 @@ impl Default for Redactor {
     fn default() -> Self {
         Self {
             secrets: RwLock::new(vec![]),
-            pattern: Regex::new(r"(?:sk-[A-Za-z0-9_-]{12,}|[0-9]{8,12}:[A-Za-z0-9_-]{30,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|(?:AKIA|ASIA)[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{30,}|(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,}|rp_[A-Za-z0-9]{20,}|cfk_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,})")
+            pattern: Regex::new(r"(^|[^A-Za-z0-9_-])(?:sk-[A-Za-z0-9_-]{12,}|[0-9]{8,12}:[A-Za-z0-9_-]{30,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|(?:AKIA|ASIA)[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{30,}|(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,}|rp_[A-Za-z0-9]{20,}|cfk_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,})")
                 .expect("static secret regex"),
             labeled: Regex::new(r#"(?im)(\b(?:password|passwd|contraseña|api[_ -]?key|client[_ -]?secret|access[_ -]?token|refresh[_ -]?token|authorization|(?:set[_ -]?)?cookie|(?:aws[_ -]?)?secret[_ -]?access[_ -]?key)[ \t]*[\"']?[ \t]*[:=][ \t]*)(?:\"[^\"\r\n]*\"|'[^'\r\n]*'|`[^`\r\n]*`|(?:Bearer|Basic)\s+[^\s,;}]+|[^\s,;}]+)"#).expect("static label regex"),
             private_key: Regex::new(r"(?s)-----BEGIN (?:[A-Z0-9 ]*PRIVATE KEY)-----.*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|\z)").expect("static private key regex"),
@@ -143,7 +143,10 @@ impl Redactor {
             .private_key
             .replace_all(&out, "[REDACTED_PRIVATE_KEY]")
             .into_owned();
-        out = self.pattern.replace_all(&out, "[REDACTED]").into_owned();
+        out = self
+            .pattern
+            .replace_all(&out, "${1}[REDACTED]")
+            .into_owned();
         static COOKIES: std::sync::LazyLock<Regex> = std::sync::LazyLock::new(|| {
             Regex::new(r"(?im)(\b(?:set-cookie|cookie)[ \t]*[:=][ \t]*)[^\r\n]+")
                 .expect("static cookie header regex")
@@ -267,6 +270,32 @@ mod tests {
             assert!(!preview.contains("private"));
             assert!(!preview.contains("sk-"));
         }
+    }
+
+    #[test]
+    fn credential_patterns_do_not_match_inside_opaque_ciphertext() {
+        let redactor = Redactor::default();
+        let ciphertext = "gAAAAABopaqueBase64sk-abcdefghijklmnopMoreCiphertext==";
+        let mut message = crate::Message::user("Safe");
+        message.provider_data = Some(crate::ProviderData {
+            protocol: crate::Protocol::OpenAiResponses,
+            data: serde_json::json!({"type":"reasoning","encrypted_content":ciphertext}),
+        });
+        let original = message.clone();
+        redactor.message(&mut message).unwrap();
+        assert_eq!(message, original);
+        for input in [
+            "sk-abcdefghijklmnop",
+            "key: sk-abcdefghijklmnop",
+            "(sk-abcdefghijklmnop)",
+            "\"sk-abcdefghijklmnop\"",
+        ] {
+            assert!(!redactor.text(input).contains("sk-abcdefghijklmnop"));
+        }
+        // Actual known credentials are matched literally, even inside other data.
+        redactor.add("sk-abcdefghijklmnop");
+        assert!(redactor.message(&mut message).is_err());
+        assert_eq!(message, original);
     }
 
     #[test]

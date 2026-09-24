@@ -334,7 +334,7 @@
 }
 .table-scroll {
   overflow: auto;
-  max-height: 58dvh;
+  max-height: none;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--bg);
@@ -366,8 +366,8 @@
   font-weight: 600;
 }
 .slide {
-  aspect-ratio: 16/9;
-  overflow: auto;
+  min-height: 240px;
+  overflow: visible;
   background: #faf9f6;
   color: #17211c;
   padding: clamp(22px, 4vw, 55px);

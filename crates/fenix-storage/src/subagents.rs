@@ -47,6 +47,14 @@ pub struct Subagent {
 const SELECT_SUBAGENT: &str = "SELECT s.id,s.parent_task_id,s.spec,t.status,s.attempts,s.result,t.created_at,t.updated_at,s.project_id FROM subagents s JOIN tasks t ON t.id=s.id";
 
 impl Store {
+    /// Only work owned by this turn can justify releasing it as a handoff.
+    pub fn has_active_delegation(&self, task: &str) -> Result<bool> {
+        Ok(self.db()?.query_row(
+            "SELECT EXISTS(SELECT 1 FROM subagents s JOIN tasks t ON t.id=s.id WHERE s.parent_task_id=?1 AND t.status IN ('queued','running','waiting')) OR EXISTS(SELECT 1 FROM plans WHERE task_id=?1 AND status IN ('running','revising'))",
+            [task], |row| row.get(0),
+        )?)
+    }
+
     /// Enqueue follow-ups durably and idempotently; retry budgets are never reset.
     pub fn send_subagent_input(&self, sender: &str, target: &str, content: &str) -> Result<Value> {
         if content.trim().is_empty() || content.len() > 8000 {

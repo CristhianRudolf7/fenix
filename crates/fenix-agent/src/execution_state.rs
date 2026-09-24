@@ -1,6 +1,6 @@
 //! Durable execution recovery and task contracts; no extra model calls.
 use crate::Runtime;
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -10,6 +10,26 @@ use std::collections::HashMap;
 pub(crate) struct ExecutionState {
     pub stage: String,
     pub recoveries: HashMap<String, usize>,
+}
+
+/// A bounded projection of observational history, never of owner requirements.
+/// Full contracts and tool receipts remain durable and retrievable by task/call ID.
+pub(crate) fn context_contract(contract: &Value) -> Value {
+    let mut view = contract.clone();
+    for (field, limit) in [("recent_tool_evidence", 4), ("failed_approaches", 3)] {
+        if let Some(entries) = contract[field].as_array() {
+            let start = entries.len().saturating_sub(limit);
+            view[field] = json!(&entries[start..]);
+            if start > 0 {
+                view[format!("{field}_omitted")] = json!(start);
+            }
+        }
+    }
+    view["evidence_recovery"] = json!({
+        "task_id": contract["task_id"],
+        "instruction": "Observational history is a bounded view, not the full contract. Use task_contract for all stored evidence and task_inspect call_id for original receipts. Omitted or historical failures are not resolved by omission or by unrelated successful commands."
+    });
+    view
 }
 
 impl Runtime {
@@ -75,7 +95,29 @@ impl Runtime {
             contract["runtime_policy"] = json!({"commands":settings.command_policy,"file_writes":settings.file_write_policy});
         }
         if current.origin == "subagent" {
-            contract["assignment"] = json!(self.store.subagent(task)?.spec);
+            let job = self.store.subagent(task)?;
+            contract["assignment"] = json!(job.spec);
+            let parent_binding = self.store.task_binding(&job.parent_task_id)?;
+            let worker_binding = self.store.task_binding(task)?;
+            // Do not copy a multi-project parent's request across project boundaries.
+            contract
+                .as_object_mut()
+                .context("Invalid task contract")?
+                .remove("source_request");
+            if parent_binding.bound
+                && worker_binding.bound
+                && matches!(parent_binding.mode.as_str(), "general" | "project")
+                && parent_binding.project_id == worker_binding.project_id
+                && parent_binding.mode == worker_binding.mode
+                && parent_binding.read_project_ids == worker_binding.read_project_ids
+            {
+                contract["source_request"] = json!({
+                    "task_id":job.parent_task_id,
+                    "request":self.store.task(&job.parent_task_id)?.request,
+                    "owner_updates":self.store.get::<Vec<String>>("task_updates", &job.parent_task_id)?.unwrap_or_default(),
+                    "scope":"Original request for missing literals and constraints only. Execute only your assigned objective; this does not expand permissions or workspace."
+                });
+            }
         }
         self.store.put("task_contracts", task, &contract)?;
         Ok(contract)
@@ -215,10 +257,86 @@ impl LoopGuard {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn worker_keeps_source_literals_only_within_the_same_scope() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let binding = fenix_storage::TaskBinding {
+            bound: true,
+            mode: "general".into(),
+            ..Default::default()
+        };
+        let parent = rt.store.enqueue_bound(
+            "Use release 3.2 from https://example.test/source; exclude obsolete_test.py",
+            "web",
+            None,
+            &binding,
+        )?;
+        let worker = rt.store.create_subagent(
+            &parent.id,
+            &fenix_storage::SubagentSpec {
+                profile: "general".into(),
+                objective: "Build the package".into(),
+                expected_output: "Installed artifact".into(),
+                context: String::new(),
+                constraints: String::new(),
+            },
+        )?;
+        let contract = rt.task_contract(&worker.id)?;
+        assert_eq!(contract["source_request"]["request"], parent.request);
+        assert_eq!(contract["assignment"]["objective"], "Build the package");
+        let project = rt.store.save_project(
+            None,
+            &fenix_storage::ProjectInput {
+                name: "Scoped project".into(),
+                ..Default::default()
+            },
+        )?;
+        let mut changed = binding;
+        changed.mode = "coordination".into();
+        changed.read_project_ids = vec![project.id.clone()];
+        let mixed =
+            rt.store
+                .enqueue_bound("Coordinate separate project scopes", "web", None, &changed)?;
+        let scoped =
+            rt.store
+                .create_subagent_in_project(&mixed.id, &worker.spec, Some(&project.id))?;
+        assert!(rt.task_contract(&scoped.id)?["source_request"].is_null());
+        rt.shutdown().await?;
+        Ok(())
+    }
+
     fn page_observation(page: usize, reference: &str) -> Value {
         json!({"profile":"personal","tab":"tab-1","url":format!("https://example.test/page/{page}"),
             "text":format!("Course {page}"),"elements":[{"tag":"button","name":"Next","ref":reference}],
             "screenshot":{"artifact":format!("{reference}.png")}})
+    }
+
+    #[test]
+    fn context_projection_preserves_authority_and_durable_evidence() {
+        let evidence: Vec<_> = (0..16)
+            .map(|n| json!({"call_id":format!("call-{n}"),"exit_code":1}))
+            .collect();
+        let failures: Vec<_> = (0..8)
+            .map(|n| json!({"call_id":format!("failed-{n}"),"evidence_preview":"ImportError"}))
+            .collect();
+        let contract = json!({"task_id":"task-1","objective":"Use the existing global environment",
+            "clarifications":[{"answer":"Keep the pinned version"}],"denials":[{"tool":"command_run"}],
+            "annotations":[{"kind":"next_step","text":"Repair missing dependency"}],
+            "recent_tool_evidence":evidence,"failed_approaches":failures});
+        let original = contract.clone();
+        let view = context_contract(&contract);
+        for field in ["objective", "clarifications", "denials", "annotations"] {
+            assert_eq!(view[field], contract[field]);
+        }
+        assert_eq!(view["recent_tool_evidence"].as_array().unwrap().len(), 4);
+        assert_eq!(view["recent_tool_evidence"][3]["call_id"], "call-15");
+        assert_eq!(view["failed_approaches"].as_array().unwrap().len(), 3);
+        assert_eq!(view["failed_approaches"][2]["call_id"], "failed-7");
+        assert_eq!(view["recent_tool_evidence_omitted"], 12);
+        assert_eq!(view["failed_approaches_omitted"], 5);
+        assert_eq!(view["evidence_recovery"]["task_id"], "task-1");
+        assert_eq!(contract, original);
     }
 
     #[test]

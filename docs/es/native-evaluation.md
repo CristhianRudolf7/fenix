@@ -7,6 +7,47 @@ base de datos y skills aislados por intento. Terminal-Bench mantiene sus
 contenedores, instrucciones y verificador oficial. Que el agente termine no
 significa que haya aprobado la tarea.
 
+## Configuración del contexto
+
+Las configuraciones nuevas usan una ventana de 200.000 tokens y compactación
+a partir de 160.000. Se conservan los valores explícitos ya guardados; la capacidad
+debe ser compatible con el modelo elegido. Esto no aumenta el tiempo del
+benchmark ni garantiza que la tarea se complete.
+
+## Delegación y evaluación bloqueada
+
+El contrato durable del trabajador conserva la petición original del maestro y
+sus actualizaciones solo si ambos tienen el mismo ámbito resuelto, general o de
+proyecto. Su encargo sigue delimitando la ejecución; no se copia la conversación
+completa. Cambiar de ámbito elimina esa referencia heredada. Si un plan no tiene
+tareas ejecutándose o en cola y espera una respuesta del usuario, la evaluación
+termina como `requires_user_input` tras el plazo configurado, sin inventar respuestas.
+
+## Espera de comandos por eventos
+
+Los comandos en primer plano esperan en Rust su finalización sin consultas del
+modelo. Se devuelve un aviso tras 120 segundos o 60 segundos sin salida. El
+silencio es solo una advertencia: ninguno de estos plazos cancela el proceso.
+Siguen vigentes el timeout del comando, la cancelación de la tarea y el apagado.
+Terminales interactivas y servicios persistentes devuelven el control rápidamente.
+`yield_ms=0` permite continuar sin esperar y `command_status` con `wait_ms=0`
+consulta inmediatamente. La salida se sigue recogiendo en el registro del proceso.
+Es una notificación interna, no un webhook HTTP externo.
+
+## Resultados explícitos de ejecución
+
+Las tareas que ejecutan comandos o modifican archivos se cierran mediante
+`task_finish`, exclusivo del maestro. El modelo indica `completed` con evidencia
+observada, o `blocked`/`failed` con un impedimento concreto. Después de ejecutar,
+el motor rechaza un mensaje final sin ese resultado y solicita continuar o
+declararlo; esta recuperación utiliza los límites de recuperación existentes.
+Tampoco permite cerrar mientras un comando en primer plano sigue ejecutándose.
+El resumen se entrega directamente, sin otra llamada al modelo. La conversación
+normal conserva su cierre habitual y los subagentes utilizan `subagent_finish`.
+
+Este protocolo no verifica por sí solo la corrección: la evidencia declarada puede
+ser incorrecta. Sigue siendo necesario el verificador oficial del benchmark.
+
 ## Uso
 
 ```bash
@@ -114,3 +155,9 @@ Si se inicia explícitamente mediante el cargador `ld-linux` empaquetado, `binar
 Para una evaluación cuyo ejecutor externo controla la cancelación, usa `settings.execution.externally_supervised: true`. Esta opción desactiva el plazo de la tarea principal, el máximo de pasos del modelo y el timeout HTTP total del proveedor. Por defecto permanece desactivada. En este modo, `timeout_seconds: 0` desactiva también el temporizador de la evaluación. Se conservan cancelación e informes. Siguen aplicándose los tiempos de conexión inicial, la capacidad del proveedor, controles de herramientas, políticas de recuperación y plazos oficiales del benchmark: no es cómputo ilimitado.
 
 Configura el contexto según la capacidad verificada del proveedor y una salida menor que ese contexto; cada solicitud sigue ajustándose al espacio estimado restante. El máximo configurable de salida es 1.048.576 tokens. Cambiar varios ajustes a la vez no permite atribuir el resultado a uno solo. Conserva configuración, hash del binario, errores de infraestructura y costos conocidos.
+
+### Cierre de turnos delegados y credenciales de evaluación
+El maestro puede liberar el turno con un mensaje de progreso mientras sus propios subagentes o plan siguen activos. Se registra un resultado delegado; el trabajo de fondo conserva su estado y su ruta de reporte. Los comandos en primer plano impiden cerrar, y los trabajadores ajenos o terminados no justifican una delegación. Estos cierres parciales no generan aprendizaje de skills.
+El proxy local de evaluación puede alternar dos credenciales que permanecen en el host. Reenvía las cabeceras de límites y respeta una pausa compartida ante HTTP 429; alternar no aumenta cuotas compartidas. Los reintentos de subagentes respetan la duración completa de Retry-After.
+
+La paginación con task_inspect(after=0 y luego next_after) devuelve solo eventos, sin repetir el contrato completo. En reparaciones de paquetes estrechamente ligadas, conserva diagnóstico, reparación y verificación en un mismo trabajador y la auditoría final del trabajo sustancial.

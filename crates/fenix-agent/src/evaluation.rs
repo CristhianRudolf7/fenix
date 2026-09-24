@@ -176,7 +176,10 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
             if config.timeout_seconds != 0 && started.elapsed() >= Duration::from_secs(config.timeout_seconds) {
                 break Ok("timeout".into());
             }
-            if running {
+            // A running plan with every worker waiting cannot make progress alone.
+            // Preserve the genuine question instead of burning the entire deadline.
+            let active_tasks = tasks.iter().any(|t| matches!(t.status.as_str(), "running" | "queued"));
+            if running && (!blocked || active_tasks) {
                 settled = None;
                 waiting = None;
             } else if blocked {

@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
-import { Flame, Icon, iconMarkup } from "./components/icons";
+import { Flame, Icon } from "./components/icons";
 import wing from "./assets/phoenix-wing.webp";
 
 function Login() {
@@ -199,30 +199,137 @@ export async function authenticate(): Promise<boolean> {
     return false;
   }
   if (!response.ok) throw new Error("Authentication service unavailable");
-  const button = document.createElement("button");
-  button.className = "account-signout";
-  button.type = "button";
-  button.setAttribute("aria-label", "Salir / Sign out");
-  button.title = "Salir / Sign out";
-  button.innerHTML = iconMarkup("logout");
-  button.onclick = async () => {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: "{}",
-    });
-    location.reload();
-  };
-  document.body.append(button);
+  const session = await response.json();
+  const control = document.createElement("div");
+  control.className = "account-menu";
+  document.body.append(control);
+  createRoot(control).render(<AccountMenu email={session.email || ""} />);
   return true;
 }
 
-/** Move the persistent logout control before replacing any React/DOM shell. */
+/** Move the persistent account control before replacing any React/DOM shell. */
 export function placeAccountControl(detach = false) {
-  const button = document.querySelector(".account-signout");
+  const button = document.querySelector(".account-menu");
   if (button)
     (detach
       ? document.body
       : document.getElementById("account-controls") || document.body
     ).append(button);
+}
+
+function AccountMenu({ email }: { email: string }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const menu = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const profile = useRef<HTMLDialogElement>(null);
+  const t = (en: string, es: string) =>
+    document.documentElement.lang === "en" ? en : es;
+  useEffect(() => {
+    if (!open) return;
+    menu.current
+      ?.querySelector<HTMLButtonElement>(".account-dropdown button")
+      ?.focus();
+    const outside = (event: PointerEvent) => {
+      if (!menu.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const key = (event: KeyboardEvent) => {
+      if (event.key === "Tab") {
+        setTimeout(() => {
+          if (!menu.current?.contains(document.activeElement)) setOpen(false);
+        }, 0);
+      }
+      if (event.key === "Escape") {
+        setOpen(false);
+        trigger.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
+  async function signOut() {
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      if (!response.ok) throw Error("Logout failed");
+      location.reload();
+    } catch {
+      setError(
+        t(
+          "Could not sign out. Try again.",
+          "No se pudo cerrar sesión. Inténtalo de nuevo.",
+        ),
+      );
+      setBusy(false);
+    }
+  }
+  return (
+    <div ref={menu}>
+      <button
+        ref={trigger}
+        type="button"
+        className="subtle icon-button"
+        aria-label={t("User menu", "Menú de usuario")}
+        aria-expanded={open}
+        aria-controls="account-dropdown"
+        onClick={() => setOpen(!open)}
+      >
+        <Icon name="user" />
+      </button>
+      {open && (
+        <div id="account-dropdown" className="account-dropdown">
+          <button
+            type="button"
+            className="subtle"
+            onClick={() => {
+              setOpen(false);
+              profile.current?.showModal();
+            }}
+          >
+            <Icon name="user" />
+            {t("Profile", "Perfil")}
+          </button>
+          <button
+            type="button"
+            className="subtle"
+            disabled={busy}
+            onClick={signOut}
+          >
+            <Icon name="logout" />
+            {t("Sign out", "Cerrar sesión")}
+          </button>
+          {error && <p role="alert">{error}</p>}
+        </div>
+      )}
+      <dialog
+        ref={profile}
+        className="account-profile"
+        onClose={() => trigger.current?.focus()}
+      >
+        <div className="row spread">
+          <h2>{t("Profile", "Perfil")}</h2>
+          <button
+            type="button"
+            className="subtle icon-button"
+            aria-label={t("Close profile", "Cerrar perfil")}
+            onClick={() => profile.current?.close()}
+          >
+            <Icon name="close" />
+          </button>
+        </div>
+        <p className="muted">{t("Email", "Correo")}</p>
+        <p>{email || t("Local account", "Cuenta local")}</p>
+      </dialog>
+    </div>
+  );
 }

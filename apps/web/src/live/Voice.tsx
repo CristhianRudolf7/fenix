@@ -137,6 +137,7 @@ export function Voice() {
             <button
               type="button"
               className="primary live-button"
+              aria-pressed={state.active || state.starting}
               disabled={!supported}
               onClick={() =>
                 state.active || state.starting
@@ -146,23 +147,6 @@ export function Voice() {
               aria-label={t("Start or end Live", "Iniciar o cerrar Live")}
             >
               <Icon name="wave" />
-              {state.active || state.starting
-                ? t("End Live", "Cerrar Live")
-                : "Live"}
-            </button>
-            <button
-              type="button"
-              className="subtle voice-settings-button"
-              aria-label={t(
-                "Conversation settings",
-                "Configuración de conversación",
-              )}
-              onClick={() => {
-                void loadConfig();
-                setSettingsOpen(true);
-              }}
-            >
-              <Icon name="settings" />
             </button>
           </div>,
           slot,

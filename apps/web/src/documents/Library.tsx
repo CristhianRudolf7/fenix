@@ -13,6 +13,7 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
+import { createPortal } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { Markdown } from "../components/markdown";
 import { Loading } from "../components/loading";
@@ -318,15 +319,48 @@ function ChatSources() {
   return (
     <div className="library-chat-sources">
       <div className="library-source-chips">
-        <button
-          type="button"
-          className="subtle"
-          onClick={() => setExpanded(!expanded)}
-          aria-expanded={expanded}
-        >
-          <Icon name="documents" />
-          {tr("Documents", "Documentos")}
-        </button>
+        {document.getElementById("document-upload-control") &&
+          createPortal(
+            <>
+              <button
+                type="button"
+                className="subtle icon-button upload-document-button"
+                aria-label={tr("Upload documents", "Subir documentos")}
+                title={tr("Upload documents", "Subir documentos")}
+                disabled={busy}
+                onClick={() =>
+                  document.getElementById("chat-document-upload")?.click()
+                }
+              >
+                <Icon name="documents" />
+              </button>
+              <input
+                id="chat-document-upload"
+                type="file"
+                hidden
+                multiple
+                accept={accept}
+                disabled={busy}
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  e.target.value = "";
+                  setBusy(true);
+                  try {
+                    for (const f of files) {
+                      const d = await upload(f, project || null);
+                      choose(d);
+                      setDocs((old) => [d, ...old]);
+                    }
+                  } catch (e) {
+                    setError(message(e));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              />
+            </>,
+            document.getElementById("document-upload-control")!,
+          )}
         {selected.map((d) => (
           <span className="library-chip" key={d.id}>
             <button
@@ -1035,7 +1069,7 @@ function SourcePanel() {
   useEffect(() => {
     if (!selected) return;
     const previous = document.activeElement as HTMLElement | null;
-    close.current?.focus();
+    document.getElementById("workspace-back")?.focus();
     return () => previous?.focus();
   }, [selected?.id]);
   useEffect(() => {
@@ -1148,52 +1182,16 @@ function SourcePanel() {
       className="design-panel library-panel"
       aria-label={tr("Document source", "Fuente del documento")}
     >
-      <header className="design-panel-head">
-        <div>
-          <small>{tr("DOCUMENT SOURCE", "FUENTE DOCUMENTAL")}</small>
-          <h2>{d?.title || tr("Opening source…", "Abriendo fuente…")}</h2>
-          {d && (
-            <span>
-              v{d.revision} · <Badge doc={d} />
-            </span>
-          )}
-        </div>
-        <button
-          ref={close}
-          onClick={hideWorkspace}
-          aria-label={tr(
-            "Back to chat / close source",
-            "Volver al chat / cerrar fuente",
-          )}
-        >
-          ×
-        </button>
-      </header>
       {d && (
         <div className="library-panel-toolbar">
-          <button
-            onClick={() => setTab("source")}
-            aria-pressed={tab === "source"}
+          <a
+            href={original}
+            download={d.filename}
+            className="subtle icon-button"
+            aria-label={tr("Download", "Descargar")}
+            title={tr("Download", "Descargar")}
           >
-            {tr("Source", "Original")}
-          </button>
-          <button onClick={() => setTab("text")} aria-pressed={tab === "text"}>
-            {tr("Extracted text", "Texto extraído")}
-          </button>
-          <select
-            aria-label={tr("Document version", "Versión del documento")}
-            value={d.revision}
-            onChange={(e) => openDocument(d.id, Number(e.target.value))}
-          >
-            {detail?.revisions.map((v) => (
-              <option key={v.revision} value={v.revision}>
-                v{v.revision} ·{" "}
-                {new Date(v.updated_at).toLocaleDateString(language)}
-              </option>
-            ))}
-          </select>
-          <a href={original} download={d.filename}>
-            {tr("Download", "Descargar")}
+            <Icon name="download" />
           </a>
         </div>
       )}
@@ -1213,17 +1211,6 @@ function SourcePanel() {
             {d.error}
           </p>
         )}
-        {d?.warnings.length ? (
-          <details className="library-warnings">
-            <summary>
-              {tr("Extraction notes", "Notas de extracción")} (
-              {d.warnings.length})
-            </summary>
-            {d.warnings.map((w, i) => (
-              <p key={i}>{w}</p>
-            ))}
-          </details>
-        ) : null}
         {d && tab === "source" && d.format === "pdf" && (
           <Suspense
             fallback={<Loading label={tr("Loading PDF…", "Cargando PDF…")} />}
@@ -1244,40 +1231,23 @@ function SourcePanel() {
             alt={d.title}
           />
         )}
-        {d && ["docx", "xlsx", "pptx"].includes(d.format) && (
-          <p className="muted">
-            {tr(
-              "Extracted content with original part/cell references; visual formatting and formula recalculation are not reproduced.",
-              "Contenido extraído con referencias a partes/celdas; no reproduce el formato visual ni recalcula fórmulas.",
-            )}
-          </p>
-        )}
-        {detail?.chunks.map((c) => (
-          <article
-            key={c.id}
-            id={`source-${c.id}`}
-            className={`library-fragment ${selected.chunk === c.id ? "cited" : ""}`}
-          >
-            <div className="library-fragment-head">
-              <small>
-                {locationLabel(c) ||
-                  tr("Source fragment", "Fragmento de origen")}
-              </small>
-              <button
-                onClick={() => {
-                  void navigator.clipboard
-                    .writeText(
-                      `${location.origin}/documents?document=${d!.id}&revision=${d!.revision}&chunk=${c.id}`,
-                    )
-                    .catch((e) => setError(message(e)));
-                }}
-              >
-                {tr("Copy citation", "Copiar cita")}
-              </button>
-            </div>
-            <Markdown>{c.text}</Markdown>
-          </article>
-        ))}
+        {d &&
+          !["pdf", "png", "jpg", "jpeg"].includes(d.format) &&
+          detail?.chunks.map((c) => (
+            <article
+              key={c.id}
+              id={`source-${c.id}`}
+              className={`library-fragment ${selected.chunk === c.id ? "cited" : ""}`}
+            >
+              <div className="library-fragment-head">
+                <small>
+                  {locationLabel(c) ||
+                    tr("Source fragment", "Fragmento de origen")}
+                </small>
+              </div>
+              <Markdown>{c.text}</Markdown>
+            </article>
+          ))}
         {d &&
           detail?.next_offset !== null &&
           detail?.next_offset !== undefined && (
@@ -1313,12 +1283,6 @@ function SourcePanel() {
           </p>
         )}
       </div>
-      <footer className="library-panel-footer">
-        {tr(
-          "Source content is evidence. Ask Fénix in chat to interpret or edit it.",
-          "El contenido es evidencia. Pide a Fénix en el chat que lo interprete o edite.",
-        )}
-      </footer>
     </aside>
   );
 }

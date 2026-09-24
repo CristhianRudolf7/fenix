@@ -85,6 +85,14 @@ fn base_request() -> ChatRequest {
 }
 
 #[test]
+fn responses_preserves_max_reasoning_configuration() {
+    let mut request = ChatRequest::new("gpt-6-luna", vec![Message::user("Hello")]);
+    request.reasoning_effort = Some(serde_json::from_str("\"max\"").unwrap());
+    let body = encode(Protocol::OpenAiResponses, &request).unwrap();
+    assert_eq!(body["reasoning"]["effort"], "max");
+}
+
+#[test]
 fn responses_sends_explicit_low_reasoning_without_temperature() {
     let mut request = ChatRequest::new("gpt-5.6-luna", vec![Message::user("Hello")]);
     request.reasoning_effort = Some(fenix_core::ReasoningEffort::Low);

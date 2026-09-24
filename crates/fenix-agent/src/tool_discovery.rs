@@ -25,6 +25,7 @@ fn essential(name: &str) -> bool {
             | "command_status"
             | "ask_user"
             | "subagent_finish"
+            | "task_finish"
             | "plan_review_read"
             | "completion_audit_read"
     )

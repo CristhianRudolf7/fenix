@@ -79,6 +79,14 @@ export function markdownHtml(source: string): string {
   for (const table of fragment.querySelectorAll("table")) {
     const scroll = document.createElement("div");
     scroll.className = "markdown-table";
+    scroll.tabIndex = 0;
+    scroll.setAttribute("role", "region");
+    scroll.setAttribute(
+      "aria-label",
+      document.documentElement.lang === "en"
+        ? "Table, scroll horizontally"
+        : "Tabla, desplazamiento horizontal",
+    );
     table.replaceWith(scroll);
     scroll.append(table);
   }

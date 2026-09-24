@@ -5,6 +5,7 @@ import {
   updateTab,
   type Tab,
 } from "../workspace/store";
+import { Icon } from "../components/icons";
 import { Loading } from "../components/loading";
 import {
   useEffect,
@@ -272,7 +273,7 @@ function Panel() {
       setSource(JSON.stringify(v.content, null, 2));
       setRevision(v.revision || 1);
       setLatest(v.revision || 1);
-      document.getElementById("design-close")?.focus();
+      document.getElementById("workspace-back")?.focus();
     }
   }, [v?.id]);
   useEffect(() => {
@@ -423,48 +424,16 @@ function Panel() {
       role="dialog"
       aria-label={tr("Design preview", "Vista del diseño")}
     >
-      <header className="design-panel-head">
-        <div>
-          <small>
-            {labels[v.kind][s.language === "es" ? 1 : 0]}
-            {s.isTemplate
-              ? tr(" · Template", " · Plantilla")
-              : ` · v${revision}`}
-          </small>
-          <h2>{title(v)}</h2>
-        </div>
-        <button
-          id="design-close"
-          onClick={hideWorkspace}
-          aria-label={tr(
-            "Back to chat / close preview",
-            "Volver al chat / cerrar vista",
-          )}
-        >
-          ← {tr("Back", "Volver")}
-        </button>
-      </header>
       {!isPdf && (
         <div className="design-toolbar">
           <button
-            aria-pressed={mode === "preview"}
-            onClick={() => {
-              setMode("preview");
-              update({ editing: false });
-            }}
+            className="subtle icon-button"
+            onClick={exportResult}
+            aria-label={tr("Download", "Descargar")}
+            title={tr("Download", "Descargar")}
           >
-            {tr("Preview", "Vista previa")}
+            <Icon name="download" />
           </button>
-          <button
-            aria-pressed={mode === "source"}
-            onClick={() => {
-              setMode("source");
-              update({ editing: v.kind !== "diagram" });
-            }}
-          >
-            {tr("Content", "Contenido")}
-          </button>
-          <button onClick={exportResult}>{tr("Download", "Descargar")}</button>
           {v.kind === "web" && (
             <select
               aria-label={tr("Preview size", "Tamaño de vista")}
@@ -473,31 +442,6 @@ function Panel() {
             >
               <option value="desktop">Desktop</option>
               <option value="mobile">Mobile · 390px</option>
-            </select>
-          )}
-          {!s.isTemplate && (
-            <select
-              aria-label={tr("Revision", "Revisión")}
-              value={revision}
-              disabled={s.busy}
-              onChange={(e) => {
-                const r = Number(e.target.value);
-                void run(async () => {
-                  const seq = selectionSequence;
-                  const d = await api<Visual>(
-                    `/artifacts/${v.id}?revision=${r}`,
-                  );
-                  if (seq !== selectionSequence) return;
-                  setRevision(r);
-                  update({ selected: d });
-                });
-              }}
-            >
-              {Array.from({ length: latest }, (_, i) => (
-                <option key={i} value={i + 1}>
-                  v{i + 1}
-                </option>
-              ))}
             </select>
           )}
         </div>
@@ -518,55 +462,23 @@ function Panel() {
       <div
         className={`design-preview-scroll ${device === "mobile" && v.kind === "web" ? "device-mobile" : ""}`}
       >
-        {mode === "source" && !isPdf ? (
-          <>
-            <label className="design-source-label">
-              {v.kind === "diagram"
-                ? tr(
-                    "Read-only content · request changes in chat",
-                    "Contenido de solo lectura · pide cambios en el chat",
-                  )
-                : tr("Editable content (JSON)", "Contenido editable (JSON)")}
-              <textarea
-                className="design-source"
-                spellCheck={false}
-                readOnly={v.kind === "diagram"}
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-              />
-            </label>
-            {!s.isTemplate && v.kind !== "diagram" && (
-              <button
-                disabled={s.busy}
-                onClick={() =>
-                  void run(() =>
-                    commit(JSON.parse(source) as Visual["content"]),
-                  )
-                }
-              >
-                {tr("Save a new version", "Guardar una nueva versión")}
-              </button>
-            )}
-          </>
-        ) : (
-          <div className="design-preview-content">
-            <PreviewBoundary
+        <div className="design-preview-content">
+          <PreviewBoundary
+            key={v.kind === "diagram" ? v.id : `${v.id}-${v.revision}`}
+          >
+            <Viewer
               key={v.kind === "diagram" ? v.id : `${v.id}-${v.revision}`}
-            >
-              <Viewer
-                key={v.kind === "diagram" ? v.id : `${v.id}-${v.revision}`}
-                visual={v}
-                initialPage={
-                  (v as Visual & { preview_page?: number }).preview_page
-                }
-                language={s.language}
-              />
-            </PreviewBoundary>
-          </div>
-        )}
+              visual={v}
+              initialPage={
+                (v as Visual & { preview_page?: number }).preview_page
+              }
+              language={s.language}
+            />
+          </PreviewBoundary>
+        </div>
       </div>
-      <footer className="design-panel-foot">
-        {s.isTemplate ? (
+      {s.isTemplate && (
+        <footer className="design-panel-foot">
           <>
             <select
               aria-label={tr("Destination project", "Proyecto de destino")}
@@ -590,36 +502,8 @@ function Panel() {
               {tr("Use this template", "Usar esta plantilla")}
             </button>
           </>
-        ) : (
-          <>
-            <button className="primary" onClick={ask}>
-              {v.kind === "diagram" || isPdf
-                ? tr("Request changes in chat", "Pedir cambios en el chat")
-                : tr("Continue in chat", "Continuar en el chat")}
-            </button>
-            {revision < latest && v.kind !== "diagram" && !isPdf && (
-              <button
-                disabled={s.busy}
-                onClick={() => void run(() => commit(v.content))}
-              >
-                {tr("Restore as new version", "Restaurar como nueva versión")}
-              </button>
-            )}
-            {["web", "presentation"].includes(v.kind) && (
-              <button
-                disabled={s.busy}
-                onClick={() =>
-                  void run(async () =>
-                    commit({ ...v.content, brand: await api<Brand>("/brand") }),
-                  )
-                }
-              >
-                {tr("Apply my brand", "Aplicar mi identidad")}
-              </button>
-            )}
-          </>
-        )}
-      </footer>
+        </footer>
+      )}
     </aside>
   );
 }

@@ -551,6 +551,54 @@ impl Processes {
         }
         estimate.min(30_000)
     }
+    /// Wait on process completion without model polling. Silence is advisory, not failure.
+    pub async fn wait_event(
+        &self,
+        owner: &str,
+        id: &str,
+        cancel: &CancellationToken,
+        total: Duration,
+        idle: Duration,
+    ) -> Result<Value> {
+        let process = self.owned(owner, id).await?;
+        if process.info.tty || process.info.persistent {
+            return Ok(json!({"reason":"interactive_or_service"}));
+        }
+        let started = tokio::time::Instant::now();
+        let mut last_activity = started;
+        let mut bytes = process.state.lock().await.bytes;
+        let notified = process.done.notified();
+        tokio::pin!(notified);
+        notified.as_mut().enable();
+        let reason = loop {
+            let state = process.state.lock().await;
+            if state.status != "running" {
+                break "process_ended";
+            }
+            if state.bytes != bytes {
+                bytes = state.bytes;
+                last_activity = tokio::time::Instant::now();
+            }
+            drop(state);
+            if started.elapsed() >= total {
+                break "review_due";
+            }
+            if last_activity.elapsed() >= idle {
+                break "quiet_process";
+            }
+            tokio::select! {
+                _ = cancel.cancelled() => bail!("Command wait cancelled"),
+                _ = self.stop.cancelled() => bail!("Runtime stopped during command wait"),
+                _ = &mut notified => break "process_ended",
+                _ = tokio::time::sleep(Duration::from_secs(2).min(total.saturating_sub(started.elapsed())).min(idle.saturating_sub(last_activity.elapsed()))) => {}
+            }
+        };
+        Ok(
+            json!({"reason":reason,"waited_ms":started.elapsed().as_millis(),
+            "process_elapsed_ms":process.started.elapsed().as_millis(),
+            "instruction":"Silence alone does not establish a hang or input prompt. Inspect output before intervening; continue waiting if appropriate. The wait never kills the process. Explicit command timeout and cancellation remain enforced."}),
+        )
+    }
     pub async fn status(&self, owner: &str, reader: &str, id: &str, args: &Value) -> Result<Value> {
         if let Some(port) = args["ready_port"].as_u64()
             && (port == 0 || port > 65535)
@@ -786,6 +834,113 @@ mod tests {
         let processes =
             Processes::new(dir.path().join("logs"), redactor, CancellationToken::new()).unwrap();
         (dir, processes)
+    }
+    #[tokio::test]
+    async fn event_wait_finishes_or_returns_advisory_without_killing() {
+        let (dir, processes) = fixture();
+        let cancel = CancellationToken::new();
+        let run = processes
+            .start(
+                "task",
+                "sleep 0.1; printf done",
+                dir.path(),
+                10,
+                &cancel,
+                None,
+                ProcessOptions::default(),
+            )
+            .await
+            .unwrap();
+        let id = run["process_id"].as_str().unwrap();
+        let event = processes
+            .wait_event(
+                "task",
+                id,
+                &cancel,
+                Duration::from_secs(2),
+                Duration::from_secs(1),
+            )
+            .await
+            .unwrap();
+        assert_eq!(event["reason"], "process_ended");
+        assert!(
+            processes
+                .status("task", "task", id, &json!({"wait_ms":0}))
+                .await
+                .unwrap()["output"]
+                .as_str()
+                .unwrap()
+                .contains("done")
+        );
+        let run = processes
+            .start(
+                "task",
+                "sleep 10",
+                dir.path(),
+                20,
+                &cancel,
+                None,
+                ProcessOptions::default(),
+            )
+            .await
+            .unwrap();
+        let id = run["process_id"].as_str().unwrap();
+        let event = processes
+            .wait_event(
+                "task",
+                id,
+                &cancel,
+                Duration::from_secs(1),
+                Duration::from_millis(30),
+            )
+            .await
+            .unwrap();
+        assert_eq!(event["reason"], "quiet_process");
+        assert_eq!(
+            processes
+                .status("task", "task", id, &json!({"wait_ms":0}))
+                .await
+                .unwrap()["status"],
+            "running"
+        );
+        let event = processes
+            .wait_event(
+                "task",
+                id,
+                &cancel,
+                Duration::from_millis(30),
+                Duration::from_secs(1),
+            )
+            .await
+            .unwrap();
+        assert_eq!(event["reason"], "review_due");
+        let stopped = CancellationToken::new();
+        stopped.cancel();
+        assert!(
+            processes
+                .wait_event(
+                    "task",
+                    id,
+                    &stopped,
+                    Duration::from_secs(1),
+                    Duration::from_secs(1)
+                )
+                .await
+                .is_err()
+        );
+        assert!(
+            processes
+                .wait_event(
+                    "another-task",
+                    id,
+                    &cancel,
+                    Duration::from_secs(1),
+                    Duration::from_secs(1)
+                )
+                .await
+                .is_err()
+        );
+        processes.cancel("task", id).await.unwrap();
     }
     async fn complete(processes: &Processes, id: &str) -> Value {
         processes

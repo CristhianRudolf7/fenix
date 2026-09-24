@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Flame, Icon } from "./icons";
 import { placeAccountControl } from "../login";
+import { showExplorer } from "../workspace/store";
 const root = createRoot(document.getElementById("app")!);
 let pageRoot: Root | undefined;
 export type Language = "es" | "en";
@@ -119,11 +120,6 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
         inert={mobile && !menuOpen}
         aria-label={t("Navigation", "Navegación")}
       >
-        {mobile && (
-          <button className="subtle mobile-menu-close" onClick={closeMenu}>
-            {t("Close navigation", "Cerrar menú")} ×
-          </button>
-        )}
         <div className="sidebar-top">
           <div className="brand">
             <Flame />
@@ -131,6 +127,16 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
           </div>
           <div className="mobile-brand">
             <Preferences language={language} theme={theme} />
+            {mobile && (
+              <button
+                type="button"
+                className="subtle icon-button mobile-menu-close"
+                aria-label={t("Close navigation", "Cerrar menú")}
+                onClick={closeMenu}
+              >
+                <Icon name="close" />
+              </button>
+            )}
           </div>
         </div>
         <div className="nav-label">{t("Workspace", "Tu espacio")}</div>
@@ -159,14 +165,6 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="local-label">
-            <Flame />
-            <span>
-              {t("At your pace.", "A tu ritmo.")}
-              <br />
-              <small>{t("In your own way.", "A tu manera.")}</small>
-            </span>
-          </div>
           <div className="row">
             <small className="grow sidebar-version">Fénix · v0.3.0</small>
           </div>
@@ -205,16 +203,18 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
             <strong>{labels[page]}</strong>
           </div>
           <div className="topbar-actions">
-            <span
-              className="connection-state"
-              id="connection-state"
-              title={model}
-            >
-              {t("Connected", "Conectado")}
-            </span>
             <div className="desktop-preferences">
               <Preferences language={language} theme={theme} />
             </div>
+            <button
+              type="button"
+              className="subtle icon-button"
+              aria-label={t("Open folders", "Abrir carpetas")}
+              title={t("Open folders", "Abrir carpetas")}
+              onClick={showExplorer}
+            >
+              <Icon name="projects" />
+            </button>
             <div id="account-controls" />
           </div>
         </header>
@@ -253,15 +253,26 @@ export function renderSetupMarkup(html: string) {
 export function renderChatLayout(language: Language, model: string) {
   const t = (en: string, es: string) => translate(language, en, es);
   const content: ReactNode = (
-    <section className="chat-layout">
-      <div className="conversation-context" id="conversation-context" hidden>
-        <span>{t("YOUR SPACE, IN MOTION", "TU ESPACIO, EN MARCHA")}</span>
-        <p>
-          {t(
-            "One conversation. All your possibilities.",
-            "Una conversación. Todas tus posibilidades.",
-          )}
-        </p>
+    <section className="chat-layout chat-history-loading" aria-busy="true">
+      <div
+        className="chat-history-skeleton"
+        role="status"
+        aria-label={t("Loading messages", "Cargando mensajes")}
+      >
+        {[0, 1, 2, 3].map((index) => (
+          <div
+            key={index}
+            className={`chat-skeleton-message${index % 2 ? " from-user" : ""}`}
+            aria-hidden="true"
+          >
+            <span className="chat-skeleton-avatar" />
+            <div>
+              <span />
+              <span />
+              <span />
+            </div>
+          </div>
+        ))}
       </div>
       <div className="chat-scroll" id="chat-scroll">
         <div className="chat-inner">
@@ -285,29 +296,18 @@ export function renderChatLayout(language: Language, model: string) {
             <label className="muted" htmlFor="chat-input" hidden>
               {t("Message Fénix", "Escribe a Fénix")}
             </label>
+            <span id="document-upload-control" />
             <textarea
               id="chat-input"
               placeholder={t(
-                "What's on your mind?",
-                "Escribe lo que tienes en mente…",
+                "Message Fénix…",
+                "Escribe a Fénix…",
               )}
               maxLength={32000}
               rows={1}
               required
             />
             <div className="composer-footer">
-              <small className="composer-caption">
-                {t("Make room for your ideas", "Dale espacio a tus ideas")}
-              </small>
-              <button
-                type="button"
-                className="subtle"
-                onClick={() =>
-                  window.dispatchEvent(new Event("fenix:choose-design"))
-                }
-              >
-                {t("Choose a design", "Elegir diseño")}
-              </button>
               <span id="voice-controls" />
               <button
                 className="primary send"
@@ -319,12 +319,6 @@ export function renderChatLayout(language: Language, model: string) {
             </div>
           </form>
           <div id="voice-availability" />
-          <p className="composer-hint">
-            {t(
-              "One conversation. All your context. · Enter to send",
-              "Una conversación. Todo tu contexto. · Enter para enviar",
-            )}
-          </p>
         </div>
       </div>
     </section>
