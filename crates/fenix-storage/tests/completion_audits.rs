@@ -425,3 +425,24 @@ fn refuting_an_assumption_preserves_provenance_but_cannot_dismiss_a_requirement(
     assert_eq!(saved.input.source, "Unconfirmed inference");
     assert!(!saved.observations.is_empty());
 }
+
+#[test]
+fn decision_flag_adds_review_without_marking_delivery_verified() {
+    let (_dir, store, plan) = setup(vec![node("small", &[])]);
+    let worker = child(&store, &plan, "small");
+    store
+        .attach_plan_worker(&plan.id, plan.version, "small", &worker)
+        .unwrap();
+    store
+        .put("decision_review_required", &worker, &true)
+        .unwrap();
+    store
+        .finish_subagent(&worker, "completed", &json!({"summary":"Claimed delivery"}))
+        .unwrap();
+    store.reconcile_plan_worker(&worker).unwrap();
+    assert_eq!(store.plan(&plan.id).unwrap().nodes[0].status, "verifying");
+    assert_eq!(
+        store.completion_audits(&plan.id).unwrap()[0].status,
+        "queued"
+    );
+}

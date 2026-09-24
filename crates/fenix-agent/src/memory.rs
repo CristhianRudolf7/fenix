@@ -166,6 +166,26 @@ impl Runtime {
             })
         };
         let input = json!({"first":compact(&pair["first"]),"second":compact(&pair["second"])});
+        if let Some(result) = self.evaluate_decision(None, "memory_pair", input.clone(), json!({
+            "relation": crate::decisions::choice(
+                "Classify the relationship between the two claims. Different dates alone do not prove replacement. Contradictions require the same property and overlapping time.",
+                json!({"duplicate":"Same fact", "complementary":"Compatible additional information", "conflicting":"Incompatible claims about the same property/time", "temporal_change":"Explicitly evidenced change over time", "uncertain":"Sources do not resolve the relationship"}))
+        })).await
+            && let Some(classification) = self.accepted_decision(&result, "relation")
+        {
+            let assessment = json!({"classification":classification,
+                "reason":"Typed decision proposal comparing the two source claims; not permission to change facts.",
+                "question":null,
+                "first_quote":crate::redaction::truncate(pair["first"]["content"].as_str().unwrap_or(""), 1200),
+                "second_quote":crate::redaction::truncate(pair["second"]["content"].as_str().unwrap_or(""), 1200)});
+            // Use exact source substrings, without the truncation marker.
+            let mut assessment = assessment;
+            for (key, side) in [("first_quote","first"),("second_quote","second")] {
+                assessment[key] = json!(pair[side]["content"].as_str().unwrap_or("").chars().take(1200).collect::<String>());
+            }
+            let saved = self.store.save_memory_review_assessment(pair, &assessment)?;
+            return Ok(json!({"saved":saved,"usage":result["usage"],"decision_provider":"jev","estimated_cost_usd":result["estimated_cost_usd"]}));
+        }
         let mut request = model.settings.request(vec![
             Message::text(Role::System, prompt),
             Message::user(self.redactor.text(&input.to_string())),
@@ -395,8 +415,41 @@ impl Runtime {
             query,
             project.as_deref(),
             &opts,
-            semantic,
+            semantic.clone(),
         )?)?;
+        let expand = if let Some(values) = result["results"].as_array_mut() {
+            self.rerank_decision(task, "memory_relevance", query, values, "memory")
+                .await
+        } else {
+            false
+        };
+        if expand
+            && opts.graph
+            && opts.depth < 3
+            && result["results"]
+                .as_array()
+                .is_some_and(|v| v.len() < opts.limit.clamp(1, 100))
+        {
+            let mut expanded = opts.clone();
+            expanded.depth += 1;
+            let extra = self.store.search_memory_evidence(
+                query,
+                project.as_deref(),
+                &expanded,
+                semantic,
+            )?;
+            if let Some(values) = result["results"].as_array_mut() {
+                for hit in extra.results {
+                    if values.len() >= opts.limit.clamp(1, 100) {
+                        break;
+                    }
+                    if !values.iter().any(|v| v["memory"]["id"] == hit.memory.id) {
+                        values.push(serde_json::to_value(hit)?);
+                    }
+                }
+            }
+            result["decision_expansion"] = json!({"depth":expanded.depth,"bounded":true});
+        }
         if let Some(reason) = degraded {
             result["degraded_reason"] = json!(reason);
         }

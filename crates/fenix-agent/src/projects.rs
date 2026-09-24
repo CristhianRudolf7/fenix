@@ -84,6 +84,42 @@ impl Runtime {
             &projects,
             reply.as_ref().map(|(_, binding)| binding),
         );
+        if route.is_none() && reply.is_none() && projects.len() <= 12 {
+            let mut criteria = serde_json::Map::new();
+            criteria.insert("general".into(), json!("No project context is needed"));
+            criteria.insert(
+                "uncertain".into(),
+                json!("Ambiguous, multiple projects, or requires prior task context"),
+            );
+            for project in &projects {
+                criteria.insert(
+                    project.id.clone(),
+                    json!(format!(
+                        "Project {}: {}",
+                        project.name,
+                        truncate(&project.description, 400)
+                    )),
+                );
+            }
+            if let Some(result) = self.evaluate_decision(Some(&task.id), "project_routing",
+                json!({"request":task.request,"projects":projects.iter().map(|p|json!({"id":p.id,"name":p.name,"aliases":p.aliases})).collect::<Vec<_>>()}),
+                json!({
+                    "destination":crate::decisions::choice("Choose the single project explicitly intended by the owner, general if none is needed, or uncertain for ambiguous/multiple destinations.",json!(criteria)),
+                    "action":crate::decisions::choice("Classify this request. Modification of an existing task, cancellation, or dependence on earlier conversation requires uncertain.",json!({"read":"Read-only status or information request","work":"New work request","conversation":"General conversation","uncertain":"Needs previous task or interpretation"}))
+                })).await
+                && let (Some(destination),Some(action)) = (self.accepted_decision(&result,"destination"),self.accepted_decision(&result,"action"))
+            {
+                let candidate = if destination == "general" && action == "conversation" {
+                    Some(general_route(&task.request))
+                } else {
+                    projects.iter().find(|p|p.id==destination).map(|p|project_route(&task.request,p,action))
+                };
+                if let Some(candidate) = candidate {
+                    validate_route(&candidate, &projects, &BTreeSet::new())?;
+                    route = Some(candidate);
+                }
+            }
+        }
         let mut known_tasks = BTreeSet::new();
         if let Some((reference, _)) = &reply {
             known_tasks.insert(reference.id.clone());

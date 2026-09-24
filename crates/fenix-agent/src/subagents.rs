@@ -458,6 +458,9 @@ impl Runtime {
                 self.settle_task(&job.id).await;
             }
             let candidate = self.finish_worktree(&job.id, candidate, &cancel).await;
+            if !cancel.is_cancelled() {
+                self.flag_completion_review(&job.id, &candidate).await;
+            }
             self.clear_pending(&job.id).await;
             let candidate = if cancel.is_cancelled() {
                 let mut report = self.subagent_cancelled_report();

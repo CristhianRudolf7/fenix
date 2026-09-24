@@ -8,6 +8,7 @@ pub mod connectors;
 mod content_safety;
 mod context;
 mod context_budget;
+pub mod decisions;
 pub mod designs;
 mod documents;
 mod effects;
@@ -69,6 +70,7 @@ use tokio::sync::{Mutex, Notify, RwLock};
 use tokio_util::sync::CancellationToken;
 
 pub struct Runtime {
+    pub(crate) decisions: decisions::Decisions,
     pub(crate) worktrees: worktrees::Worktrees,
     pub connectors: Arc<fenix_connectors::Connectors>,
     pub(crate) workflow_lock: Mutex<()>,
@@ -153,6 +155,7 @@ impl Runtime {
             workflow_lock: Mutex::new(()),
             workflow_active: Mutex::new(BTreeMap::new()),
             workflow_wake: Notify::new(),
+            decisions: decisions::Decisions::default(),
             store,
             web: fenix_web::Web::open(&data_dir).await?,
             browser: fenix_browser::Browser::open(&data_dir)?,

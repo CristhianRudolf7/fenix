@@ -262,6 +262,10 @@ pub(crate) fn requires_node(
     node: &str,
     worker: &str,
 ) -> Result<bool> {
+    let flagged: bool = db.query_row("SELECT EXISTS(SELECT 1 FROM records WHERE kind='decision_review_required' AND id=?1 AND data='true')", [worker], |r|r.get(0))?;
+    if flagged {
+        return Ok(true);
+    }
     let substantial: bool = db.query_row("SELECT count(*)>=12 FROM events WHERE task_id=?1 AND kind='tool_result' AND json_extract(data,'$.tool') NOT IN ('tool_search','skill_load','command_status','subagent_finish')",[worker],|r|r.get(0))?;
     Ok(substantial && plan.nodes.len() > 1
         || plan

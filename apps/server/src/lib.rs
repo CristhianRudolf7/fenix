@@ -127,6 +127,10 @@ pub fn router_with_public_origin(
             get(memory_settings).post(configure_memory),
         )
         .route("/api/memory/{id}", axum::routing::delete(delete_memory))
+        .route(
+            "/api/decisions/settings",
+            get(decision_settings).post(configure_decisions),
+        )
         .route("/api/skills", get(skills))
         .route("/api/skills/{name}", get(skill).put(skill_enabled))
         .route("/api/schedules", get(schedules).post(schedule))
@@ -620,5 +624,26 @@ async fn configure_memory(
             )
             .await?;
     }
+    Ok(Json(json!({"saved":true})))
+}
+
+async fn decision_settings(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
+    Ok(Json(json!({"settings":runtime.decision_settings()?,
+        "configured":runtime.store.get::<String>("credentials","decision:jev")?.is_some(),
+        "health":runtime.store.get::<Value>("decision_health","latest")?})))
+}
+async fn configure_decisions(
+    State(runtime): State<Arc<Runtime>>,
+    Json(mut input): Json<Value>,
+) -> ApiResult<Value> {
+    let key = input.as_object_mut().and_then(|o| o.remove("api_key"));
+    let key = key
+        .map(|v| {
+            v.as_str()
+                .map(str::to_owned)
+                .context("API key must be a string")
+        })
+        .transpose()?;
+    runtime.configure_decisions(serde_json::from_value(input)?, key)?;
     Ok(Json(json!({"saved":true})))
 }

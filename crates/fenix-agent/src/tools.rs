@@ -1445,11 +1445,18 @@ impl Runtime {
                 args["offset"].as_u64().unwrap_or(0) as usize,
                 args["limit"].as_u64().unwrap_or(20).min(20) as usize,
             ),
-            "skill_search" => self.search_skills_for_profile(
-                Some(&self.task_profile(task)?),
-                s(args, "query")?,
-                args["limit"].as_u64().unwrap_or(3).clamp(1, 8) as usize,
-            ),
+            "skill_search" => {
+                let query = s(args, "query")?;
+                let limit = args["limit"].as_u64().unwrap_or(3).clamp(1, 8) as usize;
+                let mut result =
+                    self.search_skills_for_profile(Some(&self.task_profile(task)?), query, 8)?;
+                if let Some(values) = result["skills"].as_array_mut() {
+                    self.rerank_decision(task, "skills", query, values, "skill")
+                        .await;
+                    values.truncate(limit);
+                }
+                Ok(result)
+            }
             "skill_load" => {
                 let name = s(args, "name")?;
                 self.authorize_skill(task, name)?;

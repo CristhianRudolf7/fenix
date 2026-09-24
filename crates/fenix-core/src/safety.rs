@@ -16,7 +16,7 @@ impl Default for Redactor {
     fn default() -> Self {
         Self {
             secrets: RwLock::new(vec![]),
-            pattern: Regex::new(r"(^|[^A-Za-z0-9_-])(?:sk-[A-Za-z0-9_-]{12,}|[0-9]{8,12}:[A-Za-z0-9_-]{30,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|(?:AKIA|ASIA)[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{30,}|(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,}|rp_[A-Za-z0-9]{20,}|cfk_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,})")
+            pattern: Regex::new(r"(^|[^A-Za-z0-9_-])(?:sk-[A-Za-z0-9_-]{12,}|[0-9]{8,12}:[A-Za-z0-9_-]{30,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|xox[baprs]-[A-Za-z0-9-]{10,}|(?:AKIA|ASIA)[A-Z0-9]{16}|AIza[A-Za-z0-9_-]{30,}|(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,}|rp_[A-Za-z0-9]{20,}|vck_[A-Za-z0-9_-]{20,}|cfk_[A-Za-z0-9]{20,}|eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,})")
                 .expect("static secret regex"),
             labeled: Regex::new(r#"(?im)(\b(?:password|passwd|contraseña|api[_ -]?key|client[_ -]?secret|access[_ -]?token|refresh[_ -]?token|authorization|(?:set[_ -]?)?cookie|(?:aws[_ -]?)?secret[_ -]?access[_ -]?key)[ \t]*[\"']?[ \t]*[:=][ \t]*)(?:\"[^\"\r\n]*\"|'[^'\r\n]*'|`[^`\r\n]*`|(?:Bearer|Basic)\s+[^\s,;}]+|[^\s,;}]+)"#).expect("static label regex"),
             private_key: Regex::new(r"(?s)-----BEGIN (?:[A-Z0-9 ]*PRIVATE KEY)-----.*?(?:-----END [A-Z0-9 ]*PRIVATE KEY-----|\z)").expect("static private key regex"),

@@ -51,6 +51,13 @@ fn evaluated_binary_path() -> Result<PathBuf> {
 #[derive(Default, Serialize)]
 pub struct EvaluationMetrics {
     pub recorded_model_calls: u64,
+    pub decision_calls: u64,
+    pub decision_cache_hits: u64,
+    pub decision_fallbacks: u64,
+    pub decision_input_tokens: u64,
+    pub decision_output_tokens: u64,
+    pub decision_usage_missing: u64,
+    pub decision_estimated_cost_usd: f64,
     pub input_tokens: u64,
     pub output_tokens: u64,
     pub usage_missing: u64,
@@ -70,6 +77,24 @@ impl EvaluationMetrics {
                     || usage["output_tokens"].as_u64().is_none()
                 {
                     self.usage_missing += 1;
+                }
+            }
+            "decision_evaluation" => {
+                let data = &event["data"];
+                if data["available"] != true {
+                    self.decision_fallbacks += 1;
+                } else if data["cached"] == true {
+                    self.decision_cache_hits += 1;
+                } else {
+                    self.decision_calls += 1;
+                    self.decision_input_tokens +=
+                        data["usage"]["input_tokens"].as_u64().unwrap_or(0);
+                    self.decision_output_tokens +=
+                        data["usage"]["output_tokens"].as_u64().unwrap_or(0);
+                    self.decision_usage_missing +=
+                        u64::from(data["usage"]["input_tokens"].as_u64().is_none());
+                    self.decision_estimated_cost_usd +=
+                        data["estimated_cost_usd"].as_f64().unwrap_or(0.0);
                 }
             }
             "tool_result" => {
