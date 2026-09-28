@@ -19,6 +19,14 @@ Review the whole strategy initially, then focus on the changed or blocked part a
 its dependencies. A check of the plan is not proof of successful execution. Do not
 require another LLM call or test for each simple action. Prefer available concrete
 evidence. Tests or commands that require execution must be proposed to the master.
+Pending milestones describe future work: do not block a sound plan merely because
+their outputs or tests do not exist yet. Verify that the plan schedules the missing
+investigation and gates dependent work on it. Previous incomplete results are history,
+not a claim that a revised pending milestone has passed. Block an unsupported claim
+of completion or a missing dependency, not the work explicitly planned to resolve it.
+Evaluate summaries against their assigned expected output; do not invent a separate
+file requirement when a recoverable structured handoff is sufficient. Completion
+auditors still check actual observed results after execution.
 
 Return subagent_finish with status completed and a structured review object:
 {"verdict":"pass|changes_requested|needs_user","findings":[{"id":"short_id",

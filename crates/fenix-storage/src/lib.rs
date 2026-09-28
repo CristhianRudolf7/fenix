@@ -446,6 +446,28 @@ impl Store {
         Ok(self.db()?.prepare("SELECT seq,id,kind,data,created_at FROM events WHERE task_id=?1 AND seq>?2 ORDER BY seq LIMIT ?3")?.query_map(params![task,after,limit.min(100)],|r|Ok(json!({"seq":r.get::<_,i64>(0)?,"id":r.get::<_,String>(1)?,"kind":r.get::<_,String>(2)?,"data":parse_json(r.get(3)?)?,"created_at":r.get::<_,String>(4)?})))?.collect::<rusqlite::Result<_>>()?)
     }
 
+    /// Recent execution evidence, excluding provider transcripts and recursive inspections.
+    pub fn recent_execution_events(&self, task: &str, limit: usize) -> Result<Vec<Value>> {
+        let mut events = self
+            .db()?
+            .prepare(
+                "SELECT seq,id,kind,data,created_at FROM events WHERE task_id=?1
+             AND kind IN ('tool_started','tool_result')
+             AND COALESCE(json_extract(data,'$.tool'),'') != 'task_inspect'
+             ORDER BY seq DESC LIMIT ?2",
+            )?
+            .query_map(params![task, limit.clamp(1, 50)], |r| {
+                Ok(json!({
+                    "seq":r.get::<_,i64>(0)?, "id":r.get::<_,String>(1)?,
+                    "kind":r.get::<_,String>(2)?, "data":parse_json(r.get(3)?)?,
+                    "created_at":r.get::<_,String>(4)?
+                }))
+            })?
+            .collect::<rusqlite::Result<Vec<_>>>()?;
+        events.reverse();
+        Ok(events)
+    }
+
     pub fn tool_output(
         &self,
         task: &str,

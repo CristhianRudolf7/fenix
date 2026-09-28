@@ -331,9 +331,32 @@ impl Runtime {
         let current = self.store.plan(id)?;
         self.authorize_task_read(task, &current.task_id)?;
         if action == "get" {
-            return Ok(
-                json!({"plan":current,"revisions":self.store.plan_history(id)?,"reviews":self.store.plan_reviews(id)?,"brief":self.store.get::<fenix_storage::PlanBrief>("plan_briefs",id)?.unwrap_or_default(),"completion_audits":self.store.completion_audits(id)?,"evidence_summary":self.completion_evidence_summary(&current)?}),
-            );
+            let reviews = self.store.plan_reviews(id)?;
+            let resolution_finding_ids = reviews
+                .iter()
+                .filter(|review| review.version == current.version)
+                .map(|review| {
+                    let finding_ids = review
+                        .assignments
+                        .iter()
+                        .flat_map(|assignment| {
+                            assignment.report.iter().flat_map(move |report| {
+                                report.findings.iter().map(move |finding| {
+                                    format!("{}/{}", assignment.role, finding.id)
+                                })
+                            })
+                        })
+                        .collect::<Vec<_>>();
+                    json!({"review_id":review.id,"finding_ids":finding_ids})
+                })
+                .collect::<Vec<_>>();
+            return Ok(json!({
+                "plan":current, "revisions":self.store.plan_history(id)?, "reviews":reviews,
+                "brief":self.store.get::<fenix_storage::PlanBrief>("plan_briefs",id)?.unwrap_or_default(),
+                "completion_audits":self.store.completion_audits(id)?,
+                "evidence_summary":self.completion_evidence_summary(&current)?,
+                "resolution_finding_ids":resolution_finding_ids
+            }));
         }
         let version = args["expected_version"]
             .as_u64()

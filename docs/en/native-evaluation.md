@@ -402,3 +402,48 @@ token accounting and the distinction between a grader pass and complete executio
 Sources: [TerminalWorld](https://github.com/EuniAI/TerminalWorld),
 [Terminal-Bench 4.0](https://github.com/harbor-framework/terminal-bench/releases/tag/v4.0.0),
 [Gaia2 CLI](https://github.com/facebookresearch/meta-agents-research-environments/tree/main/gaia2-cli).
+
+## Recovery evidence and quota estimates
+
+A delegated worker's finish tool closes its entire assignment, not an intermediate
+investigation step. Unfinished analysis alone is not a terminal blocker. Workers
+can checkpoint meaningful findings with `task_contract` and request
+`task_inspect` with `recent: true` to retrieve the latest execution receipts before
+resuming a previous worker. This bounded view excludes provider transcripts and
+recursive inspection outputs; existing task/project authorization still applies.
+Historical evidence must be reconciled with current files before replaying effects.
+Forward event pagination and lexical output search remain available unchanged.
+The existing explicit-outcome gate also applies after read-only tool work and
+discovery, preventing a diagnostic-only plain-text response from being recorded
+as completed. Tool-free conversation and active delegation handoffs are unchanged.
+
+Incomplete milestone audits enter the existing scoped repair-review path once per
+executor. They remain blocked until a plan revision resolves the findings; neither
+success nor a replay of prior effects is automatic. Explicit `needs_user` verdicts
+and unanswered auditor questions keep their pause. Missing observation references
+identify the exact call and entry so the auditor can correct its citation.
+Plan reviews distinguish future work from completed deliverables: missing outputs
+of a pending milestone do not by themselves make its plan invalid. Coordinators
+receive the assigned workers' evidence references and exact `role/finding_id`
+resolution keys. Validation errors identify missing keys or invalid evidence;
+successfully applying a revision/resolution is the coordinator's explicit outcome,
+so it can end normally without an unavailable execution-finish tool. These changes
+do not waive completion audits, owner questions or task/project isolation.
+Completion-audit overviews explicitly identify milestone versus integrated scope
+and include the assigned outcome immediately. Pending ledger entries are inputs
+for verification, not proof that a milestone failed; later repair work is checked
+when that work completes and again at the integrated gate.
+Coding guidance also checks changing-input invariants and interacting constraints
+with small contract-derived probes, rather than treating one passing example or a
+failed implementation as proof of a general rule or an impossible requirement.
+
+The optional evaluation gateway treats serialized request size as a quota estimate,
+not an exact token count. An oversized estimate reserves at most one full observed
+quota bucket and waits for availability; it does not manufacture a local provider
+failure. OpenAI's response headers and Retry-After remain authoritative. Record
+both estimated and reserved tokens when auditing transport delays.
+Admission waits are serialized so later small requests cannot indefinitely consume
+the quota needed by a waiting large request. Already-admitted API calls remain
+concurrent. Infrastructure interruptions must be reported separately from agent
+failures and repeated in fresh environments; do not pause a live task container
+to drain the gateway, since its process probes require an available container.

@@ -23,6 +23,65 @@ mod operational_tests {
     };
 
     #[tokio::test]
+    async fn read_only_work_requires_an_outcome_but_tool_free_conversation_does_not() -> Result<()>
+    {
+        for (read_observed, review_applied) in [(false, false), (true, false), (true, true)] {
+            let dir = tempfile::tempdir()?;
+            let rt =
+                Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+            let task = rt.store.enqueue_bound(
+                "Summarize the findings",
+                "web",
+                None,
+                &fenix_storage::TaskBinding::default(),
+            )?;
+            rt.store.set_task_status(&task.id, "running", None)?;
+            if read_observed {
+                rt.record_tool_outcome(
+                    &task.id,
+                    "read",
+                    "file_read",
+                    &json!({"path":"notes.txt"}),
+                    Ok(json!({"content":"The report is ready."})),
+                )?;
+            }
+            if review_applied {
+                rt.store.put("review_response_applied", &task.id, &true)?;
+            }
+            let server = MockServer::start().await;
+            let count = AtomicUsize::new(0);
+            Mock::given(method("POST")).and(path("/responses")).respond_with(move |_: &wiremock::Request| {
+                let output = if count.fetch_add(1, Ordering::SeqCst) == 0 {
+                    json!([{"type":"message","role":"assistant","content":[{"type":"output_text","text":"The report is ready."}]}])
+                } else {
+                    json!([{"type":"function_call","call_id":"finish","name":"task_finish","arguments":json!({"status":"completed","summary":"The report is ready.","evidence":"Read the saved note."}).to_string()}])
+                };
+                ResponseTemplate::new(200).set_body_json(json!({"id":"response","status":"completed","output":output,"usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20}}))
+            }).mount(&server).await;
+            let mut settings = crate::config::Settings::initial(dir.path().into());
+            settings.base_url = Some(server.uri());
+            let model = rt.model_connection(settings, ApiKey::new("test-read-outcome")?)?;
+            let mut messages = vec![Message::user(task.request.clone())];
+            let result = tokio::time::timeout(
+                Duration::from_secs(10),
+                rt.run_loop(&task, &model, &mut messages, &CancellationToken::new()),
+            )
+            .await??;
+            assert_eq!(result["status"], "completed");
+            assert_eq!(
+                server.received_requests().await.unwrap().len(),
+                if read_observed && !review_applied {
+                    2
+                } else {
+                    1
+                }
+            );
+            rt.shutdown().await?;
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn command_run_preserves_missing_dependency_diagnosis() -> Result<()> {
         let dir = tempfile::tempdir()?;
         let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
@@ -476,7 +535,7 @@ mod operational_tests {
             let output=if count.fetch_add(1,Ordering::SeqCst)==0 {
                 json!([{"type":"function_call","call_id":"missing-file","name":"file_read","arguments":"{\"path\":\"missing.txt\"}"}])
             } else {
-                json!([{"type":"message","role":"assistant","content":[{"type":"output_text","text":"The requested file is absent."}]}])
+                json!([{"type":"function_call","call_id":"finish","name":"task_finish","arguments":json!({"status":"completed","summary":"The requested file is absent.","evidence":"The read returned a missing-file diagnostic; no file contents were available."}).to_string()}])
             };
             ResponseTemplate::new(200).set_body_json(json!({"id":"response","status":"completed","output":output,"usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20}}))
         }).mount(&server).await;
@@ -613,12 +672,11 @@ impl Runtime {
             "tool_result",
             &json!({"call_id":call_id,"tool":name,"result":output,"is_error":is_error}),
         )?;
-        if matches!(
-            name,
-            "command_run" | "command_input" | "file_write" | "file_edit" | "file_patch"
-        ) {
-            self.store.put("explicit_execution_outcome", task, &true)?;
-        }
+        // Reads and discovery are work too: otherwise a diagnostic-only attempt
+        // could bypass the finish/stop gates by returning plain final text before
+        // its first write. Tool-free conversation and active handoffs still end
+        // normally; a tool-backed answer uses the same explicit outcome as edits.
+        self.store.put("explicit_execution_outcome", task, &true)?;
         self.record_completion_check(task, call_id, name, args, &output, is_error)?;
         self.record_stop_observation(task, call_id, name, args, &output, is_error)?;
         if name != "task_contract" {
@@ -1144,6 +1202,10 @@ impl Runtime {
                 calls.is_empty() && !delegated && self.store.has_active_delegation(&task.id)?;
             if calls.is_empty()
                 && !handoff
+                && !self
+                    .store
+                    .get::<bool>("review_response_applied", &task.id)?
+                    .unwrap_or(false)
                 && self
                     .store
                     .get::<bool>("explicit_execution_outcome", &task.id)?

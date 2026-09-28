@@ -297,3 +297,52 @@ detalla resultados, consumo, cambios del adaptador y límites de interpretación
 La guía [en inglés](../en/native-evaluation.md#terminalworld-terminal-bench-40-and-gaia2)
 incluye revisiones, comandos y detalles de reproducción. Estos cambios no despliegan
 ni modifican las sesiones de producción.
+
+## Evidencia para recuperación y estimaciones de cuota
+
+El cierre de un subagente corresponde a su encargo completo, no a un diagnóstico
+intermedio. Que el análisis siga incompleto no demuestra un bloqueo terminal.
+Puede guardar avances relevantes con `task_contract` y consultar
+`task_inspect` con `recent: true` para recuperar las últimas evidencias de ejecución.
+Esta vista acotada excluye transcripciones del proveedor e inspecciones recursivas,
+y conserva la autorización por tarea/proyecto. Se contrasta el historial con los
+archivos actuales antes de repetir acciones. La paginación anterior y la búsqueda
+léxica siguen disponibles.
+El control de cierre explícito también se activa tras lecturas y descubrimiento
+de herramientas: un diagnóstico en texto no puede quedar registrado como tarea
+completada. La conversación sin herramientas y la delegación activa se conservan.
+
+Las auditorías de hitos incompletas entran una vez por ejecutor en la revisión de
+reparación existente. Siguen bloqueadas hasta que una revisión del plan resuelva
+los hallazgos; no se aprueban ni repiten acciones automáticamente. El veredicto
+`needs_user` y las preguntas pendientes del auditor conservan su pausa. Los errores
+de referencias identifican la llamada y entrada exactas para corregir la cita.
+Las instrucciones de programación comprueban reglas sobre entradas cambiantes y
+restricciones relacionadas mediante casos pequeños derivados del requerimiento;
+un ejemplo correcto o una implementación fallida no demuestran una regla general
+ni que el objetivo sea imposible.
+
+El intermediario de evaluación usa el tamaño del JSON como estimación de cuota,
+no como contador exacto de tokens. Una estimación excesiva reserva como máximo una
+cuota completa observada y espera disponibilidad; no inventa un fallo del proveedor.
+Las cabeceras de OpenAI y Retry-After siguen siendo la autoridad. El registro distingue
+los tokens estimados de los reservados para auditar las esperas.
+Las esperas de admisión se serializan para que solicitudes pequeñas posteriores no
+consuman continuamente la cuota que necesita una solicitud grande en espera. Las
+llamadas ya admitidas siguen ejecutándose en paralelo. Las interrupciones del
+entorno se registran aparte de los fallos del agente y se repiten en entornos
+limpios; no se debe pausar un contenedor activo para vaciar el intermediario,
+porque la comprobación de procesos necesita que el contenedor esté disponible.
+
+Las revisiones distinguen el trabajo previsto de los entregables terminados: que
+un hito pendiente aún no produzca sus archivos no invalida su planificación.
+El coordinador recibe las referencias de evidencia de los trabajadores asignados
+y las claves exactas `rol/id_hallazgo`. Los errores de validación identifican la
+clave o evidencia inválida. Una revisión aplicada correctamente es su resultado
+explícito y permite cerrar sin una herramienta de ejecución no disponible para ese
+rol. Se conservan la auditoría final, las preguntas al usuario y el aislamiento.
+
+El resumen inicial de auditoría indica explícitamente si evalúa un hito o la tarea
+integrada y muestra su entrega asignada. Un registro pendiente solicita verificación;
+no demuestra por sí mismo que el trabajo falló. La reparación posterior se comprueba
+al terminar ese hito y de nuevo en el cierre integrado.

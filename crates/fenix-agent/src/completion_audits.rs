@@ -91,9 +91,26 @@ impl Runtime {
         let plan = self.store.plan(&audit.plan_id)?;
         let offset = args["offset"].as_u64().unwrap_or(0) as usize;
         match args["part"].as_str().unwrap_or("overview") {
-            "overview" => Ok(
-                json!({"audit_id":audit.id,"plan_id":plan.id,"version":plan.version,"node_id":audit.node_id,"original_request":self.store.task(&plan.task_id)?.request,"objective":plan.objective,"constraints":plan.constraints,"executor_journals":self.completion_audit_evidence_sources(task)?,"instruction":"Read evidence and relevant nodes in pages. Executor reports are claims: inspect actual deliverables independently. Original requests and explicit owner revisions govern scope. Never invent acceptance requirements."}),
-            ),
+            "overview" => {
+                let assigned = plan.nodes.iter().find(|node| node.spec.id == audit.node_id);
+                let scope = if audit.node_id.is_empty() {
+                    json!({"kind":"integrated", "objective":plan.objective,
+                        "instruction":"Verify the completed deliverables against the full original request and explicit amendments, including requirements omitted from the plan."})
+                } else {
+                    let node = assigned.context("Audited milestone is missing")?;
+                    json!({"kind":"milestone", "objective":node.spec.objective,
+                        "expected_output":node.spec.expected_output,
+                        "instruction":"Verify this assigned outcome, not the later milestones or the entire project. A diagnostic may pass while repair and tests are still pending. Pending ledger state is the input to your audit, not evidence of failure; verify or refute it using actual observations."})
+                };
+                Ok(
+                    json!({"audit_id":audit.id,"plan_id":plan.id,"version":plan.version,
+                    "node_id":audit.node_id,"scope":scope,
+                    "original_request":self.store.task(&plan.task_id)?.request,
+                    "objective":plan.objective,"constraints":plan.constraints,
+                    "executor_journals":self.completion_audit_evidence_sources(task)?,
+                    "instruction":"Read evidence and relevant nodes in pages. Executor reports are claims: inspect actual deliverables independently. Original requests and explicit owner revisions govern scope. Never invent acceptance requirements."}),
+                )
+            }
             "nodes" => {
                 let nodes = plan
                     .nodes

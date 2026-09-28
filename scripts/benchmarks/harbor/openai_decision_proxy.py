@@ -31,7 +31,8 @@ class Quotas:
         self.states = {g: {"limit": 200000, "remaining": 200000,
                            "at": clock(), "cooldown": 0} for g in groups}
         self.next = 0
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
+        self.admission = threading.Lock()
 
     def reserve(self, tokens):
         with self.lock:
@@ -53,6 +54,26 @@ class Quotas:
             state.update(remaining=available-tokens, at=now)
             self.next = (slot+1) % len(self.groups)
             return slot, 0
+
+    def reserve_estimate(self, estimated_tokens):
+        # Serialized JSON (including opaque reasoning state) is not a tokenizer.
+        # An estimate may reserve a whole bucket, but cannot prove the provider
+        # would reject this request. The provider remains the quota authority.
+        with self.lock:
+            reservation = min(estimated_tokens, max(s["limit"] for s in self.states.values()))
+            slot, delay = self.reserve(reservation)
+            return slot, delay, reservation
+
+    def acquire_estimate(self, estimated_tokens, sleep=time.sleep):
+        # Keep later, small requests from consuming every refill while a large
+        # request waits. Release admission before the network request so API
+        # calls that have already reserved their budget still run concurrently.
+        with self.admission:
+            while True:
+                slot, delay, reservation = self.reserve_estimate(estimated_tokens)
+                if slot is not None:
+                    return slot, reservation
+                sleep(min(delay, 5))
 
     def observe(self, slot, headers, status):
         with self.lock:
@@ -122,12 +143,8 @@ def serve(root, configuration, address, port):
                     endpoint = "https://api.openai.com/" + parts[1]
                     # Reserve conservatively, then honor provider remaining/reset headers.
                     tokens = len(body)//3 + int(payload.get("max_output_tokens", payload.get("max_completion_tokens", 16384))) + 1000
-                    while True:
-                        slot, delay = quotas.reserve(tokens)
-                        if slot is not None:
-                            break
-                        time.sleep(min(delay, 5))
-                    record.update(credential_slot=slot+1, reserved_tokens=tokens)
+                    slot, reservation = quotas.acquire_estimate(tokens)
+                    record.update(credential_slot=slot+1, estimated_tokens=tokens, reserved_tokens=reservation)
                     key = keys[slot]
                 record["throttle_seconds"] = round(time.monotonic()-started, 3)
                 response = requests.post(endpoint, headers={"Authorization": "Bearer "+key, "Content-Type": "application/json"}, data=body, stream=True, timeout=(15, 240))

@@ -614,7 +614,7 @@ fn validate_report(
             bail!("Verified checks require observed evidence");
         }
         for call in &check.call_ids {
-            let body: String = db.query_row("SELECT data FROM events WHERE task_id=?1 AND kind='tool_result' AND json_extract(data,'$.call_id')=?2 ORDER BY seq DESC LIMIT 1",params![worker,call],|r|r.get(0)).optional()?.context("Observation call not found for this auditor")?;
+            let body: String = db.query_row("SELECT data FROM events WHERE task_id=?1 AND kind='tool_result' AND json_extract(data,'$.call_id')=?2 ORDER BY seq DESC LIMIT 1",params![worker,call],|r|r.get(0)).optional()?.with_context(|| format!("Observation call {call} for entry {} was not found for this auditor. Inspect this task with task_inspect recent=true and copy the exact call_id from a successful observation; other workers\' receipts cannot certify this audit.", check.entry_id))?;
             let observation: serde_json::Value = serde_json::from_str(&body)?;
             let tool = observation["tool"].as_str().unwrap_or("");
             let result = &observation["result"];

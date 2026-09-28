@@ -204,8 +204,7 @@ impl Runtime {
         let completion_auditor = self.store.completion_audit_for_worker(task)?.is_some();
         let mut filtered = Vec::new();
         for mut tool in catalog {
-            if self.review_tool_allowed(task, &tool.name, &json!({"action":"get"}))?
-            {
+            if self.review_tool_allowed(task, &tool.name, &json!({"action":"get"}))? {
                 if tool.name == "worktree_manage" && delegated {
                     tool.parameters["properties"]["action"]["enum"] = json!(["get"]);
                 }
@@ -223,9 +222,7 @@ impl Runtime {
                         json!(["get", "changes", "propose", "apply", "discard"])
                     };
                 }
-                if tool.name == "subagent_finish"
-                    && self.store.review_for_worker(task)?.is_some()
-                {
+                if tool.name == "subagent_finish" && self.store.review_for_worker(task)?.is_some() {
                     tool.parameters["properties"]
                         .as_object_mut()
                         .unwrap()
@@ -751,6 +748,30 @@ mod tests {
                 .await
                 .is_err()
         );
+        assert!(
+            runtime
+                .execute_tool(
+                    &task_a.id,
+                    "recent",
+                    &settings,
+                    "task_inspect",
+                    &json!({"task_id":task_b.id,"recent":true}),
+                    &cancel
+                )
+                .await
+                .is_err()
+        );
+        let own_recent = runtime
+            .execute_tool(
+                &task_b.id,
+                "recent",
+                &settings,
+                "task_inspect",
+                &json!({"recent":true}),
+                &cancel,
+            )
+            .await?;
+        assert_eq!(own_recent["events"][0]["data"]["call_id"], "private-call");
         let own_search = runtime
             .execute_tool(
                 &task_b.id,

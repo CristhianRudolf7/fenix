@@ -271,3 +271,69 @@ fn migration_indexes_existing_journal_without_rewriting_it_and_deletion_cleans_i
         0
     );
 }
+
+#[test]
+fn recent_execution_evidence_is_bounded_scoped_and_excludes_transcripts() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = Store::open(&dir.path().join("recent.db")).unwrap();
+    let own = store.enqueue("Recover my task", "web", None).unwrap();
+    let other = store.enqueue("Unrelated task", "web", None).unwrap();
+    for n in 0..60 {
+        save(
+            &store,
+            &own.id,
+            &format!("own-{n}"),
+            "command_run",
+            json!({"output":n}),
+        );
+        save(
+            &store,
+            &other.id,
+            &format!("other-{n}"),
+            "command_run",
+            json!({"output":"PRIVATE"}),
+        );
+    }
+    store
+        .event(
+            &own.id,
+            "model_response",
+            &json!({"private_reasoning":"OMIT"}),
+        )
+        .unwrap();
+    store
+        .event(
+            &own.id,
+            "subagent_message",
+            &json!({"provider_data":"OMIT"}),
+        )
+        .unwrap();
+    save(
+        &store,
+        &own.id,
+        "inspection",
+        "task_inspect",
+        json!({"nested":"OMIT"}),
+    );
+    let latest = store.recent_execution_events(&own.id, 2).unwrap();
+    assert_eq!(latest.len(), 2);
+    assert_eq!(latest[0]["data"]["call_id"], "own-58");
+    assert_eq!(latest[1]["data"]["call_id"], "own-59");
+    assert!(latest[0]["seq"].as_i64() < latest[1]["seq"].as_i64());
+    assert!(!serde_json::to_string(&latest).unwrap().contains("PRIVATE"));
+    assert_eq!(
+        store.recent_execution_events(&own.id, 1000).unwrap().len(),
+        50
+    );
+    assert!(
+        store
+            .recent_execution_events("unknown", 5)
+            .unwrap()
+            .is_empty()
+    );
+    // Existing forward pagination retains its original semantics.
+    assert_eq!(
+        store.events(&own.id, 0, 1).unwrap()[0]["data"]["call_id"],
+        "own-0"
+    );
+}

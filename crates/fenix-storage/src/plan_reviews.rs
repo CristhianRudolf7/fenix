@@ -510,17 +510,29 @@ impl Store {
             .collect::<Vec<_>>();
         let mut ids = BTreeSet::new();
         for r in &resolutions {
-            if !ids.insert(&r.finding_id)
-                || !findings.iter().any(|(id, _)| id == &r.finding_id)
-                || !matches!(
-                    r.disposition.as_str(),
-                    "addressed" | "dismissed" | "needs_user"
-                )
-                || !bounded(&r.rationale, 2000)
+            if !findings.iter().any(|(id, _)| id == &r.finding_id) {
+                bail!(
+                    "Unknown finding_id '{}'. Use the exact role/finding ID: {}",
+                    r.finding_id,
+                    findings
+                        .iter()
+                        .map(|(id, _)| id.as_str())
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
+            }
+            if !ids.insert(&r.finding_id) {
+                bail!("Duplicate resolution for finding_id '{}'", r.finding_id);
+            }
+            if !matches!(
+                r.disposition.as_str(),
+                "addressed" | "dismissed" | "needs_user"
+            ) || !bounded(&r.rationale, 2000)
                 || !bounded(&r.evidence, 2000)
             {
                 bail!(
-                    "Each resolution requires an existing finding, rationale and concrete evidence"
+                    "Resolution for '{}' requires disposition addressed/dismissed/needs_user and nonempty rationale and concrete evidence (at most 2000 characters each)",
+                    r.finding_id
                 );
             }
         }

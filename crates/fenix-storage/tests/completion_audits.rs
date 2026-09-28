@@ -121,10 +121,16 @@ fn dependencies_wait_for_independent_evidence_and_final_gate_covers_original_int
     assert_eq!(store.plan(&plan.id).unwrap().status, "running");
     let audit = auditor(&store, &plan, "source");
     let pass = report(&store, &plan, "source");
+    let error = store
+        .validate_completion_report(&audit, &pass)
+        .unwrap_err()
+        .to_string();
     assert!(
-        store.validate_completion_report(&audit, &pass).is_err(),
-        "invented evidence must fail"
+        error.contains("Observation call read"),
+        "invented evidence must identify the missing reference"
     );
+    assert!(error.contains(&pass.checks[0].entry_id));
+    assert!(error.contains("task_inspect recent=true"));
     observation(&store, &audit);
     store.finish_completion_audit(&audit, pass).unwrap();
     assert!(

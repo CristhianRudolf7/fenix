@@ -162,3 +162,75 @@ fn restart_preserves_audit_and_marks_review_work_interrupted() {
     );
     assert!(store.check_review_worker(&worker).is_err());
 }
+
+#[test]
+fn resolution_errors_name_the_scoped_finding_without_weakening_validation() {
+    let (_dir, store, plan) = setup();
+    let review = store.start_plan_review(review(&plan, &["source"])).unwrap();
+    let reviewer = child(&store, &plan, "Review evidence");
+    store
+        .attach_review_worker(&review.id, "principal", &reviewer)
+        .unwrap();
+    store
+        .record_review_report(
+            &reviewer,
+            serde_json::from_value(json!({
+                "verdict":"changes_requested", "findings":[{
+                    "id":"missing", "category":"evidence", "severity":"blocking",
+                    "description":"Missing source evidence", "evidence":"No source is cited"
+                }]
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+    let coordinator = child(&store, &plan, "Resolve evidence review");
+    store
+        .set_review_coordinator(&review.id, &coordinator)
+        .unwrap();
+    let resolution = |id: &str, evidence: &str| {
+        serde_json::from_value(json!({
+            "finding_id":id,"disposition":"addressed",
+            "rationale":"Revise the collection milestone", "evidence":evidence
+        }))
+        .unwrap()
+    };
+    let error = store
+        .record_review_revision_response(
+            &review.id,
+            &coordinator,
+            vec![resolution(
+                "missing",
+                "Original instructions require sources",
+            )],
+        )
+        .unwrap_err();
+    assert!(error.to_string().contains("principal/missing"));
+    assert!(
+        store
+            .plan_review(&review.id)
+            .unwrap()
+            .resolutions
+            .is_empty()
+    );
+    assert!(
+        store
+            .record_review_revision_response(
+                &review.id,
+                &coordinator,
+                vec![resolution("principal/missing", "")]
+            )
+            .is_err()
+    );
+    let result = store
+        .record_review_revision_response(
+            &review.id,
+            &coordinator,
+            vec![resolution(
+                "principal/missing",
+                "Original instructions require sources",
+            )],
+        )
+        .unwrap();
+    assert_eq!(result.resolutions.len(), 1);
+    assert_eq!(result.status, "resolving");
+}

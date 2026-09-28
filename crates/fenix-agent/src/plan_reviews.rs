@@ -53,10 +53,21 @@ impl Runtime {
     }
 
     pub(crate) fn review_evidence_sources(&self, task: &str) -> Result<Vec<String>> {
-        let Some(review) = self.store.review_for_worker(task)? else {
+        let review = if let Some(review) = self.store.review_for_worker(task)? {
+            review
+        } else if let Some(id) = self.store.get::<String>("review_edits", task)? {
+            let review = self.store.plan_review(&id)?;
+            if review.coordinator_id.as_deref() != Some(task) {
+                bail!("Not the assigned review coordinator");
+            }
+            review
+        } else {
             return Ok(vec![]);
         };
         let plan = self.store.plan(&review.plan_id)?;
+        if plan.version != review.version {
+            bail!("Review was superseded");
+        }
         // Exact plan membership, never every task in the same project or peer reports.
         Ok(plan
             .nodes
@@ -408,11 +419,32 @@ impl Runtime {
             .collect::<Vec<_>>();
         let mut nodes = vec![];
         let mut workers = vec![];
+        let mut audit_findings = vec![];
         for node in blocked {
-            if audits.iter().any(|a| {
+            if let Some(audit) = audits.iter().find(|a| {
                 a.version == plan.version && a.node_id == node.spec.id && a.status == "blocked"
             }) {
-                continue;
+                // An incomplete internal check needs the same scoped repair
+                // review as an execution failure. It is not an owner question.
+                // Explicit needs_user verdicts keep their existing pause.
+                let Some(report) = audit.report.as_ref().filter(|r| r.verdict == "incomplete")
+                else {
+                    continue;
+                };
+                if let Some(auditor) = &audit.worker_id
+                    && self
+                        .store
+                        .saved_questions(Some(auditor))?
+                        .iter()
+                        .any(|q| q["status"] == "pending")
+                {
+                    continue;
+                }
+                audit_findings.push(format!(
+                    "{}: {}",
+                    node.spec.id,
+                    truncate(&report.summary, 1500)
+                ));
             }
             let worker = node.worker_id.as_ref().unwrap();
             if self
@@ -429,11 +461,172 @@ impl Runtime {
                 .iter()
                 .rev()
                 .find(|r| r.version == plan.version && r.round == 1);
-            self.begin_plan_review(plan,&json!({"review_reason":format!("Execution blockers in workers {}",workers.join(",")),"review_nodes":nodes}),final_response)?;
+            self.begin_plan_review(plan,&json!({"review_reason":format!("Execution blockers in workers {}. Incomplete audit findings: {}. Inspect current effects and resolve repairable verification gaps through a plan revision; preserve genuine owner questions and do not replay completed effects blindly.",workers.join(","),audit_findings.join("; ")),"review_nodes":nodes}),final_response)?;
             for worker in workers {
                 self.store.put("reviewed_failures", &worker, &true)?;
             }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod recovery_tests {
+    use super::*;
+    use fenix_storage::{CompletionReport, PlanNodeSpec};
+
+    #[tokio::test]
+    async fn incomplete_audit_gets_one_repair_review_but_owner_questions_stay_paused() {
+        for (verdict, question_pending, expected_reviews) in [
+            ("incomplete", false, 1),
+            ("needs_user", false, 0),
+            ("incomplete", true, 0),
+        ] {
+            let dir = tempfile::tempdir().unwrap();
+            let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+                .await
+                .unwrap();
+            let task = rt
+                .store
+                .enqueue_bound(
+                    "Prepare a report",
+                    "evaluation",
+                    None,
+                    &fenix_storage::TaskBinding::default(),
+                )
+                .unwrap();
+            let plan = rt
+                .store
+                .create_plan(
+                    &task.id,
+                    "Prepare report",
+                    "",
+                    vec![
+                        PlanNodeSpec {
+                            id: "source".into(),
+                            profile: "general".into(),
+                            objective: "Collect facts".into(),
+                            expected_output: "facts.txt".into(),
+                            depends_on: vec![],
+                            skills: vec![],
+                        },
+                        PlanNodeSpec {
+                            id: "report".into(),
+                            profile: "general".into(),
+                            objective: "Produce report".into(),
+                            expected_output: "report.txt".into(),
+                            depends_on: vec!["source".into()],
+                            skills: vec![],
+                        },
+                    ],
+                )
+                .unwrap();
+            let spec = SubagentSpec {
+                profile: "general".into(),
+                objective: "Collect facts".into(),
+                expected_output: "facts.txt".into(),
+                context: String::new(),
+                constraints: String::new(),
+            };
+            let worker = rt.store.create_subagent(&task.id, &spec).unwrap();
+            rt.store
+                .attach_plan_worker(&plan.id, plan.version, "source", &worker.id)
+                .unwrap();
+            rt.store
+                .finish_subagent(
+                    &worker.id,
+                    "completed",
+                    &json!({"summary":"Facts collected"}),
+                )
+                .unwrap();
+            rt.store.reconcile_plan_worker(&worker.id).unwrap();
+            let audit = rt.store.completion_audits(&plan.id).unwrap().remove(0);
+            let auditor = rt
+                .store
+                .create_subagent(
+                    &task.id,
+                    &SubagentSpec {
+                        objective: "Audit collected facts".into(),
+                        ..spec
+                    },
+                )
+                .unwrap();
+            rt.store
+                .attach_completion_auditor(&audit.id, &auditor.id)
+                .unwrap();
+            if question_pending {
+                rt.store.save_question(&json!({"id":"owner-question", "task_id":auditor.id, "question":"Which report period?"})).unwrap();
+            }
+            rt.store
+                .finish_completion_audit(
+                    &auditor.id,
+                    CompletionReport {
+                        verdict: verdict.into(),
+                        summary: "Evidence needs clarification".into(),
+                        checks: vec![],
+                    },
+                )
+                .unwrap();
+            rt.store
+                .finish_subagent(
+                    &auditor.id,
+                    "completed",
+                    &json!({"summary":"Audit reported"}),
+                )
+                .unwrap();
+            rt.store.settle_plan(&plan.id).unwrap();
+            for _ in 0..2 {
+                rt.plan_review_cycle(&rt.store.plan(&plan.id).unwrap())
+                    .await
+                    .unwrap();
+            }
+            let reviews = rt.store.plan_reviews(&plan.id).unwrap();
+            assert_eq!(reviews.len(), expected_reviews);
+            if let Some(review) = reviews.first() {
+                assert!(review.reason.contains("Evidence needs clarification"));
+                assert_eq!(review.node_ids, vec!["source"]);
+                let reviewer = review.assignments[0].worker_id.as_ref().unwrap();
+                rt.store.record_review_report(reviewer, serde_json::from_value(json!({
+                    "verdict":"changes_requested", "findings":[{
+                        "id":"missing", "category":"evidence", "severity":"blocking",
+                        "description":"Missing observations", "evidence":"Audit is incomplete"
+                    }]
+                })).unwrap()).unwrap();
+                let coordinator = rt
+                    .store
+                    .enqueue_bound(
+                        "Resolve audit review",
+                        "plan_review",
+                        None,
+                        &fenix_storage::TaskBinding::default(),
+                    )
+                    .unwrap();
+                rt.store
+                    .set_review_coordinator(&review.id, &coordinator.id)
+                    .unwrap();
+                rt.store
+                    .put("review_edits", &coordinator.id, &review.id)
+                    .unwrap();
+                assert_eq!(
+                    rt.review_evidence_sources(&coordinator.id).unwrap(),
+                    vec![worker.id.clone()]
+                );
+                let evidence = rt
+                    .read_review_context(&coordinator.id, &json!({"part":"evidence"}))
+                    .unwrap();
+                assert_eq!(evidence["worker_journals"], json!([worker.id]));
+                assert!(rt.review_evidence_sources(&task.id).unwrap().is_empty());
+                // A copied mapping is not a grant to impersonate the coordinator.
+                rt.store.put("review_edits", &task.id, &review.id).unwrap();
+                assert!(rt.review_evidence_sources(&task.id).is_err());
+            }
+            let current = rt.store.plan(&plan.id).unwrap();
+            assert_eq!(
+                current.nodes[0].worker_id.as_deref(),
+                Some(worker.id.as_str())
+            );
+            assert_eq!(current.nodes[0].status, "blocked");
+            assert_eq!(current.nodes[1].status, "pending");
+        }
     }
 }
