@@ -36,7 +36,3 @@ Check first/last slides, keyboard controls, offline assumptions and the actual e
 ## Limits
 
 An HTML deck is not automatically a PowerPoint file; do not claim native PPTX compatibility.
-
-## Español
-
-Crea slides legibles con teclado y movimiento reducido; verifica el formato entregado y sus límites.

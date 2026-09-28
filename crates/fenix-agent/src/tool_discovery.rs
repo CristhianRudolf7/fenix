@@ -24,6 +24,7 @@ fn essential(name: &str) -> bool {
             | "command_run"
             | "command_status"
             | "ask_user"
+            | "autonomy_manage"
             | "subagent_finish"
             | "task_finish"
             | "plan_review_read"
@@ -116,7 +117,7 @@ impl Runtime {
         let mut tools = self.task_tool_catalog(task)?;
         let catalog = tools
             .iter()
-            .filter(|t| !essential(&t.name))
+            .filter(|t| !essential(&t.name) && !loaded.contains(&t.name))
             .map(|t| t.name.as_str())
             .collect::<Vec<_>>()
             .join(", ");
@@ -124,7 +125,7 @@ impl Runtime {
         if let Some(search) = tools.iter_mut().find(|t| t.name == "tool_search") {
             search
                 .description
-                .push_str(&format!(" Available names: {catalog}."));
+                .push_str(&format!(" Search only when the required schema is absent from this response. Call task_finish, command_run and other visible tools directly. Not yet loaded: {catalog}."));
         }
         Ok(tools)
     }
@@ -207,6 +208,11 @@ impl Runtime {
             .take(limit.max(requested.len()))
             .map(|(_, t)| t)
             .collect::<Vec<_>>();
+        let visible = self
+            .exposed_tools(task)?
+            .into_iter()
+            .map(|t| t.name)
+            .collect::<HashSet<_>>();
         let mut loaded = self
             .store
             .get::<Vec<String>>("loaded_tools", task)?
@@ -223,7 +229,7 @@ impl Runtime {
         }
         self.store.put("loaded_tools", task, &loaded)?;
         Ok(
-            json!({"tools":selected.iter().map(|t|json!({"name":t.name,"description":t.description,"parameters":t.parameters})).collect::<Vec<_>>(),"loaded":true,"instruction":"The selected schemas are available on the next response. Authorization remains scoped to this task."}),
+            json!({"tools":selected.iter().filter(|t|!visible.contains(&t.name)).map(|t|json!({"name":t.name,"description":t.description,"parameters":t.parameters})).collect::<Vec<_>>(),"already_available":selected.iter().filter(|t|visible.contains(&t.name)).map(|t|t.name.as_str()).collect::<Vec<_>>(),"loaded":true,"instruction":"Call already_available tools directly using the schemas in your current tool list; do not search again. Newly loaded schemas are available on the next response. Authorization remains scoped to this task."}),
         )
     }
 }
@@ -293,7 +299,8 @@ mod tests {
         let result = runtime
             .search_tools(&task.id, &json!({"names":["file_patch"]}))
             .unwrap();
-        assert_eq!(result["tools"][0]["name"], "file_patch");
+        assert_eq!(result["tools"], json!([]));
+        assert_eq!(result["already_available"], json!(["file_patch"]));
         // Selecting an older schema must refresh it before the bounded cache evicts entries.
         let old_cache = full
             .iter()

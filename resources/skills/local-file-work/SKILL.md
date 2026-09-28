@@ -39,8 +39,3 @@ Read back changed files and verify requested content while preserving unrelated 
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Inspecciona antes de modificar, conserva el trabajo ajeno y usa una coincidencia exacta al editar. Respeta las aprobaciones y verifica el resultado leyendo el archivo o ejecutando una comprobación pertinente. Las herramientas de archivos tienen un ámbito; los comandos deben respetar el espacio del usuario/proyecto y la política del motor. No prometas restauración automática.

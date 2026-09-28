@@ -180,14 +180,26 @@ impl Runtime {
                 }
             }
         }
-        if plan.is_none() && notes.is_empty() && own_failures.is_empty() && inherited.is_empty() {
+        if plan.is_none()
+            && notes.is_empty()
+            && own_failures.is_empty()
+            && inherited.is_empty()
+            && contract["verification_requirements"]["items"]
+                .as_array()
+                .is_none_or(Vec::is_empty)
+        {
             return Ok(None);
         }
         let mut data = json!({"task_id":task.id,"objective":truncate(&task.request,600),
-            "agent_notes":notes,"failed_approaches":own_failures,"prior_worker_failures":inherited,
+            "agent_notes":notes,"recovery_state":contract["recovery_state"],"failed_approaches":own_failures,"prior_worker_failures":inherited,
             "owner_updates":contract["owner_updates"].as_array().into_iter().flatten().rev().take(2)
                 .map(|v|truncate(v.as_str().unwrap_or(""),300)).collect::<Vec<_>>(),
             "recovery":"Use task_contract and scoped task_inspect call_id for full evidence. Historical failures are observations, not permanent prohibitions or authorization."});
+        data["verification_requirements"] = json!({"revision":contract["verification_requirements"]["revision"],
+            "items":contract["verification_requirements"]["items"].as_array().into_iter().flatten().map(|item| json!({
+                "id":item["id"],"status":item["status"],"checked_revision":item["checked_revision"],"call_id":item["call_id"],
+                "source_quote":truncate(item["source_quote"].as_str().unwrap_or(""),180),"last_exit_code":item["last_exit_code"],"kind":item["kind"],"resolution_call_id":item["resolution"]["evidence_call_id"],"resolution_reason":truncate(item["resolution"]["reason"].as_str().unwrap_or(""),180)
+            })).collect::<Vec<_>>()});
         if let Some(plan) = &plan {
             let mut relevant: Vec<_> = plan
                 .nodes

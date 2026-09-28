@@ -36,7 +36,3 @@ Use the same reporting window and timezone throughout. Note inaccessible project
 ## Limits
 
 A status request does not authorize cancellations, rescheduling or external follow-ups. Do not copy mutable progress into durable memory as an immutable fact.
-
-## Español
-
-Resuelve el proyecto y consulta tareas reales. Separa estados y evidencia, detecta trabajo pendiente sin duplicarlo y evita cruzar contextos.

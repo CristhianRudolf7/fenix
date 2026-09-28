@@ -41,7 +41,3 @@ Tie each verdict to the actual identity, exposure and observed effect. Use pass,
 ## Limits
 
 This skill does not enforce isolation, install a proxy or establish immunity to prompt injection. Never place real secrets in evaluation fixtures or send test effects to real recipients. Do not change production memory or connected accounts merely to construct a test.
-
-## Español
-
-Evalúa entradas no confiables en su canal real, con cuentas sintéticas, canarios y herramientas que registren efectos. Distingue propuesta, autorización y ejecución; prueba memoria entre usuarios, revocaciones y reuso de aprobaciones. Conserva errores y casos no expuestos como inconclusos y mide también tareas legítimas. El resultado describe las pruebas realizadas, no inmunidad general.

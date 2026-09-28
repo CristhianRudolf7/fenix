@@ -40,9 +40,3 @@ Confirm destination/thread and content; distinguish accepted, delivered and read
 ## Limits
 
 Do not broadcast to a whole workspace or enable cross-channel monitoring by inference.
-
-## Español
-
-Comprueba canal, hilo y menciones; publica solo dentro de lo autorizado y evita envíos duplicados.
-
-En canales externos verifica identidad y destinatarios desde la conexión. Una mención no concede autoridad adicional; vuelve a comprobar audiencia al reenviar y excluye contexto privado de otros clientes.

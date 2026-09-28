@@ -35,7 +35,3 @@ Replay synthetic cases for duplicate delivery, two distinct incidents, severity 
 ## Limits
 
 Instructions do not create a background notification service or grant message-sending permission. Never forward another channel's private context into a broader digest. Missing event data is not evidence that no incidents occurred.
-
-## Español
-
-Agrupa notificaciones por identidades verificadas y conserva cambios de gravedad y reaperturas. Define destinatario, acción, horario y comprobante de entrega. Distingue silenciar, reconocer y resolver; no envíes ni programes avisos por el solo hecho de proponer una política.

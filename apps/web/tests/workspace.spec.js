@@ -84,9 +84,12 @@ test("modal explorer, unified tabs, scoped automatic refresh and mobile preview"
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${url}chat`);
-  await page.locator(".workspace-launcher").click();
+  await page
+    .getByRole("button", { name: "Abrir carpetas", exact: true })
+    .click();
   const modal = page.getByRole("dialog", { name: "Archivos del proyecto" });
   await expect(modal).toBeVisible();
+  await expect(modal.getByRole("combobox")).toHaveCount(0);
   await modal
     .locator(".workspace-file-row")
     .filter({ hasText: "research" })
@@ -101,8 +104,8 @@ test("modal explorer, unified tabs, scoped automatic refresh and mobile preview"
   await expect(page.getByRole("tab", { name: "notes.md" })).toBeVisible();
   await expect(page.locator(".sidebar")).toBeHidden();
   await page
-    .locator(".workspace-heading")
-    .getByRole("button", { name: /Archivos/ })
+    .locator("#workspace-root")
+    .getByRole("button", { name: "Abrir carpetas", exact: true })
     .click();
   await expect(modal.locator(".workspace-file-row")).toContainText("notes.md");
   await page.keyboard.press("Escape");
@@ -147,7 +150,7 @@ test("modal explorer, unified tabs, scoped automatic refresh and mobile preview"
   expect(bounds.width).toBe(390);
   await page.screenshot({ path: info.outputPath("workspace-mobile.png") });
   await page
-    .getByRole("button", { name: "Cerrar espacio de trabajo", exact: true })
+    .getByRole("button", { name: "Volver al chat", exact: true })
     .click();
   await expect(page.locator(".workspace-file-panel")).toBeHidden();
   expect(errors).toEqual([]);

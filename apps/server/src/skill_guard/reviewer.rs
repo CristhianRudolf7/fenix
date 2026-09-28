@@ -16,9 +16,16 @@ use std::{path::Path, sync::Weak, time::Duration};
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
+    #[serde(default = "review_provider")]
+    pub provider: fenix_core::ProviderId,
+    #[serde(default)]
+    pub reasoning_effort: Option<fenix_core::ReasoningEffort>,
     pub model: String,
     pub base_url: String,
     pub api_key: String,
+}
+fn review_provider() -> fenix_core::ProviderId {
+    fenix_core::ProviderId::OpenRouter
 }
 pub enum Reviewer {
     Local(Weak<Runtime>),
@@ -65,20 +72,21 @@ impl Reviewer {
                 let settings = rt
                     .store
                     .get::<LiveSettings>("live", "settings")?
-                    .context("Configure Nemotron in conversation settings")?;
+                    .context("Configure the fast model in conversation settings")?;
                 let key = rt
                     .store
                     .get::<String>("credentials", "live")?
-                    .context("Configure Nemotron credentials")?;
+                    .context("Configure the fast model credentials")?;
                 (settings, key)
             }
             Self::Hosted(config) => {
                 let config = config
                     .as_ref()
-                    .context("The operator must configure Sentinel's Nemotron credentials")?;
+                    .context("The operator must configure Sentinel's fast model credentials")?;
                 (
                     LiveSettings {
-                        provider: fenix_core::ProviderId::OpenRouter,
+                        provider: config.provider,
+                        reasoning_effort: config.reasoning_effort,
                         model: config.model.clone(),
                         base_url: Some(config.base_url.clone()),
                     },
@@ -86,15 +94,11 @@ impl Reviewer {
                 )
             }
         };
-        ensure!(
-            live.model.to_lowercase().contains("nemotron"),
-            "Publication reviews require Nemotron"
-        );
         let mut settings = Settings::initial(std::path::PathBuf::from("/"));
         settings.provider = live.provider;
         settings.model = live.model;
         settings.base_url = live.base_url;
-        settings.reasoning_effort = None;
+        settings.reasoning_effort = live.reasoning_effort;
         let mut credentials = CredentialStore::default();
         credentials.set_default(settings.provider, Credential::inline(ApiKey::new(key)?));
         Ok(ModelConnection {
@@ -136,7 +140,7 @@ impl Reviewer {
                 None,
                 base,
                 usage,
-                "Nemotron could not inspect the entire skill",
+                "the fast model could not inspect the entire skill",
             ));
         }
         if first.safe

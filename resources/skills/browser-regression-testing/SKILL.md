@@ -42,11 +42,3 @@ Rerun the specific failure and relevant neighboring flows; report exact browser/
 ## Limits
 
 Chromium emulation is not an actual mobile-device test. Retrying until success hides intermittent failures.
-
-## Español
-
-Usa estados aislados y condiciones reales, captura evidencia y distingue emulación de pruebas en dispositivos.
-
-Distingue informe de QA y corrección autorizada. Conserva reproducción y evidencia antes/después, prueba el resultado persistido y no cuentes rutas leídas como navegadas ni realices transacciones reales por completar un test.
-
-Si una acción se deshace sola, revisa el orden de escrituras, resets y respuestas asíncronas. Comprueba el estado final tras cambios de selección, cancelación o recarga cuando correspondan.

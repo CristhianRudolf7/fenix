@@ -82,14 +82,12 @@ subscribeWorkspace(() => {
 });
 
 /** Keep the original prompt and source/reply context until the owner starts generation. */
-export function offerDesignCreation(
+export function openDesignCreation(
   request: CreationRequest,
   submit: Draft["submit"],
-  force = false,
-): boolean {
+): void {
   const kind = creationKind(request.text);
-  if (!force && !kind) return false;
-  if (state.busy) return true;
+  if (state.busy) return;
   const previous = state.draft;
   const same =
     previous?.request.text === request.text &&
@@ -105,7 +103,6 @@ export function offerDesignCreation(
     error: "",
   });
   openTarget({ ...target, title: tr("Choose a design", "Elegir diseño") });
-  return true;
 }
 
 function CreationPicker() {

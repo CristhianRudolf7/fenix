@@ -34,7 +34,3 @@ Check ingredient conflicts, serving arithmetic and realistic storage/preparation
 ## Limits
 
 Do not prescribe treatment, extreme restriction or guarantees about allergen safety; verify labels and professional guidance for medical needs.
-
-## Español
-
-Planifica raciones e ingredientes según preferencias y alergias; no conviertas el menú en una prescripción médica.

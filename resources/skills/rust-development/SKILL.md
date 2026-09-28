@@ -34,7 +34,3 @@ Reproduce the requested behavior; for concurrency or unsafe changes, exercise ca
 ## Limits
 
 Do not change the MSRV, runtime or error policy just to simplify implementation. A successful debug build does not establish release-mode safety.
-
-## Español
-
-Revisa propiedad, cancelación y límites unsafe; prueba las variantes relevantes sin cambiar el toolchain por comodidad.

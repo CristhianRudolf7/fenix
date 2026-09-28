@@ -39,7 +39,3 @@ Check both the actual geometry and its intended consuming application when avail
 ## Limits
 
 No vendor account, ordering integration, CNC controller or cutter is installed by this skill. Treat unknown units, unsupported entities and incomplete contour checks as unresolved rather than passing.
-
-## Español
-
-Prepara DXF con escala y capas de operación explícitas. Comprueba el archivo exportado, perfiles y dimensiones. Distingue proyección de desplegado y consulta requisitos actuales del proveedor. El validador básico no garantiza contornos cerrados ni aptitud para fabricación.

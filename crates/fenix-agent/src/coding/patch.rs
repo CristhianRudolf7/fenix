@@ -85,7 +85,7 @@ fn updated(before: &str, lines: &[String]) -> Result<String> {
     let trailing = before.ends_with('\n');
     let mut content: Vec<String> = before.lines().map(str::to_owned).collect();
     let mut cursor = 0;
-    for hunk in lines[1..].split(|l| l == "@@") {
+    for (hunk_index, hunk) in lines[1..].split(|l| l == "@@").enumerate() {
         if hunk.is_empty() {
             bail!("Empty patch hunk");
         }
@@ -112,7 +112,18 @@ fn updated(before: &str, lines: &[String]) -> Result<String> {
             .map(|(i, _)| i)
             .collect();
         if positions.len() != 1 {
-            bail!("Hunk context must match exactly once; read the file and provide more context");
+            let candidates = positions
+                .iter()
+                .take(6)
+                .map(|line| line + 1)
+                .collect::<Vec<_>>();
+            bail!(
+                "Hunk {} has {} exact matches after line {}; candidate lines: {:?}. No files were changed during preflight. Reread this region: zero matches can mean an earlier edit already applied; multiple matches need distinguishing surrounding lines. Retry only the corrected patch, not an unchanged hunk.",
+                hunk_index + 1,
+                positions.len(),
+                cursor,
+                candidates
+            );
         }
         let start = positions[0];
         cursor = start + new.len();
@@ -174,7 +185,10 @@ impl Runtime {
                     }
                     None
                 }
-                _ => Some(updated(before.as_deref().unwrap(), &edit.lines)?),
+                _ => Some(
+                    updated(before.as_deref().unwrap(), &edit.lines)
+                        .map_err(|error| anyhow::anyhow!("Patch target {}: {error}", edit.path))?,
+                ),
             };
             if after
                 .as_ref()
@@ -291,6 +305,24 @@ mod tests {
         );
         assert!(updated("x\nx\n", &["@@".into(), "-x".into(), "+y".into()]).is_err());
     }
+    #[test]
+    fn ambiguous_patch_reports_candidates_and_unique_context_recovers() {
+        let before = "first\nx\nsecond\nx\n";
+        let ambiguous = vec!["@@".into(), "-x".into(), "+y".into()];
+        let error = updated(before, &ambiguous).unwrap_err().to_string();
+        assert!(error.contains("2 exact matches"));
+        assert!(error.contains("[2, 4]"));
+        let fixed = vec!["@@".into(), " second".into(), "-x".into(), "+y".into()];
+        let after = updated(before, &fixed).unwrap();
+        assert_eq!(after, "first\nx\nsecond\ny\n");
+        assert!(
+            updated(&after, &fixed)
+                .unwrap_err()
+                .to_string()
+                .contains("0 exact matches")
+        );
+    }
+
     #[test]
     fn edits_preserve_crlf_and_reject_mixed_endings() {
         let hunk = vec!["@@".into(), "-old".into(), "+new".into()];

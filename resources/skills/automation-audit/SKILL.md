@@ -35,7 +35,3 @@ Every live-state conclusion names its observation time and receipt/config source
 ## Limits
 
 This skill adds an audit procedure, not connectors, background monitoring or scheduler enforcement. Do not scan other users' home directories, import credentials or enable jobs merely to improve the inventory.
-
-## Español
-
-Inventaría las automatizaciones del ámbito autorizado y separa configuración, activación, autenticación y ejecución comprobada. Detecta duplicados por sus efectos y destinos, no solo por nombres. Conserva referencias, fechas y sistemas no revisados; una auditoría no ejecuta ni borra tareas por sí sola.

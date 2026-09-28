@@ -35,7 +35,3 @@ Verify both type-level usage and runtime examples, including malformed external 
 ## Limits
 
 Do not replace the stack, enable incompatible compiler flags or add advanced generic machinery without a concrete benefit.
-
-## Español
-
-Distingue tipos de validación real, controla respuestas obsoletas y comprueba exports y compilación con la configuración existente.

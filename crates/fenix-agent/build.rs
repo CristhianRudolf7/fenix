@@ -27,7 +27,7 @@ fn main() {
         .join("../../resources/skills")
         .canonicalize()
         .expect("Locate bundled skills");
-    println!("cargo:rerun-if-changed={}", root.display());
+    println!("cargo:rerun-if-changed=../../resources/skills");
     let mut names = Vec::new();
     let mut resources = Vec::new();
     for entry in fs::read_dir(&root).unwrap() {
@@ -42,16 +42,21 @@ fn main() {
     resources.sort();
     let mut output = String::from("const DEFAULTS: &[(&str, &str)] = &[\n");
     for name in &names {
-        let path = root.join(name).join("SKILL.md");
-        output.push_str(&format!("({name:?}, include_str!({path:?})),\n"));
+        // Resolve against the compiling crate, not a checkout captured in a cached build script.
+        output.push_str(&format!(
+            r#"({name:?}, include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../resources/skills/", {name:?}, "/SKILL.md"))),
+"#
+        ));
     }
     output.push_str("];\nconst SKILL_RESOURCES: &[(&str, &[u8])] = &[\n");
     for relative in &resources {
         if relative.ends_with("/SKILL.md") {
             continue;
         }
-        let path = root.join(relative);
-        output.push_str(&format!("({relative:?}, include_bytes!({path:?})),\n"));
+        output.push_str(&format!(
+            r#"({relative:?}, include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../resources/skills/", {relative:?}))),
+"#
+        ));
     }
     output.push_str("];\n");
     fs::write(

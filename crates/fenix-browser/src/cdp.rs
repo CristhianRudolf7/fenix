@@ -3,7 +3,7 @@ use anyhow::{Context, Result};
 use futures_util::{SinkExt, StreamExt};
 use serde_json::{Value, json};
 use std::{
-    collections::{HashMap, VecDeque},
+    collections::{HashMap, HashSet, VecDeque},
     sync::{
         Arc, Mutex,
         atomic::{AtomicU64, Ordering},
@@ -23,6 +23,9 @@ pub struct Cdp {
     dialogs: Arc<Mutex<HashMap<String, Value>>>,
     dialog_changed: Arc<Notify>,
     stop: CancellationToken,
+    closed: CancellationToken,
+    network: Arc<Mutex<HashSet<String>>>,
+    last_network: Arc<Mutex<std::time::Instant>>,
 }
 impl Cdp {
     pub async fn connect(endpoint: &str) -> Result<Self> {
@@ -62,8 +65,14 @@ impl Cdp {
         let active_dialogs = dialogs.clone();
         let dialog_changed = Arc::new(Notify::new());
         let notify_dialog = dialog_changed.clone();
+        let network = Arc::new(Mutex::new(HashSet::new()));
+        let requests = network.clone();
+        let last_network = Arc::new(Mutex::new(std::time::Instant::now()));
+        let last_request = last_network.clone();
         let stop = CancellationToken::new();
         let stopped = stop.clone();
+        let closed = CancellationToken::new();
+        let finished = closed.clone();
         tokio::spawn(async move {
             loop {
                 tokio::select! {
@@ -76,6 +85,14 @@ impl Cdp {
                         let Some(Ok(message)) = message else { break; };
                         let Ok(text) = message.to_text() else { continue; };
                         let Ok(value) = serde_json::from_str::<Value>(text) else { continue; };
+                        if let Some(request) = value["params"]["requestId"].as_str() {
+                            let key = format!("{}:{request}", value["sessionId"].as_str().unwrap_or(""));
+                            match value["method"].as_str() {
+                                Some("Network.requestWillBeSent" | "Network.webSocketCreated") => { requests.lock().unwrap().insert(key); *last_request.lock().unwrap() = std::time::Instant::now(); }
+                                Some("Network.loadingFinished" | "Network.loadingFailed" | "Network.webSocketClosed") => { requests.lock().unwrap().remove(&key); *last_request.lock().unwrap() = std::time::Instant::now(); }
+                                _ => {}
+                            }
+                        }
                         if let Some(id) = value["id"].as_u64() {
                             if let Some(reply) = replies.lock().unwrap().remove(&id) {
                                 // Remote diagnostics can contain form data. Keep errors generic.
@@ -102,9 +119,12 @@ impl Cdp {
                     }
                 }
             }
+            drop(writer);
+            drop(reader);
             for (_, reply) in replies.lock().unwrap().drain() {
                 let _ = reply.send(Err(anyhow::anyhow!("Browser connection closed")));
             }
+            finished.cancel();
         });
         Ok(Self {
             outgoing: tx,
@@ -115,7 +135,25 @@ impl Cdp {
             dialogs,
             dialog_changed,
             stop,
+            closed,
+            network,
+            last_network,
         })
+    }
+    pub fn is_quiet(&self) -> bool {
+        self.pending.lock().unwrap().is_empty()
+            && self.network.lock().unwrap().is_empty()
+            && self.dialogs.lock().unwrap().is_empty()
+            && !self.downloads.lock().unwrap().has_pending()
+            && self.last_network.lock().unwrap().elapsed() >= Duration::from_secs(2)
+    }
+    pub async fn disconnect(&self) {
+        self.stop.cancel();
+        self.closed.cancelled().await;
+    }
+
+    pub fn is_disconnected(&self) -> bool {
+        self.closed.is_cancelled()
     }
     pub fn dialog(&self, session: &str) -> Option<Value> {
         self.dialogs.lock().unwrap().get(session).cloned()

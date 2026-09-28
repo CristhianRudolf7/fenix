@@ -37,9 +37,3 @@ Every material finding identifies the event or artifact supporting it and what w
 ## Limits
 
 Diagnosis stays read-only. Do not rewrite instructions, rerun effects, export transcripts, post issues or search other projects unless that work is authorized. Read large events in bounded slices and preserve originals. This skill does not require analyst subagents or add execution retries.
-
-## Español
-
-Investiga por qué el agente repitió la misma tarea, no cargó una skill, ignoró instrucciones o consumió tiempo y tokens. Reconstruye los hechos con referencias, distingue efectos ejecutados de intentos rechazados y comprueba la versión de las instrucciones cuando haya evidencia. Separa espera, ejecución e inferencia; no sumes tiempos concurrentes ni inventes costes. Entrega causas sustentadas, hipótesis y una comprobación siguiente. Diagnosticar no autoriza modificar el agente ni exportar trazas.
-
-Para fallos del contexto o de la respuesta mostrada, sigue la solicitud entre capas y contrasta recibos. No cuentes todo el catálogo instalado como tokens enviados al modelo.

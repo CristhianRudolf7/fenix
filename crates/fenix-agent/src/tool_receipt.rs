@@ -106,7 +106,7 @@ pub(crate) fn bounded(output: Value, budget: usize, task: &str, call: &str) -> V
     receipt
 }
 
-fn head_tail(text: &str, budget: usize) -> String {
+pub(crate) fn head_tail(text: &str, budget: usize) -> String {
     if text.len() <= budget {
         return text.into();
     }

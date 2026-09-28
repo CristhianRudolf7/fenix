@@ -34,8 +34,3 @@ Match discovered entrypoints and commands to actual manifests and callers.
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Lee instrucciones y manifiestos, ubica puntos de entrada y pruebas. Busca por símbolos y conserva rutas y comandos comprobados.

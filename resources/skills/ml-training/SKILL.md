@@ -36,7 +36,3 @@ Load the saved artifact independently and reproduce an inference example plus th
 ## Limits
 
 Do not start paid or long-running compute outside authorization; model download/training is not implied by loading this skill.
-
-## Español
-
-Valida primero un ensayo pequeño, registra configuración y checkpoints y evalúa datos reservados antes de declarar mejora.

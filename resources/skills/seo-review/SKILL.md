@@ -38,7 +38,3 @@ Recheck changed pages and links. Label lab performance data separately from fiel
 ## Limits
 
 Do not scrape private analytics, mass-generate thin pages or claim that implementing suggestions guarantees traffic.
-
-## Español
-
-Revisa rastreo, metadatos y contenido con evidencia. Distingue HTML estático de DOM renderizado y evita promesas de posiciones o tráfico.

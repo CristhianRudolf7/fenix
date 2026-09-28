@@ -35,7 +35,3 @@ Check event definitions and totals against source records. Test the corrected jo
 ## Limits
 
 Do not manufacture scarcity, testimonials or consent. Deliver an audit, experiment specification or authorized implementation as requested; publishing campaigns and enabling experiments are separate effects.
-
-## Español
-
-Define eventos, población y periodo antes de atribuir abandono. Recorre el flujo real, separa errores de hipótesis y propone cambios medibles con métricas de calidad. Sin volumen suficiente, comunica incertidumbre; no prometas aumentos de conversión ni dificultes cancelar.

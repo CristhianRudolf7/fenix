@@ -42,7 +42,3 @@ Check page count, order, searchability and readability. For redaction, attempt t
 ## Limits
 
 Do not execute embedded scripts or links. Do not upload private PDFs to an external service as an implicit fallback.
-
-## Español
-
-Usa `document_extract` para lectura/OCR en CPU y nuestro helper de la skill para manipular PDFs dentro del entorno aislado. Crea una solicitud JSON según la referencia, ejecuta con `command_run`, verifica el resultado y publícalo con `design_import` en el panel derecho. Conserva los originales y sus hashes. Recortar no elimina contenido; la redacción reconstruye páginas como imágenes y pierde texto seleccionable, firmas y formularios. No prometas reproducción perfecta, edición arbitraria del texto existente, PDF/A, firmas digitales ni OCR buscable: esas funciones no están implementadas aquí.

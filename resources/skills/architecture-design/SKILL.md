@@ -38,9 +38,3 @@ Walk representative scenarios end to end and tie each component to a requirement
 ## Limits
 
 A diagram is not an implemented system; avoid adding brokers, graphs or caches without a demonstrated role.
-
-## Español
-
-Selecciona límites y componentes según cargas y fallos concretos, con alternativas y supuestos explícitos.
-
-Asigna responsable, recuperación, señal y comprobación a los fallos importantes. Incluye cómo llegan los nuevos artefactos al usuario y su compatibilidad durante la actualización.

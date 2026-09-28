@@ -66,6 +66,17 @@ class PolicyTests(unittest.TestCase):
     def setUp(self): self.f = Fixture()
     def tearDown(self): self.f.close()
 
+    def test_profile_and_login_password_changes_preserve_execution_but_epoch_revokes(self):
+        account = self.f.accounts[0]
+        original = account_fingerprint(account)
+        account["display_name"] = "Updated name"
+        account["password_hash"] = "updated-sign-in-hash"
+        self.f.save()
+        self.assertTrue(self.f.policy.active(ALICE, original))
+        account["auth_epoch"] = account.get("auth_epoch", 0) + 1
+        self.f.save()
+        self.assertFalse(self.f.policy.active(ALICE, original))
+
     def test_credentials_do_not_allow_owner_spoofing_or_revoked_access(self):
         p = self.f.policy
         self.assertEqual(p.authenticate(dict(account_id=ALICE,credential="a"*64))["id"], ALICE)
@@ -135,6 +146,27 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.service=Service(self.f.policy,self.backend,self.f.records)
     async def asyncTearDown(self):
         await self.service.shutdown();self.f.close()
+
+    async def test_browser_reopens_stale_container_locks_without_touching_session(self):
+        profile = self.f.users / ALICE / "state/browser/profiles/integration-whatsapp"
+        profile.mkdir(parents=True)
+        (self.f.users / ALICE / "state/browser/artifacts/integration-whatsapp/downloads").mkdir(parents=True)
+        cookie = profile / "Cookies"
+        cookie.write_text("keep the private login")
+        for name in ("SingletonLock", "SingletonSocket", "SingletonCookie"):
+            (profile / name).symlink_to(cookie)
+        spec = dict(task="browser:integration-whatsapp", kind="browser", argv=["/usr/bin/chromium"], cwd=str(profile), workspace=str(profile), timeout=300)
+        first = await self.service.create(self.f.accounts[0], spec)
+        self.assertEqual(cookie.read_text(), "keep the private login")
+        self.assertFalse((profile / "SingletonLock").is_symlink())
+        (profile / "SingletonLock").symlink_to("active-container-2")
+        with self.assertRaisesRegex(PolicyError, "already running"):
+            await self.service.create(self.f.accounts[0], spec)
+        self.assertTrue((profile / "SingletonLock").is_symlink())
+        await self.service.destroy(self.service.executions[first["id"]], "completed")
+        await self.service.create(self.f.accounts[0], spec)
+        self.assertFalse((profile / "SingletonLock").is_symlink())
+        self.assertEqual(cookie.read_text(), "keep the private login")
 
     async def test_owner_scope_revocation_and_idempotent_cleanup(self):
         grant=await self.service.create(self.f.accounts[0],self.f.spec())

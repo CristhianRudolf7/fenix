@@ -34,7 +34,7 @@ For cryptographic code or key-management review, load [cryptographic boundaries]
 
 ## Focused follow-up
 
-For an explicitly scoped patch audit, use security-change-review. Validate uncertain findings with security-finding-validation; load security-rust-boundaries for Rust-specific invariants. Those procedures are available to the security profile, not general workers. Use security-fix-validation when correction is part of the assignment.
+For an explicitly scoped patch audit, use security-change-review. Validate uncertain findings with security-finding-validation; load security-rust-boundaries for Rust-specific invariants. Those procedures are available in the shared catalog to any task that needs them. Use security-fix-validation when correction is part of the assignment.
 
 ## Verification
 
@@ -43,7 +43,3 @@ Retest the failure path after an authorized fix and check normal access still wo
 ## Limits
 
 This is not authorization for scanning unrelated hosts or exploiting live services. A clean review is not a certification.
-
-## Español
-
-Revisa entradas y límites de confianza, siguiendo datos hasta operaciones sensibles. Informa fallos alcanzables con evidencia y corrige dentro del alcance autorizado.

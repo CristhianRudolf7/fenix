@@ -34,7 +34,3 @@ Reconcile total cost for the same term and workload and check renewal dates agai
 ## Limits
 
 Do not cancel subscriptions, sign contracts or purchase licenses merely because the analysis recommends it.
-
-## Español
-
-Compara coste total y condiciones equivalentes, uso real y salida; señala decisiones sin efectuar compras por inferencia.

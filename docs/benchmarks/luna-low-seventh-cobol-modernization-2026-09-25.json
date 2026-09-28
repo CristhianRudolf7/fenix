@@ -1,0 +1,106 @@
+{
+  "benchmark": "terminal-bench-2.1",
+  "task": "cobol-modernization",
+  "selection_index": 7,
+  "selection": "Original 20-task audit; seventh task, immediately after build-pmars",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "low",
+  "jev_enabled": false,
+  "attempts": 1,
+  "retries": 0,
+  "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+  "official_agent_timeout_seconds": 900,
+  "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+  "source_dirty": true,
+  "production_modified": false,
+  "binary_sha256": "ef6f3513df1ccf3b56af6abc67c10fb02094eea049a227f5a5db3ea4cc213f12",
+  "same_binary_as_sixth": true,
+  "trial": "cobol-modernization__xFoPRA6",
+  "reward": 1.0,
+  "official_checks": {
+    "tests": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1790307409.9188128,
+    "stop": 1790307410.318312
+  },
+  "native_elapsed_seconds": 99.861207941,
+  "total_elapsed_seconds": 166.026264,
+  "native_metrics": {
+    "decision_cache_hits": 0,
+    "decision_calls": 0,
+    "decision_estimated_cost_usd": 0.0,
+    "decision_fallbacks": 0,
+    "decision_input_tokens": 0,
+    "decision_output_tokens": 0,
+    "decision_usage_missing": 0,
+    "input_tokens": 374788,
+    "output_tokens": 4638,
+    "recorded_model_calls": 17,
+    "recoveries": 0,
+    "tool_calls": 27,
+    "tool_errors": 1,
+    "usage_missing": 0
+  },
+  "exception": null,
+  "stop_reason": "all_tasks_terminal",
+  "gateway": {
+    "calls_including_startup": 18,
+    "http_status_counts": {
+      "200": 18
+    },
+    "input_tokens": 374798,
+    "output_tokens": 4643,
+    "cached_input_tokens": 287089,
+    "throttle_seconds": 0.919,
+    "requests_without_usage": 0,
+    "credential_slots": {
+      "2": 9,
+      "1": 9
+    }
+  },
+  "gate_events": {
+    "abandonment_rejected": 1,
+    "completion_rejected": 0,
+    "execution_stalled": 0
+  },
+  "checks": [
+    {
+      "name": "test_outputs.py::test_required_files_exist",
+      "status": "passed"
+    },
+    {
+      "name": "test_outputs.py::test_data_files_exist",
+      "status": "passed"
+    },
+    {
+      "name": "test_outputs.py::test_program_output",
+      "status": "passed"
+    }
+  ],
+  "findings": {
+    "en": [
+      "Passed all three unmodified official checks in one attempt; the official functional check runs three well-formed transactions and checks exact account, book and transaction contents.",
+      "The agent created its own differential checks. The first ran the Python script from /app instead of the isolated copy, so the compared runs did not use the same data directories. It corrected that path after the runtime rejected an unsupported failed finish.",
+      "The corrected differential check still used a 15-byte input record with amount 200 instead of the expected 22-byte record with a ten-digit numeric amount. COBOL and Python produced different balances on that shortened input. The agent did not separate malformed-fixture behavior from the official valid-input cases.",
+      "One failed finish was rejected; later task_finish(completed) was accepted despite a summary explicitly stating that parity remained unverified and discrepancies unrepaired. No completion requirement rejected that contradictory closure.",
+      "No provider errors or compaction; gateway pacing was 0.919 seconds. Official success does not demonstrate parity for arbitrary inputs or reliable completion reasoning. No agent modifications or additional benchmark attempts were made."
+    ],
+    "es": [
+      "Aprobó las tres comprobaciones oficiales sin modificar el verificador y en un solo intento; el control funcional ejecuta tres transacciones con formato correcto y compara el contenido exacto de los archivos.",
+      "El agente preparó comparaciones propias. La primera ejecutó Python desde /app en vez de la copia aislada y comparó datos de carpetas distintas. Corrigió esa ruta después de que el arnés rechazara un cierre fallido sin recuperación suficiente.",
+      "La comparación corregida aún usaba una entrada de 15 bytes con importe 200, en vez del registro de 22 bytes con diez dígitos para el importe. COBOL y Python produjeron saldos distintos para esa entrada abreviada. El agente no distinguió el problema de su prueba del comportamiento de los casos oficiales.",
+      "El arnés rechazó una solicitud de cierre fallido, pero luego aceptó task_finish(completed) aunque su resumen decía que la equivalencia seguía sin verificarse y quedaban diferencias sin reparar. Ningún requisito de cierre bloqueó esa contradicción.",
+      "Sin errores del proveedor ni compactación; hubo 0,919 segundos de espera en la pasarela. Aprobar los casos oficiales no demuestra equivalencia para cualquier entrada ni un cierre fiable. No se modificó el agente ni se repitió la prueba."
+    ]
+  },
+  "final_finish": {
+    "evidence": "`/app/program.py` was created. In the test using identical initial data and a successful transaction, GnuCOBOL wrote account balances `1999998820` and `2000001800`, while Python wrote `0000000980` and `0000002000`; the account files differed. No successful parity test has been completed.",
+    "status": "completed",
+    "summary": "I created `/app/program.py`, but it does not yet meet the requested COBOL parity. A differential test with a valid transaction showed the Python script updated account balances differently from GnuCOBOL. I have not repaired that discrepancy or verified matching output files."
+  },
+  "binary_unchanged": true
+}

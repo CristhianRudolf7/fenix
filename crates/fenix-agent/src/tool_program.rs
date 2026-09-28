@@ -9,6 +9,28 @@ use std::{
 };
 use tokio_util::sync::CancellationToken;
 
+pub(crate) fn parameters() -> Value {
+    json!({
+        "steps": {"type":"array", "minItems":1, "maxItems":50, "items":{
+            "type":"object", "additionalProperties":false,
+            "required":["id","tool","arguments"],
+            "properties":{
+                "id":{"type":"string","pattern":"^[A-Za-z0-9_]+$","maxLength":64},
+                "tool":{"type":"string","pattern":"^[a-z][a-z0-9_]*$",
+                    "description":"Exact bare tool name, e.g. file_read or command_run. Never functions.file_read. Only composable tools available in this task."},
+                "arguments":{"type":"object","additionalProperties":true},
+                "foreach":{}, "select":{},
+                "when":{"type":"object","additionalProperties":false,
+                    "required":["reference","operator"],"properties":{
+                        "reference":{"type":"string"},
+                        "operator":{"type":"string","enum":["equals","not_equals","contains","exists","count_equals"]},
+                        "value":{}}}
+            }
+        }},
+        "output":{}
+    })
+}
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Program {
@@ -62,7 +84,12 @@ impl Program {
             if let Some(value) = &step.select {
                 validate_references(value, &ids, step.foreach.is_some())?;
             }
-            ensure!(model::allowed_tool(&step.tool), "Tool is not composable");
+            ensure!(
+                model::allowed_tool(&step.tool),
+                "Step '{}': '{}' is not composable. Use exact bare names such as file_read or command_run, without a functions. prefix. environment_inspect and skill_load require direct calls. No program steps have executed.",
+                step.id,
+                step.tool
+            );
             ensure!(step.arguments.is_object(), "Arguments must be an object");
             ensure!(
                 step.arguments["persistent"] != true && step.arguments["tty"] != true,
@@ -114,7 +141,9 @@ impl Runtime {
         for step in &program.steps {
             ensure!(
                 catalog.iter().any(|t| t.name == step.tool),
-                "Tool unavailable in this profile"
+                "Step '{}': tool '{}' is unavailable in this profile. No program steps have executed.",
+                step.id,
+                step.tool
             );
         }
         let id = fenix_storage::id();
@@ -235,6 +264,29 @@ impl Runtime {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn invalid_later_step_does_not_execute_an_earlier_write() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let workspace = dir.path().join("workspace");
+        std::fs::create_dir(&workspace)?;
+        let runtime =
+            Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let settings = Settings::initial(workspace.clone());
+        let task = runtime.store.enqueue("Create a file", "web", None)?;
+        let args = json!({"steps":[
+            {"id":"write","tool":"file_write","arguments":{"path":"result.txt","content":"unexpected"}},
+            {"id":"read","tool":"functions.file_read","arguments":{"path":"result.txt"}}
+        ],"output":{"$ref":"read"}});
+        let error = runtime
+            .tool_program(&task.id, &settings, &args, &CancellationToken::new())
+            .await
+            .unwrap_err();
+        assert!(error.to_string().contains("functions.file_read"));
+        assert!(error.to_string().contains("No program steps have executed"));
+        assert!(!workspace.join("result.txt").exists());
+        Ok(())
+    }
+
     #[test]
     fn programs_reject_recursion_and_duplicate_ids() {
         for tool in ["tool_program", "subagent_spawn", "request_approval"] {

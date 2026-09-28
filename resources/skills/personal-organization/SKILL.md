@@ -38,7 +38,3 @@ Check schedule collisions, timezone and whether each action has a concrete next 
 ## Limits
 
 Do not cancel meetings, create recurring reminders or infer health/productivity diagnoses from incomplete activity data.
-
-## Español
-
-Ordena compromisos reales sin duplicarlos, detecta sobrecarga y distingue fechas obligatorias de preferencias.

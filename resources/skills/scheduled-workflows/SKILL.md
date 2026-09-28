@@ -42,11 +42,3 @@ Check timezone, next occurrence, enabled state, target channel and duplicate beh
 ## Limits
 
 Do not enable autonomous heartbeat or reminders merely because a routine was described; use the actual requested schedule.
-
-## Español
-
-Comprueba zona, próxima ejecución y solapamientos; actualiza sin duplicar ni perder resultados pendientes.
-
-Para procedimientos repetibles, guarda un flujo con `workflow_manage` y prográmalo mediante `schedule_manage`, `mode=workflow` y `workflow_id`. El usuario ve el diagrama y lo modifica conversando. Descubre las conexiones y los argumentos reales antes de usarlos; las credenciales se introducen en Integraciones. No inventes carpetas, cuentas ni criterios para elegir documentos. Conserva la versión y los resultados de cada paso, comprueba el comprobante de entrega y no repitas una acción externa de resultado incierto. Las preguntas y aprobaciones se responden por texto.
-
-Si la tarea programada contiene un bucle, define progreso, límites y terminación en el runtime. Conserva criterios de aceptación y reconcilia efectos inciertos antes de reintentar.

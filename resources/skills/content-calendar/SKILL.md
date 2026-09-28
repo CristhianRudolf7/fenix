@@ -34,7 +34,3 @@ Check dates, links, asset readiness and whether the cadence is feasible.
 ## Limits
 
 Do not create recurring posts, send messages or claim publication from a draft calendar.
-
-## Español
-
-Organiza contenido y activos por propósito, canal y fecha; distingue borradores de publicaciones programadas.

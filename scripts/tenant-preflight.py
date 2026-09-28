@@ -55,6 +55,14 @@ def main():
             or host.get("PidsLimit") != limits.pids or host.get("NanoCpus") != int(limits.cpus*1000000000)):
         raise PolicyError("Controller isolation or resource limits differ from the approved policy")
     expected={str(policy.users_root/owner):(str(policy.users_root/owner),True),str(Path(config["socket"]).parent):(str(Path(config["socket"]).parent),False)}
+    if config.get("skill_categories"):
+        catalog = Path(config["skill_categories"]).resolve(strict=True)
+        metadata = catalog.stat()
+        if not catalog.is_file() or metadata.st_uid != 0 or metadata.st_mode & 0o022 or catalog.is_relative_to(policy.users_root):
+            raise PolicyError("Skill category catalog must be an operator-owned read-only file")
+        if env.get("FENIX_SKILL_CATEGORIES") != "/etc/fenix/skill-categories.json":
+            raise PolicyError("Controller skill category configuration differs from policy")
+        expected["/etc/fenix/skill-categories.json"] = (str(catalog), False)
     mounts={mount["Destination"]:(mount["Source"],mount["RW"]) for mount in info["Mounts"] if mount["Type"]=="bind"}
     if mounts != expected or any(mount["Type"] not in ("bind","tmpfs") for mount in info["Mounts"]):
         raise PolicyError("Controller has unexpected host mounts")

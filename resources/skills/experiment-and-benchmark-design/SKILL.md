@@ -42,9 +42,3 @@ Recompute aggregate metrics from per-task records. Preserve failed and timed-out
 ## Limits
 
 This skill does not grant permission to spend on new providers or run generated code outside isolation. Small samples are exploratory, not a universal ranking.
-
-## Español
-
-Congela tareas y criterios, separa casos de desarrollo y evaluación y registra fallos, tiempo, tokens y costes. No ocultes reintentos ni extrapoles muestras pequeñas.
-
-Al evaluar agentes, verifica el evaluador con resultados correctos e incorrectos y separa cumplimiento de instrucciones de éxito real. Conserva errores de preparación y no confundas worktrees con aislamiento.

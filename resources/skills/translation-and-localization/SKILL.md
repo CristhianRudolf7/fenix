@@ -35,7 +35,3 @@ Compare placeholder sets and markup structure, run the project’s locale checks
 ## Limits
 
 Do not silently translate legal meaning into a stronger claim or invent a certified translation. Missing context should remain a visible question.
-
-## Español
-
-Preserva significado, variables y formato. Adapta idioma y región sin modificar datos técnicos; comprueba plurales, expansión del texto y términos ambiguos.

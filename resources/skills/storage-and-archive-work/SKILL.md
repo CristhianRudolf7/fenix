@@ -34,7 +34,3 @@ Open representative extracted files and verify archive integrity; retain the ori
 ## Limits
 
 Do not delete caches, containers or unrelated user files merely because disk space is low.
-
-## Español
-
-Inspecciona miembros y tamaño expandido, evita escapes y verifica contenido antes de limpiar.

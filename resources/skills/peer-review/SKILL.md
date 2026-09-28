@@ -36,7 +36,3 @@ Ensure each criticism follows from the supplied text and does not misrepresent a
 ## Limits
 
 Respect confidentiality and venue AI-review rules; do not upload unpublished material elsewhere or contact authors without authorization.
-
-## Español
-
-Evalúa evidencia y metodología con hallazgos localizados; diferencia problemas de validez y mejoras de presentación.

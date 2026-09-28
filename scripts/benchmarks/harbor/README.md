@@ -29,3 +29,8 @@ Official verifier files enter the environment only after the agent phase. Preser
 ## Native execution
 
 For new evaluations, use `native_fenix:NativeFenixAgent` and the Rust `fenix eval` command. See [native evaluation](../../../docs/en/native-evaluation.md) / [evaluación nativa](../../../docs/es/native-evaluation.md). The original HTTP controller remains for reproducibility of the September 15 baseline; its frozen results are not results for the updated engine.
+
+`run_native.py` runs one pinned selection produced by `../prepare.py`, including
+TerminalWorld Verified and Terminal-Bench 4.0. `../gaia2/` connects the same native
+Rust runtime to the official Gaia2 CLI multi-turn environment. See the bilingual
+native evaluation guide for version pins, judge caveats and reproduction commands.

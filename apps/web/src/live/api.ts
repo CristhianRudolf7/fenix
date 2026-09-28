@@ -18,6 +18,7 @@ export interface LiveConfiguration {
   provider: string;
   model: string;
   base_url: string | null;
+  reasoning_effort?: string | null;
 }
 export interface LiveStatus {
   configured: boolean;

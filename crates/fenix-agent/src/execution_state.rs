@@ -32,6 +32,36 @@ pub(crate) fn context_contract(contract: &Value) -> Value {
     view
 }
 
+/// Missing executables/modules are repair candidates, not authorization denials.
+/// Evaluate only failed-command output; warnings from apt's download sandbox do
+/// not turn a missing dpkg-source into a denied runtime action.
+pub(crate) fn missing_dependency_diagnostic(output: &str) -> bool {
+    static SHELL_MISSING: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+        regex::Regex::new(r"(?im)^(?:[^\n]*?:\s*)?[a-z0-9_./+-]+:\s*(?:command )?not found\s*$")
+            .unwrap()
+    });
+    let lower = output.to_lowercase();
+    [
+        "no module named",
+        "modulenotfounderror",
+        "command not found",
+        "not found in path",
+    ]
+    .iter()
+    .any(|s| lower.contains(s))
+        || SHELL_MISSING.is_match(output)
+}
+
+/// A verified edit with identical native hashes changed no source content.
+/// Missing receipts stay conservative; this is not inferred from model prose.
+pub(crate) fn unchanged_file_edit(tool: &str, output: &Value) -> bool {
+    tool == "file_edit"
+        && output["verified"] == true
+        && output["before_sha256"]
+            .as_str()
+            .is_some_and(|before| before.len() == 64 && Some(before) == output["sha256"].as_str())
+}
+
 impl Runtime {
     pub(crate) fn execution_stage(&self, task: &str, stage: &str) -> Result<()> {
         let mut state = self
@@ -75,6 +105,8 @@ impl Runtime {
             "requirements_source":"Original user request; do not invent additional requirements.",
             "clarifications":[],"assumptions":[],"completion_evidence":[]
         }));
+        contract["verification_requirements"] = self.completion_requirements(task)?;
+        contract["recovery_state"] = self.stop_context(task)?;
         contract["binding"] = json!(self.store.task_binding(task)?);
         contract["owner_updates"] = json!(
             self.store

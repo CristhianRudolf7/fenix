@@ -37,7 +37,3 @@ Verify one meaningful user operation and the deployed version; distinguish DNS p
 ## Limits
 
 Do not enable paid services, expand permissions or make a private endpoint public as an implicit workaround.
-
-## Español
-
-Resuelve cuenta y región, conserva identidad y exposición correctas y verifica la versión desde la ruta final.

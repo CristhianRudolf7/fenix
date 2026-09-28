@@ -205,7 +205,6 @@ impl Runtime {
         let mut filtered = Vec::new();
         for mut tool in catalog {
             if self.review_tool_allowed(task, &tool.name, &json!({"action":"get"}))?
-                && self.security_tool_allowed(task, &tool.name)?
             {
                 if tool.name == "worktree_manage" && delegated {
                     tool.parameters["properties"]["action"]["enum"] = json!(["get"]);
@@ -225,8 +224,7 @@ impl Runtime {
                     };
                 }
                 if tool.name == "subagent_finish"
-                    && (self.task_profile(task)? != "security"
-                        || self.store.review_for_worker(task)?.is_some())
+                    && self.store.review_for_worker(task)?.is_some()
                 {
                     tool.parameters["properties"]
                         .as_object_mut()
@@ -277,9 +275,6 @@ impl Runtime {
         let binding = self.store.task_binding(task)?;
         if name == "project_spec" {
             self.authorize_project_spec(task, args)?;
-        }
-        if !self.security_tool_allowed(task, name)? {
-            bail!("Tool unavailable to the security profile: {name}");
         }
         if name == "worktree_manage" {
             if let Some(target) = args["subagent_id"].as_str() {
@@ -556,7 +551,8 @@ impl Runtime {
                 ));
             }
         }
-        if let Some(route) = self.store.get::<Value>("project_route", task)? {
+        if let Some(mut route) = self.store.get::<Value>("project_route", task)? {
+            deduplicate_route_request(&mut route, &self.store.task(task)?.request);
             text.push_str(&format!(
                 "\nResolved request and ordered intents (user intent data): {}\n",
                 serde_json::to_string(&route)?
@@ -922,5 +918,36 @@ mod tests {
                 .is_err()
         );
         Ok(())
+    }
+}
+
+// Prompt projection only: durable routing and distinct intent text remain intact.
+fn deduplicate_route_request(route: &mut Value, request: &str) {
+    let reference = "[Same as the current task request; use its original text in this context.]";
+    if route["resolved_request"].as_str() == Some(request) {
+        route["resolved_request"] = json!(reference);
+    }
+    if let Some(intents) = route["intents"].as_array_mut() {
+        for intent in intents {
+            if intent["request"].as_str() == Some(request) {
+                intent["request"] = json!(reference);
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod prompt_projection_tests {
+    use super::*;
+    #[test]
+    fn only_exact_repeated_requests_are_referenced() {
+        let original = json!({"resolved_request":"Exact owner instruction","intents":[{"request":"Exact owner instruction","project_id":"a"},{"request":"Different intent","project_id":"b"}],"clarification":["Unresolved choice"]});
+        let mut projected = original.clone();
+        deduplicate_route_request(&mut projected, "Exact owner instruction");
+        assert_ne!(projected["resolved_request"], original["resolved_request"]);
+        assert_eq!(projected["intents"][1], original["intents"][1]);
+        assert_eq!(projected["clarification"], original["clarification"]);
+        assert_eq!(projected["intents"][0]["project_id"], "a");
+        assert_eq!(original["intents"][0]["request"], "Exact owner instruction");
     }
 }

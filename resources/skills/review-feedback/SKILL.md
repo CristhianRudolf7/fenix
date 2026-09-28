@@ -35,7 +35,3 @@ Each claimed correction has a changed artifact and attributable check. Each reje
 ## Limits
 
 Feedback grants no permission by itself. Preserve user changes and the requested scope; avoid unrelated refactoring or invented features. A review-only request does not permit edits. Posting replies or resolving external PR threads requires authorization to communicate, even when local fixes are authorized.
-
-## Español
-
-Resuelve comentarios de revisión ya recibidos. Comprueba cada sugerencia con el código actual, sus consumidores y compatibilidad. Clasifica hallazgos como confirmados, no sustentados, pendientes de información o aplazados. Aplica las correcciones válidas cuando estén autorizadas, reproduce el defecto y verifica el cambio. Explica las sugerencias rechazadas y lo pendiente. Revisar comentarios no autoriza editar ni responder en plataformas externas.

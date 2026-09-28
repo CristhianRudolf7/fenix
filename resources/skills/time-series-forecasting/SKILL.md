@@ -34,7 +34,3 @@ Check timestamp alignment, horizon, units and baseline performance. Preserve all
 ## Limits
 
 A foundation model is optional, not a reason to skip baselines or resource checks. Forecasts are not commitments.
-
-## Español
-
-Valida por tiempo sin fuga de información, compara una base sencilla y presenta incertidumbre por horizonte.

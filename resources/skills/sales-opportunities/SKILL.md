@@ -35,7 +35,3 @@ Check every compliance/feature response and quote against source evidence and cu
 ## Limits
 
 Do not send unsolicited outreach, invent references or commit delivery dates on behalf of the user.
-
-## Español
-
-Relaciona necesidades con funciones reales y propuestas verificables; distingue compromisos de suposiciones.

@@ -39,9 +39,3 @@ Recheck each finding against current files and distinguish existing defects from
 ## Limits
 
 Do not edit files during a review-only request or claim absence of all bugs. Simple changes do not require mandatory additional agents.
-
-## Español
-
-Revisa un diff concreto y sus llamadas. Comunica defectos demostrables con ubicación e impacto; separa mejoras de estilo y resuelve desacuerdos mediante evidencia.
-
-Para atender comentarios ya recibidos, usa review-feedback. Revisar no autoriza editar. Separa cumplimiento de requisitos, defectos y preferencias; acota la segunda revisión a las correcciones y sus regresiones.

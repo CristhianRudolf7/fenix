@@ -34,7 +34,3 @@ Compare resulting state to the plan and verify the service behavior the resource
 ## Limits
 
 State may contain secrets. A successful plan is not a deployed change, and an old plan may be invalid after concurrent updates.
-
-## Español
-
-Inspecciona estado y reemplazos, respeta locks y verifica efectos parciales antes de repetir.

@@ -34,7 +34,3 @@ Exercise fallback and stale configuration behavior; verify the flag actually gat
 ## Limits
 
 A flag cannot undo external effects or incompatible data writes. Do not invent rollout percentages as universal policy.
-
-## Español
-
-Prueba ambas rutas y reversión, controla datos ya escritos y retira flags obsoletos.

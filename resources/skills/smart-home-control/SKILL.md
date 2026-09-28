@@ -35,7 +35,3 @@ Report exact targets, requested values, observed results and partial failures. A
 ## Limits
 
 No credentials, controller or hardware driver is installed. Preserve established action permissions; a status query does not authorize a change. Do not weaken interlocks or expose device credentials in command arguments or logs.
-
-## Español
-
-Identifica el dispositivo exacto, comprueba unidades y capacidades y verifica el estado posterior. Una coincidencia aproximada sirve para buscar, no para elegir silenciosamente qué controlar. El skill requiere una conexión existente.

@@ -3,7 +3,9 @@ from __future__ import annotations
 import asyncio
 import copy
 import dataclasses
+import hashlib
 import json
+import ipaddress
 import os
 from pathlib import Path
 import platform
@@ -13,6 +15,20 @@ import subprocess
 from fenix_isolation import PolicyError, identifier, private_json, private_write
 from .docker import Docker
 from .runtime_assets import digest, protected_path, stamp
+
+def host_resolver():
+    # Docker's 127.0.0.11 listener lives outside Sentry's loopback namespace.
+    # Use the same upstream file as the firewall's resolver allowlist. This is
+    # operator-owned and mounted read-only, never selected by a tenant.
+    path = Path("/run/systemd/resolve/resolv.conf")
+    if not path.exists():
+        path = Path("/etc/resolv.conf")
+    addresses = [ipaddress.ip_address(parts[1]) for line in path.read_text().splitlines()
+                 if len(parts := line.split()) >= 2 and parts[0] == "nameserver"]
+    if not any(a.version == 4 and not a.is_loopback for a in addresses):
+        raise PolicyError("Configure an upstream IPv4 DNS resolver for isolated browsing")
+    return ("".join(f"nameserver {a}\n" for a in addresses if a.version == 4 and not a.is_loopback) + "options timeout:2 attempts:2\n").encode()
+
 
 RUNTIME = "fenix-runsc"
 GATE_PATH = "/opt/fenix/sandbox-gate.py"
@@ -146,7 +162,10 @@ def sentry_cgroup(owner, container, pid, sentry, proc=Path("/proc")):
     return expected
 
 
-class GVisor(Docker):
+from .browser_backend import BrowserCheckpointBackend
+
+
+class GVisor(BrowserCheckpointBackend, Docker):
     kind = "gvisor"
     platform = "systrap"
     default_runtime = RUNTIME
@@ -158,9 +177,15 @@ class GVisor(Docker):
         if not config.get("gvisor_manifest"):
             raise PolicyError("Prepare a pinned gVisor bundle before enabling execution")
         self.bundle = Bundle(config["gvisor_manifest"])
+        self.checkpoint_identity = hashlib.sha256(json.dumps(self.bundle.data, sort_keys=True).encode()).hexdigest()
         self.verified = set()
         super().__init__(config)
-        self.bundle.check_registration(json.loads(subprocess.check_output(["docker", "info", "--format", "{{json .}}"], timeout=20)))
+        info = json.loads(subprocess.check_output(["docker", "info", "--format", "{{json .}}"], timeout=20))
+        self.bundle.check_registration(info)
+        self.docker_root = Path(info["DockerRootDir"]).resolve()
+        if not self.docker_root.is_absolute() or self.docker_root.stat().st_uid != 0 or self.docker_root.stat().st_mode & 0o022:
+            raise PolicyError("Docker storage must be root-owned")
+        self.browser_checkpoints = bool(info.get("ExperimentalBuild") and config.get("browser_checkpoints", True))
 
     def browser_security_args(self):
         # OCI seccomp is explicitly enabled inside gVisor. Its Sentry has its own
@@ -172,6 +197,15 @@ class GVisor(Docker):
         gated = dataclasses.replace(launch, argv=["/usr/bin/python3", "-I", GATE_PATH, *launch.argv])
         args = super().create_args(execution, gated, parent, sources)
         at = args.index("--workdir")
+        if launch.profile != "offline" and launch.egress_hosts is None:
+            # Snapshot sanitized upstream addresses into broker-owned storage;
+            # systemd-resolved may own the source file, not root. Do not expose
+            # host search suffixes or Docker's unreachable loopback listener.
+            resolver = self.mount_dir.parent / "gvisor-resolv.conf"
+            private_write(resolver, host_resolver())
+            resolver.chmod(0o444)
+            args[at:at] = ["--mount", "type=bind,src=" + str(resolver) + ",dst=/etc/resolv.conf,readonly"]
+            at = args.index("--workdir")
         args[at:at] = ["--mount", "type=bind,src=" + str(self.bundle.gate) + ",dst=" + GATE_PATH + ",readonly",
                        "--label", "fenix.isolation=gvisor"]
         return args

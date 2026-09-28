@@ -53,3 +53,9 @@ cargo test -p fenix-server --test integrations
 ```
 
 The real account scan, post-login WhatsApp DOM and actual message delivery require an owner's account and have not been validated by the synthetic fixture or unauthenticated smoke test.
+
+## Connection catalog and recovery
+
+WhatsApp uses the same searchable card grid as other connections. Its button opens an accessible pairing dialog with a loading state and the owner-only QR; closing the dialog never deletes the saved login. QR downloads stop when the dialog closes.
+
+The isolated execution broker admits only one browser runner per profile, including requests from the same task. Once the previous runner is absent, it removes only Chromium's three stale `Singleton*` symlinks through the pinned profile directory; cookies and login storage remain intact. gVisor runners with unrestricted public-web access receive a read-only, broker-owned snapshot of the host upstream IPv4 DNS servers. Offline and explicitly restricted networks retain their existing DNS policy; private/metadata HTTP access remains blocked.

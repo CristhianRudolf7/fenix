@@ -41,7 +41,3 @@ Compare requested dimensions with the saved artifact, not only source constants 
 ## Limits
 
 Kernel validity is not mechanical certification. Do not infer strength, tolerance fit, manufacturing readiness or safety from positive volume. A model request does not authorize manufacturing or operating machinery.
-
-## Español
-
-Genera piezas y ensamblajes con parámetros editables, unidades y referencias de posición claras. Reabre STEP o mallas y mide la geometría exportada. Conserva procedencia de componentes comprados y explicita aproximaciones. Una geometría válida no demuestra resistencia ni autoriza fabricarla.

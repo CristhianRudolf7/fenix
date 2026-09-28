@@ -38,7 +38,3 @@ Trace each claimed coverage item to a passed behavioral case and available telem
 ## Limits
 
 Do not scan hosts or replay attacks to obtain test data by default. No SIEM, log collector or commercial connector is installed by this skill. Framework mappings organize evidence; they are not a security certification.
-
-## Español
-
-Crea reglas sobre campos y registros reales. Valida sintaxis, conversión y comportamiento por separado con positivos, casos benignos y límites. Una etiqueta ATT&CK no demuestra cobertura; publicar la regla tampoco activa alertas. Conserva errores, falsos positivos y datos faltantes.

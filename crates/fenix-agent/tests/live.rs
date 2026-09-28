@@ -50,6 +50,7 @@ async fn fixture() -> (
     runtime
         .configure_live(
             LiveSettings {
+                reasoning_effort: None,
                 provider: ProviderId::OpenAi,
                 model: "voice-test".into(),
                 base_url: Some(server.uri()),

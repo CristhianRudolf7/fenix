@@ -38,7 +38,3 @@ Test intended access and denial with the correct identity and inspect residual i
 ## Limits
 
 Do not lock out the owner or grant administrator access as a troubleshooting shortcut.
-
-## Español
-
-Revisa permisos efectivos e indirectos y comprueba tanto acceso permitido como denegado antes de cambiar privilegios.

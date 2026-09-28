@@ -38,7 +38,3 @@ Every factual product claim must have a source. Check destination links and ensu
 ## Limits
 
 Do not imply measured conversion gains from stylistic choices or claim legal compliance based on wording alone.
-
-## Español
-
-Redacta publicaciones con beneficios y funciones reales. Diferencia lo disponible de lo futuro y entrega borradores sin publicar por iniciativa propia.

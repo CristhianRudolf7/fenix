@@ -19,6 +19,8 @@ detención de ejecuciones si se pierde la protección. Las pruebas locales no
 sustituyen esta comprobación; todavía no está realizada. Véase
 [protección de red y límites de validación](docs/es/security-boundaries.md).
 
+- [Perfil y consumo](docs/es/account-profile.md): nombre visible, cambio de contraseña y gráfico de tokens registrados por cuenta.
+
 ## Iniciar
 
 Instala Rust mediante [rustup](https://rust-lang.org/tools/install/) y ejecuta desde
@@ -182,11 +184,11 @@ Las sesiones de terminal interactivas, servicios persistentes, registros increme
 
 [Integraciones locales — QR de WhatsApp y sesiones guardadas](docs/es/integrations.md)
 
-[Evaluación nativa y recuperación del motor](docs/es/native-evaluation.md)
+[Evaluación nativa y recuperación del motor](docs/es/native-evaluation.md): Terminal-Bench 4.0, TerminalWorld y la variante oficial Gaia2-CLI, con versiones fijadas y verificadores externos al agente.
 
 Consulta [skills y recuperación](docs/es/harness-recovery.md) para procedimientos bajo demanda, comandos restringidos a lectura y evaluación reproducible.
 
-[Marketplace de skills y Fénix Sentinel](docs/es/skill-marketplace.md): publicación privada/pública, revisión con Nemotron, correcciones en copias y protección contra solicitudes repetidas.
+[Marketplace de skills y Fénix Sentinel](docs/es/skill-marketplace.md): publicación privada/pública, revisión con el modelo rápido configurado, correcciones en copias y protección contra solicitudes repetidas.
 
 [Skills escalables y Fénix Documents](docs/es/skills-and-documents.md): búsqueda bajo demanda y herramientas locales para DOCX/XLSX/PPTX.
 

@@ -7,7 +7,6 @@ impl Browser {
         session: &str,
         frame: Option<&str>,
         args: &Value,
-        owner: bool,
     ) -> Result<Value> {
         let action = text(args, "action", "");
         if matches!(action, "back" | "forward") {
@@ -68,9 +67,6 @@ impl Browser {
             if let Some(error) = target["error"].as_str() {
                 bail!("{error}");
             }
-            if !owner && target["secret"] == true && matches!(action, "fill" | "type" | "key") {
-                bail!("Password entry requires the owner's browser controls or credential vault");
-            }
             if targeted
                 && action != "upload"
                 && (target["visible"] != true
@@ -101,7 +97,7 @@ impl Browser {
                 value
             };
             match action {
-                "click" | "double_click" | "check" | "uncheck" => {
+                "click" | "double_click" | "right_click" | "middle_click" | "check" | "uncheck" => {
                     let perform = if matches!(action, "check" | "uncheck") {
                         let checked=self.eval(s,session,frame,"(()=>{const e=window.__fenixTarget;if(!e.matches('input[type=checkbox],input[type=radio]'))throw Error();return e.checked})()".into()).await?;
                         if action == "uncheck" && target["inputType"] == "radio" && checked == true
@@ -115,13 +111,18 @@ impl Browser {
                         true
                     };
                     if perform {
+                        let button = match action {
+                            "right_click" => "right",
+                            "middle_click" => "middle",
+                            _ => "left",
+                        };
                         for count in 1..=if action == "double_click" { 2 } else { 1 } {
                             for kind in ["mousePressed", "mouseReleased"] {
                                 s.cdp
                                     .call(
                                         Some(session),
                                         "Input.dispatchMouseEvent",
-                                        mouse(kind, json!({"button":"left","clickCount":count})),
+                                        mouse(kind, json!({"button":button,"clickCount":count})),
                                     )
                                     .await?;
                             }

@@ -40,7 +40,3 @@ Reconcile totals and row counts before/after transformations. Spot-check against
 ## Limits
 
 Do not select a test only because it yields significance. Avoid sending raw sensitive records to external services; publish aggregates appropriate to the task.
-
-## Español
-
-Conserva datos originales y pasos reproducibles. Comprueba unidades, faltantes y cardinalidad de cruces; informa magnitud e incertidumbre sin inventar causalidad.

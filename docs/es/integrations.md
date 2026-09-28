@@ -31,3 +31,9 @@ Las pruebas con Chromium local cubren vinculación simulada, sincronización, ex
 El escaneo con una cuenta real, el estado de WhatsApp después de iniciar sesión y el envío real de mensajes requieren la cuenta del propietario y no quedan certificados por las pruebas simuladas. Cambios de WhatsApp pueden exigir actualizar los detectores del DOM. Para superar su comprobación de compatibilidad, el perfil dedicado identifica el Chromium instalado con su versión real y el nombre `Chrome`, conservando el sandbox.
 
 Consulta [la documentación técnica en inglés](../en/integrations.md) para las rutas HTTP y los comandos de pruebas.
+
+## Catálogo y recuperación de conexiones
+
+WhatsApp aparece en la misma cuadrícula y búsqueda que las demás conexiones. Su botón abre una ventana accesible con el estado de carga y el QR exclusivo del propietario; cerrar esa ventana no elimina la sesión. Las descargas del QR se detienen al cerrar la ventana.
+
+El servicio de ejecución admite un solo navegador por perfil, incluso si lo solicita la misma tarea. Una vez retirado el anterior, elimina únicamente los tres enlaces temporales `Singleton*` de Chromium, conservando cookies y datos de acceso. Los entornos gVisor con acceso a la web pública reciben una copia de solo lectura de los servidores DNS IPv4 configurados en el host. Las redes sin conexión o con destinos restringidos conservan su política de DNS; el acceso HTTP a direcciones privadas y metadatos sigue bloqueado.

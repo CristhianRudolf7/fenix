@@ -39,6 +39,18 @@ test("new visual requests are distinguished from edits, explanations and explici
     ["Build a website from scratch", null],
     ["Genera otra diapositiva (design_id: existing)", null],
     ["Me gustó la presentación de ayer", null],
+    [
+      "solamente puedes crear presentaciones o qué otras funcionalidades tienes",
+      null,
+    ],
+    ["¿Qué puedes crear?", null],
+    ["¿Puedes crear presentaciones?", null],
+    ["Can you create presentations?", null],
+    ["Quiero saber si puedes crear una presentación", null],
+    ["Necesito aprender cómo crear un PDF", null],
+    ["¿Qué otras capacidades tienes para generar imágenes?", null],
+    ["¿Puedes crear una presentación sobre energía solar?", "presentation"],
+    ["Genera un gráfico con las ventas de enero", "chart"],
   ])
     expect(creationKind(text), text).toBe(kind);
 });
@@ -119,6 +131,12 @@ async function fixture(
           {
             id: "source-1",
             title: "Notas de energía",
+            filename: "energy.md",
+            collection: "",
+            tags: [],
+            warnings: [],
+            embedding_status: "ready",
+            bytes: 120,
             project_id: "atlas",
             enabled: true,
             revision: 1,
@@ -160,25 +178,48 @@ async function fixture(
   return { sent, offsets };
 }
 
+test("sending design requests goes directly to the agent without opening the picker", async ({
+  page,
+}) => {
+  const { sent } = await fixture(page);
+  for (const text of [
+    "Genera una presentación sobre energía limpia",
+    "Crea una landing page y verifica el diseño responsive",
+    "Genera un PDF",
+    "Hola, qué puedes hacer",
+  ]) {
+    await page.locator("#chat-input").fill(text);
+    await page
+      .locator("#chat-form")
+      .getByRole("button", { name: "Enviar mensaje" })
+      .click();
+    await expect.poll(() => sent.at(-1)?.text).toBe(text);
+    expect(sent.at(-1).text).toBe(text);
+    await expect(page.locator("#chat-input")).toHaveValue("");
+    await expect(page.locator(".design-creation")).toHaveCount(0);
+    await expect(page.getByText("Elegir diseño", { exact: true })).toHaveCount(
+      0,
+    );
+  }
+});
+
 async function requestDesign(page, text) {
   await page.locator("#chat-input").fill(text);
-  await page
-    .locator("#chat-form")
-    .getByRole("button", { name: "Enviar mensaje" })
-    .click();
+  await page.evaluate(() =>
+    window.dispatchEvent(new Event("fenix:choose-design")),
+  );
   return page.getByRole("dialog", { name: "Elegir diseño", exact: true });
 }
 
-test("chat waits for a template and preserves sources and reply context before showing the generated design", async ({
+test("explicit template selection preserves sources and reply context before showing the generated design", async ({
   page,
 }, info) => {
   const { sent } = await fixture(page);
-  await page.getByRole("button", { name: "Responder", exact: true }).click();
+  await page.locator('a[data-page="documents"]').click();
   await page
-    .locator(".library-chat-sources")
-    .getByRole("button", { name: "Documentos", exact: true })
+    .getByRole("button", { name: "Preguntar a Fénix", exact: true })
     .click();
-  await page.getByRole("checkbox", { name: /Notas de energía/ }).check();
+  await page.getByRole("button", { name: "Responder", exact: true }).click();
   const panel = await requestDesign(
     page,
     "Genera una presentación sobre energía limpia para Atlas",
@@ -277,10 +318,9 @@ test("all catalog pages, search, custom description and a phone-sized chooser", 
   ).toBe(true);
   await expect(page.locator("#chat-form .send svg")).toBeVisible();
   expect(sent).toHaveLength(0);
-  await page
-    .locator("#chat-form")
-    .getByRole("button", { name: "Elegir diseño", exact: true })
-    .click();
+  await page.evaluate(() =>
+    window.dispatchEvent(new Event("fenix:choose-design")),
+  );
   await expect(panel).toBeVisible();
   await panel
     .getByRole("button", { name: "Generar sin plantilla", exact: true })
@@ -333,7 +373,8 @@ test("editing and explicit no-template requests go straight to the agent", async
     "Modifica la diapositiva 4 para mostrar las cifras",
     "Genera una interfaz desde cero con fondo azul",
   ]) {
-    await requestDesign(page, text);
+    await page.locator("#chat-input").fill(text);
+    await page.locator("#chat-form .send").click();
     await expect(page.locator("#chat-input")).toHaveValue("");
     await expect(
       page.getByRole("dialog", { name: "Elegir diseño", exact: true }),
@@ -356,7 +397,7 @@ test("a saved selection link reopens the exact template", async ({ page }) => {
   await expect(panel).toBeVisible();
   await expect(
     panel.getByRole("heading", {
-      name: "Resultados de investigación",
+      name: "Better questions. Clearer evidence.",
       exact: true,
     }),
   ).toBeVisible();

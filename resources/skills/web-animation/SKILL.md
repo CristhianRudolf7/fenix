@@ -41,7 +41,3 @@ Use the browser to check visible end states, keyboard access, reduced motion and
 ## Limits
 
 Do not replace an established animation library or install every GSAP plugin. Fénix's static design preview disables scripts; run dynamic animation in the authorized web project's browser instead of claiming that preview executes it.
-
-## Español
-
-Implementa movimiento con selectores locales, secuencias claras y limpieza al desmontar. Conserva contenido visible y preferencias de movimiento reducido. Comprueba navegación, interrupción y scroll en un navegador real. La vista estática de diseños de Fénix no ejecuta estas animaciones.

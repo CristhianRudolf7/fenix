@@ -1,0 +1,430 @@
+{
+  "date": "2026-09-26",
+  "benchmark": "terminal-bench-2.1",
+  "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+  "selection": {
+    "tasks": [
+      "extract-elf",
+      "gcode-to-text",
+      "git-leak-recovery",
+      "gpt2-codegolf",
+      "headless-terminal"
+    ],
+    "ordinals": [
+      22,
+      23,
+      24,
+      25,
+      26
+    ],
+    "rule": "Next alphabetically unattempted text-input CPU tasks with official agent timeout <=900s; image-input chess remains excluded. Official per-task resources, including 8GiB for gpt2-codegolf. No selection based on observed outcomes.",
+    "harnesses": [
+      "fenix"
+    ],
+    "model": "gpt-6-luna",
+    "reasoning_effort": "low",
+    "attempts_per_task": 1,
+    "runtime_changes_between_tasks": false
+  },
+  "source": {
+    "branch": "main",
+    "head": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "dirty_worktree": true,
+    "local_validation": {
+      "agent_tests_passed": 258,
+      "agent_tests_ignored": 3,
+      "agent_tests_failed": 0,
+      "gateway_tests_passed": 4
+    },
+    "binary_sha256": "e8efb479688cd5b6fdc97a35025edd6f8e58a5cfd7f2b9df11e93e7d785f59d8",
+    "build_passed": true
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "totals": {
+    "passed_tasks": 1,
+    "tasks": 5,
+    "pass_rate": 0.2,
+    "input_tokens": 840360,
+    "cached_input_tokens": 592866,
+    "cache_write_tokens": 215670,
+    "output_tokens": 13425,
+    "cost_usd_estimate": 0.04278232,
+    "api_calls": 50,
+    "execution_seconds_sum": 295.07422299999996,
+    "throttle_seconds_sum": 30.12,
+    "driver_wall_seconds_sum": 584.1745475251228
+  },
+  "methodology": {
+    "harness": "Fenix native Harbor adapter only",
+    "model": "gpt-6-luna",
+    "reasoning_effort": "low",
+    "flex": false,
+    "jev": false,
+    "fresh_container_each_task": true,
+    "runtime_frozen_all_five": true,
+    "official_task_resources": true,
+    "timeout_seconds_per_task": 900,
+    "gpt2_memory_mb": 8192,
+    "other_task_memory_mb": 2048,
+    "cpu_per_task": 1,
+    "attempts_per_task": 1,
+    "official_verifiers_unchanged": true,
+    "hidden_tests_inspected_only_after_completion": true,
+    "all_api_usage_included": true,
+    "missing_usage_records": 0,
+    "auxiliary_memory_extraction_not_disabled": true,
+    "background_skill_learning_disabled": true,
+    "production_deployed": false,
+    "push_performed": false,
+    "git_branch": "main",
+    "new_recovery_hint_seen_in_trial_requests": 0,
+    "modified_manual_skills_loaded_in_trials": 0
+  },
+  "limitations": [
+    "Five different tasks, one attempt each; no before/after control or reliable estimate of general benchmark performance.",
+    "API cost is a usage-based estimate using the recorded tariff, not an invoice.",
+    "Early incorrect/blocked termination is cheap and fast but is not a quality improvement.",
+    "No same-task rerun demonstrates that changes fixed the prior numerical-sampler, vulnerability, or dataset-token failures.",
+    "New repeated-check advice was not activated in these five traces; modified manual skills were not loaded.",
+    "Runtime checks tool receipts and structured outputs, not arbitrary semantic truth. Legitimate goal and permission questions remain enabled."
+  ],
+  "results": [
+    {
+      "job": "fenix-extract-elf",
+      "harness": "fenix",
+      "task": "extract-elf",
+      "reward": 0.0,
+      "execution_seconds": 51.832014,
+      "trial_seconds": 96.49359,
+      "setup_seconds": 0.935317,
+      "verifier_seconds": 19.512229,
+      "input_tokens": 175428,
+      "cached_input_tokens": 127823,
+      "cache_write_tokens": 41132,
+      "output_tokens": 2781,
+      "cost_usd": 0.00845753,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.016,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "audit": {
+        "ordinal": 22,
+        "official_checks_passed": 1,
+        "official_checks_total": 2,
+        "summary_en": "Implemented an ELF-to-JSON extractor and sampled binary words. Invented a 0x400000 relocation for ET_DYN from the format example; the reference uses section virtual addresses. Official overlap was 0%, below 75%. Self-authored tests repeated the relocation and a fixed 700-word count, so passing them was not independent evidence. Also invoked node on an ELF binary and corrected a bad test file offset; neither caused the final failure.",
+        "improvement_en": "Prioritize independent checks of the riskiest assumption: derive address conventions from observed format metadata, not example formatting. Verify a representative different input and avoid hardcoded expectations copied from the implementation. Do not add a mandatory reviewer or new closure gate for every task.",
+        "summary_es": "Creó el extractor y comprobó algunas palabras del binario, pero inventó una base 0x400000 a partir del ejemplo. El verificador usaba direcciones virtuales de secciones: coincidencia 0%, frente al mínimo de 75%. Sus pruebas repetían esa base y fijaban 700 entradas, así que no eran independientes. También corrigió errores de invocación y de un offset de su propia prueba.",
+        "improvement_es": "Validar la suposición de mayor riesgo contra metadatos reales del formato y un caso independiente; no convertir valores del ejemplo en requisitos ni copiar expectativas de la implementación. No hace falta un revisor obligatorio."
+      },
+      "ordinal": 22,
+      "official_checks_passed": 1,
+      "official_checks_total": 2,
+      "provider_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "tool_calls": {
+        "environment_inspect": 1,
+        "tool_search": 1,
+        "files_list": 1,
+        "command_run": 5,
+        "file_read": 1,
+        "file_write": 1,
+        "task_finish": 2
+      },
+      "artifact_hashes": {
+        "result.json": "c831f3273018b1fac2c50e326413d3f2a646c1600c6dea09c2cf36df3690b8b5",
+        "verifier/ctrf.json": "4aaa7fbac6dedbeedaef14cd3d205266677db9fd270587a6ad6c6ed0b95a6dda",
+        "verifier/reward.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "agent/native/report.json": "ad9519dcb9004e8b8879bf2f42fbc38ca086f13bbf660925cba21660a1096fd1"
+      },
+      "trial_path_relative": "jobs/fenix-extract-elf/extract-elf__UF6JJcw"
+    },
+    {
+      "job": "fenix-gcode-to-text",
+      "harness": "fenix",
+      "task": "gcode-to-text",
+      "reward": 0.0,
+      "execution_seconds": 134.628923,
+      "trial_seconds": 172.992914,
+      "setup_seconds": 0.952883,
+      "verifier_seconds": 17.665965,
+      "input_tokens": 434328,
+      "cached_input_tokens": 354630,
+      "cache_write_tokens": 58537,
+      "output_tokens": 7165,
+      "cost_usd": 0.01656203,
+      "api_calls": 20,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 20
+      },
+      "throttle_seconds": 30.079,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "audit": {
+        "ordinal": 23,
+        "official_checks_passed": 1,
+        "official_checks_total": 2,
+        "summary_en": "Tried to reconstruct extrusion trajectories. Its first numeric regex omitted leading-dot decimals (E.01926); several commands returned zero paths. It eventually parsed those values and rasterized only 92 low-layer segments into ASCII, then saw no plotting libraries. Rather than completing reconstruction it wrote the object label Embossed text and explicitly admitted that the inscription was unverified, while requesting completed. The official content check failed. Runtime write verification establishes persistence, not answer correctness.",
+        "improvement_en": "Use observed syntax and mode flags to validate a small parser sample, inspect layer/category coverage before filtering, and select rendering/OCR when text projections are insufficient. At closure, distinguish a verified file write from evidence for the core requested answer; unresolved central interpretation must not become success merely with a disclaimer. These observations do not establish that another model reviewer is necessary.",
+        "summary_es": "Intentó reconstruir trayectorias. La expresión regular inicial omitía decimales como E.01926 y produjo varios resultados vacíos. Después rasterizó solo 92 segmentos de capas bajas. Al no encontrar librerías gráficas, escribió la etiqueta Embossed text y admitió que no verificó la inscripción, pero cerró como completado. Falló la comprobación del contenido.",
+        "improvement_es": "Validar un ejemplo real del formato y sus modos, revisar cobertura de capas antes de filtrar y usar renderizado/OCR si la proyección textual no basta. Distinguir escritura correcta de archivo de respuesta correcta: una incertidumbre central no debe convertirse en éxito mediante una advertencia."
+      },
+      "ordinal": 23,
+      "official_checks_passed": 1,
+      "official_checks_total": 2,
+      "provider_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "tool_calls": {
+        "files_list": 1,
+        "file_read": 1,
+        "environment_inspect": 1,
+        "command_run": 13,
+        "file_write": 1,
+        "tool_search": 1,
+        "task_finish": 1
+      },
+      "artifact_hashes": {
+        "result.json": "6cd45ebede5607d5616964a904b106ae8ec40e582919f9bdc6ac234a149249f8",
+        "verifier/ctrf.json": "87838f416d9b561d929d558e8a45e414eb7381c1755fa841f8278c7a10500e35",
+        "verifier/reward.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "agent/native/report.json": "a4c41123621bb11fb4b34ad286a13ef4f7bd672ead1746dc05213dcec04260eb"
+      },
+      "trial_path_relative": "jobs/fenix-gcode-to-text/gcode-to-text__hZxtw66"
+    },
+    {
+      "job": "fenix-git-leak-recovery",
+      "harness": "fenix",
+      "task": "git-leak-recovery",
+      "reward": 1.0,
+      "execution_seconds": 37.21829,
+      "trial_seconds": 84.52851,
+      "setup_seconds": 0.848554,
+      "verifier_seconds": 19.459782,
+      "input_tokens": 84145,
+      "cached_input_tokens": 53557,
+      "cache_write_tokens": 30560,
+      "output_tokens": 1384,
+      "cost_usd": 0.00505037,
+      "api_calls": 7,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 7
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "audit": {
+        "ordinal": 24,
+        "official_checks_passed": 5,
+        "official_checks_total": 5,
+        "summary_en": "Inspected refs, reflogs and historical blobs; recovered the synthetic benchmark secret outside the repository. Expired reflogs and pruned unreachable objects in the task-authorized disposable repository. Checked output and repository state; all five official checks passed, including valid commit preservation and repository-content checksum. No new failure-driven runtime change is justified by this attempt.",
+        "improvement_en": "Keep this focused flow. Its success does not prove that the new Git snapshot caused an improvement: this trial used direct Git commands.",
+        "summary_es": "Inspeccionó referencias, reflogs y blobs; recuperó el secreto ficticio fuera del repositorio y eliminó los objetos inalcanzables dentro del entorno autorizado. Pasó las cinco pruebas oficiales, incluida conservación de commits válidos y checksum del contenido.",
+        "improvement_es": "Conservar este flujo acotado; esta tarea no justifica una capa adicional. Usó comandos Git directos, por lo que no demuestra un efecto causal del nuevo resumen de entorno."
+      },
+      "ordinal": 24,
+      "official_checks_passed": 5,
+      "official_checks_total": 5,
+      "provider_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "tool_calls": {
+        "environment_inspect": 1,
+        "files_glob": 1,
+        "command_run": 4,
+        "task_finish": 1
+      },
+      "artifact_hashes": {
+        "result.json": "b481fd71655fa6aa4a70daebc1ee3922d2824b675601bfc71180a342291686df",
+        "verifier/ctrf.json": "2eb0e46928e5ab9e2fee12e036c4c3c706a351b18dc0a8a3c5061f285c5df7ce",
+        "verifier/reward.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "agent/native/report.json": "5be07c08185419228c86f3b9600f44d6eac1c8edaae7cf9760c3fc325910c1a9"
+      },
+      "trial_path_relative": "jobs/fenix-git-leak-recovery/git-leak-recovery__uwsqgyA"
+    },
+    {
+      "job": "fenix-gpt2-codegolf",
+      "harness": "fenix",
+      "task": "gpt2-codegolf",
+      "reward": 0.0,
+      "execution_seconds": 43.073684,
+      "trial_seconds": 105.442797,
+      "setup_seconds": 0.842062,
+      "verifier_seconds": 14.719854,
+      "input_tokens": 93441,
+      "cached_input_tokens": 31491,
+      "cache_write_tokens": 59232,
+      "output_tokens": 1746,
+      "cost_usd": 0.00886371,
+      "api_calls": 7,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 7
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "audit": {
+        "ordinal": 25,
+        "official_checks_passed": 0,
+        "official_checks_total": 1,
+        "summary_en": "Inspected the checkpoint and vocabulary, identified absent TensorFlow index metadata, then asked the unavailable evaluation owner for that format. The noninteractive input receipt justified blocked closure, leaving no gpt2.c. It made no public documentation/index lookup or implementation attempt. No timeout, provider error or memory failure occurred. Missing metadata is real; the unsupported inference was that it necessarily required the owner rather than authorized investigation.",
+        "improvement_en": "Separate a technical knowledge/resource gap from an indispensable owner decision. Before owner-unavailable closure, record relevant authorized recovery evidence (local metadata, public format documentation or matching artifact metadata) without forcing unsafe downloads or waiving actual permissions. A prose blocking_reason alone cannot establish that a question is indispensable. This audit does not prove the task would pass after metadata retrieval.",
+        "summary_es": "Detectó que faltaba el índice TensorFlow, preguntó al propietario no disponible y se bloqueó sin crear gpt2.c. No intentó consultar documentación pública ni localizar metadatos compatibles. No hubo timeout, falta de memoria ni error del proveedor. Faltaban metadatos, pero no había evidencia de que solo el usuario pudiera aportarlos.",
+        "improvement_es": "Separar un desconocimiento técnico de una decisión que realmente depende del propietario. Antes de cerrar por falta de respuesta, conservar evidencia de recuperación autorizada pertinente. Un blocking_reason escrito por el modelo no demuestra que la consulta sea indispensable. Esto no prueba que obtener el índice baste para resolver toda la tarea."
+      },
+      "ordinal": 25,
+      "official_checks_passed": 0,
+      "official_checks_total": 1,
+      "provider_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "tool_calls": {
+        "environment_inspect": 1,
+        "files_list": 1,
+        "files_glob": 1,
+        "tool_search": 1,
+        "file_read": 1,
+        "command_run": 2,
+        "ask_user": 1,
+        "task_finish": 1
+      },
+      "artifact_hashes": {
+        "result.json": "7898c347a57da3b304f1ceb692671bc67bbd767ef885ac1bfc43a2689d4adb24",
+        "verifier/ctrf.json": "72770caab71a5cb88f611a279c81d1b3dda5c50e9b1de706cb9ff672755de6d7",
+        "verifier/reward.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "agent/native/report.json": "e64888b81160e484d645aad8e54b6b5a9f5795d6f593f146887258b025059d5a"
+      },
+      "trial_path_relative": "jobs/fenix-gpt2-codegolf/gpt2-codegolf__n5LTVZe"
+    },
+    {
+      "job": "fenix-headless-terminal",
+      "harness": "fenix",
+      "task": "headless-terminal",
+      "reward": 0.0,
+      "execution_seconds": 28.321312,
+      "trial_seconds": 66.317906,
+      "setup_seconds": 0.990632,
+      "verifier_seconds": 18.943559,
+      "input_tokens": 53018,
+      "cached_input_tokens": 25365,
+      "cache_write_tokens": 26209,
+      "output_tokens": 349,
+      "cost_usd": 0.00384868,
+      "api_calls": 5,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 5
+      },
+      "throttle_seconds": 0.005,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "audit": {
+        "ordinal": 26,
+        "official_checks_passed": 0,
+        "official_checks_total": 7,
+        "summary_en": "Asked about an unspecified BaseTerminal contract without reading the available base_terminal.py. Its own blocking_reason stated that the objective was clear and no blocking question was needed. After listing the supplied file, task_finish again explicitly said the question was unnecessary and work should continue, yet requested blocked. The runtime accepted the owner_input_unavailable tool receipt. No implementation was written; all seven checks failed on the missing module. This is direct evidence of a weak blocker-admission path, not a terminal/process failure.",
+        "improvement_en": "Do not treat delivery failure of an optional question as proof that the task depends on the owner. Reconcile a proposed blocker with existing task evidence and available artifacts in the current intake/stop path; preserve legitimate scope/permission questions. The current length check on blocking_reason verifies syntax only and does not catch contradictions. Avoid generic mandatory multi-agent review.",
+        "summary_es": "Preguntó por el contrato de BaseTerminal sin leer base_terminal.py, que estaba disponible. Su propia justificación decía que el objetivo era claro y no hacía falta bloquear. Tras listar el archivo, volvió a decir que debía continuar, pero solicitó blocked y el motor lo aceptó porque ask_user no tenía un usuario disponible. No escribió implementación: fallaron las siete pruebas por módulo ausente.",
+        "improvement_es": "No convertir el fallo de entrega de una pregunta opcional en prueba de dependencia del usuario. Contrastar el bloqueo propuesto con el objetivo y los archivos disponibles en el control actual de entrada/cierre, conservando dudas legítimas y permisos. Validar la longitud del texto blocking_reason no detecta contradicciones; no hace falta imponer múltiples revisores a todas las tareas."
+      },
+      "ordinal": 26,
+      "official_checks_passed": 0,
+      "official_checks_total": 7,
+      "provider_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "tool_calls": {
+        "environment_inspect": 1,
+        "ask_user": 1,
+        "files_list": 1,
+        "task_finish": 1
+      },
+      "artifact_hashes": {
+        "result.json": "de5deb895bfaa670a6bb44a5d87a87ecb08179f4d7a6e6a9abe92b858b965cf3",
+        "verifier/ctrf.json": "989d3cbbae1c6dbbfd589248f83fc71b7e0da5b30f9b68c1b9e475fe3533e6be",
+        "verifier/reward.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "agent/native/report.json": "eee760fa4bd0a816a8224419db984c5e68d431289bd85257d5f90c43383fc98d"
+      },
+      "trial_path_relative": "jobs/fenix-headless-terminal/headless-terminal__ZdP5Bkm"
+    }
+  ]
+}

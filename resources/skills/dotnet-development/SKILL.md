@@ -34,7 +34,3 @@ Check disposal, cancellation, null cases and database behavior relevant to the c
 ## Limits
 
 Preserve supported framework versions; compilation does not validate dependency lifetime or SQL behavior.
-
-## Español
-
-Comprueba ciclos de vida de servicios, cancelación y consultas reales; conserva la versión .NET del proyecto.

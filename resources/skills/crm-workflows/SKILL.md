@@ -36,7 +36,3 @@ Check uniqueness, association targets and changed values, including externally v
 ## Limits
 
 Do not scrape private contact data, merge uncertain identities or launch outreach because a CRM record was created.
-
-## Español
-
-Conserva identidad y procedencia, cambia campos precisos y controla automatizaciones; una skill no instala el CRM.

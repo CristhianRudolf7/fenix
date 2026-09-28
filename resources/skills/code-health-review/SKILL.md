@@ -35,7 +35,3 @@ Return a table of check, scope, status, duration and evidence, plus blockers and
 ## Limits
 
 Test and build commands execute repository code and remain subject to Fénix isolation and task permissions. A report does not authorize executing hostile code on the host, sending logs externally or repairing all detected issues. An unavailable environment limits coverage; it does not justify weakening the check.
-
-## Español
-
-Ejecuta los checks configurados y autorizados, conserva su salida y código de terminación y separa fallos, errores de ejecución, herramientas ausentes y tareas aún activas. No arregles archivos en una revisión informativa. Compara históricos equivalentes; sin checks ejecutados el estado es no evaluado. No conviertas resultados parciales en una puntuación global de calidad.

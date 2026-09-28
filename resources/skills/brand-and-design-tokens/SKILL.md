@@ -34,7 +34,3 @@ Inspect real rendered components in relevant modes and check text contrast, focu
 ## Limits
 
 Do not impose an upstream author’s aesthetic or copy proprietary brand assets without permission.
-
-## Español
-
-Define roles y estados reutilizables, respeta identidad existente y verifica contraste y modos reales.

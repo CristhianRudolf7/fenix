@@ -36,7 +36,3 @@ Test malformed arguments, unavailable capabilities, cancellation and isolation u
 ## Limits
 
 Do not assume a connector is trusted because it speaks MCP or copy stale SDK APIs from examples.
-
-## Español
-
-Implementa esquemas y ciclo de vida correctos; aplica permisos reales y separa logs del protocolo.

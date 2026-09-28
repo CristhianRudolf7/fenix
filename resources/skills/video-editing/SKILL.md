@@ -38,7 +38,3 @@ Check duration, dimensions, stream presence, sync and representative beginning/m
 ## Limits
 
 Do not claim subtitle accuracy or visual quality from exit status alone, and do not upload private footage as an implicit fallback.
-
-## Español
-
-Inspecciona streams y tiempos, selecciona pistas y revisa reproducción y sincronización del archivo final.

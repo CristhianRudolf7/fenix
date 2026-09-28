@@ -1,0 +1,122 @@
+{
+  "date": "2026-09-25",
+  "benchmark": "terminal-bench-2.1",
+  "task": "build-cython-ext",
+  "trial": "build-cython-ext__it9pkAy",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "low",
+  "jev_enabled": false,
+  "attempts": 1,
+  "retries": 0,
+  "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+  "binary_sha256": "a1618f23f28ea4be8565f081b44a49d2dd9674856bcdef1a9fb9125287467193",
+  "reward": 0.0,
+  "official_agent_timeout_seconds": 900,
+  "native_elapsed_seconds": 887.157871863,
+  "checks": {
+    "tests": 11,
+    "passed": 9,
+    "failed": 2,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1790304857.4800606,
+    "stop": 1790304871.3706224
+  },
+  "native_metrics": {
+    "decision_cache_hits": 0,
+    "decision_calls": 0,
+    "decision_estimated_cost_usd": 0.0,
+    "decision_fallbacks": 0,
+    "decision_input_tokens": 0,
+    "decision_output_tokens": 0,
+    "decision_usage_missing": 0,
+    "input_tokens": 2150443,
+    "output_tokens": 9674,
+    "recorded_model_calls": 53,
+    "recoveries": 0,
+    "tool_calls": 58,
+    "tool_errors": 7,
+    "usage_missing": 0
+  },
+  "exception_type": "AgentTimeoutError",
+  "gateway": {
+    "calls_including_startup_and_interrupted_request": 55,
+    "credential_slots": {
+      "1": 28,
+      "2": 27
+    },
+    "http_status_counts": {
+      "200": 55
+    },
+    "throttle_seconds": 379.095,
+    "input_tokens_known": 2150453,
+    "output_tokens_known": 9679,
+    "requests_without_usage": 1,
+    "client_disconnects_after_timeout": 1
+  },
+  "tool_counts": {
+    "tool_search": 14,
+    "skill_load": 1,
+    "environment_inspect": 1,
+    "command_run": 18,
+    "files_glob": 1,
+    "command_status": 1,
+    "file_read": 8,
+    "files_search": 4,
+    "file_patch": 7,
+    "task_contract": 1,
+    "file_edit": 2
+  },
+  "gate_events": {
+    "abandonment_rejected": 0,
+    "completion_rejected": 0,
+    "execution_stalled": 0
+  },
+  "failed_checks": [
+    {
+      "name": "test_outputs.py::test_ccomplexity",
+      "status": "failed"
+    },
+    {
+      "name": "test_outputs.py::test_pyknotid_repository_tests",
+      "status": "failed"
+    }
+  ],
+  "findings": {
+    "en": [
+      "The agent did not voluntarily abandon or claim success. It recovered missing Cython/setuptools/pytest, installed the package and ran 18 repository tests (17 passed, one failed).",
+      "The external runner ended the attempt after 900 seconds. Host quota waits totalled 379.095 seconds; all 55 requests received HTTP 200, but the final stream disconnected at cancellation and has unknown usage.",
+      "The remaining Cython runtime still referenced numpy.int. The repository reconstruction test failed on planarity attribute compatibility.",
+      "Ambiguous file patches and exact-text edits repeatedly failed; small payload changes prevented the evaluated stall detector from grouping equivalent failed edits. Fourteen tool_search calls also consumed model turns.",
+      "This single attempt does not prove the non-success gate caused persistence: no non-success finish call reached it. Local controlled tests exercise rejection and continued execution."
+    ],
+    "es": [
+      "No abandonó voluntariamente ni declaró éxito. Recuperó Cython/setuptools/pytest, instaló el paquete y ejecutó 18 pruebas del repositorio: 17 aprobadas y una fallida.",
+      "El benchmark terminó el intento por timeout de 900 segundos. La pasarela esperó 379,095 segundos por cuota. Las 55 solicitudes recibieron HTTP 200, pero la última transmisión se cortó al cancelar y carece de uso completo.",
+      "Quedaron un uso de numpy.int en Cython y la incompatibilidad de atributos de planarity en la reconstrucción de curvas.",
+      "Se repitieron parches ambiguos y ediciones de texto exacto fallidas; variaciones pequeñas del contenido impedían agruparlas como el mismo estancamiento. Hubo además 14 llamadas a tool_search.",
+      "No demuestra por sí solo que el control causó la persistencia: no hubo cierre fallido que lo activara. Las pruebas locales controladas verifican rechazo y continuación."
+    ]
+  },
+  "post_attempt_adjustment": {
+    "change": "Group failed patches by target paths, diagnostic and repair epoch; changing comments or hunk context alone no longer resets progress or evades stagnation detection.",
+    "official_benchmark_repeated": false,
+    "included_in_evaluated_binary": false,
+    "validation": "Seven stop-gate regression tests passed, including cosmetic patch variations; no additional official benchmark."
+  },
+  "local_validation": {
+    "full_agent_suite": {
+      "passed": 221,
+      "failed": 1,
+      "ignored": 3,
+      "failure": "worktrees::tests::assignment_survives_reopening_runtime_and_cancellation_preserves_edits: data-directory lock remained held",
+      "isolated_rerun": "passed"
+    },
+    "stop_gate_tests_before_benchmark": 6,
+    "engine_rejection_recovery_and_cancellation_test": "passed",
+    "server_build": "passed",
+    "stop_gate_tests_after_attempt": 7
+  },
+  "deployed": false
+}

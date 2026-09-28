@@ -35,7 +35,3 @@ Exercise shutdown, error paths and repeated invocations; a normal output alone d
 ## Limits
 
 Do not add channels for sequential work or ignore cancellation because a worker is in the background.
-
-## Español
-
-Define quién termina cada goroutine y cierra canales. Propaga cancelación y verifica errores, carreras y cierre.

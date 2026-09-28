@@ -457,6 +457,13 @@ body > .account-signout {
 .chat-layout {
   height: 100%;
   min-height: 0;
+  overflow: hidden;
+}
+#page:has(> .chat-layout) {
+  overflow: hidden;
+}
+.chat-layout .chat-scroll {
+  overscroll-behavior-y: contain;
 }
 .conversation-context {
   padding: 24px 36px 18px;
@@ -1616,12 +1623,199 @@ body > .account-menu {
 }
 .composer:focus-within #chat-input,
 .composer:has(#chat-input:not(:placeholder-shown)) #chat-input {
-  height: 64px;
+  height: 40px;
+  min-height: 40px;
   max-height: 160px;
+  field-sizing: content;
 }
 .composer:focus-within .composer-footer,
 .composer:has(#chat-input:not(:placeholder-shown)) .composer-footer {
   justify-content: flex-end;
 }
 
-.composer #chat-input, .composer #chat-input:focus-visible { border: 0; outline: none; box-shadow: none; border-radius: 0; background: transparent; }
+.composer #chat-input,
+.composer #chat-input:focus-visible {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+}
+
+.chat-typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 0;
+  color: var(--muted);
+}
+.chat-typing > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: typing-pulse 1.2s ease-in-out infinite;
+}
+.chat-typing > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.chat-typing > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.chat-typing small {
+  margin-left: 7px;
+}
+@keyframes typing-pulse {
+  50% {
+    opacity: 0.25;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-typing > span {
+    animation: none;
+  }
+}
+
+/* A compact account avatar keeps the footer clear on desktop and mobile. */
+.shell .sidebar-bottom {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 4px 4px;
+  border-top: 0;
+}
+.sidebar-bottom #account-controls,
+.sidebar-bottom .account-menu {
+  width: auto;
+  flex: 0 0 auto;
+}
+.account-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 18%, transparent);
+  cursor: pointer;
+  transition:
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+:root[data-theme="dark"] .account-card {
+  color: var(--canvas);
+}
+.account-card:hover {
+  background: color-mix(in srgb, var(--accent) 88%, #000);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 26%, transparent);
+}
+.account-card:focus-visible,
+.shell:has(.profile-page) .account-card {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.account-card .ui-icon {
+  width: 22px;
+  height: 22px;
+}
+.sidebar-bottom .sidebar-version {
+  margin: 0;
+  padding: 0;
+  font-size: 10px;
+}
+@media (min-width: 621px) {
+  .shell.is-collapsed .sidebar-bottom {
+    justify-content: center;
+    padding-inline: 0;
+  }
+  .is-collapsed .sidebar-version {
+    display: none;
+  }
+  .is-collapsed .sidebar-bottom > .row {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-card {
+    transition: none;
+  }
+}
+
+/* Day separators and quiet, persistent message controls. */
+.message-day {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 28px 0 20px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.message-day::before,
+.message-day::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  opacity: 0.65;
+}
+.message-day span {
+  text-align: center;
+}
+.message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+.message-footer .message-meta {
+  order: 1;
+}
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 0;
+  color: var(--muted);
+}
+.message-actions time {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.message-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 6px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  background: transparent;
+}
+.message-copy svg {
+  width: 15px;
+  height: 15px;
+}
+.message-copy:hover,
+.message-copy.is-copied {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+.message.user .message-footer {
+  justify-content: flex-end;
+}
+.message.user .message-actions {
+  margin-left: auto;
+  order: 2;
+}

@@ -34,7 +34,3 @@ Check known control points, units, extent and counts before/after joins.
 ## Limits
 
 Do not geocode private addresses through an external service without authorization or infer identity from location traces.
-
-## Español
-
-Comprueba CRS, unidades y multiplicidad de cruces; protege ubicaciones precisas y valida puntos conocidos.

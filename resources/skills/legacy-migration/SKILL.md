@@ -34,7 +34,3 @@ Run consumer compatibility checks and a migration rehearsal; document intentiona
 ## Limits
 
 Do not preserve an observed bug as a requirement without checking intent, or promise zero downtime without evidence.
-
-## Español
-
-Migra por límites comprobables, compara efectos y define un retorno compatible con los datos.

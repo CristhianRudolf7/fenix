@@ -8,6 +8,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+mod interaction;
+
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct EvaluationConfig {
@@ -24,6 +26,13 @@ pub struct EvaluationConfig {
     /// Optional container-to-host recording proxy tunnel. Provider HTTP remains loopback-only.
     #[serde(default)]
     pub proxy_upstream: Option<std::net::SocketAddr>,
+    /// Optional typed decisions through the same host recording proxy, with no real key in the container.
+    #[serde(default)]
+    pub decisions: Option<crate::decisions::DecisionSettings>,
+    /// Opt-in local benchmark transport for multi-turn, externally driven scenarios.
+    /// The benchmark owns grading and sends only user-visible notifications here.
+    #[serde(default)]
+    pub interaction_socket: Option<PathBuf>,
 }
 fn waiting_seconds() -> u64 {
     15
@@ -114,6 +123,9 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
     {
         bail!("Evaluation timeouts must be positive");
     }
+    if config.decisions.is_some() && config.proxy_upstream.is_none() {
+        bail!("Evaluation decisions require the host recording proxy");
+    }
     std::fs::create_dir(output).context("Evaluation output must be a new directory")?;
     let tunnel = if let Some(upstream) = config.proxy_upstream {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
@@ -169,19 +181,51 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
         .context("Cannot read evaluation credential")?;
     rt.configure(config.settings.clone(), Some(key.trim().into()))
         .await?;
+    if let Some(decisions) = config.decisions.clone() {
+        let mut relay = reqwest::Url::parse(
+            config
+                .settings
+                .base_url
+                .as_deref()
+                .context("Missing evaluation relay")?,
+        )?;
+        relay.set_path(&format!("{}/jev", relay.path().trim_end_matches('/')));
+        *rt.decisions
+            .evaluation_relay
+            .lock()
+            .expect("decision relay") = Some(relay.to_string());
+        rt.configure_decisions(decisions, Some(key.trim().into()))?;
+    }
     let started = Instant::now();
     let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
+    // Freeze auxiliary learning before starting any worker. Evaluation measures
+    // this task, not an asynchronously learned procedure or cross-trial adaptation.
+    rt.store
+        .put("evaluation", "background_learning_disabled", &true)?;
+    rt.store.put("skill_learning_settings", "enabled", &false)?;
     let workers = rt.start();
     let execution: Result<String> = async {
         if config.instruction.trim().is_empty() || config.instruction.len() > 32_000 { bail!("Evaluation instruction must contain 1–32000 bytes"); }
         // Benchmark instructions are new tasks, not textual chat-control commands
         // such as "reply" or "cancel". All subsequent execution uses the normal worker.
-        let task = rt.store.enqueue(&rt.redactor.text(&config.instruction), "evaluation", None)?;
-        rt.pin_destination(&task.id, "evaluation")?;
-        rt.wake.notify_one();
+        let mut interaction = match &config.interaction_socket {
+            Some(path) => Some(interaction::Session::connect(path, &config.instruction).await?),
+            None => None,
+        };
+        rt.store.put("evaluation", "noninteractive", &interaction.is_none())?;
+        if interaction.is_none() {
+            let task = rt.store.enqueue(&rt.redactor.text(&config.instruction), "evaluation", None)?;
+            rt.pin_destination(&task.id, "evaluation")?;
+            rt.wake.notify_one();
+        }
         let mut settled = None;
         let mut waiting = None;
         loop {
+            if let Some(session) = &mut interaction {
+                if session.tick(&rt).await? {
+                    break Ok("benchmark_complete".into());
+                }
+            }
             let tasks = evaluation_tasks(&rt)?;
             let plans = rt.store.plans()?;
             let running = tasks
@@ -204,7 +248,10 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
             // A running plan with every worker waiting cannot make progress alone.
             // Preserve the genuine question instead of burning the entire deadline.
             let active_tasks = tasks.iter().any(|t| matches!(t.status.as_str(), "running" | "queued"));
-            if running && (!blocked || active_tasks) {
+            if interaction.is_some() {
+                // An idle turn is not the end of an asynchronous scenario. Only
+                // the external controller, deadline or cancellation ends it.
+            } else if running && (!blocked || active_tasks) {
                 settled = None;
                 waiting = None;
             } else if blocked {
@@ -310,6 +357,7 @@ async fn export(
         "dataset_revision":config.dataset_revision,"task_name":config.task_name,"settings":config.settings,
         "elapsed_seconds":elapsed.as_secs_f64(),"stop_reason":reason,"error":error,"metrics":metrics,
         "usage_scope":"Recorded foreground and compaction responses only; provider-side accounting is required for total costs, caching, auxiliary calls and transport retries.",
+        "background_learning":{"enabled":false,"policy":"disabled_before_worker_start","reason":"isolated_reproducible_evaluation"},
         "cost_usd":null,"reward":null,"grading":"External official verifier only; completed is not a passing grade.",
         "traces":traces,"processes":rt.processes.list().await});
     rt.redactor.value(&mut report);
@@ -368,6 +416,8 @@ mod tests {
             dataset_revision: "pinned-test".into(),
             task_name: "reply".into(),
             proxy_upstream: Some(*server.address()),
+            decisions: None,
+            interaction_socket: None,
         };
         run(config(), &output, false).await.unwrap();
         let report = std::fs::read_to_string(output.join("report.json")).unwrap();
@@ -375,6 +425,7 @@ mod tests {
         let report: Value = serde_json::from_str(&report).unwrap();
         assert_eq!(report["stop_reason"], "all_tasks_terminal");
         assert_eq!(report["reward"], Value::Null);
+        assert_eq!(report["background_learning"]["enabled"], false);
         assert_eq!(report["cost_usd"], Value::Null);
         assert!(report["metrics"]["recorded_model_calls"].as_u64().unwrap() >= 1);
         assert!(output.join("ready.json").exists());

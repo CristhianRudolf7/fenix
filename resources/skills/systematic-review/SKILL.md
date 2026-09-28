@@ -39,7 +39,3 @@ Recompute counts from record IDs, inspect exclusions and duplicate links, and tr
 ## Limits
 
 Search coverage, source quality and review conduct remain substantive judgments. A valid ledger proves neither exhaustive retrieval nor unbiased screening. Do not manufacture PRISMA counts, registration IDs or confidence ratings.
-
-## Español
-
-Define un protocolo, conserva búsquedas y decisiones por registro, separa duplicados, exclusiones y textos no recuperados. Distingue publicaciones de estudios. Calcula los recuentos desde el registro y realiza metaanálisis solo cuando las medidas sean comparables. Indica etapas incompletas y límites de cobertura.

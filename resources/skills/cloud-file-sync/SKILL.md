@@ -35,7 +35,3 @@ Check file count, bytes and hashes where meaningful; report provider-specific ch
 ## Limits
 
 Do not infer permission to make files public or propagate deletions from a request to upload a folder.
-
-## Español
-
-Distingue copia y sincronización, conserva conflictos y verifica contenido antes de borrar o avanzar cursores.

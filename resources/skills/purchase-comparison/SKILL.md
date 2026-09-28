@@ -34,7 +34,3 @@ Confirm model/variant identity and that all required criteria are met by the cit
 ## Limits
 
 Do not purchase or share payment/address details without authorization; an affiliate ranking is not independent evidence.
-
-## Español
-
-Compara variantes y coste total con compatibilidad real; propone opciones sin efectuar compras por inferencia.

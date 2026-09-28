@@ -40,9 +40,3 @@ A reader should be able to perform the stated task without unseen session contex
 ## Limits
 
 Do not infer an API from a function name or present aspirational features as available. Preserve unrelated sections when updating docs.
-
-## Español
-
-Documenta comportamiento real, versiones y ejemplos comprobables. Distingue tutorial, referencia y decisión arquitectónica; mantiene coherentes ambos idiomas.
-
-Relaciona cambios públicos con referencias, guías, ejemplos y diagramas afectados. Mantén ambos idiomas y el historial; no generes documentos innecesarios ni presentes ejemplos sin ejecutar como comprobados.

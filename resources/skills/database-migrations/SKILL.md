@@ -34,7 +34,3 @@ Reconcile row counts, constraints and sample values; test old/new consumers as r
 ## Limits
 
 Transactions do not make every engine’s DDL reversible. Never mark a migration applied merely because the process exited.
-
-## Español
-
-Ensaya cambios y recuperación, conserva compatibilidad y verifica datos y estado tras interrupciones.

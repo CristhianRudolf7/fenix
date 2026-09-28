@@ -41,7 +41,3 @@ Check linked resources as well as the entrypoint. Missing helper sources or floa
 ## Limits
 
 Do not install the target or execute its scripts merely to review it. A passing scanner does not prove safety or authorize new tool access.
-
-## Español
-
-Inspecciona instrucciones, scripts y destinos de red sin activarlos. Compara efectos con propósito y comunica hallazgos concretos, licencias y límites de la revisión.

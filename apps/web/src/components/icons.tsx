@@ -2,6 +2,8 @@ import phoenixMarkup from "../assets/favicon.svg?raw";
 
 /** Shared, local vector icons for React and the existing DOM controllers. */
 const paths: Record<string, string> = {
+  refresh:
+    "M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-2l2 3M4 16l2 3a7 7 0 0 0 12-2",
   user: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2",
   download: "M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5",
   close: "M6 6l12 12M18 6 6 18",

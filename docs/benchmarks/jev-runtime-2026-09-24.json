@@ -1,0 +1,99 @@
+{
+  "date": "2026-09-24",
+  "scope": "Isolated Rust runtime; synthetic decision cases, not a full coding benchmark or public deployment",
+  "live_checks": 14,
+  "live_checks_passed": 14,
+  "regression_tests_passed": 41,
+  "classification_cases": [
+    {
+      "name": "duplicate",
+      "correct": true,
+      "accepted": "duplicate",
+      "elapsed_ms": 468,
+      "confidence": 1
+    },
+    {
+      "name": "complementary",
+      "correct": true,
+      "accepted": "complementary",
+      "elapsed_ms": 226,
+      "confidence": 0.99
+    },
+    {
+      "name": "conflicting",
+      "correct": true,
+      "accepted": "conflicting",
+      "elapsed_ms": 282,
+      "confidence": 0.99
+    },
+    {
+      "name": "temporal_change",
+      "correct": true,
+      "accepted": "temporal_change",
+      "elapsed_ms": 317,
+      "confidence": 1
+    },
+    {
+      "name": "route_payroll",
+      "correct": true,
+      "accepted": "alpha",
+      "elapsed_ms": 345,
+      "confidence": 0.99
+    },
+    {
+      "name": "route_multiple",
+      "correct": true,
+      "accepted": null,
+      "elapsed_ms": 305,
+      "confidence": 0.98
+    },
+    {
+      "name": "failed_completion",
+      "correct": true,
+      "accepted": "review",
+      "elapsed_ms": 326,
+      "confidence": 1
+    },
+    {
+      "name": "verified_completion",
+      "correct": true,
+      "accepted": "no_extra_review",
+      "elapsed_ms": 416,
+      "confidence": 0.93
+    },
+    {
+      "name": "relevant_skill",
+      "correct": true,
+      "accepted": null,
+      "elapsed_ms": 249,
+      "confidence": 0.23
+    },
+    {
+      "name": "irrelevant_skill",
+      "correct": true,
+      "accepted": "irrelevant",
+      "elapsed_ms": 354,
+      "confidence": 0.99
+    }
+  ],
+  "classification_mean_ms": 328.8,
+  "classification_input_tokens": 3890,
+  "classification_output_tokens": 511,
+  "classification_gateway_reported_cost_usd": 0.0,
+  "classification_gateway_market_cost_usd": 0.00016338,
+  "total_non_cached_jev_input_tokens": 5503,
+  "total_non_cached_jev_output_tokens": 707,
+  "total_list_price_estimate_usd": 0.000231126,
+  "integrated_skill_ranking_ms": 312,
+  "cache_hit_tokens": 0,
+  "completion_review_ms": 290,
+  "memory_review_ms": 843,
+  "memory_generative_calls": 0,
+  "original_memories_preserved": true,
+  "limitations": [
+    "Only ten raw classification responses retained billed-cost metadata; other calls recorded list-price estimates.",
+    "No paired live baseline task was run; no percentage saving for complete tasks is established.",
+    "One correct relevant-skill classification was rejected for low confidence.",
+    "Public production was not activated or deployed."
+  ]
+}

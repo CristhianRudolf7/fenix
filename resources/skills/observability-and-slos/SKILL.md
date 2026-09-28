@@ -34,7 +34,3 @@ Trigger a controlled local failure and confirm the expected signal reaches the s
 ## Limits
 
 Do not invent an uptime target or install a monitoring service merely because a log was requested.
-
-## Español
-
-Define indicadores útiles y cardinalidad controlada; comprueba entrega de señales y alertas accionables.

@@ -34,7 +34,3 @@ Check every assessment against supplied evidence and clearly separate missing in
 ## Limits
 
 Do not autonomously reject/hire candidates or rank them using sensitive traits or unsupported personality inference.
-
-## Español
-
-Usa criterios laborales consistentes y evidencia real; no inventes logros ni deduzcas rasgos sensibles.

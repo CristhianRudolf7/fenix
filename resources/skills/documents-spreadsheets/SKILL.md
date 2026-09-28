@@ -50,8 +50,3 @@ Read back changed cells and distinguish stored formulas from newly calculated re
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Native document tools do not render pages or calculate formulas. Do not install OfficeCLI or a cloud office dependency as an implicit fallback.
-
-## Español
-
-
-Crea libros XLSX y edita celdas de forma local. Los números, textos y fórmulas son tipos distintos; no conviertas texto del usuario en fórmula automáticamente. El motor guarda fórmulas, pero no las calcula. Indica esa limitación y conserva las hojas, estilos y objetos que no se modifican.

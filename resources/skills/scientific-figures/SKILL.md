@@ -36,7 +36,3 @@ Compare plotted values against source data and inspect the rendered artifact, le
 ## Limits
 
 Do not generate illustrative imagery as if it were experimental data or redraw a scientific result without provenance.
-
-## Español
-
-Grafica datos reales con escalas, unidades e incertidumbre claras; revisa el archivo exportado al tamaño final.

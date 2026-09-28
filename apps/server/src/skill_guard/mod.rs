@@ -83,7 +83,7 @@ impl Service {
                             }
                             // Never store provider errors: they may contain credentials or raw skill text.
                             _ => {
-                                let _=service.store.finish(&job.id,job.attempt,"failed",None,&json!({"policy":scanner::POLICY,"reason":"Review failed or timed out. Nothing was published. Check the operator's Nemotron configuration or retry later."}));
+                                let _=service.store.finish(&job.id,job.attempt,"failed",None,&json!({"policy":scanner::POLICY,"reason":"Review failed or timed out. Nothing was published. Check the operator's fast model configuration or retry later."}));
                             }
                         }
                     }
@@ -178,6 +178,7 @@ struct Search {
 #[serde(deny_unknown_fields)]
 struct Submission {
     bundle: Bundle,
+    #[serde(default)]
     category: String,
 }
 #[derive(Deserialize)]

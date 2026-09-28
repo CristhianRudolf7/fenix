@@ -34,7 +34,3 @@ Check each material claim against its source and reconcile inconsistent plan def
 ## Limits
 
 Do not pose as a customer to obtain private information or invent market-share numbers.
-
-## Español
-
-Compara alternativas equivalentes con fuentes y fechas; separa tamaño total de mercado alcanzable y supuestos.

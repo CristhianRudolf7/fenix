@@ -36,7 +36,3 @@ Record the engine/version, target and played/tested paths. Inspect gameplay outc
 ## Limits
 
 No game engine, asset collection or publishing account is installed. Deployment, store submission, monetization and live server administration require their own requested scope.
-
-## Español
-
-Respeta el motor elegido y verifica un ciclo jugable completo. Separa simulación de renderizado, comprueba colisiones y evita que pausa o reinicio acumulen eventos. Compilar o mostrar una captura no demuestra que el juego funcione.

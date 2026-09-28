@@ -36,7 +36,3 @@ Measure actual restored data, checksums where applicable and elapsed recovery ti
 ## Limits
 
 A backup job success is not proof of restorability. Do not delete originals or overwrite live state unless that action is authorized.
-
-## Español
-
-Comprueba consistencia y restaura primero aparte; un backup exitoso no garantiza recuperación.

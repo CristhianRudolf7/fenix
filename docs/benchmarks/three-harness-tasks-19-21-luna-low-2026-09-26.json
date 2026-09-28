@@ -1,0 +1,514 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "tasks": [
+      "adaptive-rejection-sampler",
+      "fix-code-vulnerability",
+      "count-dataset-tokens"
+    ],
+    "selection_indices": [
+      19,
+      20,
+      21
+    ],
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "tier": "standard",
+    "attempts": 1,
+    "agent_deadline_seconds": 900,
+    "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "fenix_binary_sha256": "e85925f73a7d6f7f1acf21e11bedaa7c663a7809cdc8dedf36348e0db280d113",
+    "codex": "0.157.1",
+    "opencode": "1.18.32",
+    "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "production_changed": false,
+    "changes": [
+      "Inspect representative unfamiliar records before processing",
+      "Verify final behavior against hard constraints rather than only artifact shape",
+      "Explicit tool-program schema, bare names and precise pre-execution errors",
+      "Reinforce test-strategy and data-pipelines skills; preserve production learning and evaluation isolation"
+    ],
+    "validation": {
+      "agent_tests_passed": 256,
+      "agent_optional_tests_ignored": 3,
+      "transport_tests_passed": 4,
+      "server_build": "passed"
+    },
+    "opencode_auxiliary_model": "openai/gpt-6-luna",
+    "notes": [
+      "Official task instruction with identical task-independent execution context; hidden tests and solutions never supplied.",
+      "Sequential attempts, rotating harness order across tasks; no behavioral changes during measurement.",
+      "The execution-target context is unchanged from tasks 13-15. Background learning is now disabled only for native evaluation; all other model calls remain recorded.",
+      "Selection 19 and 20 completes the original list of twenty. Task 21 is the first remaining alphabetically sorted text-only CPU task with an official agent deadline <=900s; bn-fit-modify and break-filter-js-from-html exceed that deadline; chess-best-move requires an image. Selection made before results, with no hidden-test inspection."
+    ]
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "artifact_root": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638",
+  "provider_validation": {
+    "background_learning_disabled_in_all_native_reports": true,
+    "background_learning_extraction_requests": 0,
+    "completed_responses": [
+      {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "service_tier": "default",
+        "count": 192
+      }
+    ],
+    "max_request_input_tokens": 53815
+  },
+  "totals": {
+    "fenix": {
+      "passed": 1,
+      "graded_tasks": 3,
+      "execution_seconds": 1151.031769,
+      "cost_usd": 0.07229634,
+      "input_tokens": 2667777,
+      "output_tokens": 20671,
+      "api_calls": 85,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "codex": {
+      "passed": 3,
+      "graded_tasks": 3,
+      "execution_seconds": 562.208633,
+      "cost_usd": 0.03600378,
+      "input_tokens": 1401413,
+      "output_tokens": 14310,
+      "api_calls": 66,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "opencode": {
+      "passed": 3,
+      "graded_tasks": 3,
+      "execution_seconds": 570.399071,
+      "cost_usd": 0.0307457,
+      "input_tokens": 758568,
+      "output_tokens": 8481,
+      "api_calls": 41,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    }
+  },
+  "attempts": [
+    {
+      "job": "fenix-adaptive-rejection-sampler",
+      "harness": "fenix",
+      "task": "adaptive-rejection-sampler",
+      "reward": 0.0,
+      "execution_seconds": 900.38891,
+      "trial_seconds": 1021.303761,
+      "setup_seconds": 0.823918,
+      "verifier_seconds": 93.119086,
+      "input_tokens": 2212138,
+      "cached_input_tokens": 2010707,
+      "cache_write_tokens": 103098,
+      "output_tokens": 15932,
+      "cost_usd": 0.05079362,
+      "api_calls": 58,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 58
+      },
+      "throttle_seconds": 243.973,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": {
+        "exception_type": "AgentTimeoutError",
+        "exception_message": "Agent execution timed out after 900.0 seconds",
+        "exception_traceback": "Traceback (most recent call last):\n  File \"/usr/lib/python3.13/asyncio/tasks.py\", line 507, in wait_for\n    return await fut\n           ^^^^^^^^^\n  File \"/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/adapters/native_fenix.py\", line 81, in run\n    await wait_for_report(environment)\n  File \"/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/adapters/native_fenix.py\", line 35, in wait_for_report\n    await asyncio.sleep(0.5)\n  File \"/usr/lib/python3.13/asyncio/tasks.py\", line 718, in sleep\n    return await future\n           ^^^^^^^^^^^^\nasyncio.exceptions.CancelledError\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/trial/trial.py\", line 554, in _run_agent_phase\n    await asyncio.wait_for(\n    ...<6 lines>...\n    )\n  File \"/usr/lib/python3.13/asyncio/tasks.py\", line 506, in wait_for\n    async with timeouts.timeout(timeout):\n               ~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"/usr/lib/python3.13/asyncio/timeouts.py\", line 116, in __aexit__\n    raise TimeoutError from exc_val\nTimeoutError\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/trial/single_step.py\", line 77, in _run_agent\n    await self._run_agent_phase(\n    ...<5 lines>...\n    )\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/trial/trial.py\", line 563, in _run_agent_phase\n    raise AgentTimeoutError(\n        f\"Agent execution timed out after {timeout_sec} seconds\"\n    ) from exc\nharbor.trial.errors.AgentTimeoutError: Agent execution timed out after 900.0 seconds\n",
+        "occurred_at": "2026-09-26T19:26:51.336973Z"
+      },
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/fenix-adaptive-rejection-sampler/adaptive-rejection-sampler__mCn3vMc",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 58,
+      "checks": {
+        "tests": 9,
+        "passed": 7,
+        "failed": 2
+      },
+      "failed_checks": [
+        "test_outputs.py::test_formal_testing_with_known_truth",
+        "test_outputs.py::test_sample_files_generated"
+      ],
+      "task_selection_index": 19
+    },
+    {
+      "job": "codex-adaptive-rejection-sampler",
+      "harness": "codex",
+      "task": "adaptive-rejection-sampler",
+      "reward": 1.0,
+      "execution_seconds": 418.224038,
+      "trial_seconds": 530.591921,
+      "setup_seconds": 15.294725,
+      "verifier_seconds": 70.072864,
+      "input_tokens": 1138241,
+      "cached_input_tokens": 1077576,
+      "cache_write_tokens": 60524,
+      "output_tokens": 11202,
+      "cost_usd": 0.02395636,
+      "api_calls": 47,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 47
+      },
+      "throttle_seconds": 165.537,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/codex-adaptive-rejection-sampler/adaptive-rejection-sampler__opXnPWN",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 47,
+      "checks": {
+        "tests": 9,
+        "passed": 9,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 19
+    },
+    {
+      "job": "opencode-adaptive-rejection-sampler",
+      "harness": "opencode",
+      "task": "adaptive-rejection-sampler",
+      "reward": 1.0,
+      "execution_seconds": 389.337646,
+      "trial_seconds": 494.866817,
+      "setup_seconds": 9.998762,
+      "verifier_seconds": 74.190126,
+      "input_tokens": 462045,
+      "cached_input_tokens": 376082,
+      "cache_write_tokens": 85912,
+      "output_tokens": 5379,
+      "cost_usd": 0.01719442,
+      "api_calls": 17,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 17
+      },
+      "throttle_seconds": 0.03,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/opencode-adaptive-rejection-sampler/adaptive-rejection-sampler__SQHXiGo",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 17,
+      "checks": {
+        "tests": 9,
+        "passed": 9,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 19
+    },
+    {
+      "job": "fenix-fix-code-vulnerability",
+      "harness": "fenix",
+      "task": "fix-code-vulnerability",
+      "reward": 0.0,
+      "execution_seconds": 47.718254,
+      "trial_seconds": 71.787451,
+      "setup_seconds": 3.76709,
+      "verifier_seconds": 5.764231,
+      "input_tokens": 186157,
+      "cached_input_tokens": 138710,
+      "cache_write_tokens": 43120,
+      "output_tokens": 2081,
+      "cost_usd": 0.0082503,
+      "api_calls": 12,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 12
+      },
+      "throttle_seconds": 0.025,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/fenix-fix-code-vulnerability/fix-code-vulnerability__7bpiPov",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 12,
+      "checks": {
+        "tests": 6,
+        "passed": 2,
+        "failed": 4
+      },
+      "failed_checks": [
+        "test_outputs.py::test_report_file_exists_example",
+        "test_outputs.py::test_vul_file",
+        "test_outputs.py::test_cwe_id",
+        "test_outputs.py::test_hkey_error_cases"
+      ],
+      "task_selection_index": 20
+    },
+    {
+      "job": "codex-fix-code-vulnerability",
+      "harness": "codex",
+      "task": "fix-code-vulnerability",
+      "reward": 1.0,
+      "execution_seconds": 21.339363,
+      "trial_seconds": 88.622037,
+      "setup_seconds": 11.823706,
+      "verifier_seconds": 5.271817,
+      "input_tokens": 115478,
+      "cached_input_tokens": 78456,
+      "cache_write_tokens": 36998,
+      "output_tokens": 1246,
+      "cost_usd": 0.00603471,
+      "api_calls": 8,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 8
+      },
+      "throttle_seconds": 0.011,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/codex-fix-code-vulnerability/fix-code-vulnerability__64jCzpB",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 8,
+      "checks": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 20
+    },
+    {
+      "job": "opencode-fix-code-vulnerability",
+      "harness": "opencode",
+      "task": "fix-code-vulnerability",
+      "reward": 1.0,
+      "execution_seconds": 41.246016,
+      "trial_seconds": 68.881574,
+      "setup_seconds": 6.732158,
+      "verifier_seconds": 5.248573,
+      "input_tokens": 111847,
+      "cached_input_tokens": 70423,
+      "cache_write_tokens": 41394,
+      "output_tokens": 1161,
+      "cost_usd": 0.00646198,
+      "api_calls": 10,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 10
+      },
+      "throttle_seconds": 0.012,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/opencode-fix-code-vulnerability/fix-code-vulnerability__NreJAMc",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 10,
+      "checks": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 20
+    },
+    {
+      "job": "fenix-count-dataset-tokens",
+      "harness": "fenix",
+      "task": "count-dataset-tokens",
+      "reward": 1.0,
+      "execution_seconds": 202.924605,
+      "trial_seconds": 235.807915,
+      "setup_seconds": 0.853786,
+      "verifier_seconds": 15.437456,
+      "input_tokens": 269482,
+      "cached_input_tokens": 189222,
+      "cache_write_tokens": 80208,
+      "output_tokens": 2658,
+      "cost_usd": 0.01325242,
+      "api_calls": 15,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 15
+      },
+      "throttle_seconds": 0.026,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/fenix-count-dataset-tokens/count-dataset-tokens__wFp29rE",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 15,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 21
+    },
+    {
+      "job": "codex-count-dataset-tokens",
+      "harness": "codex",
+      "task": "count-dataset-tokens",
+      "reward": 1.0,
+      "execution_seconds": 122.645232,
+      "trial_seconds": 174.859604,
+      "setup_seconds": 15.672912,
+      "verifier_seconds": 13.704241,
+      "input_tokens": 147694,
+      "cached_input_tokens": 116341,
+      "cache_write_tokens": 31320,
+      "output_tokens": 1862,
+      "cost_usd": 0.00601271,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.02,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/codex-count-dataset-tokens/count-dataset-tokens__BBLMV5B",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 11,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 21
+    },
+    {
+      "job": "opencode-count-dataset-tokens",
+      "harness": "opencode",
+      "task": "count-dataset-tokens",
+      "reward": 1.0,
+      "execution_seconds": 139.815409,
+      "trial_seconds": 174.940486,
+      "setup_seconds": 3.001134,
+      "verifier_seconds": 14.394463,
+      "input_tokens": 184676,
+      "cached_input_tokens": 147355,
+      "cache_write_tokens": 36526,
+      "output_tokens": 1941,
+      "cost_usd": 0.0070893,
+      "api_calls": 14,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 14
+      },
+      "throttle_seconds": 0.026,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-19-21-20260926-190638/jobs/opencode-count-dataset-tokens/count-dataset-tokens__CCMyWpH",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 14,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 21
+    }
+  ],
+  "limitations": [
+    "Three diagnostic tasks, one attempt per combination; not an overall harness ranking.",
+    "Fenix contains representative-input inspection, requirement-linked verification and tool-composition guidance; no behavioral changes or retries during measurement.",
+    "Official hidden tests were never provided to evaluated agents.",
+    "Costs are usage-based estimates, including reported cache reads/writes, excluding infrastructure and taxes.",
+    "A lower cost for an incomplete/blocked task is not evidence of better efficiency.",
+    "Background skill learning is disabled for native evaluation; production behavior is unchanged. Compare this policy when interpreting earlier rounds.",
+    "Passing the official verifier does not imply comprehensive self-verification or correctness outside the tested cases."
+  ]
+}

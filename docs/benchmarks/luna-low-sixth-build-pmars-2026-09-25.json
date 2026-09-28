@@ -1,0 +1,97 @@
+{
+  "benchmark": "terminal-bench-2.1",
+  "task": "build-pmars",
+  "selection_index": 6,
+  "selection": "Original 20-task audit, following the previous first five tasks",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "low",
+  "jev_enabled": false,
+  "attempts": 1,
+  "retries": 0,
+  "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+  "official_agent_timeout_seconds": 900,
+  "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+  "source_dirty": true,
+  "production_modified": false,
+  "binary_sha256": "ef6f3513df1ccf3b56af6abc67c10fb02094eea049a227f5a5db3ea4cc213f12",
+  "trial": "build-pmars__bY5uPSk",
+  "reward": 1.0,
+  "official_checks": {
+    "tests": 4,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1790307080.0303912,
+    "stop": 1790307080.3311682
+  },
+  "native_elapsed_seconds": 92.349694392,
+  "total_elapsed_seconds": 143.901207,
+  "native_metrics": {
+    "decision_cache_hits": 0,
+    "decision_calls": 0,
+    "decision_estimated_cost_usd": 0.0,
+    "decision_fallbacks": 0,
+    "decision_input_tokens": 0,
+    "decision_output_tokens": 0,
+    "decision_usage_missing": 0,
+    "input_tokens": 226288,
+    "output_tokens": 1819,
+    "recorded_model_calls": 12,
+    "recoveries": 0,
+    "tool_calls": 14,
+    "tool_errors": 0,
+    "usage_missing": 0
+  },
+  "exception": null,
+  "stop_reason": "all_tasks_terminal",
+  "gateway": {
+    "calls_including_startup": 13,
+    "http_status_counts": {
+      "200": 13
+    },
+    "input_tokens": 226298,
+    "output_tokens": 1824,
+    "cached_input_tokens": 160237,
+    "throttle_seconds": 0.023,
+    "requests_without_usage": 0,
+    "credential_slots": {
+      "1": 7,
+      "2": 6
+    }
+  },
+  "findings": {
+    "en": [
+      "Passed all four unmodified official checks in one attempt.",
+      "Fetched Debian source, installed missing build dependencies, built without X11, installed the binary and observed the expected battle output.",
+      "The agent only confirmed that the debugger option exists; it explicitly disclosed that interactive debugger operation remained untested.",
+      "No provider errors, compaction or recovery events; 0.023 seconds of gateway pacing. This one task is not an overall benchmark score."
+    ],
+    "es": [
+      "Aprobó las cuatro comprobaciones oficiales, sin modificar el verificador y con un solo intento.",
+      "Obtuvo el código de Debian, instaló dependencias faltantes, compiló sin X11, instaló el binario y comprobó la salida de una partida.",
+      "Solo confirmó que existía la opción del depurador; declaró que no había probado su funcionamiento interactivo.",
+      "Sin errores de proveedor, compactación ni recuperaciones; 0,023 segundos de espera en la pasarela. Una tarea no representa la puntuación general del benchmark."
+    ]
+  },
+  "checks": [
+    {
+      "name": "test_outputs.py::test_pmars_works",
+      "status": "passed"
+    },
+    {
+      "name": "test_outputs.py::test_headless_no_x11",
+      "status": "passed"
+    },
+    {
+      "name": "test_outputs.py::test_debian_source_used",
+      "status": "passed"
+    },
+    {
+      "name": "test_outputs.py::test_built_from_source",
+      "status": "passed"
+    }
+  ],
+  "binary_unchanged": true
+}

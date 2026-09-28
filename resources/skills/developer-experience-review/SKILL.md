@@ -36,7 +36,3 @@ Deliver a journey table with expected result, actual observation and evidence pe
 ## Limits
 
 Do not sign up, buy a plan, publish packages or change live credentials merely to complete the audit. A skill provides no connector or browser by itself. Preserve existing authorization; do not add a confirmation ceremony for ordinary permitted checks.
-
-## Español
-
-Audita el recorrido real hasta el primer resultado útil: requisitos, instalación, autenticación, ejemplos y recuperación de errores. Separa pruebas ejecutadas de hipótesis sobre un plan. Registra bloqueos y tiempos observados sin inventar puntuaciones ni suponer que un agente experto representa a un principiante. Corrige solo dentro del encargo y verifica el mismo recorrido después.

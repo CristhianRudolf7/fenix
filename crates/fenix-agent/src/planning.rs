@@ -5,7 +5,36 @@ use fenix_storage::{Plan, PlanNodeSpec, SubagentSpec};
 use serde_json::{Value, json};
 use std::{sync::Arc, time::Duration};
 
+fn progress_description(status: &str) -> &'static str {
+    match status {
+        "completed" => "terminado",
+        "cancelled" => "detenido",
+        "blocked" | "failed" => "necesita atención antes de continuar",
+        "running" | "active" => "en curso",
+        "waiting" => "esperando tu respuesta",
+        "queued" | "pending" | "ready" => "pendiente de empezar",
+        "paused" | "revising" | "editing" => "en pausa mientras ajusto el plan",
+        _ => "pendiente de revisión",
+    }
+}
+
 impl Runtime {
+    fn plan_display_name(&self, id: Option<&str>, node_id: Option<&str>) -> String {
+        id.and_then(|id| self.store.plan(id).ok())
+            .map(|plan| {
+                let node = node_id.and_then(|id| plan.nodes.iter().find(|node| node.spec.id == id));
+                match node {
+                    Some(node) => format!(
+                        "{} — {}",
+                        truncate(&plan.objective, 160),
+                        truncate(&node.spec.objective, 160)
+                    ),
+                    None => truncate(&plan.objective, 240),
+                }
+            })
+            .unwrap_or_else(|| "el trabajo solicitado".into())
+    }
+
     pub(crate) async fn handle_plan_control(
         &self,
         text: &str,
@@ -71,7 +100,7 @@ impl Runtime {
             let mut binding = self.store.task_binding(&plan.task_id)?;
             binding.reply_to_task_id = Some(plan.task_id.clone());
             let request = format!(
-                "Revise existing plan {} according to this owner instruction: {}. Read its latest version with plan_manage get. Ask every unresolved doubt. Preserve valid completed milestones and inspect earlier effects before reassigning work. Apply plan_manage revise; do not create a replacement plan or execute milestones in this turn.",
+                "Revise existing plan {} according to this owner instruction: {}. Read its latest version with plan_manage get. Ask every unresolved owner requirement; use the current autonomy preference for implementation choices. Preserve valid completed milestones and inspect earlier effects before reassigning work. Apply plan_manage revise; do not create a replacement plan or execute milestones in this turn.",
                 plan.id, instruction
             );
             let configure = self.configure_lock.lock().await;
@@ -472,7 +501,7 @@ impl Runtime {
                     .filter(|p| node.spec.depends_on.contains(&p.spec.id))
                     .map(|n| json!({"id":n.spec.id,"result":n.result,"worker_id":n.worker_id}))
                     .collect::<Vec<_>>();
-                let context = json!({"plan_id":plan.id,"plan_version":plan.version,"milestone":node.spec.id,"generation":node.generation,"global_objective":plan.objective,"prerequisites":prerequisites,"previous_execution":node.result,"suggested_skills":node.spec.skills,"instruction":"Load relevant enabled skills on demand. Preserve prior effects. Ask every unresolved doubt, including minor ones. Report blockers instead of creating another subagent."});
+                let context = json!({"plan_id":plan.id,"plan_version":plan.version,"milestone":node.spec.id,"generation":node.generation,"global_objective":plan.objective,"prerequisites":prerequisites,"previous_execution":node.result,"suggested_skills":node.spec.skills,"instruction":"Load relevant enabled skills on demand. Preserve prior effects. Always ask unresolved owner requirements; resolve implementation details according to the runtime autonomy preference. Report blockers instead of creating another subagent."});
                 if self
                     .store
                     .subagents(None, 32)?
@@ -484,7 +513,7 @@ impl Runtime {
                     break;
                 }
                 let spec = SubagentSpec {
-                    profile: node.spec.profile.clone(),
+                    profile: "general".into(),
                     objective: node.spec.objective.clone(),
                     expected_output: node.spec.expected_output.clone(),
                     context: truncate(&context.to_string(), 24000),
@@ -551,11 +580,11 @@ impl Runtime {
                 let audit = &event.data["audit"];
                 let label = match audit["status"].as_str() {
                     Some("queued") => {
-                        Some("Resultado ejecutado; pendiente de verificación independiente")
+                        Some("El trabajo está listo para comprobar que cumple lo que pediste")
                     }
-                    Some("passed") => Some("Verificación de resultado completada"),
+                    Some("passed") => Some("He comprobado el resultado"),
                     Some("blocked") => Some(
-                        "Resultado pendiente: la auditoría encontró dudas, fallos o evidencia insuficiente",
+                        "Encontré puntos que necesito resolver antes de dar el trabajo por terminado",
                     ),
                     _ => None,
                 };
@@ -564,12 +593,11 @@ impl Runtime {
                         &event.id,
                         event.task_id.as_deref(),
                         &format!(
-                            "{label} · plan {} · {}\n{}",
-                            audit["plan_id"].as_str().unwrap_or(""),
-                            audit["node_id"]
-                                .as_str()
-                                .filter(|s| !s.is_empty())
-                                .unwrap_or("resultado completo"),
+                            "{label}: {}.\n{}",
+                            self.plan_display_name(
+                                audit["plan_id"].as_str(),
+                                audit["node_id"].as_str()
+                            ),
                             truncate(audit["report"]["summary"].as_str().unwrap_or(""), 2000)
                         ),
                     )?;
@@ -582,15 +610,14 @@ impl Runtime {
                 )
             {
                 let label = match event.data["status"].as_str().unwrap_or("") {
-                    "queued" => "Revisión en cola",
-                    "passed" => "Revisión completada",
-                    "resolving" => "Resolviendo observaciones",
-                    _ => "Revisión bloqueada; necesito una decisión o más evidencia",
+                    "queued" => "Voy a revisar el plan",
+                    "passed" => "He revisado el plan",
+                    "resolving" => "Estoy ajustando el plan",
+                    _ => "Necesito aclarar algunos puntos del plan antes de continuar",
                 };
                 let mut text = format!(
-                    "{label} · plan {} · versión {}\n{}",
-                    event.data["plan_id"].as_str().unwrap_or(""),
-                    event.data["plan_version"],
+                    "{label}: {}.\n{}",
+                    self.plan_display_name(event.data["plan_id"].as_str(), None),
                     event.data["reason"].as_str().unwrap_or("")
                 );
                 if event.data["status"] == "blocked" {
@@ -612,7 +639,9 @@ impl Runtime {
                             truncate(&finding.evidence, 300)
                         ));
                     }
-                    text.push_str("\nPuedes responder en el chat o pedir replanificar indicando el ID del plan.");
+                    text.push_str(
+                        "\nPuedes responder aquí o decirme qué quieres cambiar del plan.",
+                    );
                 }
                 self.publish_once(&event.id, event.task_id.as_deref(), &text)?;
             }
@@ -631,11 +660,9 @@ impl Runtime {
                     .filter(|n| n.status == "completed")
                     .count();
                 let mut text = format!(
-                    "Plan {} · versión {} · {}\n{}\nHitos completados: {}/{}",
-                    plan.id,
-                    plan.version,
-                    plan.status,
+                    "{}: {}.\nPasos completados: {}/{}",
                     plan.objective,
+                    progress_description(&plan.status),
                     complete,
                     plan.nodes.len()
                 );
@@ -644,7 +671,7 @@ impl Runtime {
                         text.push_str(&format!(
                             "\n• {}: {}{}",
                             node.spec.objective,
-                            node.status,
+                            progress_description(&node.status),
                             node.result
                                 .as_ref()
                                 .and_then(|r| r["summary"].as_str())
@@ -660,5 +687,82 @@ impl Runtime {
                 .acknowledge_event("plan_notifications", event.seq)?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod communication_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn plan_notifications_use_objectives_and_keep_routing_ids_internal() {
+        let dir = tempfile::tempdir().unwrap();
+        let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+            .await
+            .unwrap();
+        let task = runtime
+            .store
+            .enqueue_bound(
+                "Prepare the monthly report",
+                "web",
+                None,
+                &fenix_storage::TaskBinding::default(),
+            )
+            .unwrap();
+        let plan = runtime
+            .store
+            .create_plan(
+                &task.id,
+                "Informe mensual",
+                "",
+                vec![PlanNodeSpec {
+                    id: "internal-report-node".into(),
+                    profile: "general".into(),
+                    objective: "Preparar el informe".into(),
+                    expected_output: "report.md".into(),
+                    depends_on: vec![],
+                    skills: vec![],
+                }],
+            )
+            .unwrap();
+        for (topic, data) in [
+            (
+                "plan.review_updated",
+                json!({"status":"passed","plan_id":plan.id,"plan_version":1,"reason":"El plan cubre lo solicitado."}),
+            ),
+            (
+                "plan.audit_updated",
+                json!({"audit":{"status":"queued","plan_id":plan.id,"node_id":"internal-report-node"}}),
+            ),
+        ] {
+            runtime
+                .store
+                .publish_event(Some(&task.id), topic, &data)
+                .unwrap();
+        }
+        runtime.deliver_events().unwrap();
+        let messages = runtime.store.conversation(None, 50).unwrap();
+        let replies: Vec<_> = messages
+            .iter()
+            .filter(|m| m.message.role == fenix_core::Role::Assistant)
+            .collect();
+        assert_eq!(replies.len(), 3);
+        for reply in &replies {
+            assert!(reply.text.contains("Informe mensual"));
+            assert!(!reply.text.contains(&plan.id));
+            assert!(!reply.text.contains(&task.id));
+            assert!(!reply.text.contains("internal-report-node"));
+        }
+        assert!(
+            replies
+                .iter()
+                .any(|reply| reply.text.contains("Preparar el informe"))
+        );
+        runtime.deliver_events().unwrap();
+        assert_eq!(
+            runtime.store.conversation(None, 50).unwrap().len(),
+            messages.len()
+        );
+        assert_eq!(runtime.store.plan(&plan.id).unwrap().task_id, task.id);
     }
 }

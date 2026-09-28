@@ -166,6 +166,9 @@ impl crate::Runtime {
             executable: BTreeSet::new(),
         };
         collect(&dir, "", &mut bundle, &mut 0, &mut 0)?;
+        if let Some(text) = self.saved_skill_translation(&bundle.files["SKILL.md"])? {
+            bundle.files.insert("SKILL.es.md".into(), text);
+        }
         bundle.validate()?;
         Ok(bundle)
     }
@@ -203,6 +206,7 @@ impl crate::Runtime {
             nix::fcntl::RenameFlags::RENAME_NOREPLACE,
         )?;
         root.sync_all()?;
+        self.translation_notify.notify_one();
         Ok(())
     }
 }

@@ -36,7 +36,3 @@ Probe the saved output, decode it, inspect duration/channels and listen to repre
 ## Limits
 
 No TTS provider or voice model is installed by this skill. Use authorized voices/assets; do not imply a real person recorded synthetic narration. Network synthesis must stay within the requested data and spending scope.
-
-## Español
-
-Usa voces y sintaxis disponibles, mide una muestra y comprueba la duración del archivo real. Revisa uniones, inteligibilidad y niveles; separa generación de entrega. Si solo pudo prepararse el guion, indícalo.

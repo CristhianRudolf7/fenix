@@ -35,7 +35,3 @@ Check amounts in the correct currency units, ledger consistency and exactly whic
 ## Limits
 
 Do not charge/refund real accounts during an implementation test or assume cancellation automatically refunds a payment.
-
-## Español
-
-Valida eventos y estados financieros, controla duplicados y prueba en sandbox sin efectuar cargos reales por inferencia.

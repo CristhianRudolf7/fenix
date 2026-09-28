@@ -1,3 +1,4 @@
+import { Loading } from "../components/loading";
 import { useEffect, useRef, useState } from "react";
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
@@ -236,9 +237,7 @@ export default function PdfViewer({
         </form>
       )}
       {!pdf && !error && !unlock && (
-        <p className="pdf-status" role="status">
-          {tr("Loading PDF…", "Cargando PDF…")}
-        </p>
+        <Loading label={tr("Loading PDF…", "Cargando PDF…")} />
       )}
       {pdf && (
         <div

@@ -35,7 +35,3 @@ Each major conclusion should have a source and an honest count/coverage statemen
 ## Limits
 
 Do not infer sensitive traits, psychological diagnoses or universal demand from interview language.
-
-## Español
-
-Pregunta por conductas concretas, conserva contradicciones y vincula conclusiones a evidencia y alcance de la muestra.

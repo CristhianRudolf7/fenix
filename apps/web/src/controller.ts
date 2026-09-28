@@ -1,7 +1,7 @@
 import { ensureWorkspace } from "./workspace/Workspace";
 import { configureWorkspace, openTarget } from "./workspace/store";
 import {
-  offerDesignCreation,
+  openDesignCreation,
   finishDesignCreation,
   type CreationRequest,
 } from "./design/creation";
@@ -19,6 +19,7 @@ import {
 } from "./integrations/Integrations";
 import { renderBrowser, stopBrowser } from "./browser/Browser";
 import { renderSkillsPage, stopSkills } from "./skills/Skills";
+import { renderProfile, stopProfile } from "./profile/Profile";
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 import {
@@ -90,8 +91,6 @@ const providerNames = {
 };
 const names = () => ({
   chat: t("Conversation", "Conversación"),
-  projects: t("Projects", "Proyectos"),
-  memory: t("Memory", "Memoria"),
   skills: "Skills",
   design: "Design",
   documents: t("Library", "Biblioteca"),
@@ -99,7 +98,7 @@ const names = () => ({
   integrations: t("Integrations", "Integraciones"),
   schedules: t("Schedules", "Programaciones"),
   activity: t("Tasks", "Tareas"),
-  settings: t("Settings", "Configuración"),
+  profile: t("My profile", "Mi perfil"),
 });
 const statusName = (value) =>
   ({
@@ -253,7 +252,8 @@ async function render() {
   stopBrowser();
   stopIntegrations();
   stopSchedules();
-  if (!state.status.ready) {
+  stopProfile();
+  if (!state.status.ready && state.page !== "profile") {
     setupView();
     return;
   }
@@ -279,16 +279,14 @@ async function render() {
   }
   const views = {
     chat: renderChat,
-    projects: renderProjects,
     design: () => renderDesign(state.language),
     documents: () => renderLibrary(state.language),
-    memory: renderMemory,
     skills: renderSkills,
     browser: () => renderBrowser(state.language),
     integrations: () => renderIntegrations(state.language),
     schedules: () => renderSchedulesPage(state.language),
     activity: renderActivity,
-    settings: renderSettings,
+    profile: () => renderProfile(state.language),
   };
   try {
     await views[state.page]();
@@ -335,19 +333,65 @@ function chatRequest(): CreationRequest {
     reply_to_task_id: state.replyTo?.taskId || null,
   };
 }
+let sendingMessage = false;
+const optimisticMessages = new Map<string, { text: string; after: number }>();
 async function sendChatRequest(request: CreationRequest) {
-  await api("/messages", { method: "POST", body: request });
-  finishDesignCreation(request.text);
+  if (sendingMessage) return;
+  sendingMessage = true;
+  window.dispatchEvent(new Event("fenix:stop-dictation"));
+  const id = `pending-${crypto.randomUUID()}`;
+  const after = Math.max(
+    0,
+    ...[...state.messages.values()].map((message) => message.seq),
+  );
+  optimisticMessages.set(id, { text: request.text, after });
+  state.messages.set(id, {
+    id,
+    seq: after + 0.5,
+    role: "user",
+    text: request.text,
+    created_at: new Date().toISOString(),
+  });
   const input = $("#chat-input");
-  if (input?.value.trim() === request.text.trim()) input.value = "";
-  if ((state.replyTo?.taskId || null) === request.reply_to_task_id) {
-    state.replyTo = null;
-    drawReplyReference();
+  if (input?.value.trim() === request.text.trim()) {
+    input.value = "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
   }
-  void refreshMessages(true).catch((error) => toast(errorMessage(error)));
+  if ($("#message-list")) {
+    drawMessages();
+    drawLiveMessage();
+    const scroll = $("#chat-scroll");
+    scroll.scrollTo({ top: scroll.scrollHeight, behavior: "instant" });
+  }
+  try {
+    await api("/messages", { method: "POST", body: request });
+    finishDesignCreation(request.text);
+    if ((state.replyTo?.taskId || null) === request.reply_to_task_id) {
+      state.replyTo = null;
+      drawReplyReference();
+    }
+    await refreshMessages(true).catch((error) => toast(errorMessage(error)));
+  } catch (error) {
+    if (optimisticMessages.has(id)) {
+      optimisticMessages.delete(id);
+      state.messages.delete(id);
+      const currentInput = $("#chat-input");
+      if (currentInput && !currentInput.value)
+        currentInput.value = request.text;
+      if ($("#message-list")) drawMessages();
+    }
+    throw error;
+  } finally {
+    sendingMessage = false;
+    drawLiveMessage();
+  }
 }
+
 function projectName(id) {
-  return state.projects.find((project) => project.id === id)?.name || id;
+  return (
+    state.projects.find((project) => project.id === id)?.name ||
+    t("Project", "Proyecto")
+  );
 }
 function projectBadge(item) {
   const binding = item.binding;
@@ -379,7 +423,7 @@ function drawReplyReference() {
     node.replaceChildren();
     return;
   }
-  node.innerHTML = `<div><strong>${t("Replying to", "Respondiendo a")} ${t("task", "la tarea")} ${escape(state.replyTo.taskId.slice(0, 8))}</strong><p>${escape(state.replyTo.text)}</p></div><button type="button" class="subtle" data-action="clear-reply" aria-label="${t("Remove reply reference", "Quitar referencia de respuesta")}">×</button>`;
+  node.innerHTML = `<div><strong>${t("Replying to", "Respondiendo a")} ${t("this request", "esta solicitud")}</strong><p>${escape(state.replyTo.text)}</p></div><button type="button" class="subtle" data-action="clear-reply" aria-label="${t("Remove reply reference", "Quitar referencia de respuesta")}">×</button>`;
 }
 async function refreshMessages(force = false) {
   const messages = await api("/messages");
@@ -388,8 +432,24 @@ async function refreshMessages(force = false) {
       JSON.stringify(state.messages.get(message.id)) !==
       JSON.stringify(message),
   );
+  let reconciled = false;
+  for (const [id, pending] of optimisticMessages) {
+    if (
+      messages.some(
+        (message) =>
+          message.role === "user" &&
+          message.seq > pending.after &&
+          (message.text.trim() === pending.text.trim() ||
+            message.text.startsWith(pending.text.trim() + "\n\n")),
+      )
+    ) {
+      state.messages.delete(id);
+      optimisticMessages.delete(id);
+      reconciled = true;
+    }
+  }
   for (const message of messages) state.messages.set(message.id, message);
-  if (!$("#message-list") || (!changed && !force)) return;
+  if (!$("#message-list") || (!changed && !force && !reconciled)) return;
   const scroll = $("#chat-scroll");
   const nearBottom =
     scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 100;
@@ -398,15 +458,53 @@ async function refreshMessages(force = false) {
   if (!state.messages.size) scroll.scrollTop = 0;
   else if (nearBottom || force) scroll.scrollTop = scroll.scrollHeight;
 }
+function conversationText(text: string) {
+  return text.replace(
+    /\b[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\b/gi,
+    t("(this request)", "(esta solicitud)"),
+  );
+}
 function drawMessages() {
   const messages = [...state.messages.values()].sort((a, b) => a.seq - b.seq);
+  let previousDay = "";
   $(".load-older").hidden = !messages.length;
   $("#message-list").innerHTML = messages.length
     ? messages
-        .map(
-          (message) =>
-            `<article class="message ${message.role}"><span class="avatar" aria-hidden="true">${message.role === "user" ? t("Y", "T") : flameMarkup}</span><div class="message-body"><div class="message-head">${message.role === "user" ? t("You", "Tú") : "Fénix"}<time datetime="${escape(message.created_at)}">${date(message.created_at)}</time>${message.origin === "telegram" ? "<small>Telegram</small>" : ""}</div><div class="message-text markdown-content">${markdownHtml(message.text)}</div>${message.task_id ? `<div class="message-meta">${projectBadge(message)} ${t("Task", "Tarea")} ${escape(message.task_id.slice(0, 8))} <button class="subtle reply-button" data-reply-task="${escape(message.task_id)}" data-reply-message="${escape(message.id)}">${t("Reply", "Responder")}</button></div>` : ""}</div></article>`,
-        )
+        .map((message) => {
+          const timestamp = new Date(message.created_at);
+          const validDate = !Number.isNaN(timestamp.getTime());
+          const day = validDate
+            ? new Intl.DateTimeFormat("en-CA", {
+                timeZone: "America/Lima",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+              }).format(timestamp)
+            : "unknown";
+          const label = validDate
+            ? new Intl.DateTimeFormat(state.language, {
+                timeZone: "America/Lima",
+                day: "numeric",
+                month: "long",
+                ...(timestamp.getFullYear() !== new Date().getFullYear()
+                  ? { year: "numeric" as const }
+                  : {}),
+              }).format(timestamp)
+            : t("Undated messages", "Mensajes sin fecha");
+          const separator =
+            day !== previousDay
+              ? `<div class="message-day"><span>${escape(label)}</span></div>`
+              : "";
+          previousDay = day;
+          const time = validDate
+            ? new Intl.DateTimeFormat(state.language, {
+                timeZone: "America/Lima",
+                hour: "2-digit",
+                minute: "2-digit",
+              }).format(timestamp)
+            : "";
+          return `${separator}<article class="message ${message.role}"><span class="avatar" aria-hidden="true">${message.role === "user" ? t("Y", "T") : flameMarkup}</span><div class="message-body"><div class="message-head">${message.role === "user" ? t("You", "Tú") : "Fénix"}${message.origin === "telegram" ? "<small>Telegram</small>" : ""}</div><div class="message-text markdown-content">${markdownHtml(message.role === "assistant" ? conversationText(message.text) : message.text)}</div><div class="message-footer">${message.task_id ? `<div class="message-meta">${projectBadge(message)} <button class="subtle reply-button" data-reply-task="${escape(message.task_id)}" data-reply-message="${escape(message.id)}">${t("Reply", "Responder")}</button></div>` : ""}<div class="message-actions"><time datetime="${escape(message.created_at)}">${escape(time)}</time><button type="button" class="subtle message-copy" data-copy-message="${escape(message.id)}" aria-label="${t("Copy message", "Copiar mensaje")}" title="${t("Copy message", "Copiar mensaje")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button><span class="sr-only" role="status"></span></div></div></div></article>`;
+        })
         .join("")
     : `<div class="chat-welcome"><span class="welcome-mark">${flameMarkup}</span><div class="eyebrow">${t("YOUR PERSONAL SPACE", "TU ESPACIO PERSONAL")}</div><h1>${t("Your ideas, in motion.", "Tus ideas, en marcha.")}</h1><p>${t("A little less on your mind. A little more possible. Tell me what you would like to do today.", "Menos pendientes en tu cabeza. Más espacio para lo que importa. Cuéntame qué te gustaría hacer hoy.")}</p><div class="suggestions">${[
         [
@@ -440,20 +538,17 @@ function drawMessages() {
 function progressLabel() {
   const progress = state.progress;
   if (!progress?.task_id) return "";
+  const task = state.tasks.find((item) => item.id === progress.task_id);
+  if (task && !["queued", "running", "waiting"].includes(task.status))
+    return "";
   if (!state.progressConnected)
     return t("Reconnecting to live progress…", "Reconectando con el progreso…");
   if (progress.phase === "waiting")
-    return t(
-      "Waiting for your textual answer",
-      "Esperando tu respuesta por texto",
-    );
+    return t("Waiting for your reply", "Esperando tu respuesta");
   if (progress.phase === "retrying")
-    return t(
-      "Retrying the model connection",
-      "Reintentando la conexión con el modelo",
-    );
+    return t("Trying to reconnect", "Intentando volver a conectarme");
   if (progress.phase === "preparing")
-    return t("Preparing the context", "Preparando el contexto");
+    return t("Reviewing your request", "Revisando lo que me pediste");
   if (progress.phase === "generating")
     return t("Generating a response", "Generando una respuesta");
   const labels = {
@@ -471,19 +566,16 @@ function progressLabel() {
     command_cancel: ["Cancelling a command", "Cancelando un comando"],
     memory_search: ["Searching memory", "Buscando en la memoria"],
     memory_manage: ["Managing memory", "Gestionando la memoria"],
-    project_manage: [
-      "Consulting project context",
-      "Consultando el contexto del proyecto",
-    ],
+    project_manage: ["Reviewing the project", "Revisando el proyecto"],
     history_search: [
       "Searching the conversation",
       "Buscando en la conversación",
     ],
     history_read: ["Reading the history", "Leyendo el historial"],
-    skill_load: ["Loading a skill", "Cargando un skill"],
+    skill_load: ["Preparing what is needed", "Preparando lo necesario"],
     schedule_manage: ["Managing schedules", "Gestionando tareas programadas"],
     task_inspect: ["Inspecting a task", "Consultando una tarea"],
-    subagent_spawn: ["Delegating work", "Delegando trabajo"],
+    subagent_spawn: ["Organizing the work", "Organizando el trabajo"],
     subagent_status: [
       "Checking background work",
       "Consultando trabajo en segundo plano",
@@ -523,7 +615,7 @@ function updateActivityStrip() {
   const activity =
     progressLabel() ||
     (masterWaiting
-      ? t("Waiting for your textual answer", "Espera tu respuesta por texto")
+      ? t("Waiting for your reply", "Espera tu respuesta por texto")
       : state.status.active_task
         ? t("Working on your request", "Trabajando en tu solicitud")
         : "");
@@ -538,7 +630,12 @@ function updateActivityStrip() {
       ? `${background} ${t("background tasks", "tareas en segundo plano")}`
       : "",
     pending.length
-      ? `${pending.length} ${t("pending replies · use request IDs in the conversation", "respuestas pendientes · usa los IDs en la conversación")}`
+      ? pending.length === 1
+        ? t(
+            "You have a question to answer",
+            "Tienes una pregunta por responder",
+          )
+        : t("You have questions to answer", "Tienes preguntas por responder")
       : "",
     queued ? `${queued} ${t("queued", "en cola")}` : "",
   ]
@@ -555,9 +652,12 @@ function drawLiveMessage() {
     progress.phase !== "generating" ||
     (progress.message_id && state.messages.has(progress.message_id))
   ) {
-    node.replaceChildren();
+    if (sendingMessage) {
+      node.innerHTML = `<article class="message assistant"><span class="avatar" aria-hidden="true">${flameMarkup}</span><div class="message-body"><div class="chat-typing" role="status" aria-label="${t("Fénix is responding", "Fénix está respondiendo")}"><span></span><span></span><span></span></div></div></article>`;
+    } else node.replaceChildren();
     return;
   }
+  node.querySelector(".chat-typing")?.closest("article")?.remove();
   const scroll = $("#chat-scroll");
   const nearBottom =
     scroll.scrollHeight - scroll.scrollTop - scroll.clientHeight < 100;
@@ -567,7 +667,9 @@ function drawLiveMessage() {
   node.querySelector(".live-label").textContent = state.progressConnected
     ? t("Writing…", "Escribiendo…")
     : t("Reconnecting…", "Reconectando…");
-  node.querySelector(".message-text").innerHTML = markdownHtml(text);
+  node.querySelector(".message-text").innerHTML = markdownHtml(
+    conversationText(text),
+  );
   if (nearBottom) scroll.scrollTop = scroll.scrollHeight;
 }
 let activitySource;
@@ -605,6 +707,11 @@ let progressSource;
 function connectProgress() {
   progressSource?.close();
   progressSource = new EventSource("/api/progress");
+  progressSource.onopen = () => {
+    state.progressConnected = true;
+    updateActivityStrip();
+    drawLiveMessage();
+  };
   progressSource.addEventListener("progress", (event: any) => {
     const previous = state.progress;
     state.progress = JSON.parse(event.data);
@@ -633,148 +740,6 @@ window.addEventListener("pageshow", (event: any) => {
 });
 
 let viewLoadSequence = 0;
-async function renderProjects() {
-  const target = $("#page");
-  const sequence = ++viewLoadSequence;
-  try {
-    const projects = await api("/projects");
-    if (
-      state.page !== "projects" ||
-      sequence !== viewLoadSequence ||
-      !target.isConnected
-    )
-      return;
-    state.projects = projects;
-    target.innerHTML = `<div class="content projects-overview">
-      <header class="projects-intro"><div><div class="eyebrow">${t("YOUR WORKSPACE", "TU ESPACIO")}</div><h1>${t("Your projects", "Tus proyectos")}</h1><p>${t("A view of your ideas, their context and where they live.", "Tus ideas, su contexto y el espacio donde toman forma.")}</p></div><span class="projects-count">${projects.length} ${t("projects", "proyectos")}</span></header>
-      ${projects.length ? `<div class="projects-grid">${projects.map((project) => `<article class="project-summary"><div class="project-summary-icon" aria-hidden="true">${iconMarkup("projects")}</div><h2>${escape(project.name)}</h2><p class="project-summary-description">${escape(project.description || t("No description yet.", "Aún no hay descripción."))}</p>${project.aliases?.length ? `<div class="project-aliases">${project.aliases.map((alias) => `<span>${escape(alias)}</span>`).join("")}</div>` : ""}<footer>${project.workspace ? `<div class="project-location">${iconMarkup("projects")}<span>${escape(project.workspace)}</span></div>` : ""}<small>${t("Updated", "Actualizado")} · ${date(project.updated_at)}</small></footer></article>`).join("")}</div>` : `<div class="projects-empty"><span aria-hidden="true">${iconMarkup("projects")}</span><h2>${t("Your next idea starts here", "Tu próxima idea empieza aquí")}</h2><p>${t("Your projects will appear here when they are available.", "Tus proyectos aparecerán aquí cuando estén disponibles.")}</p></div>`}
-    </div>`;
-  } catch (error) {
-    if (state.page !== "projects" || !target.isConnected) return;
-    target.innerHTML = `<div class="content"><p role="alert">${escape(t("Could not load projects.", "No se pudieron cargar los proyectos."))}</p><button class="projects-retry">${t("Try again", "Reintentar")}</button></div>`;
-    target
-      .querySelector("button")
-      .addEventListener("click", () => void renderProjects());
-  }
-}
-function projectOptions(selected = "") {
-  return `<option value="">${t("General memory", "Memoria general")}</option>${state.projects.map((project) => `<option value="${escape(project.id)}" ${project.id === selected ? "selected" : ""}>${escape(project.name)}</option>`).join("")}`;
-}
-async function renderMemory() {
-  if (state.page !== "memory") return;
-  const target = $("#page");
-  const sequence = ++viewLoadSequence;
-  state.projects = await api("/projects");
-  if (
-    state.page !== "memory" ||
-    target !== $("#page") ||
-    sequence !== viewLoadSequence
-  )
-    return;
-  target.innerHTML = `<div class="content">${heading(t("A memory you can trust.", "Lo importante, a mano."), t("Review memory candidates, confirmed facts and their sources. Correct or withdraw them at any time.", "Revisa candidatos, recuerdos confirmados y sus fuentes. Corrígelos o retíralos cuando quieras."))}<div class="grid"><section class="card"><h2>${t("Saved memories", "Recuerdos guardados")}</h2>${field(`<label for="memory-filter">${t("Memory scope", "Ámbito de memoria")}</label>`, `<select id="memory-filter">${projectOptions()}</select>`)}<form class="search-form" id="memory-search"><input id="memory-query" aria-label="${t("Search memory", "Buscar recuerdos")}" placeholder="${t("Search by words, title or ID…", "Buscar por palabras, título o ID…")}"><button type="submit">${t("Search", "Buscar")}</button></form><div id="memory-list"></div></section><form class="card" id="memory-form"><h2>${t("Keep a detail", "Guardar un detalle")}</h2><input type="hidden" id="memory-id">${field(`<label for="memory-kind">${t("Type", "Tipo")}</label>`, `<select id="memory-kind">${["fact", "preference", "decision", "assumption", "commitment", "constraint"].map((k) => `<option value="${k}">${escape(memoryLabel(k))}</option>`).join("")}</select>`)}${field(`<label for="memory-state">${t("Status", "Estado")}</label>`, `<select id="memory-state">${["confirmed", "candidate", "conflict", "expired", "superseded"].map((k) => `<option value="${k}">${escape(memoryLabel(k))}</option>`).join("")}</select>`)}${field(`<label for="memory-until">${t("Valid until (optional)", "Válido hasta (opcional)")}</label>`, '<input id="memory-until" type="datetime-local">')}${field(`<label for="memory-project">${t("Save in", "Guardar en")}</label>`, `<select id="memory-project">${projectOptions()}</select>`)}${input("memory-title", t("Title", "Título"), "", "required maxlength=200")}${field(`<label for="memory-content">${t("What should I remember?", "¿Qué debo recordar?")}</label>`, '<textarea id="memory-content" required maxlength="16000" rows="5"></textarea>')}<button class="primary" type="submit">${t("Save memory", "Guardar recuerdo")}</button><button class="subtle" data-action="clear-memory" type="button">${t("Clear form", "Limpiar formulario")}</button><p class="form-status" id="memory-status"></p></form></div></div>`;
-  $(".content").insertAdjacentHTML(
-    "beforeend",
-    `<section class="card"><h2>${t("Automatic memory", "Memoria automática")}</h2><label><input type="checkbox" id="memory-auto"> ${t("Collect relevant statements as candidates in the background", "Recopilar afirmaciones relevantes como candidatos en segundo plano")}</label><p>${t("Extraction uses the configured model. Repeated preferences can be promoted; inferred assumptions remain candidates.", "La extracción utiliza el modelo configurado. Las preferencias repetidas pueden promoverse; los supuestos inferidos permanecen como candidatos.")}</p><label><input type="checkbox" id="memory-review"> ${t("Review ambiguous memory pairs in the background", "Revisar pares de recuerdos ambiguos en segundo plano")}</label><p>${t("Uses the configured model only for ambiguous pairs, with at most two attempts per version. Proposals never overwrite facts.", "Utiliza el modelo configurado solo para pares ambiguos, con hasta dos intentos por versión. Las propuestas nunca sobrescriben hechos.")}</p><p id="memory-health"></p><h2>${t("Entities and connections", "Entidades y conexiones")}</h2><p>${t("Manage names, aliases and relationships in the conversation. Each project keeps its own structure.", "Gestiona nombres, alias y relaciones en la conversación. Cada proyecto conserva su propia estructura.")}</p><div id="memory-entities"></div></section>`,
-  );
-  const config = await api("/memory/settings");
-  if (
-    state.page !== "memory" ||
-    target !== $("#page") ||
-    sequence !== viewLoadSequence
-  )
-    return;
-  $("#memory-auto").checked = config.settings.automatic_capture;
-  $("#memory-review").checked = config.settings.automatic_review !== false;
-  const saveMemorySettings = async (event: Event) => {
-    try {
-      await api("/memory/settings", {
-        method: "POST",
-        body: {
-          ...config.settings,
-          automatic_capture: $("#memory-auto").checked,
-          automatic_review: $("#memory-review").checked,
-        },
-      });
-    } catch (error) {
-      toast(errorMessage(error));
-      const checkbox = event.target as HTMLInputElement;
-      checkbox.checked = !checkbox.checked;
-    }
-  };
-  $("#memory-auto").onchange = saveMemorySettings;
-  $("#memory-review").onchange = saveMemorySettings;
-  $("#memory-health").textContent =
-    `${t("Pending candidates", "Candidatos pendientes")}: ${config.maintenance?.candidates || 0} · ${t("Failed extraction jobs", "Extracciones fallidas")}: ${config.maintenance?.failed_jobs || 0}`;
-  await loadMemories();
-}
-function memoryLabel(value) {
-  const labels = {
-    fact: ["Fact", "Hecho"],
-    preference: ["Preference", "Preferencia"],
-    decision: ["Decision", "Decisión"],
-    assumption: ["Assumption", "Supuesto"],
-    commitment: ["Commitment", "Compromiso"],
-    constraint: ["Constraint", "Restricción"],
-    confirmed: ["Confirmed", "Confirmado"],
-    candidate: ["Candidate", "Candidato"],
-    conflict: ["Conflict", "Conflicto"],
-    expired: ["Expired", "Caducado"],
-    superseded: ["Superseded", "Sustituido"],
-  };
-  return labels[value] ? t(labels[value][0], labels[value][1]) : value;
-}
-let memories: Array<Record<string, any>> = [];
-let memoryLoadSequence = 0;
-async function loadMemories(query = "") {
-  const sequence = ++memoryLoadSequence;
-  const projectId = $("#memory-filter")?.value;
-  const loaded = await api(
-    `/memory?query=${encodeURIComponent(query)}${projectId ? `&project_id=${encodeURIComponent(projectId)}` : ""}`,
-  );
-  if (
-    sequence !== memoryLoadSequence ||
-    !$("#memory-list") ||
-    $("#memory-filter")?.value !== projectId
-  )
-    return;
-  const entities = await api("/memory/knowledge", {
-    method: "POST",
-    body: { action: "entities", project_id: projectId || null },
-  });
-  if (
-    sequence !== memoryLoadSequence ||
-    !$("#memory-list") ||
-    $("#memory-filter")?.value !== projectId
-  )
-    return;
-  memories = loaded;
-  if ($("#memory-entities"))
-    $("#memory-entities").innerHTML =
-      entities
-        .map(
-          (e) =>
-            `<button data-entity-card="${escape(e.id)}">${escape(e.name)} · ${escape(e.kind)}</button>`,
-        )
-        .join("") ||
-      t(
-        "No entities in this scope yet.",
-        "Aún no hay entidades en este ámbito.",
-      );
-  $("#memory-list").innerHTML = memories.length
-    ? memories
-        .map(
-          (memory) =>
-            `<article class="record"><h3>${escape(memory.title)}</h3><span class="badge">${escape(memory.project_id ? projectName(memory.project_id) : t("General memory", "Memoria general"))}</span><span class="badge">${escape(memoryLabel(memory.metadata?.kind || "fact"))} · ${escape(memoryLabel(memory.metadata?.status || "confirmed"))}</span><div class="markdown-content">${markdownHtml(memory.content)}</div>${(memory.metadata?.evidence || []).map((e) => `<blockquote>${escape(e.quote)}<small>${escape(e.reference)}</small></blockquote>`).join("")}<small>${date(memory.updated_at)}<br>${escape(memory.source)}<br>${escape(memory.id)}</small><div class="actions"><button data-edit-memory="${memory.id}">${t("Edit", "Editar")}</button><button data-history-memory="${memory.id}">${t("History", "Historial")}</button><button data-delete-memory="${memory.id}">${t("Remove memory", "Eliminar recuerdo")}</button></div></article>`,
-        )
-        .join("")
-    : empty(
-        t("Nothing saved here yet", "Aún no hay recuerdos aquí"),
-        t(
-          "Add a detail or ask Fénix to remember it in the conversation.",
-          "Agrega un detalle o pide a Fénix que lo recuerde en la conversación.",
-        ),
-      );
-}
 async function renderSkills() {
   if (state.page === "skills") renderSkillsPage(state.language);
 }
@@ -798,14 +763,14 @@ async function renderActivity() {
     sequence !== viewLoadSequence
   )
     return;
-  target.innerHTML = `<div class="content task-content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Follow tasks while Fénix keeps the conversation available. To cancel, type cancelar and the task ID in the conversation.", "Sigue las tareas mientras Fénix mantiene disponible la conversación. Para cancelar, escribe cancelar y el ID de la tarea en la conversación."))}<section class="card" id="plans-panel"></section><section class="card background-panel" aria-labelledby="background-title"><div class="row spread"><h2 id="background-title">${t("Background tasks", "Tareas en segundo plano")}</h2><span class="badge" id="background-count"></span></div><p class="muted">${t("Delegated work reports back here and in the conversation.", "El trabajo delegado devuelve su resultado aquí y en la conversación.")}</p><div id="background-subagents"></div></section><section class="card pending-panel" id="task-pending" hidden></section><section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div><div id="task-history"></div></section></div>`;
+  target.innerHTML = `<div class="content task-content">${heading(t("Every step, accounted for.", "Cada paso, a la vista."), t("Follow your work here. To stop something, tell Fénix which task you want to stop in the chat.", "Sigue tus tareas aquí. Para detener alguna, dile a Fénix en el chat cuál quieres parar."))}<section class="card" id="plans-panel"></section><section class="card background-panel" aria-labelledby="background-title"><div class="row spread"><h2 id="background-title">${t("Background tasks", "Tareas en segundo plano")}</h2><span class="badge" id="background-count"></span></div><p class="muted">${t("You can see progress and results here and in the chat.", "Puedes ver los avances y resultados aquí y en la conversación.")}</p><div id="background-subagents"></div></section><section class="card pending-panel" id="task-pending" hidden></section><section class="card"><div class="row spread section-title"><h2>${t("Task history", "Historial de tareas")}</h2><button data-action="refresh-activity">${t("Refresh", "Actualizar")}</button></div><div id="task-history"></div></section></div>`;
   drawTaskActivity();
 }
 function drawPlans() {
   const panel = $("#plans-panel");
   if (!panel) return;
   const plans = state.status.plans || [];
-  panel.innerHTML = `<h2>${t("Plans", "Planes")}</h2><p class="muted">${t("You can change a plan at any time in the conversation, including while it is being prepared.", "Puedes modificar un plan en cualquier momento desde la conversación, incluso mientras se prepara.")}</p>${plans.length ? plans.map((plan) => `<article class="record"><div class="row spread"><h3>${escape(plan.objective)}</h3><span class="badge">v${escape(plan.version)} · ${escape(statusName(plan.status))}</span></div><code>${escape(plan.id)}</code><ol>${plan.nodes.map((node) => `<li><strong>${escape(node.objective)}</strong> · ${escape(statusName(node.status))}<p class="muted">${escape(node.expected_output)}</p>${node.depends_on.length ? `<small>${t("Depends on", "Depende de")}: ${escape(node.depends_on.join(", "))}</small>` : ""}</li>`).join("")}</ol>${completionAuditMarkup(plan)}${(plan.reviews || []).map((review) => `<div class="note"><strong>${t("Plan review", "Revisión del plan")}: ${escape(statusName(review.status))}</strong><p>${escape(review.reason)}</p><small>${t("Round", "Ronda")} ${review.round + 1}/2 · ${review.node_ids.length ? escape(review.node_ids.join(", ")) : t("Whole plan", "Plan completo")}</small></div>`).join("")}<button data-plan="${escape(plan.id)}">${t("View revisions", "Ver revisiones")}</button><p class="note">${t("In the chat", "En el chat")}: <code>replanificar ${escape(plan.id)} ${t("your change", "tu cambio")}</code></p></article>`).join("") : `<p class="muted">${t("Long tasks can run as plans with milestones and dependencies.", "Las tareas largas pueden ejecutarse como planes con hitos y dependencias.")}</p>`}`;
+  panel.innerHTML = `<h2>${t("Plans", "Planes")}</h2><p class="muted">${t("You can change a plan at any time in the conversation, including while it is being prepared.", "Puedes modificar un plan en cualquier momento desde la conversación, incluso mientras se prepara.")}</p>${plans.length ? plans.map((plan) => `<article class="record"><div class="row spread"><h3>${escape(plan.objective)}</h3><span class="badge">v${escape(plan.version)} · ${escape(statusName(plan.status))}</span></div><ol>${plan.nodes.map((node) => `<li><strong>${escape(node.objective)}</strong> · ${escape(statusName(node.status))}<p class="muted">${escape(node.expected_output)}</p>${node.depends_on.length ? `<small>${t("Depends on", "Depende de")}: ${escape(node.depends_on.map((id) => plan.nodes.find((item) => item.id === id)?.objective || t("Another step", "Otro paso")).join(", "))}</small>` : ""}</li>`).join("")}</ol>${completionAuditMarkup(plan)}${(plan.reviews || []).map((review) => `<div class="note"><strong>${t("Plan review", "Revisión del plan")}: ${escape(statusName(review.status))}</strong><p>${escape(review.reason)}</p><small>${t("Round", "Ronda")} ${review.round + 1}/2 · ${review.node_ids.length ? escape(review.node_ids.map((id) => plan.nodes.find((item) => item.id === id)?.objective || t("A plan step", "Un paso del plan")).join(", ")) : t("Whole plan", "Plan completo")}</small></div>`).join("")}<button data-plan="${escape(plan.id)}">${t("View revisions", "Ver revisiones")}</button><p class="note">${t("Tell me in the chat what you would like to change about this plan.", "Dime en el chat qué quieres cambiar de este plan.")}</p></article>`).join("") : `<p class="muted">${t("Long tasks can run as plans with milestones and dependencies.", "Las tareas largas pueden ejecutarse como planes con hitos y dependencias.")}</p>`}`;
 }
 
 function completionAuditMarkup(plan) {
@@ -848,15 +813,15 @@ function drawTaskActivity() {
     ? jobs
         .map(
           (job) =>
-            `<article class="background-task" data-subagent="${escape(job.id)}"><div class="row spread"><h3>${escape(job.spec.objective)} ${projectBadge(job)}</h3><span class="badge">${escape(statusName(job.status))}</span></div><p class="task-output"><span class="muted">${t("Expected output", "Resultado esperado")}:</span> ${escape(job.spec.expected_output)}</p><div class="background-meta"><span>${t("Task ID", "ID de tarea")}: <code>${escape(job.id)}</code></span><span>${t("Parent", "Principal")}: <code>${escape(job.parent_task_id)}</code></span><span>${t("Attempts", "Intentos")}: ${escape(job.attempts)} / 3</span><span>${t("Updated", "Actualizada")}: ${date(job.updated_at)}</span></div>${job.result ? `<details class="subagent-result" data-result="${escape(job.id)}" ${open.has(job.id) ? "open" : ""}><summary>${t("Result", "Resultado")}${job.result.summary ? ` · ${escape(job.result.summary)}` : ""}</summary><pre>${escape(typeof job.result === "string" ? job.result : JSON.stringify(job.result, null, 2))}</pre></details>` : ""}</article>`,
+            `<article class="background-task" data-subagent="${escape(job.id)}"><div class="row spread"><h3>${escape(job.spec.objective)} ${projectBadge(job)}</h3><span class="badge">${escape(statusName(job.status))}</span></div><p class="task-output"><span class="muted">${t("Expected output", "Resultado esperado")}:</span> ${escape(job.spec.expected_output)}</p><div class="background-meta"><span>${t("Updated", "Actualizada")}: ${date(job.updated_at)}</span></div><details><summary>${t("Technical details", "Detalles técnicos")}</summary><code>${escape(job.id)}</code><br><code>${escape(job.parent_task_id)}</code><p>${t("Attempts", "Intentos")}: ${escape(job.attempts)} / 3</p></details>${job.result ? `<details class="subagent-result" data-result="${escape(job.id)}" ${open.has(job.id) ? "open" : ""}><summary>${t("Result", "Resultado")}${job.result.summary ? ` · ${escape(job.result.summary)}` : ""}</summary><pre>${escape(typeof job.result === "string" ? job.result : JSON.stringify(job.result, null, 2))}</pre></details>` : ""}</article>`,
         )
         .join("")
-    : `<p class="muted">${t("No delegated tasks yet.", "Todavía no hay tareas delegadas.")}</p>`;
+    : `<p class="muted">${t("No background work yet.", "Todavía no hay tareas en segundo plano.")}</p>`;
   const requests = $("#task-pending");
   requests.hidden = !pending.length;
-  requests.innerHTML = `<h2>${t("Waiting for your reply", "Esperan tu respuesta")}</h2><p class="muted">${t("Reply in the conversation using the request ID. Other background work can continue.", "Responde en la conversación usando el ID de la solicitud. El resto del trabajo en segundo plano puede continuar.")}</p>${pending.map((request) => `<article class="background-task"><p>${escape(request.question)}</p><div class="background-meta"><span>${t("Task ID", "ID de tarea")}: <code>${escape(request.task_id)}</code></span></div><p class="textual-control">${request.kind === "approval" ? `<code>aprobar ${escape(request.id)}</code> ${t("or", "o")} <code>rechazar ${escape(request.id)}</code>` : `<code>responder ${escape(request.id)} &lt;${t("answer", "respuesta")}&gt;</code>`}</p></article>`).join("")}`;
+  requests.innerHTML = `<h2>${t("Waiting for your reply", "Esperan tu respuesta")}</h2><p class="muted">${t("Reply in the conversation in your own words.", "Responde en la conversación con tus propias palabras.")}</p>${pending.map((request) => `<article class="background-task"><p>${escape(request.question)}</p></article>`).join("")}`;
   $("#task-history").innerHTML = state.tasks.length
-    ? `<div class="table-wrap"><table class="table"><thead><tr><th>${t("Request", "Solicitud")}</th><th>${t("State", "Estado")}</th><th>${t("Created", "Creada")}</th><th>${t("Details", "Detalles")}</th></tr></thead><tbody>${state.tasks.map((task) => `<tr><td><div class="task-request">${escape(task.request)}</div>${projectBadge(task)}<small><code>${escape(task.id)}</code></small></td><td><span class="badge">${escape(statusName(task.status))}</span></td><td>${date(task.created_at)}<br><small>${escape(task.origin)}</small></td><td><button data-task="${escape(task.id)}">${t("Inspect", "Inspeccionar")}</button></td></tr>`).join("")}</tbody></table></div>`
+    ? `<div class="table-wrap"><table class="table"><thead><tr><th>${t("Request", "Solicitud")}</th><th>${t("State", "Estado")}</th><th>${t("Created", "Creada")}</th><th>${t("Details", "Detalles")}</th></tr></thead><tbody>${state.tasks.map((task) => `<tr><td><div class="task-request">${escape(task.request)}</div>${projectBadge(task)}</td><td><span class="badge">${escape(statusName(task.status))}</span></td><td>${date(task.created_at)}<br><small>${escape(task.origin)}</small></td><td><button data-task="${escape(task.id)}">${t("View details", "Ver detalles")}</button></td></tr>`).join("")}</tbody></table></div>`
     : empty(
         t("Ready for the first task", "Todo listo para la primera tarea"),
         t(
@@ -864,17 +829,6 @@ function drawTaskActivity() {
           "Envía un mensaje para ver su progreso aquí.",
         ),
       );
-}
-function renderSettings() {
-  const telegram = state.status.telegram;
-  $("#page").innerHTML =
-    `<div class="content">${heading(t("Make it yours.", "Hazlo tuyo."), t("Your model, your instructions and your connection to Telegram. Everything belongs to this local installation.", "Tu modelo, tus instrucciones y tu conexión a Telegram. Todo pertenece a esta instalación local."))}<div class="split-settings">${modelForm()}<div class="stack"><form class="card" id="telegram-form"><div class="row spread"><h2>Telegram</h2><span class="badge">${t("Optional", "Opcional")}</span></div><p class="muted">${t("Continue this same conversation from your phone. Create a bot with @BotFather and connect its token here.", "Continúa la misma conversación desde tu teléfono. Crea un bot con @BotFather y conecta su token aquí.")}</p>${input("telegram-token", t("Bot token", "Token del bot"), "", `type="password" autocomplete="new-password" placeholder="${telegram ? t("Leave blank to keep it", "Vacío para conservarlo") : "123456:…"}"`)}<div class="field"><label class="toggle"><input id="telegram-enabled" type="checkbox" ${telegram?.enabled ? "checked" : ""}>${t("Enable Telegram", "Activar Telegram")}</label></div><button type="submit" class="primary">${t("Save Telegram", "Guardar Telegram")}</button><p class="form-status" id="telegram-status"></p>${telegram?.pairing_code && telegram.enabled ? `<p class="note">${t("Send this text to", "Envía este texto a")} <strong>@${escape(telegram.username)}</strong>:<br><code>/start ${escape(telegram.pairing_code)}</code></p>` : telegram?.owner_id ? `<p class="note">@${escape(telegram.username)} · ${t("Owner paired", "Propietario vinculado")}</p>` : ""}${telegram?.last_error ? `<p class="note">${escape(telegram.last_error)}</p>` : ""}</form><form class="card" id="instructions-form"><h2>${t("Identity and instructions", "Identidad e instrucciones")}</h2>${field('<label for="instruction-name">Markdown</label>', '<select id="instruction-name"><option>AGENTS.md</option><option>SOUL.md</option><option>IDENTITY.md</option><option>USER.md</option></select>')}<label for="instruction-text">${t("Instructions", "Instrucciones")}</label><textarea id="instruction-text" rows="8" maxlength="8000"></textarea><p class="note">${t("Applied from the next task. Manage MEMORY.md through the Memory section.", "Se aplican desde la siguiente tarea. Gestiona MEMORY.md desde la sección Memoria.")}</p><button type="submit">${t("Save instructions", "Guardar instrucciones")}</button><p id="instruction-status" class="form-status"></p></form></div></div></div>`;
-  updateProviderFields(false);
-  return loadInstruction();
-}
-async function loadInstruction() {
-  const value = await api(`/instructions/${$("#instruction-name").value}`);
-  $("#instruction-text").value = value.text;
 }
 function updateProviderFields(changed) {
   const id = $("#provider").value;
@@ -908,7 +862,7 @@ function scheduleKind() {
 async function showTask(id, after = 0) {
   const value = await api(`/tasks/${id}?after=${after}`);
   showDetail(
-    `${t("Task", "Tarea")} ${id.slice(0, 8)}`,
+    t("Task details", "Detalles del trabajo"),
     `<p>${escape(value.task.request)}</p><p><span class="badge">${statusName(value.task.status)}</span> ${projectBadge(value)}</p>${value.binding?.workspace ? `<p class="muted">${escape(value.binding.workspace)}</p>` : ""}<code>${escape(id)}</code>${value.task.error ? `<p class="note">${escape(value.task.error)}</p>` : ""}${value.questions?.length ? `<h3>${t("Questions", "Preguntas")}</h3>${value.questions.map((q) => `<p>${escape(q.question)} · ${escape(statusName(q.status))}<br><code>${escape(q.id)}</code></p>`).join("")}` : ""}${value.events.map((event: any) => `<details class="record"><summary>${escape(event.kind)} · ${date(event.created_at)}</summary><pre>${escape(JSON.stringify(event.data, null, 2))}</pre></details>`).join("")}${value.events.length === 50 ? `<button data-task="${id}" data-after="${value.events.at(-1).seq}">${t("More events", "Más eventos")}</button>` : ""}`,
   );
 }
@@ -973,6 +927,37 @@ document.addEventListener("click", async (event: any) => {
       $("#chat-input").value = button.dataset.prompt;
       $("#chat-input").focus();
     }
+    if (button.dataset.copyMessage) {
+      const message = state.messages.get(button.dataset.copyMessage);
+      if (message) {
+        const feedback = button.parentElement.querySelector('[role="status"]');
+        try {
+          await navigator.clipboard.writeText(
+            message.role === "assistant"
+              ? conversationText(message.text)
+              : message.text,
+          );
+          button.setAttribute("aria-label", t("Copied", "Copiado"));
+          button.title = t("Copied", "Copiado");
+          feedback.textContent = t("Message copied", "Mensaje copiado");
+          button.classList.add("is-copied");
+          setTimeout(() => {
+            button.classList.remove("is-copied");
+            button.setAttribute(
+              "aria-label",
+              t("Copy message", "Copiar mensaje"),
+            );
+            button.title = t("Copy message", "Copiar mensaje");
+            feedback.textContent = "";
+          }, 2000);
+        } catch {
+          feedback.textContent = t(
+            "Could not copy. Try again.",
+            "No se pudo copiar. Inténtalo de nuevo.",
+          );
+        }
+      }
+    }
     if (button.dataset.replyTask) {
       const message = state.messages.get(button.dataset.replyMessage);
       state.replyTo = {
@@ -1000,66 +985,6 @@ document.addEventListener("click", async (event: any) => {
           ),
         );
       drawMessages();
-    }
-    if (button.dataset.historyMemory || button.dataset.entityCard) {
-      const body = button.dataset.historyMemory
-        ? { action: "history", id: button.dataset.historyMemory }
-        : { action: "card", query: button.dataset.entityCard };
-      const data = await api("/memory/knowledge", {
-        method: "POST",
-        body: { ...body, project_id: $("#memory-filter").value || null },
-      });
-      const renderFact = (m) =>
-        `<article class="record"><h3>${escape(m.title)}</h3><span class="badge">${escape(memoryLabel(m.metadata?.status || "confirmed"))}</span><p>${escape(m.content)}</p>${(m.metadata?.evidence || []).map((e) => `<blockquote>${escape(e.quote)}<small>${escape(e.reference)}</small></blockquote>`).join("")}</article>`;
-      const html = button.dataset.historyMemory
-        ? data
-            .map(
-              (revision) =>
-                `<section><small>${date(revision.changed_at)}</small>${renderFact(revision.snapshot)}</section>`,
-            )
-            .join("")
-        : `<h3>${escape(data.entity?.name)}</h3><p>${escape(data.entity?.description)}</p><small>${escape((data.entity?.aliases || []).join(", "))}</small>${(data.facts || []).map(renderFact).join("")}<h3>${t("Connections", "Conexiones")}</h3>${(data.relations?.neighbors || []).map((n) => `<article class="record"><p>${escape(n.edge.predicate.replaceAll("_", " "))} · ${escape(n.entity.name)}</p><small>${t("Evidence", "Evidencia")}: ${escape(n.edge.evidence_memory_id)}</small></article>`).join("")}`;
-      showDetail(t("Memory evidence", "Evidencia de memoria"), html);
-    }
-    if (button.dataset.editMemory) {
-      const memory = memories.find((m) => m.id === button.dataset.editMemory);
-      if (!memory) return;
-      $("#memory-id").value = memory.id;
-      $("#memory-kind").value = memory.metadata?.kind || "fact";
-      $("#memory-state").value = memory.metadata?.status || "confirmed";
-      $("#memory-until").value = memory.metadata?.valid_until
-        ? new Date(
-            new Date(memory.metadata.valid_until).getTime() -
-              new Date(memory.metadata.valid_until).getTimezoneOffset() * 60000,
-          )
-            .toISOString()
-            .slice(0, 16)
-        : "";
-      $("#memory-title").value = memory.title;
-      $("#memory-content").value = memory.content;
-      $("#memory-project").value = memory.project_id || "";
-      $("#memory-project").disabled = true;
-      $("#memory-title").focus();
-    }
-    if (button.dataset.deleteMemory) {
-      const memory = memories.find(
-        (item) => item.id === button.dataset.deleteMemory,
-      );
-      await api(
-        `/memory/${button.dataset.deleteMemory}${memory?.project_id ? `?project_id=${encodeURIComponent(memory.project_id)}` : ""}`,
-        {
-          method: "DELETE",
-          body: {},
-        },
-      );
-      await loadMemories();
-      toast(t("Memory removed.", "Recuerdo eliminado."));
-    }
-    if (button.dataset.action === "clear-memory") {
-      $("#memory-form").reset();
-      $("#memory-id").value = "";
-      $("#memory-project").disabled = false;
-      $("#memory-project").value = $("#memory-filter").value;
     }
     if (button.dataset.readSkill) {
       const result = await api(`/skills/${button.dataset.readSkill}`);
@@ -1106,14 +1031,6 @@ document.addEventListener("change", async (event: any) => {
   try {
     if (event.target.id === "provider") updateProviderFields(true);
     if (event.target.id === "schedule-kind") scheduleKind();
-    if (event.target.id === "memory-filter") {
-      $("#memory-form").reset();
-      $("#memory-id").value = "";
-      $("#memory-project").disabled = false;
-      $("#memory-project").value = event.target.value;
-      await loadMemories($("#memory-query").value);
-    }
-    if (event.target.id === "instruction-name") await loadInstruction();
     if (event.target.dataset.skill) {
       await api(`/skills/${event.target.dataset.skill}`, {
         method: "PUT",
@@ -1198,46 +1115,7 @@ document.addEventListener("submit", async (event: any) => {
     if (form.id === "chat-form") {
       const request = chatRequest();
       if (!request.text) return;
-      if (!offerDesignCreation(request, sendChatRequest))
-        await sendChatRequest(request);
-    }
-    if (form.id === "memory-search")
-      await loadMemories($("#memory-query").value);
-    if (form.id === "memory-form") {
-      await api("/memory", {
-        method: "POST",
-        body: {
-          id: $("#memory-id").value || null,
-          title: $("#memory-title").value,
-          content: $("#memory-content").value,
-          metadata: {
-            ...(memories.find((m) => m.id === $("#memory-id").value)
-              ?.metadata || {}),
-            kind: $("#memory-kind").value,
-            status: $("#memory-state").value,
-            assertion:
-              $("#memory-state").value === "confirmed"
-                ? "explicit"
-                : memories.find((m) => m.id === $("#memory-id").value)?.metadata
-                    ?.assertion || "explicit",
-            valid_until: $("#memory-until").value
-              ? new Date($("#memory-until").value).toISOString()
-              : null,
-          },
-          project_id: $("#memory-project").value || null,
-        },
-      });
-      const savedProject = $("#memory-project").value;
-      form.reset();
-      $("#memory-id").value = "";
-      $("#memory-project").disabled = false;
-      $("#memory-project").value = savedProject;
-      $("#memory-filter").value = savedProject;
-      $("#memory-status").textContent = t(
-        "Memory saved and verified.",
-        "Recuerdo guardado y verificado.",
-      );
-      await loadMemories();
+      await sendChatRequest(request);
     }
     if (form.id === "schedule-form") {
       const kind = $("#schedule-kind").value;
@@ -1257,31 +1135,6 @@ document.addEventListener("submit", async (event: any) => {
       await api("/schedules", { method: "POST", body });
       await renderSchedules();
       toast(t("Schedule saved.", "Programación guardada."));
-    }
-    if (form.id === "telegram-form") {
-      await api("/telegram", {
-        method: "POST",
-        body: {
-          token: $("#telegram-token").value || null,
-          enabled: $("#telegram-enabled").checked,
-        },
-      });
-      $("#telegram-token").value = "";
-      state.status = await api("/status");
-      await renderSettings();
-      toast(
-        t("Telegram settings saved.", "Configuración de Telegram guardada."),
-      );
-    }
-    if (form.id === "instructions-form") {
-      await api(`/instructions/${$("#instruction-name").value}`, {
-        method: "PUT",
-        body: { text: $("#instruction-text").value },
-      });
-      $("#instruction-status").textContent = t(
-        "Saved. Applies from the next task.",
-        "Guardado. Se aplica desde la siguiente tarea.",
-      );
     }
   } catch (error) {
     const target = form.querySelector(".form-status");
@@ -1375,7 +1228,7 @@ async function boot() {
 }
 window.addEventListener("fenix:messages", () => refreshMessages());
 window.addEventListener("fenix:choose-design", () => {
-  offerDesignCreation(chatRequest(), sendChatRequest, true);
+  openDesignCreation(chatRequest(), sendChatRequest);
 });
 window.addEventListener("fenix:design-draft", (event) => {
   const input = $("#chat-input");

@@ -1,0 +1,54 @@
+.loading-state .interface-skeleton {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.interface-skeleton span {
+  display: block;
+  background: var(--line, #e5e5e5);
+  border-radius: 6px;
+  height: 12px;
+  animation: interface-skeleton-pulse 1.6s ease-in-out infinite;
+}
+.interface-skeleton .skeleton-heading {
+  width: 38%;
+  height: 26px;
+  margin-bottom: 16px;
+}
+.interface-skeleton .skeleton-subheading {
+  width: 64%;
+  margin-bottom: 28px;
+}
+.skeleton-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 18px;
+}
+.skeleton-card {
+  padding: 22px;
+  border: 1px solid var(--line, #e5e5e5);
+  border-radius: 14px;
+}
+.skeleton-card span {
+  margin-bottom: 16px;
+}
+.skeleton-card .skeleton-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+.skeleton-card span:last-child {
+  width: 65%;
+  margin-bottom: 0;
+}
+@keyframes interface-skeleton-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .interface-skeleton span {
+    animation: none;
+  }
+}

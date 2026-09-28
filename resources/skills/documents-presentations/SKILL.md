@@ -48,8 +48,3 @@ Read back slide order/text; do not claim a rendered visual review from XML inspe
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Native document tools do not render pages or calculate formulas. Do not install OfficeCLI or a cloud office dependency as an implicit fallback.
-
-## Español
-
-
-Genera presentaciones PPTX con título y viñetas, o modifica texto de diapositivas existentes. Mantén los mensajes breves y conserva los objetos ajenos. La lectura de texto no comprueba el diseño visual; no prometas gráficos, imágenes ni animaciones que estas herramientas aún no generan.

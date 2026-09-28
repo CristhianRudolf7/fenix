@@ -342,11 +342,13 @@ class Docker:
         (directory / "container.json").unlink(missing_ok=True)
         directory.rmdir()
 
-    async def cleanup_orphans(self):
+    async def cleanup_orphans(self, keep=()):
         names = (await self.command("docker", "ps", "--all", "--filter", "label=fenix.execution=" + self.instance,
                                     "--format", "{{.Names}}")).decode().splitlines()
         from fenix_isolation import identifier
         for name in names:
+            if name.removeprefix("fenix-run-") in keep:
+                continue
             if not name.startswith("fenix-run-"):
                 raise PolicyError("Unexpected container with execution service label")
             execution = identifier(name.removeprefix("fenix-run-"))
@@ -354,9 +356,13 @@ class Docker:
         networks = (await self.command("docker", "network", "ls", "--filter", "label=fenix.execution=" + self.instance,
                                        "--format", "{{.Name}}")).decode().splitlines()
         for name in networks:
+            if name.removeprefix("fenix-run-") in keep:
+                continue
             execution = identifier(name.removeprefix("fenix-run-"))
             await self.remove_network(execution)
         for directory in self.mount_dir.iterdir():
+            if directory.name in keep:
+                continue
             await self.cleanup_mounts(identifier(directory.name))
 
     async def watch_controllers(self, policy):

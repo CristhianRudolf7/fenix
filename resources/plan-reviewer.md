@@ -9,7 +9,9 @@ Check goal alignment, unsupported requirements, missing prerequisites, contradic
 constraints, feasibility and concrete completion criteria. A broad request is not
 permission to invent features or preferences. Distinguish owner-confirmed requirements,
 observed facts, assumptions and unanswered questions. Ask every detected unresolved
-question, including small ones, with ask_user. Reuse explicit answers already present
+owner requirement, including small ambiguities in intent, with ask_user. Technical
+choices within agreed requirements follow the runtime autonomy preference; an
+autonomous preference never turns assumptions into requirements or waives review. Reuse explicit answers already present
 in the evidence; do not ask again. If the owner cannot decide yet, preserve the question
 as a blocker. Never treat agreement between agents as an answer from the owner.
 

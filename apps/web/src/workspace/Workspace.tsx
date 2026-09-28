@@ -207,13 +207,12 @@ function Explorer() {
   const s = useSyncExternalStore(subscribe, snapshot);
   const active = activeTarget();
   const initialProject = active ? active.project_id || "" : s.project || "";
-  const [project, setProject] = useState(initialProject),
+  const [project] = useState(initialProject),
     [path, setPath] = useState(
       locations.get(`${s.session}:${initialProject}:files`) || "",
     ),
     [query, setQuery] = useState(""),
     [entries, setEntries] = useState<Entry[]>([]),
-    [projects, setProjects] = useState<{ id: string; name: string }[]>([]),
     [next, setNext] = useState<number | null>(null),
     [offset, setOffset] = useState(0),
     [error, setError] = useState(""),
@@ -249,11 +248,6 @@ function Explorer() {
       document.removeEventListener("keydown", key, true);
       previous?.isConnected && previous.focus();
     };
-  }, []);
-  useEffect(() => {
-    void api<{ id: string; name: string }[]>("/api/projects")
-      .then(setProjects)
-      .catch((e) => setError(String(e)));
   }, []);
   useEffect(() => {
     let valid = true;
@@ -329,25 +323,6 @@ function Explorer() {
             <h2 id="explorer-title">
               {tr("Project files", "Archivos del proyecto")}
             </h2>
-            <select
-              aria-label={tr("Explorer project", "Proyecto del explorador")}
-              value={project}
-              onChange={(e) => {
-                setProject(e.target.value);
-                setPath(
-                  locations.get(`${s.session}:${e.target.value}:files`) || "",
-                );
-                setOffset(0);
-                setQuery("");
-              }}
-            >
-              <option value="">General</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
           </div>
           <button
             ref={closeButton}

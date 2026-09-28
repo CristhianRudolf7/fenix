@@ -41,13 +41,3 @@ For software work spanning several requirements, contracts or delivery stages, l
 ## Limits
 
 Do not require another agent to approve every trivial step. A plan entry marked complete needs actual evidence, not only a generated summary.
-
-## Español
-
-Aclara el objetivo sin inventar requisitos. Registra supuestos, dudas, dependencias y comprobaciones; permite modificar el plan conservando lo ya ejecutado.
-
-En hitos dependientes, comprueba interfaces productoras y consumidoras, archivos y criterios de aceptación. Ajusta el diseño a la incertidumbre y conserva las autorizaciones existentes; recupera evidencia antes de repetir trabajo tras una compactación.
-
-En revisiones amplias, conserva requisitos aceptados y revisa las dependencias afectadas por cada cambio. Entrega el plan actualizado; una revisión anterior no valida automáticamente la nueva versión.
-
-Para software con varios requisitos o contratos, consulta la referencia de coherencia: detecta ambigüedades, contradicciones y tareas sin relación con el objetivo antes de implementar. Usa los registros existentes y evita este proceso ampliado para cambios sencillos. Revisar requisitos no demuestra que el programa funcione.

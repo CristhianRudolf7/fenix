@@ -1,0 +1,507 @@
+{
+  "protocol": {
+    "tasks": [
+      "cancel-async-tasks",
+      "fix-git",
+      "db-wal-recovery"
+    ],
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "tier": "standard",
+    "attempts": 1,
+    "agent_deadline_seconds": 900,
+    "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "fenix_binary_sha256": "d347bb35a50af58f0c2482672c4e222b82019d4a72a27848157ed01b43d93174",
+    "codex": "0.157.1",
+    "opencode": "1.18.32",
+    "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "production_changed": false,
+    "excluded_setup_runs": {
+      "folder": "discarded-setup-codex0154",
+      "reason": "Stock Harbor temporary CODEX_HOME prevents tool aliases; pre-Luna CLI missing model metadata. Both original attempts passed but are excluded from comparison."
+    }
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "summary": [
+    {
+      "harness": "fenix",
+      "passed": 2,
+      "tasks": 3,
+      "pass_percent": 66.66666666666666,
+      "execution_seconds": 139.122042,
+      "cost_usd": 0.01395878,
+      "input_tokens": 247087,
+      "output_tokens": 3474
+    },
+    {
+      "harness": "codex",
+      "passed": 1,
+      "tasks": 3,
+      "pass_percent": 33.33333333333333,
+      "execution_seconds": 77.017548,
+      "cost_usd": 0.01431783,
+      "input_tokens": 275160,
+      "output_tokens": 5470
+    },
+    {
+      "harness": "opencode",
+      "passed": 1,
+      "tasks": 3,
+      "pass_percent": 33.33333333333333,
+      "execution_seconds": 134.593873,
+      "cost_usd": 0.011213230000000001,
+      "input_tokens": 244273,
+      "output_tokens": 6045
+    }
+  ],
+  "trials": [
+    {
+      "job": "codex-cancel-async-tasks",
+      "harness": "codex",
+      "task": "cancel-async-tasks",
+      "reward": 0.0,
+      "execution_seconds": 13.930809,
+      "trial_seconds": 67.912614,
+      "setup_seconds": 2.101373,
+      "verifier_seconds": 28.806651,
+      "input_tokens": 29079,
+      "cached_input_tokens": 9457,
+      "cache_write_tokens": 19613,
+      "output_tokens": 741,
+      "cost_usd": 0.00291759,
+      "api_calls": 3,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 3
+      },
+      "throttle_seconds": 0.003,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/codex-cancel-async-tasks/cancel-async-tasks__kZzDG5L",
+      "official_checks": {
+        "tests": 6,
+        "passed": 5,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790430110.3784978,
+        "stop": 1790430123.400941
+      }
+    },
+    {
+      "job": "codex-db-wal-recovery",
+      "harness": "codex",
+      "task": "db-wal-recovery",
+      "reward": 0.0,
+      "execution_seconds": 38.327477,
+      "trial_seconds": 82.211829,
+      "setup_seconds": 4.22073,
+      "verifier_seconds": 19.49088,
+      "input_tokens": 147579,
+      "cached_input_tokens": 120774,
+      "cache_write_tokens": 26766,
+      "output_tokens": 2912,
+      "cost_usd": 0.00601339,
+      "api_calls": 13,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 13
+      },
+      "throttle_seconds": 0.013,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/codex-db-wal-recovery/db-wal-recovery__yxjeqcc",
+      "official_checks": {
+        "tests": 7,
+        "passed": 5,
+        "failed": 2,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790430494.072164,
+        "stop": 1790430494.2387455
+      }
+    },
+    {
+      "job": "codex-fix-git",
+      "harness": "codex",
+      "task": "fix-git",
+      "reward": 1.0,
+      "execution_seconds": 24.759262,
+      "trial_seconds": 57.180053,
+      "setup_seconds": 1.911878,
+      "verifier_seconds": 11.051768,
+      "input_tokens": 98502,
+      "cached_input_tokens": 68120,
+      "cache_write_tokens": 30358,
+      "output_tokens": 1817,
+      "cost_usd": 0.00538685,
+      "api_calls": 8,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 8
+      },
+      "throttle_seconds": 0.008,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/codex-fix-git/fix-git__ncJRB6N",
+      "official_checks": {
+        "tests": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790430184.2118928,
+        "stop": 1790430184.407914
+      }
+    },
+    {
+      "job": "fenix-cancel-async-tasks",
+      "harness": "fenix",
+      "task": "cancel-async-tasks",
+      "reward": 1.0,
+      "execution_seconds": 38.821683,
+      "trial_seconds": 97.112579,
+      "setup_seconds": 0.888657,
+      "verifier_seconds": 31.870603,
+      "input_tokens": 46458,
+      "cached_input_tokens": 21782,
+      "cache_write_tokens": 24654,
+      "output_tokens": 1025,
+      "cost_usd": 0.00381427,
+      "api_calls": 5,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 5
+      },
+      "throttle_seconds": 0.014,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/fenix-cancel-async-tasks/cancel-async-tasks__fmCuZPj",
+      "official_checks": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790429600.2134829,
+        "stop": 1790429614.337374
+      },
+      "native_elapsed_seconds": 23.62946873,
+      "stop_reason": "all_tasks_terminal",
+      "native_metrics": {
+        "decision_cache_hits": 0,
+        "decision_calls": 0,
+        "decision_estimated_cost_usd": 0.0,
+        "decision_fallbacks": 0,
+        "decision_input_tokens": 0,
+        "decision_output_tokens": 0,
+        "decision_usage_missing": 0,
+        "input_tokens": 46448,
+        "output_tokens": 1020,
+        "recorded_model_calls": 4,
+        "recoveries": 0,
+        "tool_calls": 5,
+        "tool_errors": 0,
+        "usage_missing": 0
+      }
+    },
+    {
+      "job": "fenix-db-wal-recovery",
+      "harness": "fenix",
+      "task": "db-wal-recovery",
+      "reward": 1.0,
+      "execution_seconds": 44.507765,
+      "trial_seconds": 94.546775,
+      "setup_seconds": 0.819109,
+      "verifier_seconds": 33.455738,
+      "input_tokens": 114384,
+      "cached_input_tokens": 84581,
+      "cache_write_tokens": 29766,
+      "output_tokens": 1617,
+      "cost_usd": 0.00537876,
+      "api_calls": 10,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 10
+      },
+      "throttle_seconds": 0.016,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/fenix-db-wal-recovery/db-wal-recovery__FFx3wah",
+      "official_checks": {
+        "tests": 7,
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790430403.1100302,
+        "stop": 1790430403.2476737
+      },
+      "native_elapsed_seconds": 31.111139919,
+      "stop_reason": "all_tasks_terminal",
+      "native_metrics": {
+        "decision_cache_hits": 0,
+        "decision_calls": 0,
+        "decision_estimated_cost_usd": 0.0,
+        "decision_fallbacks": 0,
+        "decision_input_tokens": 0,
+        "decision_output_tokens": 0,
+        "decision_usage_missing": 0,
+        "input_tokens": 114374,
+        "output_tokens": 1612,
+        "recorded_model_calls": 9,
+        "recoveries": 0,
+        "tool_calls": 9,
+        "tool_errors": 0,
+        "usage_missing": 0
+      }
+    },
+    {
+      "job": "fenix-fix-git",
+      "harness": "fenix",
+      "task": "fix-git",
+      "reward": 0.0,
+      "execution_seconds": 55.792594,
+      "trial_seconds": 86.85096,
+      "setup_seconds": 0.694501,
+      "verifier_seconds": 10.484141,
+      "input_tokens": 86245,
+      "cached_input_tokens": 55710,
+      "cache_write_tokens": 29566,
+      "output_tokens": 832,
+      "cost_usd": 0.00476575,
+      "api_calls": 8,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 8
+      },
+      "throttle_seconds": 0.013,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/fenix-fix-git/fix-git__QmcfqBD",
+      "official_checks": {
+        "tests": 2,
+        "passed": 0,
+        "failed": 2,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790430064.6044562,
+        "stop": 1790430064.748284
+      },
+      "native_elapsed_seconds": 42.085831201,
+      "stop_reason": "requires_user_input",
+      "native_metrics": {
+        "decision_cache_hits": 0,
+        "decision_calls": 0,
+        "decision_estimated_cost_usd": 0.0,
+        "decision_fallbacks": 0,
+        "decision_input_tokens": 0,
+        "decision_output_tokens": 0,
+        "decision_usage_missing": 0,
+        "input_tokens": 86235,
+        "output_tokens": 827,
+        "recorded_model_calls": 7,
+        "recoveries": 0,
+        "tool_calls": 6,
+        "tool_errors": 0,
+        "usage_missing": 0
+      }
+    },
+    {
+      "job": "opencode-cancel-async-tasks",
+      "harness": "opencode",
+      "task": "cancel-async-tasks",
+      "reward": 0.0,
+      "execution_seconds": 39.697036,
+      "trial_seconds": 103.128714,
+      "setup_seconds": 2.766244,
+      "verifier_seconds": 41.873965,
+      "input_tokens": 54360,
+      "cached_input_tokens": 40010,
+      "cache_write_tokens": 14323,
+      "output_tokens": 1998,
+      "cost_usd": 0.00319218,
+      "api_calls": 9,
+      "local_rejections": 1,
+      "usage_missing": 0,
+      "http_status": {
+        "local_rejected_before_provider": 1,
+        "200": 9
+      },
+      "throttle_seconds": 0.013,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/opencode-cancel-async-tasks/cancel-async-tasks__iUQ2Xv7",
+      "official_checks": {
+        "tests": 6,
+        "passed": 5,
+        "failed": 1,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790429789.4342372,
+        "stop": 1790429803.481064
+      }
+    },
+    {
+      "job": "opencode-db-wal-recovery",
+      "harness": "opencode",
+      "task": "db-wal-recovery",
+      "reward": 0.0,
+      "execution_seconds": 49.673995,
+      "trial_seconds": 113.138818,
+      "setup_seconds": 3.113272,
+      "verifier_seconds": 21.596762,
+      "input_tokens": 96299,
+      "cached_input_tokens": 79897,
+      "cache_write_tokens": 16357,
+      "output_tokens": 2371,
+      "cost_usd": 0.0040336,
+      "api_calls": 15,
+      "local_rejections": 1,
+      "usage_missing": 0,
+      "http_status": {
+        "local_rejected_before_provider": 1,
+        "200": 15
+      },
+      "throttle_seconds": 0.015,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/opencode-db-wal-recovery/db-wal-recovery__iDg8hCi",
+      "official_checks": {
+        "tests": 7,
+        "passed": 5,
+        "failed": 2,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790430300.622424,
+        "stop": 1790430300.781242
+      }
+    },
+    {
+      "job": "opencode-fix-git",
+      "harness": "opencode",
+      "task": "fix-git",
+      "reward": 1.0,
+      "execution_seconds": 45.222842,
+      "trial_seconds": 75.22585,
+      "setup_seconds": 2.774175,
+      "verifier_seconds": 10.523778,
+      "input_tokens": 93614,
+      "cached_input_tokens": 74360,
+      "cache_write_tokens": 19218,
+      "output_tokens": 1676,
+      "cost_usd": 0.00398745,
+      "api_calls": 12,
+      "local_rejections": 1,
+      "usage_missing": 0,
+      "http_status": {
+        "local_rejected_before_provider": 1,
+        "200": 12
+      },
+      "throttle_seconds": 0.019,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028/jobs/opencode-fix-git/fix-git__GVftDzi",
+      "official_checks": {
+        "tests": 2,
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0,
+        "pending": 0,
+        "other": 0,
+        "start": 1790429972.5016425,
+        "stop": 1790429972.7155375
+      }
+    }
+  ],
+  "excluded_setup_cost_usd": 0.007494315,
+  "artifacts": "/home/Rudy/.local/share/fenix-evaluations/three-harness-terminal-20260926-133028",
+  "observed_response_configuration": {
+    "model": "gpt-6-luna",
+    "reasoning_effort": "low",
+    "service_tier": "default"
+  },
+  "caveats": [
+    "Single valid attempt per harness/task: no statistical ranking.",
+    "Two Codex 0.154.0 attempts excluded because of temporary HOME helper failure and missing Luna metadata; both preserved, not selected by outcome.",
+    "OpenCode made one additional non-evaluation-model request per task; gateway rejected each before reaching provider. This configuration constraint may affect auxiliary behavior.",
+    "Fenix native elapsed timing excludes part of initialization; table consistently uses Harbor agent_execution for all three.",
+    "Cost includes cache writes and reads, all recorded successful API calls including Fenix startup validation; excludes infrastructure and taxes."
+  ]
+}

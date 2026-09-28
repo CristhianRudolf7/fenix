@@ -73,6 +73,6 @@ sudo env FENIX_GVISOR_TESTS=1 \
 
 Explicit opt-in with a missing runtime is a failure. The suite exercises authorization, real host limits, persistent tools, shared file coherence, read-only exports, terminals, Rust transport, revocation, descendant termination, private network relays and Chromium/CDP. Repeat it on the deployment host and after runtime/image updates. Passing it does not establish arbitrary application compatibility, multi-tenant load capacity or immunity to sandbox escapes. In particular, validate the actual LibreOffice/media image separately; Linux applications relying on unsupported kernel facilities can require adaptation.
 
-RAM snapshots, process suspend/resume, live migration, GPU and Windows desktop support are not implemented by this adapter. Local single-user mode remains a separate mode and is not advertised as a multi-user sandbox.
+Browser-only process hibernation is available on qualified hosts; see [browser lifecycle and validation](browser-lifecycle.md). General process snapshots, live migration, GPU and Windows desktop support remain outside this adapter. Local single-user mode remains a separate mode and is not advertised as a multi-user sandbox.
 
 Primary references: [platforms](https://gvisor.dev/docs/user_guide/platforms/), [filesystem sharing](https://gvisor.dev/docs/user_guide/filesystem/), [application compatibility](https://gvisor.dev/docs/user_guide/compatibility/), [Docker runtime registration](https://docs.docker.com/reference/cli/dockerd/#configure-container-runtimes).

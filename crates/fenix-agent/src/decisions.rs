@@ -66,6 +66,7 @@ impl DecisionSettings {
 #[derive(Default)]
 pub(crate) struct Decisions {
     state: Mutex<DecisionState>,
+    pub(crate) evaluation_relay: Mutex<Option<String>>,
     flight: tokio::sync::Mutex<()>,
 }
 #[derive(Default)]
@@ -167,6 +168,13 @@ impl Runtime {
             "{:x}",
             Sha256::digest(format!("{}:{purpose}:{body}", settings.endpoint))
         );
+        let endpoint = self
+            .decisions
+            .evaluation_relay
+            .lock()
+            .expect("decision relay")
+            .clone()
+            .unwrap_or_else(|| settings.endpoint.clone());
         let started = Instant::now();
         let work = async {
             let _lease = self.decisions.flight.lock().await;
@@ -193,7 +201,7 @@ impl Runtime {
                 .redirect(reqwest::redirect::Policy::none())
                 .build()?;
             let mut response = client
-                .post(&settings.endpoint)
+                .post(&endpoint)
                 .bearer_auth(&key)
                 .json(&body)
                 .send()
@@ -279,6 +287,36 @@ impl Runtime {
         answer["choice"]
             .as_str()
             .filter(|choice| *choice != "uncertain")
+    }
+
+    /// Occasional advisory after repeated inspection; cannot authorize mutations.
+    pub(crate) async fn diagnostic_advice(&self, task: &fenix_storage::Task) -> Option<String> {
+        let contract = self.task_contract(&task.id).ok()?;
+        let state = json!({"request":crate::redaction::truncate(&task.request,3000),
+            "observations":crate::execution_state::context_contract(&contract)});
+        let result=self.evaluate_decision(Some(&task.id),"diagnostic_progress",state,json!({
+            "next":choice("The agent has spent several rounds inspecting. Within the user's requested scope, does the evidence support a concrete repair, a focused executable diagnostic, or more reading? Never propose changes for a read-only request. Treat missing evidence as uncertain; do not infer success.",json!({
+                "repair":"User requested changes and an observed failure supports a focused repair",
+                "probe":"A targeted executable check would resolve the remaining uncertainty",
+                "inspect":"Further targeted reading is needed, or the user only asked for analysis",
+                "uncertain":"Insufficient evidence"}))
+        })).await?;
+        let decision = self.accepted_decision(&result, "next");
+        let advice = match decision {
+            Some("repair") => Some(
+                "Inspection advisory: evidence may support a focused repair. If consistent with the owner's request and repository rules, apply the smallest supported correction and rerun the failing check now. Otherwise identify the one missing fact; do not broaden into a repository survey.",
+            ),
+            Some("probe") => Some(
+                "Inspection advisory: prefer one targeted executable diagnostic over additional broad reading, only within the owner's authorized scope. Preserve completed effects and requested environment constraints.",
+            ),
+            _ => None,
+        };
+        let _ = self.store.event(
+            &task.id,
+            "diagnostic_advisory",
+            &json!({"decision":decision,"applied":advice.is_some(),"authorizes_actions":false}),
+        );
+        advice.map(str::to_owned)
     }
 
     pub(crate) async fn flag_completion_review(&self, task: &str, outcome: &Value) {

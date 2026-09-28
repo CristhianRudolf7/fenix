@@ -12,7 +12,7 @@ nuevo. Su sandbox permanece habilitado; actualízalo con el sistema operativo.
 
 En **[Navegador](/browser)**, crea un perfil como `personal`, introduce una URL y pulsa Abrir.
 Puedes hacer clic en la pantalla, escribir, pegar y desplazarte. Completa allí las
-contraseñas, QR, MFA o CAPTCHA. Activa **Permitir acceso al agente** cuando quieras
+contraseñas, QR, MFA o CAPTCHA cuando sea necesario. El agente también puede escribir las contraseñas que le proporciones y enviar el login autorizado sin intervención manual. Activa **Permitir acceso al agente** cuando quieras
 que Fénix use ese perfil. **Tomar control** impide nuevas acciones del agente; una
 acción que ya se ejecutaba puede finalizar. La interacción manual también lo desactiva.
 
@@ -29,6 +29,13 @@ no pasan al chat ni al registro de herramientas; la clave maestra no se guarda.
 El gestor nativo de contraseñas de Chromium queda deshabilitado. El cifrado del almacén
 **no cifra todo el perfil de Chromium**; los directorios tienen permisos 0700 y el
 almacén 0600. El puerto de depuración local no tiene autenticación: otros procesos de esta máquina y los administradores del sistema quedan fuera de esa protección.
+
+El agente puede crear un perfil personal nuevo al abrir el navegador con un
+nombre explícito para una tarea recurrente autorizada. La sesión se conserva al
+cerrar el navegador. No se reactiva un perfil existente cuyo control haya retomado
+el usuario. Las observaciones omiten los valores de los campos. También se admiten
+clic derecho, clic central y controles de rango. Se respetan las restricciones
+reales de la página y las verificaciones externas que requieran al usuario.
 
 ## Agente y pruebas
 
@@ -52,13 +59,14 @@ frames complejos o sistemas antibots pueden automatizarse sin ayuda.
 ## Memoria
 
 Configura `<data-dir>/browser.json` y reinicia Fénix. Por defecto: Chromium en
-`/usr/bin/chromium`, dos perfiles abiertos, cuatro pestañas por perfil, cierre tras
-600 segundos sin actividad y presupuesto de 2048 MiB. El monitor revisa cada cinco
-segundos la suma de RSS de los procesos; las acciones en curso pueden retrasarlo.
-Es un presupuesto flexible, no un límite estricto del sistema operativo, y la suma
-puede contar memoria compartida más de una vez. Mirar la pantalla mantiene el perfil
-activo. Cerrar por inactividad o presupuesto conserva el perfil personal pero pierde
-formularios sin guardar. No se consume RAM de Chromium hasta abrirlo.
+`/usr/bin/chromium`, dos perfiles abiertos, cuatro pestañas por perfil,
+600 segundos para considerar una sesión del usuario inactiva y 60 segundos para
+considerar la suspensión cuando todas sus tareas esperan respuesta. El navegador
+de una tarea terminada se cierra si nadie más lo necesita. Una cola global considera
+RAM y límites por cuenta. Sin soporte de suspensión se conserva la página activa.
+Consulta el [ciclo de vida](browser-lifecycle.md) para configuración, garantías y
+validación realizada del checkpoint real. Mirar la pantalla cuenta como actividad.
+No se consume RAM de Chromium hasta abrirlo.
 
 Consulta los detalles y comandos de prueba en la documentación en inglés. Las pruebas
 reales usan un sitio local, sin cuentas personales ni proveedores externos.

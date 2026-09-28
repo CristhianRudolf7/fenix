@@ -1,0 +1,290 @@
+{
+  "date": "2026-09-26",
+  "scope": "One selected task per benchmark; not a benchmark-wide score.",
+  "native_git_head": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+  "dirty_worktree": true,
+  "model": "gpt-6-luna",
+  "reasoning_effort": "low",
+  "flex": false,
+  "jev": false,
+  "shared_quota_and_host": true,
+  "timing_note": "Native elapsed includes API waits; Gaia2 includes final judge wait. Agent phases and full trial time are separate. Cold image preparation is excluded; Harbor total includes verifier setup.",
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "results": [
+    {
+      "benchmark": "gaia2-cli",
+      "task_id": "scenario_universe_21_2m6akl",
+      "dataset_revision": "240ac47bfc62b24c934f95d014ffa5a3cab8b04c",
+      "selection_order": "lexicographic scenario_id within split",
+      "dataset_size": 160,
+      "agent_attempts": 1,
+      "model": "gpt-6-luna",
+      "reasoning_effort": "low",
+      "binary_sha256": "aef326d43d7509898cc76cf1596107af43ca8fddcb34d42a5e2244b733c5d8c1",
+      "native_elapsed_seconds": 844.190872947,
+      "native_stop_reason": "benchmark_complete",
+      "native_metrics": {
+        "decision_cache_hits": 0,
+        "decision_calls": 0,
+        "decision_estimated_cost_usd": 0.0,
+        "decision_fallbacks": 0,
+        "decision_input_tokens": 0,
+        "decision_output_tokens": 0,
+        "decision_usage_missing": 0,
+        "input_tokens": 1702552,
+        "output_tokens": 7728,
+        "recorded_model_calls": 31,
+        "recoveries": 1,
+        "tool_calls": 30,
+        "tool_errors": 4,
+        "usage_missing": 0
+      },
+      "provider_accounting": {
+        "requests": 32,
+        "http_errors": 0,
+        "usage_missing": 0,
+        "input_tokens": 1702562,
+        "output_tokens": 7733,
+        "cached_input_tokens": 1366826,
+        "cache_write_tokens": 307113,
+        "reasoning_tokens": 3585,
+        "estimated_cost_usd": 0.05878618,
+        "throttle_seconds": 628.78,
+        "request_span_seconds": 837.9970757961273,
+        "max_input_tokens_per_request": 93802
+      },
+      "evidence_directory": "/home/Rudy/.local/share/fenix-evaluations/gaia-terminalworld-tb4-20260926/gaia-task-run",
+      "original_judge_result": false,
+      "original_judge_error": "LiteLLM rejected upstream temperature=0 before sending a judge model request.",
+      "regraded_success": true,
+      "regraded_matches": 6,
+      "judge_accounting": {
+        "requests": 1,
+        "http_errors": 0,
+        "usage_missing": 0,
+        "input_tokens": 2649,
+        "output_tokens": 51,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 2646,
+        "reasoning_tokens": 0,
+        "estimated_cost_usd": 0.00035655,
+        "throttle_seconds": 0.044,
+        "request_span_seconds": 1.7121925354003906
+      },
+      "total_trial_seconds": 896.1610548649915,
+      "judge_model": "gpt-6-luna low, not calibrated reference judge",
+      "events_sha256": "b6dc3a1b26de672e93f6d9a412d9fb452e653f579c694b3f44bdf86f16879697",
+      "judge_attempts_with_model_calls": 1,
+      "caveats": [
+        "Official Gaia2-CLI execution split, not the original ARE Python-tool leaderboard.",
+        "One agent execution. Regraded the identical saved trace after fixing judge transport; original failed judgment retained.",
+        "Interactive evaluation origin wrongly denied clarifications; fixed and regression-tested after this frozen run.",
+        "Regrade verdict recovered from the durable upstream judgment log after correcting an export serialization error; no extra model call."
+      ]
+    },
+    {
+      "benchmark": "terminalworld",
+      "task_id": "tw_100459",
+      "dataset_revision": "dda7c099cc076735aef28c03bf8d3624dc0564e1",
+      "selection_order": "official JSONL order",
+      "dataset_size": 200,
+      "agent_attempts": 1,
+      "model": "gpt-6-luna",
+      "reasoning_effort": "low",
+      "binary_sha256": "aef326d43d7509898cc76cf1596107af43ca8fddcb34d42a5e2244b733c5d8c1",
+      "native_elapsed_seconds": 104.947218277,
+      "native_stop_reason": "all_tasks_terminal",
+      "native_metrics": {
+        "decision_cache_hits": 0,
+        "decision_calls": 0,
+        "decision_estimated_cost_usd": 0.0,
+        "decision_fallbacks": 0,
+        "decision_input_tokens": 0,
+        "decision_output_tokens": 0,
+        "decision_usage_missing": 0,
+        "input_tokens": 226911,
+        "output_tokens": 1608,
+        "recorded_model_calls": 13,
+        "recoveries": 0,
+        "tool_calls": 13,
+        "tool_errors": 2,
+        "usage_missing": 0
+      },
+      "provider_accounting": {
+        "requests": 14,
+        "http_errors": 0,
+        "usage_missing": 0,
+        "input_tokens": 226921,
+        "output_tokens": 1613,
+        "cached_input_tokens": 166791,
+        "cache_write_tokens": 53090,
+        "reasoning_tokens": 639,
+        "estimated_cost_usd": 0.00981466,
+        "throttle_seconds": 45.274,
+        "request_span_seconds": 103.58354425430298,
+        "max_input_tokens_per_request": 21581
+      },
+      "evidence_directory": "/home/Rudy/.local/share/fenix-evaluations/gaia-terminalworld-tb4-20260926/tw-task-run/jobs/fenix-tw_100459/tw_100459__9hP2orj/agent",
+      "official_reward": 1.0,
+      "exception": null,
+      "agent_phase_seconds": 122.503614,
+      "total_trial_seconds": 159.257391,
+      "caveats": [
+        "CPU allocation explicitly reduced from 4 requested to 2 available.",
+        "Official checker validates recorded launch attempt, not successful server provisioning. Agent reported missing token and did not create a server."
+      ]
+    },
+    {
+      "benchmark": "terminal-bench-4.0",
+      "task_id": "atrx-vep-crispr",
+      "dataset_revision": "452bf305c6daa62fc59061d22133a7cbc7c1572e",
+      "selection_order": "lexicographic task directory",
+      "dataset_size": 66,
+      "agent_attempts": 1,
+      "model": "gpt-6-luna",
+      "reasoning_effort": "low",
+      "binary_sha256": "aef326d43d7509898cc76cf1596107af43ca8fddcb34d42a5e2244b733c5d8c1",
+      "native_elapsed_seconds": 1489.442668595,
+      "native_stop_reason": "all_tasks_terminal",
+      "native_metrics": {
+        "decision_cache_hits": 0,
+        "decision_calls": 0,
+        "decision_estimated_cost_usd": 0.0,
+        "decision_fallbacks": 0,
+        "decision_input_tokens": 0,
+        "decision_output_tokens": 0,
+        "decision_usage_missing": 0,
+        "input_tokens": 2756566,
+        "output_tokens": 29896,
+        "recorded_model_calls": 52,
+        "recoveries": 1,
+        "tool_calls": 55,
+        "tool_errors": 7,
+        "usage_missing": 0
+      },
+      "provider_accounting": {
+        "requests": 53,
+        "http_errors": 0,
+        "usage_missing": 0,
+        "input_tokens": 2756576,
+        "output_tokens": 29901,
+        "cached_input_tokens": 2402420,
+        "cache_write_tokens": 247716,
+        "reasoning_tokens": 21543,
+        "estimated_cost_usd": 0.0805832,
+        "throttle_seconds": 663.08,
+        "request_span_seconds": 1489.9004702568054,
+        "max_input_tokens_per_request": 89827
+      },
+      "evidence_directory": "/home/Rudy/.local/share/fenix-evaluations/gaia-terminalworld-tb4-20260926/tb4-run/jobs/fenix-atrx-vep-crispr/atrx-vep-crispr__i9VfZbz/agent",
+      "official_reward": 0,
+      "exception": null,
+      "agent_phase_seconds": 1517.098373,
+      "total_trial_seconds": 1926.196206,
+      "caveats": [
+        "Required mutation.report.json was not produced. Official verifier returned reward 0.",
+        "Agent treated its NMD/domain interpretation as a conflict requiring owner input. This does not establish that the benchmark requirements are inconsistent."
+      ]
+    }
+  ],
+  "validation": {
+    "rust_evaluation_tests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "harbor_transport_and_quota_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "dataset_preparation_tests": {
+      "passed": 2,
+      "failed": 0
+    },
+    "gaia_agent_denied_reading_scenario_state_and_judge_log": true,
+    "binary": {
+      "git_head": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+      "binary_sha256": "aef326d43d7509898cc76cf1596107af43ca8fddcb34d42a5e2244b733c5d8c1",
+      "model": "gpt-6-luna",
+      "reasoning_effort": "low",
+      "flex": false,
+      "jev": false,
+      "dirty_worktree": true,
+      "attempts_per_benchmark": 1
+    },
+    "setup_failures_before_any_model_calls": [
+      {
+        "benchmark": "gaia2-cli",
+        "reason": "upstream launcher required compatibility entrypoint",
+        "fixed": true
+      },
+      {
+        "benchmark": "terminalworld",
+        "reason": "official request for 4 CPUs exceeds 2 available CPUs",
+        "resolution": "explicit override_cpus=2; not official resource parity"
+      }
+    ],
+    "post_trial_source_corrections": [
+      "Explicit evaluation interactivity overrides legacy origin-based noninteractive default; no inference retry.",
+      "A terminal native failure also delivers its unchanged message to the Gaia2 judge, while retaining error status.",
+      "Validate actual LiteLLM judge before starting the agent; drop unsupported temperature=0 default while preserving explicit temperature=1 and low reasoning.",
+      "Export Pydantic judge results with model_dump; recovered existing durable verdict without repeating a judge request."
+    ],
+    "autonomy_regression_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "post_audit_binary_sha256": "6ec1f562282f257707e925e2d23d217729312bdd56924656643b5069387808c6",
+    "judge_compatibility_probe_passed": true,
+    "post_audit_image": "fenix-eval-gaia2:87ebd38-fixed",
+    "post_audit_image_digest": "sha256:efc9d00b38defbc5b4e9590375d2be58d72f3753ca982ed714ee05d065e35a29",
+    "temporary_gateway_stopped": true,
+    "all_three_frozen_binary_hashes_match": true,
+    "regraded_trace_hash_unchanged": true
+  },
+  "setup_probes": {
+    "gaia2-judge-check": {
+      "requests": 2,
+      "http_errors": 1,
+      "usage_missing": 1,
+      "input_tokens": 9,
+      "output_tokens": 4,
+      "cached_input_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0,
+      "estimated_cost_usd": 2.9e-06,
+      "throttle_seconds": 0.001,
+      "request_span_seconds": 41.71439218521118
+    },
+    "gaia2-judge-compat-check": {
+      "requests": 1,
+      "http_errors": 0,
+      "usage_missing": 0,
+      "input_tokens": 8,
+      "output_tokens": 4,
+      "cached_input_tokens": 0,
+      "cache_write_tokens": 0,
+      "reasoning_tokens": 0,
+      "estimated_cost_usd": 2.8e-06,
+      "throttle_seconds": 0.001,
+      "request_span_seconds": 0.985102653503418
+    }
+  },
+  "raw_evidence_directory": "/home/Rudy/.local/share/fenix-evaluations/gaia-terminalworld-tb4-20260926"
+}

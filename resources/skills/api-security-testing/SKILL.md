@@ -37,7 +37,3 @@ A 200 status may contain a denial; a 403 can follow a partial effect. Assert pro
 ## Limits
 
 No scanner subscription or live exploit is required. Do not send credentials to substituted origins, disable TLS verification to make tests pass, or declare the whole API secure from a sampled matrix.
-
-## Español
-
-Prueba una matriz de identidad, acción, recurso y propiedad con cuentas controladas. Verifica datos y efectos reales, incluidos trabajos diferidos y WebSocket tras revocar sesiones. Los códigos HTTP, campos reflejados o errores de conexión no bastan para concluir. Mantén límites de ejecución y comprueba que el acceso legítimo sigue funcionando.

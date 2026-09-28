@@ -1,0 +1,522 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "tasks": [
+      "cobol-modernization",
+      "kv-store-grpc",
+      "polyglot-c-py"
+    ],
+    "selection_indices": [
+      7,
+      8,
+      9
+    ],
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "tier": "standard",
+    "attempts": 1,
+    "agent_deadline_seconds": 900,
+    "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "fenix_binary_sha256": "2591947b0b0958ffee78150a1ca89e3272e1f2cf59939e03807b8522d6e4506c",
+    "codex": "0.157.1",
+    "opencode": "1.18.32",
+    "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "production_changed": false,
+    "changes": [
+      "Conversational autonomy with mandatory requirement clarification; noninteractive evaluation",
+      "Deduplicated tool discovery and evidence reuse without weakening completion gates",
+      "Precise patch diagnostics; native source coverage; missing dependency repair guidance"
+    ],
+    "validation": {
+      "agent_tests_passed": 247,
+      "agent_optional_tests_ignored": 3,
+      "server_build": "passed"
+    },
+    "opencode_auxiliary_model": "openai/gpt-6-luna",
+    "notes": [
+      "Official instructions only; hidden tests and solutions never supplied to agents.",
+      "Sequential attempts, rotating harness order across tasks; no behavioral changes during measurement."
+    ]
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "artifact_root": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656",
+  "provider_validation": {
+    "completed_responses": [
+      {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "service_tier": "default",
+        "count": 97
+      }
+    ],
+    "max_request_input_tokens": 20375
+  },
+  "totals": {
+    "fenix": {
+      "passed": 2,
+      "graded_tasks": 3,
+      "execution_seconds": 172.47945900000002,
+      "cost_usd": 0.02138351,
+      "input_tokens": 458542,
+      "output_tokens": 7917,
+      "api_calls": 34,
+      "cost_is_lower_bound": true,
+      "attempts": 3
+    },
+    "codex": {
+      "passed": 2,
+      "graded_tasks": 3,
+      "execution_seconds": 355.504931,
+      "cost_usd": 0.01490676,
+      "input_tokens": 268832,
+      "output_tokens": 7567,
+      "api_calls": 24,
+      "cost_is_lower_bound": true,
+      "attempts": 3
+    },
+    "opencode": {
+      "passed": 2,
+      "graded_tasks": 3,
+      "execution_seconds": 182.421197,
+      "cost_usd": 0.0144795,
+      "input_tokens": 283739,
+      "output_tokens": 10221,
+      "api_calls": 40,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    }
+  },
+  "attempts": [
+    {
+      "job": "fenix-cobol-modernization",
+      "harness": "fenix",
+      "task": "cobol-modernization",
+      "reward": 1.0,
+      "execution_seconds": 69.705717,
+      "trial_seconds": 148.948625,
+      "setup_seconds": 1.816587,
+      "verifier_seconds": 16.615598,
+      "input_tokens": 184469,
+      "cached_input_tokens": 144001,
+      "cache_write_tokens": 40425,
+      "output_tokens": 3299,
+      "cost_usd": 0.00814693,
+      "api_calls": 12,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 12
+      },
+      "throttle_seconds": 0.032,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/fenix-cobol-modernization/cobol-modernization__yyVtjKW",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 12,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 7
+    },
+    {
+      "job": "codex-cobol-modernization",
+      "harness": "codex",
+      "task": "cobol-modernization",
+      "reward": 1.0,
+      "execution_seconds": 31.498418,
+      "trial_seconds": 80.483037,
+      "setup_seconds": 16.295229,
+      "verifier_seconds": 11.511154,
+      "input_tokens": 69319,
+      "cached_input_tokens": 44209,
+      "cache_write_tokens": 25092,
+      "output_tokens": 2468,
+      "cost_usd": 0.00481439,
+      "api_calls": 6,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 6
+      },
+      "throttle_seconds": 0.007,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/codex-cobol-modernization/cobol-modernization__edJ8Eem",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 6,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 7
+    },
+    {
+      "job": "opencode-cobol-modernization",
+      "harness": "opencode",
+      "task": "cobol-modernization",
+      "reward": 1.0,
+      "execution_seconds": 58.108114,
+      "trial_seconds": 96.266257,
+      "setup_seconds": 9.987252,
+      "verifier_seconds": 11.865715,
+      "input_tokens": 126765,
+      "cached_input_tokens": 101554,
+      "cache_write_tokens": 24332,
+      "output_tokens": 4369,
+      "cost_usd": 0.00632944,
+      "api_calls": 15,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 15
+      },
+      "throttle_seconds": 0.023,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/opencode-cobol-modernization/cobol-modernization__tHt4fyn",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 15,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 7
+    },
+    {
+      "job": "fenix-kv-store-grpc",
+      "harness": "fenix",
+      "task": "kv-store-grpc",
+      "reward": 0.0,
+      "execution_seconds": 25.08949,
+      "trial_seconds": 52.506251,
+      "setup_seconds": 1.056894,
+      "verifier_seconds": 10.763398,
+      "input_tokens": 53001,
+      "cached_input_tokens": 25032,
+      "cache_write_tokens": 27204,
+      "output_tokens": 243,
+      "cost_usd": 0.00384882,
+      "api_calls": 5,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 5
+      },
+      "throttle_seconds": 0.006,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/fenix-kv-store-grpc/kv-store-grpc__eE9a4fC",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 5,
+      "checks": {
+        "tests": 7,
+        "passed": 0,
+        "failed": 7
+      },
+      "failed_checks": [
+        "test_outputs.py::test_proto_file_creation",
+        "test_outputs.py::test_grpc_tools_installation",
+        "test_outputs.py::test_protobuf_generation",
+        "test_outputs.py::test_server_file_creation",
+        "test_outputs.py::test_real_grpc_server_running",
+        "test_outputs.py::test_grpc_protocol_handshake",
+        "test_outputs.py::test_grpc_server_functionality"
+      ],
+      "task_selection_index": 8
+    },
+    {
+      "job": "codex-kv-store-grpc",
+      "harness": "codex",
+      "task": "kv-store-grpc",
+      "reward": 0.0,
+      "execution_seconds": 46.518516,
+      "trial_seconds": 80.471541,
+      "setup_seconds": 2.104278,
+      "verifier_seconds": 9.06019,
+      "input_tokens": 121769,
+      "cached_input_tokens": 97624,
+      "cache_write_tokens": 24112,
+      "output_tokens": 1661,
+      "cost_usd": 0.00482404,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.013,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/codex-kv-store-grpc/kv-store-grpc__A7Hwt3U",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 11,
+      "checks": {
+        "tests": 7,
+        "passed": 5,
+        "failed": 2
+      },
+      "failed_checks": [
+        "test_outputs.py::test_real_grpc_server_running",
+        "test_outputs.py::test_grpc_server_functionality"
+      ],
+      "task_selection_index": 8
+    },
+    {
+      "job": "opencode-kv-store-grpc",
+      "harness": "opencode",
+      "task": "kv-store-grpc",
+      "reward": 1.0,
+      "execution_seconds": 69.565683,
+      "trial_seconds": 96.82693,
+      "setup_seconds": 3.019144,
+      "verifier_seconds": 8.455346,
+      "input_tokens": 113637,
+      "cached_input_tokens": 93654,
+      "cache_write_tokens": 19139,
+      "output_tokens": 2059,
+      "cost_usd": 0.00444282,
+      "api_calls": 16,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 16
+      },
+      "throttle_seconds": 0.016,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/opencode-kv-store-grpc/kv-store-grpc__8SLx5EH",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 16,
+      "checks": {
+        "tests": 7,
+        "passed": 7,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 8
+    },
+    {
+      "job": "fenix-polyglot-c-py",
+      "harness": "fenix",
+      "task": "polyglot-c-py",
+      "reward": 1.0,
+      "execution_seconds": 77.684252,
+      "trial_seconds": 124.124749,
+      "setup_seconds": 4.248913,
+      "verifier_seconds": 23.087544,
+      "input_tokens": 221072,
+      "cached_input_tokens": 175413,
+      "cache_write_tokens": 35209,
+      "output_tokens": 4375,
+      "cost_usd": 0.00938776,
+      "api_calls": 17,
+      "local_rejections": 0,
+      "usage_missing": 1,
+      "http_status": {
+        "200": 17
+      },
+      "throttle_seconds": 2.143,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/fenix-polyglot-c-py/polyglot-c-py__vX8aNnk",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 1,
+      "cost_is_lower_bound": true,
+      "transport_errors": [
+        {
+          "error": "[Errno 32] Broken pipe",
+          "seconds": 3.014614228857681,
+          "http_status": 200
+        }
+      ],
+      "upstream_attempts": 17,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 9
+    },
+    {
+      "job": "codex-polyglot-c-py",
+      "harness": "codex",
+      "task": "polyglot-c-py",
+      "reward": 1.0,
+      "execution_seconds": 277.487997,
+      "trial_seconds": 346.083976,
+      "setup_seconds": 16.508269,
+      "verifier_seconds": 28.119866,
+      "input_tokens": 77744,
+      "cached_input_tokens": 53636,
+      "cache_write_tokens": 24087,
+      "output_tokens": 3438,
+      "cost_usd": 0.00526833,
+      "api_calls": 7,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 7,
+        "None": 1
+      },
+      "throttle_seconds": 0.008,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/codex-polyglot-c-py/polyglot-c-py__NYtuaij",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 1,
+      "cost_is_lower_bound": true,
+      "transport_errors": [
+        {
+          "error": "HTTPSConnectionPool(host='api.openai.com', port=443): Read timed out. (read timeout=240)",
+          "seconds": 240.15809543197975,
+          "http_status": null
+        }
+      ],
+      "upstream_attempts": 8,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 9
+    },
+    {
+      "job": "opencode-polyglot-c-py",
+      "harness": "opencode",
+      "task": "polyglot-c-py",
+      "reward": 0.0,
+      "execution_seconds": 54.7474,
+      "trial_seconds": 134.683382,
+      "setup_seconds": 16.577585,
+      "verifier_seconds": 27.630444,
+      "input_tokens": 43337,
+      "cached_input_tokens": 31214,
+      "cache_write_tokens": 11452,
+      "output_tokens": 3793,
+      "cost_usd": 0.00370724,
+      "api_calls": 9,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 9
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-7-9-20260926-160656/jobs/opencode-polyglot-c-py/polyglot-c-py__RhkpoAr",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 9,
+      "checks": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_fibonacci_polyglot"
+      ],
+      "task_selection_index": 9
+    }
+  ],
+  "limitations": [
+    "Three diagnostic tasks, one attempt per combination; not an overall harness ranking.",
+    "Fenix contains the new autonomy and execution changes; no behavioral changes or retries during measurement.",
+    "Official hidden tests were never provided to evaluated agents.",
+    "Codex polyglot includes a 240.158-second upstream read timeout before headers and an automatic CLI retry; do not attribute that delay entirely to harness work.",
+    "Fenix polyglot had a canceled HTTP 200 response without usage; Codex polyglot had an upstream timeout without usage. Their costs and recorded token totals are lower bounds.",
+    "Costs are usage-based estimates, including reported cache reads/writes, excluding infrastructure and taxes.",
+    "A lower cost for an incomplete/blocked task is not evidence of better efficiency.",
+    "Passing the official verifier does not imply comprehensive self-verification or correctness outside the tested cases."
+  ]
+}

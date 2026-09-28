@@ -107,6 +107,7 @@ mod tests {
         Account {
             id: "alice".into(),
             email: "alice@example.test".into(),
+            display_name: String::new(),
             password_hash: "test-hash".into(),
             upstream: "http://127.0.0.1:9".into(),
             upstream_token: "test-only".into(),

@@ -34,7 +34,3 @@ Report device/OS/build, reproducible steps, evidence and which other platforms w
 ## Limits
 
 Do not claim iOS coverage from Android or uninstall a user’s real app/data as routine cleanup.
-
-## Español
-
-Identifica dispositivo y build; prueba teclado, permisos y ciclo de vida con evidencia y cobertura explícita.

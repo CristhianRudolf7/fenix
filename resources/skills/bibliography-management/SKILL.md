@@ -36,7 +36,3 @@ Check identifier resolution, cited keys, duplicate records and rendered bibliogr
 ## Limits
 
 A valid DOI is not evidence that a paper supports the attached claim; use literature-review for synthesis.
-
-## Español
-
-Verifica identidad y metadatos, conserva claves estables y no confundas una cita válida con evidencia de una afirmación.

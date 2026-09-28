@@ -1,3 +1,4 @@
+import dataclasses
 """gVisor policy tests; real runtime acceptance is a separate explicit suite."""
 import asyncio
 import copy
@@ -104,6 +105,7 @@ class GVisorPolicyTests(unittest.TestCase):
             adapter = object.__new__(GVisor)
             adapter.bundle = self.f.bundle(); adapter.instance = "test"; adapter.runtime = "fenix-runsc"
             adapter.image = "sha256:" + "a" * 64; adapter.config = {}
+            adapter.mount_dir = fixture.root / "mounts"
             launch = fixture.policy.launch(fixture.accounts[0], fixture.spec())
             try:
                 args = adapter.create_args(BOB, launch, "account.slice")
@@ -113,6 +115,18 @@ class GVisorPolicyTests(unittest.TestCase):
                 self.assertNotIn("--privileged", args)
                 self.assertNotIn("/dev/kvm", " ".join(args))
                 self.assertEqual(launch.argv, ["/bin/true"])
+                with patch("fenix_execution.gvisor.host_resolver", return_value=b"nameserver 192.0.2.53\n") as resolver:
+                    web = dataclasses.replace(launch, profile="web", egress_hosts=None)
+                    args = adapter.create_args(BOB, web, "account.slice")
+                    self.assertIn(f"type=bind,src={fixture.root}/gvisor-resolv.conf,dst=/etc/resolv.conf,readonly", args)
+                    resolver.assert_called_once()
+                    resolver.reset_mock()
+                    restricted = dataclasses.replace(web, egress_hosts=(), egress_pins={})
+                    args = adapter.create_args(BOB, restricted, "account.slice")
+                    resolver.assert_not_called()
+                    self.assertIn("127.0.0.1", args)
+                    adapter.create_args(BOB, launch, "account.slice")
+                    resolver.assert_not_called()
             finally: launch.close()
         finally: fixture.close()
 

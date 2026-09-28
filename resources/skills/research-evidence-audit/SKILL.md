@@ -39,7 +39,3 @@ Every verdict cites inspected evidence and states what remains unknown. Report c
 ## Limits
 
 Do not fabricate source text, infer misconduct from missing materials or claim independent verification from another persona using the same evidence. An audit request does not authorize uploading unpublished manuscripts to external services.
-
-## Español
-
-Comprueba cada afirmación con el pasaje o resultado concreto, su versión y alcance. Una referencia existente no garantiza que respalde lo escrito. Registra sobreafirmaciones, contradicciones y casos sin resolver. El validador comprueba hashes y localizadores, no la verdad de la conclusión ni la autenticidad de los experimentos.

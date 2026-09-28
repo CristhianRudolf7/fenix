@@ -31,8 +31,3 @@ Test valid, invalid and boundary cases through the actual consuming API.
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Crea un candidato pequeño y pruébalo. Incluye casos negativos y límites; verifica capturas, escapes y la API que consume el patrón.

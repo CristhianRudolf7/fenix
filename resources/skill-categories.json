@@ -1,0 +1,148 @@
+[
+  {
+    "id": "engineering",
+    "labels": {
+      "en": "Programming",
+      "es": "Programación"
+    },
+    "aliases": [
+      "development",
+      "programming",
+      "programación",
+      "programacion",
+      "desarrollo"
+    ]
+  },
+  {
+    "id": "business",
+    "labels": {
+      "en": "Business",
+      "es": "Negocios"
+    },
+    "aliases": [
+      "negocios",
+      "empresa"
+    ]
+  },
+  {
+    "id": "coordination",
+    "labels": {
+      "en": "Coordination",
+      "es": "Coordinación"
+    },
+    "aliases": [
+      "coordinación",
+      "coordinacion",
+      "productivity",
+      "productividad"
+    ]
+  },
+  {
+    "id": "creative",
+    "labels": {
+      "en": "Design and creativity",
+      "es": "Diseño y creatividad"
+    },
+    "aliases": [
+      "design",
+      "diseño",
+      "diseno",
+      "creatividad"
+    ]
+  },
+  {
+    "id": "data",
+    "labels": {
+      "en": "Data",
+      "es": "Datos"
+    },
+    "aliases": [
+      "datos"
+    ]
+  },
+  {
+    "id": "knowledge",
+    "labels": {
+      "en": "Knowledge",
+      "es": "Conocimiento"
+    },
+    "aliases": [
+      "conocimiento"
+    ]
+  },
+  {
+    "id": "office",
+    "labels": {
+      "en": "Office",
+      "es": "Oficina"
+    },
+    "aliases": [
+      "oficina"
+    ]
+  },
+  {
+    "id": "operations",
+    "labels": {
+      "en": "Operations",
+      "es": "Operaciones"
+    },
+    "aliases": [
+      "operaciones"
+    ]
+  },
+  {
+    "id": "personal",
+    "labels": {
+      "en": "Personal",
+      "es": "Personal"
+    },
+    "aliases": []
+  },
+  {
+    "id": "research",
+    "labels": {
+      "en": "Research",
+      "es": "Investigación"
+    },
+    "aliases": [
+      "investigación",
+      "investigacion"
+    ]
+  },
+  {
+    "id": "security",
+    "labels": {
+      "en": "Security",
+      "es": "Seguridad"
+    },
+    "aliases": [
+      "seguridad",
+      "cybersecurity",
+      "ciberseguridad"
+    ]
+  },
+  {
+    "id": "writing",
+    "labels": {
+      "en": "Writing",
+      "es": "Redacción"
+    },
+    "aliases": [
+      "redacción",
+      "redaccion",
+      "escritura"
+    ]
+  },
+  {
+    "id": "other",
+    "labels": {
+      "en": "Other",
+      "es": "Otros"
+    },
+    "aliases": [
+      "otros",
+      "general",
+      ""
+    ]
+  }
+]

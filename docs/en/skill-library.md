@@ -23,7 +23,7 @@ resources/skills/
     assets/        # optional templates/data
 ```
 
-Each entry uses `name`, `description` and string-valued `metadata`: `version`, `category`, `tags`, `aliases`, `required_tools`, `requires`, `effects`. Bodies define Scope, Inputs, Workflow, Verification, Limits and Español. Bilingual aliases support lexical discovery. [Template](../../resources/skills/skill-authoring/references/template.md).
+Each entry uses `name`, `description` and string-valued `metadata`: `version`, `category`, `tags`, `aliases`, `required_tools`, `requires`, `effects`. Bodies define Scope, Inputs, Workflow, Verification and Limits in English. A complete Spanish translation is persisted separately as `SKILL.es.md` for the interface; canonical skills do not append a Spanish summary. Bilingual aliases support lexical discovery. [Template](../../resources/skills/skill-authoring/references/template.md).
 
 `required_tools` names existing native tools; the runtime discovers them within task permissions. `requires` documents external prerequisites. `effects` documents expected side effects; it does not enforce permissions or install connections. Enabled/disabled state remains in runtime storage, not a second conflicting YAML flag.
 
@@ -277,7 +277,7 @@ The gstack revision adds 26 discovery regressions and stock-upgrade checks; see 
 
 ## Security specialist
 
-Security audit procedures are now restricted to the `security` worker profile; the administrative library remains complete. Six original procedures add patch review, finding validation, static analysis, Rust boundaries, property testing and repair validation. See [profile, catalog rules and evidence](security-specialist.md).
+Security audit procedures now share the same catalog as all other skills and are available to ordinary tasks and subagents. Six original procedures add patch review, finding validation, static analysis, Rust boundaries, property testing and repair validation. See [profile, catalog rules and evidence](security-specialist.md).
 
 [YouTube caption summaries and executable helper](youtube-summary.md).
 

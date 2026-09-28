@@ -34,7 +34,3 @@ Confirm fields, relations, comments and status actually changed as requested.
 ## Limits
 
 This skill does not install Jira/Linear/GitHub tools or grant permission to notify others. Do not close issues from a summary alone.
-
-## Español
-
-Resuelve IDs y transiciones, busca duplicados y verifica cambios reales; necesita conexión al gestor.

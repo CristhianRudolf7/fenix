@@ -9,8 +9,6 @@ import {
 
 export const pages = [
   "chat",
-  "projects",
-  "memory",
   "skills",
   "design",
   "documents",
@@ -18,7 +16,7 @@ export const pages = [
   "integrations",
   "schedules",
   "activity",
-  "settings",
+  "profile",
 ] as const;
 export type Page = (typeof pages)[number];
 export function currentPage(path = window.location.pathname): Page {

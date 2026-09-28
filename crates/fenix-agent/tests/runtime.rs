@@ -502,6 +502,7 @@ async fn telegram_pairs_only_with_local_code_and_accepts_only_owner_text() {
     runtime
         .configure_live(
             fenix_agent::live::LiveSettings {
+                reasoning_effort: None,
                 provider: fenix_core::ProviderId::OpenAi,
                 model: "conversation-test".into(),
                 base_url: Some(conversation.uri()),

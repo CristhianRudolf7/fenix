@@ -34,7 +34,3 @@ Try invalid/duplicate/cross-tenant records and representative queries against th
 ## Limits
 
 Do not apply PostgreSQL assumptions to SQLite or assume ORM validation protects concurrent writers.
-
-## Español
-
-Define claves, restricciones y ámbito por usuario; prueba invariantes y consultas en el motor real.

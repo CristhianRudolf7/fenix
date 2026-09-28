@@ -34,7 +34,3 @@ Recompute totals from source rows and cite pricing dates; mark missing usage rat
 ## Limits
 
 Do not promise savings from nominal discounts alone or equate a cheaper unit with lower task cost.
-
-## Español
-
-Concilia factura y uso real, compara la misma carga y distingue ahorro estimado de medido.

@@ -34,7 +34,3 @@ Check chronological feasibility, location distances and current availability bef
 ## Limits
 
 Do not book, pay or submit traveler documents without authorization, or guarantee visa eligibility from incomplete facts.
-
-## Español
-
-Planifica con horarios y costes vigentes, márgenes reales y reservas claramente diferenciadas de propuestas.

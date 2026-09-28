@@ -14,7 +14,7 @@ through your operating system. Its sandbox remains enabled.
 Start Fénix normally, then open **[Browser](/browser)**. Create a named profile such as `personal`,
 enter an HTTP(S) URL and click Open. Click the rendered screen and type normally;
 paste, wheel scrolling and navigation keys work too. Complete passwords, QR codes,
-MFA or CAPTCHA yourself. Toggle **Allow agent access** when Fénix should use that
+MFA or CAPTCHA yourself when needed. The agent can also fill owner-provided passwords, type and press keys in password controls, and submit an authorized login without a manual handoff. Toggle **Allow agent access** when Fénix should use that
 profile. **Take control** disables subsequent agent commands for the profile; a command
 already being executed can finish. Manual interaction also disables agent access.
 
@@ -36,6 +36,13 @@ The **whole Chromium profile is not encrypted by this vault**: its private direc
 has mode 0700, and the vault has mode 0600. The local debugging endpoint is unauthenticated: other processes on this machine
 and OS administrators are outside this boundary. Use a trusted, single-owner host.
 
+The agent can create a new named personal profile through `browser_open` for
+owner-authorized recurring work. That profile is enabled for the agent and keeps
+its login across browser closures. Existing profiles taken over by the owner are
+not silently reauthorized. Input observations still omit values. The browser also
+supports right/middle clicks and native range controls. Page permissions, disabled
+or read-only controls and external MFA/CAPTCHA requirements still apply.
+
 ## Agent workflow and testing
 
 `browser-navigation` is a bundled skill. The model discovers real Rust tools using
@@ -45,7 +52,7 @@ The skill describes when and how to use these tools; it does not execute actions
 
 Omit `profile` for a temporary profile owned by the task. A task cannot access
 another task's temporary profile. Close it after testing to delete its browser
-state. Named personal profiles require the owner's switch; `browser_tabs` with `action=profiles`
+state. New named profiles created for authorized work are enabled automatically; existing profiles still respect the owner's access switch. `browser_tabs` with `action=profiles`
 lists enabled names without launching Chromium. Individual commands are serialized. Concurrent multi-step workflows must use
 separate profiles to avoid sharing the active page. Up to two profiles remain open by default. Background report and plan
 review workers cannot use browser effects.
@@ -81,16 +88,17 @@ Edit `<data-dir>/browser.json` while Fénix is stopped, then restart:
   "max_sessions": 2,
   "max_tabs": 4,
   "idle_seconds": 600,
+  "hibernate_after_seconds": 60,
   "memory_budget_mib": 2048
 }
 ```
 
-No browser is launched until an open command. A monitor checks process-tree summed
-RSS every five seconds and closes idle or over-budget sessions. Browser commands
-can delay monitoring. This is a **soft budget**, not a cgroup-enforced ceiling;
-shared pages may be counted more than once, and short spikes can exceed it.
-Personal profile files survive these closures; unsaved forms do not. Looking at the
-live screen counts as activity. Chromium's disk cache is capped at 64 MiB, screenshots
+No browser starts until needed. Finished tasks release their browsers; waiting
+tasks may use encrypted process checkpoints on a qualified gVisor/Docker host.
+Global admission considers available RAM and quotas. Unsupported suspension keeps
+the original page open. See [browser lifecycle](browser-lifecycle.md) for ownership,
+configuration, recovery limits and the completed real-checkpoint qualification.
+Looking at the live screen counts as activity. Chromium's disk cache is capped at 64 MiB, screenshots
 at 16 megapixels and 100 artifact entries per profile; CDP messages are bounded.
 RAM depends on websites and profile count, not just the controller's language.
 

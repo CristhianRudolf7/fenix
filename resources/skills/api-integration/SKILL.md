@@ -38,9 +38,3 @@ Exercise pagination, expired credentials, partial failures and repeated webhooks
 ## Limits
 
 Do not hardcode secrets or invent provider fields. Adding this skill does not install an API connector.
-
-## Español
-
-Integra contratos reales, páginas y reintentos; verifica webhooks y evita duplicar efectos tras respuestas inciertas.
-
-Al crear un conector, sigue la arquitectura vigente y verifica configuración, credenciales, registro y descubrimiento. Un cliente HTTP que responde no demuestra que la integración esté conectada al agente.

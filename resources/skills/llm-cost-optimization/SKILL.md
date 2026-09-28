@@ -36,7 +36,3 @@ Recompute totals from unique records and explain uncovered usage. Compare the sa
 ## Limits
 
 Do not buy credits, change account billing, export private traces or run paid comparisons without applicable authorization. Price estimates and small development samples do not prove future savings.
-
-## Español
-
-Reconcilia consumo por solicitud, reintentos y tareas sin duplicar totales. Verifica precios vigentes y separa coste facturado, estimado y reservado. Mide coste por tarea resuelta junto con calidad; no cambies el modelo elegido ni confundas una comprobación posterior con un límite de gasto efectivo.

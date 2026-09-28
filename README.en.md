@@ -18,6 +18,8 @@ infrastructure: allowed and blocked destinations, DNS restrictions, and executio
 termination if protection is lost. Local tests do not replace this check; it has
 not been performed yet. See [network protection and validation limits](docs/en/security-boundaries.md).
 
+- [Account profile and usage](docs/en/account-profile.md): display name, password changes and account-scoped recorded token charts.
+
 ## Run locally
 
 Install Rust using [rustup](https://rust-lang.org/tools/install/), Node 22.12+ and
@@ -189,11 +191,11 @@ Interactive terminal sessions, persistent services, incremental logs, configurab
 
 [Local integrations — WhatsApp QR and saved sessions](docs/en/integrations.md)
 
-[Native evaluation and execution recovery](docs/en/native-evaluation.md)
+[Native evaluation and execution recovery](docs/en/native-evaluation.md): Terminal-Bench 4.0, TerminalWorld and the official Gaia2-CLI variant, with pinned datasets and grading outside the agent.
 
 See [procedural skills and recovery](docs/en/harness-recovery.md) for demand-loaded coding procedures, enforced read-only commands and reproducible evaluation.
 
-[Skill marketplace and Fénix Sentinel](docs/en/skill-marketplace.md): private/public publication, Nemotron reviews, corrections on copies, and request-abuse protection.
+[Skill marketplace and Fénix Sentinel](docs/en/skill-marketplace.md): private/public publication, reviews with the configured fast model, corrections on copies, and request-abuse protection.
 
 [Scalable skills and native Fénix Documents](docs/en/skills-and-documents.md): on-demand discovery and local DOCX/XLSX/PPTX tools.
 

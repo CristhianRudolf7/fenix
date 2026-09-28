@@ -16,7 +16,7 @@
     "password",
     "number",
   ];
-  const special = ["date", "time", "datetime-local", "month", "week", "color"];
+  const special = ["date", "time", "datetime-local", "month", "week", "color", "range"];
   if (!(
     textarea ||
     e.isContentEditable ||

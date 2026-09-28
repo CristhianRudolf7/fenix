@@ -651,6 +651,62 @@ mod tests {
         (dir, rt)
     }
     #[tokio::test]
+    #[ignore = "requires FENIX_JEV_KEY_FILE and performs external requests"]
+    async fn live_jev_memory_review_preserves_facts_without_generative_call() {
+        let (_dir, rt) = fixture().await;
+        let key = std::fs::read_to_string(std::env::var("FENIX_JEV_KEY_FILE").unwrap()).unwrap();
+        rt.configure_decisions(
+            crate::decisions::DecisionSettings {
+                enabled: true,
+                shadow: false,
+                ..Default::default()
+            },
+            Some(key.trim().into()),
+        )
+        .unwrap();
+        for claim in [
+            "The service permits external uploads for all users today",
+            "The service forbids external uploads for all users today",
+        ] {
+            rt.store
+                .save_memory(None, "Upload policy", claim, "owner")
+                .unwrap();
+        }
+        rt.store.review_memory_overlaps().unwrap();
+        let pair = rt.store.claim_memory_review().unwrap().unwrap();
+        let before = serde_json::to_value(rt.store.memories("", 10).unwrap()).unwrap();
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .respond_with(ResponseTemplate::new(500))
+            .expect(0)
+            .mount(&server)
+            .await;
+        let mut settings = crate::config::Settings::initial(_dir.path().into());
+        settings.base_url = Some(server.uri());
+        let model = rt
+            .model_connection(
+                settings,
+                fenix_credentials::ApiKey::new("test-only-key").unwrap(),
+            )
+            .unwrap();
+        let start = std::time::Instant::now();
+        let result = rt.assess_memory_pair(&pair, &model).await;
+        let report = json!({"elapsed_ms":start.elapsed().as_millis(),"result":result.as_ref().ok(),"error":result.as_ref().err().map(ToString::to_string),"health":rt.store.get::<Value>("decision_health","latest").unwrap(),"generative_calls":server.received_requests().await.unwrap().len()});
+        std::fs::write(
+            std::env::var("FENIX_JEV_MEMORY_REPORT").unwrap(),
+            serde_json::to_vec_pretty(&report).unwrap(),
+        )
+        .unwrap();
+        let result = result.unwrap();
+        assert_eq!(result["decision_provider"], "jev");
+        assert_eq!(result["saved"], true);
+        assert_eq!(
+            before,
+            serde_json::to_value(rt.store.memories("", 10).unwrap()).unwrap()
+        );
+        rt.shutdown().await.unwrap();
+    }
+    #[tokio::test]
     async fn ambiguous_review_uses_one_model_request_and_keeps_original_claims() {
         let (_dir, rt) = fixture().await;
         for claim in [

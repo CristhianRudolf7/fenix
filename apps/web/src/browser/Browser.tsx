@@ -1,3 +1,5 @@
+import { Loading } from "../components/loading";
+import { Icon } from "../components/icons";
 // Owner input uses browser endpoints directly, never the agent conversation.
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -261,6 +263,7 @@ function Browser({ language }: { language: string }) {
     ].filter(Boolean);
     act({ action: "key", key: [...modifiers, event.key].join("+") });
   }
+  if (!status && !message) return <Loading />;
   const profiles = [
     ...(status?.profiles.map((p) => p.name) || []),
     ...(status?.sessions.filter((s) => s.temporary).map((s) => s.profile) ||
@@ -353,6 +356,9 @@ function Browser({ language }: { language: string }) {
           {t("Take control", "Tomar control")}
         </button>
         <button
+          className="subtle icon-button"
+          aria-label={t("Close profile", "Cerrar perfil")}
+          title={t("Close profile", "Cerrar perfil")}
           disabled={!session}
           onClick={() =>
             run(async (profile) => {
@@ -363,7 +369,7 @@ function Browser({ language }: { language: string }) {
             })
           }
         >
-          {t("Close profile", "Cerrar perfil")}
+          <Icon name="close" />
         </button>
       </div>
       <form
@@ -445,6 +451,9 @@ function Browser({ language }: { language: string }) {
           {t("New tab", "Nueva pestaña")}
         </button>
         <button
+          className="subtle icon-button"
+          aria-label={t("Close tab", "Cerrar pestaña")}
+          title={t("Close tab", "Cerrar pestaña")}
           disabled={!tab}
           onClick={() =>
             run(async (profile, target) => {
@@ -456,7 +465,7 @@ function Browser({ language }: { language: string }) {
             })
           }
         >
-          {t("Close tab", "Cerrar pestaña")}
+          <Icon name="close" />
         </button>
         <select
           aria-label={t("Screen preset", "Tamaño de pantalla")}

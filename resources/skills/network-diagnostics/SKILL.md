@@ -36,7 +36,3 @@ Confirm DNS, secure transport and a real protocol response without disabling ver
 ## Limits
 
 Do not scan unrelated networks, expose ports globally or disable TLS checking as a permanent fix.
-
-## Español
-
-Aísla DNS, conexión, TLS y aplicación; verifica desde el cliente original sin desactivar controles para ocultar el fallo.

@@ -52,7 +52,28 @@ async function fixture(page) {
         body: ": connected\n\n",
       });
       return;
-    } else if (path === "/api/integrations") data = { connections: [state] };
+    } else if (path === "/api/connectors")
+      data = {
+        catalog: [
+          {
+            id: "google",
+            name: "Google Workspace",
+            category: "office",
+            auth: "oauth",
+            services: ["Drive"],
+          },
+          {
+            id: "whatsapp",
+            name: "WhatsApp",
+            category: "communication",
+            auth: "existing",
+            route: "/integrations",
+            services: ["WhatsApp Web"],
+          },
+        ],
+        connections: [],
+      };
+    else if (path === "/api/integrations") data = { connections: [state] };
     else if (path === "/api/integrations/whatsapp/connect") {
       if (failConnect) {
         await route.fulfill({
@@ -144,7 +165,9 @@ test("connect, scan, save, reopen and forget on a small screen without sending c
     "Sesión guardada · navegador cerrado",
   );
   await page.reload();
-  await page.getByRole("button", { name: "Abrir sesión", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Gestionar conexión", exact: true })
+    .click();
   await expect(page.locator(".connection-badge")).toHaveText("Sesión lista");
   await expect(qr).toHaveCount(0);
   await page
@@ -177,6 +200,7 @@ test("closing while QR is still downloading cannot restore a stale pairing image
   await expect(
     page.getByRole("img", { name: "QR para vincular WhatsApp" }),
   ).toHaveCount(0);
+  await page.getByRole("button", { name: "Cerrar", exact: true }).click();
   await page.getByRole("link", { name: "Integraciones", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Integraciones", exact: true }),
@@ -193,12 +217,35 @@ test("connect errors are visible and an explicit retry recovers", async ({
     "Browser session limit reached",
   );
   await expect(
-    page.getByRole("button", { name: "Conectar WhatsApp" }),
+    page.getByRole("button", { name: "Reintentar conexión" }),
   ).toBeEnabled();
   f.failConnect(false);
-  await page.getByRole("button", { name: "Conectar WhatsApp" }).click();
+  await page.getByRole("button", { name: "Reintentar conexión" }).click();
   await expect(
     page.getByRole("img", { name: "QR para vincular WhatsApp" }),
   ).toBeVisible();
   await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+test("WhatsApp shares the searchable catalog and opens a dismissible pairing dialog", async ({
+  page,
+}) => {
+  await fixture(page);
+  const card = page
+    .locator(".connector-grid .connector-card")
+    .filter({
+      has: page.getByRole("heading", { name: "WhatsApp", exact: true }),
+    });
+  await expect(card).toHaveCount(1);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByPlaceholder("Google Drive, GitHub, PDF…").fill("WhatsApp");
+  await expect(page.locator(".connector-card")).toHaveCount(1);
+  await card.getByRole("button", { name: "Conectar WhatsApp" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "QR para vincular WhatsApp" }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(card.getByRole("button")).toBeFocused();
 });

@@ -22,6 +22,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::sync::Mutex;
+mod profile;
 mod registry;
 mod sessions;
 use registry::RegistrySource;
@@ -31,6 +32,8 @@ use sessions::{SESSION_SECONDS, Session, Sessions, now_millis};
 pub struct Account {
     pub id: String,
     pub email: String,
+    #[serde(default)]
+    pub display_name: String,
     pub password_hash: String,
     pub upstream: String,
     pub upstream_token: String,
@@ -193,6 +196,7 @@ pub fn admin() -> Result<()> {
     let candidate = Account {
         id: id.clone(),
         email: email.clone(),
+        display_name: String::new(),
         password_hash: hash_password(password)?,
         upstream: args[4].clone(),
         upstream_token: token(),
@@ -509,10 +513,13 @@ fn router_from_source(
         .route("/schedules", get(crate::assets::index))
         .route("/activity", get(crate::assets::index))
         .route("/settings", get(crate::assets::index))
+        .route("/profile", get(crate::assets::index))
         .route("/assets/{*path}", get(crate::assets::asset))
         .route("/api/auth/login", post(login))
         .route("/api/auth/logout", post(logout))
         .route("/api/auth/session", get(session))
+        .route("/api/auth/profile", get(profile::get).put(profile::update))
+        .route("/api/auth/password", post(profile::password))
         .route(
             "/api/connectors/oauth/callback",
             get(crate::connectors::oauth_landing).post(proxy),
@@ -630,6 +637,7 @@ mod tests {
             accounts: vec![Account {
                 id: uuid::Uuid::new_v4().to_string(),
                 email: "alice@example.test".into(),
+                display_name: String::new(),
                 password_hash: hash_password("test-password").unwrap(),
                 upstream,
                 upstream_token: token(),
@@ -736,6 +744,7 @@ mod tests {
             accounts.push(Account {
                 id: id.into(),
                 email: format!("{id}@example.test"),
+                display_name: String::new(),
                 password_hash: hash_password("test-password").unwrap(),
                 upstream,
                 upstream_token: format!("secret-{id}"),
@@ -851,6 +860,7 @@ mod tests {
             accounts: vec![Account {
                 id: "one".into(),
                 email: "one@example.test".into(),
+                display_name: String::new(),
                 password_hash: hash_password("test-password").unwrap(),
                 upstream: "http://127.0.0.1:9".into(),
                 upstream_token: token(),
@@ -941,6 +951,7 @@ mod tests {
         let alice = Account {
             id: "alice".into(),
             email: "alice@example.test".into(),
+            display_name: String::new(),
             password_hash: hash_password("test-password").unwrap(),
             upstream: "http://127.0.0.1:9".into(),
             upstream_token: token(),
@@ -1059,6 +1070,7 @@ mod marketplace_tests {
             .map(|id| Account {
                 id: id.into(),
                 email: format!("{id}@test.invalid"),
+                display_name: String::new(),
                 password_hash: "hash".into(),
                 upstream: "http://127.0.0.1:1".into(),
                 upstream_token: "unused".into(),

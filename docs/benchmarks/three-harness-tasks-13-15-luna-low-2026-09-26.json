@@ -1,0 +1,507 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "tasks": [
+      "nginx-request-logging",
+      "openssl-selfsigned-cert",
+      "sqlite-db-truncate"
+    ],
+    "selection_indices": [
+      13,
+      14,
+      15
+    ],
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "tier": "standard",
+    "attempts": 1,
+    "agent_deadline_seconds": 900,
+    "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "fenix_binary_sha256": "f7086c387fc10d270084440a33728fb264f17ca1e0727cae0799c97da75700d4",
+    "codex": "0.157.1",
+    "opencode": "1.18.32",
+    "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "production_changed": false,
+    "changes": [
+      "Bind direct compiler/run checks to the actual output path",
+      "Always return concrete environment and executable-location evidence",
+      "Verify new deployment content and push success",
+      "Execute requested service outcomes rather than stopping at scripts",
+      "Reduce redundant discovery of visible tools",
+      "Identical task-independent isolated execution context for all three harnesses"
+    ],
+    "validation": {
+      "agent_tests_passed": 252,
+      "agent_optional_tests_ignored": 3,
+      "transport_tests_passed": 4,
+      "server_build": "passed"
+    },
+    "opencode_auxiliary_model": "openai/gpt-6-luna",
+    "notes": [
+      "Official task instruction with identical task-independent execution context; hidden tests and solutions never supplied.",
+      "Sequential attempts, rotating harness order across tasks; no behavioral changes during measurement."
+    ]
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "artifact_root": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319",
+  "provider_validation": {
+    "completed_responses": [
+      {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "service_tier": "default",
+        "count": 80
+      }
+    ],
+    "max_request_input_tokens": 23469
+  },
+  "totals": {
+    "fenix": {
+      "passed": 3,
+      "graded_tasks": 3,
+      "execution_seconds": 144.401227,
+      "cost_usd": 0.02165607,
+      "input_tokens": 397713,
+      "output_tokens": 4964,
+      "api_calls": 27,
+      "cost_is_lower_bound": true,
+      "attempts": 3
+    },
+    "codex": {
+      "passed": 3,
+      "graded_tasks": 3,
+      "execution_seconds": 88.41452699999999,
+      "cost_usd": 0.01314787,
+      "input_tokens": 185730,
+      "output_tokens": 4667,
+      "api_calls": 16,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "opencode": {
+      "passed": 3,
+      "graded_tasks": 3,
+      "execution_seconds": 154.77764100000002,
+      "cost_usd": 0.01294493,
+      "input_tokens": 263681,
+      "output_tokens": 7125,
+      "api_calls": 38,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    }
+  },
+  "attempts": [
+    {
+      "job": "fenix-nginx-request-logging",
+      "harness": "fenix",
+      "task": "nginx-request-logging",
+      "reward": 1.0,
+      "execution_seconds": 64.657181,
+      "trial_seconds": 99.899829,
+      "setup_seconds": 1.430762,
+      "verifier_seconds": 12.102032,
+      "input_tokens": 201128,
+      "cached_input_tokens": 137797,
+      "cache_write_tokens": 57576,
+      "output_tokens": 1585,
+      "cost_usd": 0.00994297,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.025,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/fenix-nginx-request-logging/nginx-request-logging__7iYTxkU",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 11,
+      "checks": {
+        "tests": 8,
+        "passed": 8,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 13
+    },
+    {
+      "job": "codex-nginx-request-logging",
+      "harness": "codex",
+      "task": "nginx-request-logging",
+      "reward": 1.0,
+      "execution_seconds": 49.026705,
+      "trial_seconds": 91.406905,
+      "setup_seconds": 4.866311,
+      "verifier_seconds": 13.073309,
+      "input_tokens": 85830,
+      "cached_input_tokens": 56293,
+      "cache_write_tokens": 29516,
+      "output_tokens": 1795,
+      "cost_usd": 0.00515203,
+      "api_calls": 7,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 7
+      },
+      "throttle_seconds": 0.024,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/codex-nginx-request-logging/nginx-request-logging__MJEMGfE",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 7,
+      "checks": {
+        "tests": 8,
+        "passed": 8,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 13
+    },
+    {
+      "job": "opencode-nginx-request-logging",
+      "harness": "opencode",
+      "task": "nginx-request-logging",
+      "reward": 1.0,
+      "execution_seconds": 58.955809,
+      "trial_seconds": 97.991731,
+      "setup_seconds": 10.356272,
+      "verifier_seconds": 10.42648,
+      "input_tokens": 103985,
+      "cached_input_tokens": 81065,
+      "cache_write_tokens": 22881,
+      "output_tokens": 1618,
+      "cost_usd": 0.00448368,
+      "api_calls": 13,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 13
+      },
+      "throttle_seconds": 0.017,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/opencode-nginx-request-logging/nginx-request-logging__uXkrx57",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 13,
+      "checks": {
+        "tests": 8,
+        "passed": 8,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 13
+    },
+    {
+      "job": "fenix-openssl-selfsigned-cert",
+      "harness": "fenix",
+      "task": "openssl-selfsigned-cert",
+      "reward": 1.0,
+      "execution_seconds": 35.56731,
+      "trial_seconds": 67.391748,
+      "setup_seconds": 4.32717,
+      "verifier_seconds": 12.031927,
+      "input_tokens": 87690,
+      "cached_input_tokens": 55954,
+      "cache_write_tokens": 31708,
+      "output_tokens": 1209,
+      "cost_usd": 0.00513034,
+      "api_calls": 7,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 7
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/fenix-openssl-selfsigned-cert/openssl-selfsigned-cert__Ec4szL8",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 7,
+      "checks": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 14
+    },
+    {
+      "job": "codex-openssl-selfsigned-cert",
+      "harness": "codex",
+      "task": "openssl-selfsigned-cert",
+      "reward": 1.0,
+      "execution_seconds": 13.149612,
+      "trial_seconds": 65.878786,
+      "setup_seconds": 16.4099,
+      "verifier_seconds": 13.244039,
+      "input_tokens": 30812,
+      "cached_input_tokens": 9772,
+      "cache_write_tokens": 21031,
+      "output_tokens": 915,
+      "cost_usd": 0.00318499,
+      "api_calls": 3,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 3
+      },
+      "throttle_seconds": 0.003,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/codex-openssl-selfsigned-cert/openssl-selfsigned-cert__87dhDv6",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 3,
+      "checks": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 14
+    },
+    {
+      "job": "opencode-openssl-selfsigned-cert",
+      "harness": "opencode",
+      "task": "openssl-selfsigned-cert",
+      "reward": 1.0,
+      "execution_seconds": 35.908333,
+      "trial_seconds": 66.784772,
+      "setup_seconds": 2.639237,
+      "verifier_seconds": 12.465967,
+      "input_tokens": 58000,
+      "cached_input_tokens": 41855,
+      "cache_write_tokens": 15153,
+      "output_tokens": 1591,
+      "cost_usd": 0.00320738,
+      "api_calls": 10,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 10
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/opencode-openssl-selfsigned-cert/openssl-selfsigned-cert__3bzrqDQ",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 10,
+      "checks": {
+        "tests": 6,
+        "passed": 6,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 14
+    },
+    {
+      "job": "fenix-sqlite-db-truncate",
+      "harness": "fenix",
+      "task": "sqlite-db-truncate",
+      "reward": 1.0,
+      "execution_seconds": 44.176736,
+      "trial_seconds": 72.909823,
+      "setup_seconds": 0.777985,
+      "verifier_seconds": 12.24579,
+      "input_tokens": 108895,
+      "cached_input_tokens": 69729,
+      "cache_write_tokens": 35355,
+      "output_tokens": 2170,
+      "cost_usd": 0.00658276,
+      "api_calls": 9,
+      "local_rejections": 0,
+      "usage_missing": 1,
+      "http_status": {
+        "200": 9
+      },
+      "throttle_seconds": 0.013,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/fenix-sqlite-db-truncate/sqlite-db-truncate__fsekMAP",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 1,
+      "cost_is_lower_bound": true,
+      "transport_errors": [
+        {
+          "error": "[Errno 32] Broken pipe",
+          "seconds": 12.740475520025939,
+          "http_status": 200
+        }
+      ],
+      "upstream_attempts": 9,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 15
+    },
+    {
+      "job": "codex-sqlite-db-truncate",
+      "harness": "codex",
+      "task": "sqlite-db-truncate",
+      "reward": 1.0,
+      "execution_seconds": 26.23821,
+      "trial_seconds": 76.593922,
+      "setup_seconds": 2.001913,
+      "verifier_seconds": 16.385815,
+      "input_tokens": 69088,
+      "cached_input_tokens": 41767,
+      "cache_write_tokens": 27303,
+      "output_tokens": 1957,
+      "cost_usd": 0.00481085,
+      "api_calls": 6,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 6
+      },
+      "throttle_seconds": 0.011,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/codex-sqlite-db-truncate/sqlite-db-truncate__TdJtMTs",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 6,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 15
+    },
+    {
+      "job": "opencode-sqlite-db-truncate",
+      "harness": "opencode",
+      "task": "sqlite-db-truncate",
+      "reward": 1.0,
+      "execution_seconds": 59.913499,
+      "trial_seconds": 92.371187,
+      "setup_seconds": 2.781535,
+      "verifier_seconds": 11.873484,
+      "input_tokens": 101696,
+      "cached_input_tokens": 81712,
+      "cache_write_tokens": 19214,
+      "output_tokens": 3916,
+      "cost_usd": 0.00525387,
+      "api_calls": 15,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 15
+      },
+      "throttle_seconds": 0.023,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-13-15-20260926-173319/jobs/opencode-sqlite-db-truncate/sqlite-db-truncate__gfTg97e",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 15,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 15
+    }
+  ],
+  "limitations": [
+    "Three diagnostic tasks, one attempt per combination; not an overall harness ranking.",
+    "Fenix contains the new build, environment, discovery and skill changes; no behavioral changes or retries during measurement.",
+    "Official hidden tests were never provided to evaluated agents.",
+    "Costs are usage-based estimates, including reported cache reads/writes, excluding infrastructure and taxes.",
+    "A lower cost for an incomplete/blocked task is not evidence of better efficiency.",
+    "Fenix SQLite cost and tokens are lower bounds: one auxiliary skill-learning request lost its usage on a broken pipe after successful task execution.",
+    "The SQLite verifier requires at least seven of eight reference rows and does not validate every reported recovered row.",
+    "All adapters received identical isolated-execution context in this round, a protocol change from tasks 10-12.",
+    "Passing the official verifier does not imply comprehensive self-verification or correctness outside the tested cases."
+  ]
+}

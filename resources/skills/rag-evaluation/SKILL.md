@@ -36,7 +36,3 @@ Report citation support, abstention, retrieval metrics, latency and total task c
 ## Limits
 
 Do not infer relationships or truth from vector similarity or expose unauthorized documents during candidate retrieval.
-
-## Español
-
-Compara con búsqueda léxica, conserva permisos y mide recuperación y respuesta por separado; embeddings son opcionales.

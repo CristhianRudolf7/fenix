@@ -99,6 +99,7 @@ async fn run() -> Result<()> {
     let port = listener.local_addr()?.port();
     let mut workers = runtime.start();
     workers.push(runtime.start_web_search());
+    workers.push(runtime.start_skill_localizations());
     println!(
         "Fénix is ready at http://127.0.0.1:{port}\nRuntime data: {}\nShared skills: {}",
         runtime.data_dir.display(),

@@ -41,6 +41,13 @@ test.beforeAll(async () => {
       response.end(JSON.stringify({ error: "Private provider diagnostic" }));
       return;
     }
+    if (
+      body.model === "chat-test" &&
+      JSON.stringify(body.input).includes("Write a brief progress message")
+    ) {
+      response.end(JSON.stringify(completion("Estoy revisando tu documento.")));
+      return;
+    }
     if (body.model === "chat-test") {
       response.end(
         JSON.stringify(
@@ -90,13 +97,13 @@ test.beforeAll(async () => {
         response.once("close", resolve);
       });
       send({ type: "response.output_text.delta", delta: "Respuesta parcial " });
-      send({ type: "response.output_text.delta", delta: "fake-brow" });
+      send({ type: "response.output_text.delta", delta: "de trabajo" });
       await waiting;
       if (response.destroyed) return;
-      send({ type: "response.output_text.delta", delta: "ser-key final." });
+      send({ type: "response.output_text.delta", delta: " final." });
       send({
         type: "response.completed",
-        response: completion("Respuesta parcial fake-browser-key final."),
+        response: completion("Respuesta parcial de trabajo final."),
       });
       response.end();
       return;
@@ -240,16 +247,16 @@ test("navigation can collapse without losing routes or preferences", async ({
     .getByRole("button", { name: "Colapsar menú", exact: true })
     .click();
   await expect(page.locator(".shell")).toHaveClass(/is-collapsed/);
-  await page.locator('[data-page="memory"]').click();
-  await expect(page.locator("#memory-form")).toBeVisible();
+  await page.locator('[data-page="skills"]').click();
+  await expect(page.locator(".skill-exchange")).toBeVisible();
   await page.reload();
   await expect(page.locator(".shell")).toHaveClass(/is-collapsed/);
   await page
     .getByRole("button", { name: "Expandir menú", exact: true })
     .click();
   await expect(page.locator(".shell")).not.toHaveClass(/is-collapsed/);
-  await expect(page.locator("#memory-form")).toBeVisible();
-  await expect(page).toHaveURL(/\/memory$/);
+  await expect(page.locator(".skill-exchange")).toBeVisible();
+  await expect(page).toHaveURL(/\/skills$/);
 });
 
 test("compact composer and left drawer work across screen sizes", async ({
@@ -288,8 +295,8 @@ test("compact composer and left drawer work across screen sizes", async ({
       await expect(page.locator("#main-sidebar")).toBeHidden();
       await expect(page.locator(".sidebar-toggle")).toBeFocused();
       await page.locator(".sidebar-toggle").click();
-      await page.locator('[data-page="settings"]').click();
-      await expect(page).toHaveURL(/settings$/);
+      await page.locator('[data-page="skills"]').click();
+      await expect(page).toHaveURL(/skills$/);
       await expect(page.locator("#main-sidebar")).toBeHidden();
     }
   }
@@ -495,7 +502,7 @@ test("theme is an explicit persistent choice and the interface fits a phone", as
   await expect(page.locator("#telegram-form")).toContainText("Optional");
 });
 
-test("streaming previews survive reload without repeating inference or duplicating history", async ({
+test("master drafts stay private across reload and final replies remain in history", async ({
   page,
 }) => {
   await page.goto("/");
@@ -503,7 +510,8 @@ test("streaming previews survive reload without repeating inference or duplicati
   await page.locator("#chat-input").fill("stream-preview reload");
   await page.locator("#chat-input").press("Enter");
   try {
-    await expect(page.locator("#live-message")).toContainText(
+    await expect.poll(() => streamRequests - before).toBe(1);
+    await expect(page.locator("#live-message")).not.toContainText(
       "Respuesta parcial",
     );
     await expect(page.locator("#live-message")).not.toContainText("fake-brow");
@@ -514,7 +522,8 @@ test("streaming previews survive reload without repeating inference or duplicati
       "Respuesta parcial",
     );
     await page.reload();
-    await expect(page.locator("#live-message")).toContainText(
+    await expect.poll(() => streamRequests - before).toBe(1);
+    await expect(page.locator("#live-message")).not.toContainText(
       "Respuesta parcial",
     );
     expect(streamRequests - before).toBe(1);
@@ -523,12 +532,12 @@ test("streaming previews survive reload without repeating inference or duplicati
   }
   await expect(page.locator("#live-message")).toBeEmpty();
   await expect(page.locator("#message-list")).toContainText(
-    "Respuesta parcial [REDACTED] final.",
+    "Respuesta parcial de trabajo final.",
   );
   await expect(
     page
       .locator("#message-list .message-text")
-      .filter({ hasText: "Respuesta parcial [REDACTED] final." }),
+      .filter({ hasText: "Respuesta parcial de trabajo final." }),
   ).toHaveCount(1);
   const history = await (await page.request.get("/api/messages")).json();
   expect(JSON.stringify(history)).not.toContain("fake-browser-key");
@@ -541,11 +550,12 @@ test("cancelling an in-flight stream clears the preview and does not retry infer
   const before = streamRequests;
   await page.locator("#chat-input").fill("stream-preview cancel");
   await page.locator("#chat-input").press("Enter");
-  await expect(page.locator("#live-message")).toContainText(
+  await expect.poll(() => streamRequests - before).toBe(1);
+  await expect(page.locator("#live-message")).not.toContainText(
     "Respuesta parcial",
   );
   const status = await (await page.request.get("/api/status")).json();
-  await page.locator("#chat-input").fill(`cancelar ${status.active_task}`);
+  await page.locator("#chat-input").fill("Deserta la tarea");
   await page.locator("#chat-input").press("Enter");
   await expect
     .poll(
@@ -619,11 +629,18 @@ test("background tasks and simultaneous textual requests update without leaving 
   await expect(panel).toContainText("A verified report with file references");
   await expect(panel).toContainText("1 / 3");
   await expect(panel).toContainText("parent-task-1234567890");
+  await expect(
+    panel.locator("code").filter({ hasText: "parent-task-1234567890" }),
+  ).toBeHidden();
   await expect(page.locator("#task-pending")).toContainText(
-    "aprobar approval-child-123",
+    "Write the report?",
   );
-  await expect(page.locator("#task-pending")).toContainText(
-    "responder question-child-456",
+  await expect(page.locator("#task-pending")).toContainText("Which file?");
+  await expect(page.locator("#task-pending")).not.toContainText(
+    "approval-child-123",
+  );
+  await expect(page.locator("#task-pending")).not.toContainText(
+    "question-child-456",
   );
   await expect(
     page.getByRole("button", { name: /aprobar|rechazar/i }),
@@ -651,7 +668,7 @@ test("background tasks and simultaneous textual requests update without leaving 
   await expect(panel).toContainText("Completada");
   await expect(panel).toContainText("2 / 3");
   await expect(page.locator("#task-pending")).toBeHidden();
-  await panel.locator("summary").click();
+  await panel.locator(".subagent-result summary").click();
   await expect(panel.locator("pre")).toContainText("file.txt:2");
   await expect(panel.locator("report")).toHaveCount(0);
   await page.locator(".sidebar-toggle").click();

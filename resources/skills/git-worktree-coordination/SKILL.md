@@ -36,9 +36,3 @@ Run integration checks on the combined result; independent branch success does n
 ## Limits
 
 A worktree isolates files, not shared databases, running services or external effects.
-
-## Español
-
-Aísla archivos y recursos por tarea; integra con pruebas y no borres trabajo sin conservarlo.
-
-Reutiliza el aislamiento existente, registra fallos previos y verifica el directorio ignorado. Al finalizar la rama, informa base, cambios y comprobaciones; conserva el worktree si no se autorizó su limpieza y no deduzcas propiedad por su nombre.

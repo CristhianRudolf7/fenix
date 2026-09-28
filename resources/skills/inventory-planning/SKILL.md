@@ -36,7 +36,3 @@ Reconcile totals by unit/location and manually inspect representative rows: inco
 ## Limits
 
 A forecast cannot guarantee availability. Policy thresholds and lead-time assumptions must come from the owner or evidence. Do not change inventory records, place orders, mark down products or cancel receipts merely because the analysis suggests it.
-
-## Español
-
-Calcula reposición por producto y ubicación con unidades y fechas verificadas. Evita descontar reservas dos veces y contar entregas tardías como cobertura de faltantes anteriores. Separa demanda, incertidumbre, nivel de servicio y restricciones de compra; entrega propuestas explicables sin emitir pedidos automáticamente.

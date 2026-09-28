@@ -39,7 +39,3 @@ Check cell types, row counts, totals, formulas and neighboring ranges. Report fo
 ## Limits
 
 Do not infer that an empty formatted cell is an empty raw value. Without a connection, offer an exported workbook or CSV workflow.
-
-## Español
-
-Edita rangos precisos, conserva fórmulas y distingue texto de valores interpretados. Revisa claves antes de añadir filas y comprueba los totales.

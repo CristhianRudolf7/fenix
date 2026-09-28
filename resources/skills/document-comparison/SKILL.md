@@ -34,7 +34,3 @@ Spot-check material differences against both source versions and account for mis
 ## Limits
 
 Text extraction alone may miss tracked changes, comments or layout. Do not silently accept one version as authoritative.
-
-## Español
-
-Alinea secciones y distingue cambios sustantivos de movimientos o formato, verificando ambas fuentes.

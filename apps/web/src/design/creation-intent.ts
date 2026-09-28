@@ -18,6 +18,34 @@ export function creationKind(text: string): Kind | null {
     )
   )
     return null;
+  // Mentions of creation inside capability questions are not creation requests.
+  if (
+    /\b(?:funcionalidades|capacidades|habilidades|skills|capabilities|features|abilities)\b/.test(
+      value,
+    ) &&
+    /\b(?:que|cuales|cuantas|cuantos|tienes|puedes|what|which|how many|can you)\b/.test(
+      value,
+    )
+  )
+    return null;
+  if (
+    /\b(?:solo|solamente|unicamente|only)\s+(?:puedes|sabes|creas|generas|can you|do you)\b|\b(?:eres capaz|sabes crear|sabes generar|are you able)\b/.test(
+      value,
+    )
+  )
+    return null;
+  if (
+    /\b(?:quiero|necesito|want|need)\s+(?:saber|conocer|entender|aprender|to know|to understand|to learn)\b/.test(
+      value,
+    )
+  )
+    return null;
+  if (
+    /^(?:[¿?\s]*)(?:puedes|can you)\s+(?:crear|generar|disenar|create|generate|design)\s+(?:presentaciones|diapositivas|documentos|pdfs?|interfaces|imagenes|videos|graficos|slides|presentations|documents|websites|images|charts)[?¿.\s]*$/.test(
+      value,
+    )
+  )
+    return null;
   const action =
     /\b(?:genera\w*|crea\w*|disena\w*|hazme|haz|prepara\w*|quiero|necesito|create|generate|design|build|make|prepare|i want|i need)\b/.exec(
       value,

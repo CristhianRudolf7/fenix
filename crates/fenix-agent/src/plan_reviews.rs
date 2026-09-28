@@ -340,7 +340,7 @@ impl Runtime {
                     }
                     let _active = self.subagents.active.lock().await;
                     let spec = SubagentSpec {
-                        profile: self.profile_for_skills(&assignment.request.skills)?,
+                        profile: "general".into(),
                         objective: format!("Review plan {} v{}: {}",plan.id,plan.version,assignment.request.specialty),
                         expected_output:"An evidence-backed structured review using subagent_finish.review, not execution of the milestones".into(),
                         context:json!({"review_id":review.id,"role":assignment.role,"round":review.round,"question":assignment.request.question,"skills":assignment.request.skills,"instruction":"Use plan_review_read to obtain the original request, brief and relevant milestones; consult evidence for existing answers."}).to_string(),

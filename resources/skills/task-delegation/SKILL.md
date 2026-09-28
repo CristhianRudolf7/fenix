@@ -40,9 +40,3 @@ Require changed artifacts, checks, assumptions and unresolved issues in the hand
 ## Limits
 
 Tool access and spawning remain enforced by the runtime. Do not invent delegation APIs or allow cross-project access through copied context.
-
-## Español
-
-Delega objetivos concretos con contexto mínimo y archivos asignados. Mantén al maestro disponible, un solo nivel de subagentes y verifica entregables con evidencia.
-
-Incluye fuentes exactas, interfaces y criterios de comprobación. Solicita artefactos, resultados, desviaciones y dudas; distingue aprobación del plan, cumplimiento del resultado y calidad del código sin duplicar revisiones rutinarias.

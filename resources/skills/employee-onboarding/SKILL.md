@@ -34,7 +34,3 @@ Check dates, ownership, links and whether prerequisites actually exist.
 ## Limits
 
 Do not create accounts, grant permissions or collect sensitive employee documents without the relevant authorization.
-
-## Español
-
-Organiza accesos, aprendizaje y entregables con responsables y dependencias reales.

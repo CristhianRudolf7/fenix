@@ -93,6 +93,8 @@ struct ProcessState {
 pub(crate) struct Processes {
     items: Mutex<HashMap<String, Arc<Process>>>,
     directory: PathBuf,
+    /// Standalone account home, captured once rather than inferred from command cwd.
+    home: PathBuf,
     redactor: Arc<Redactor>,
     stop: CancellationToken,
     executor: Option<fenix_execution::Executor>,
@@ -188,9 +190,16 @@ impl Processes {
         stop: CancellationToken,
     ) -> Result<Self> {
         std::fs::create_dir_all(&directory)?;
+        let fallback_home = directory.canonicalize()?.join("home");
+        let home = std::env::var_os("HOME")
+            .map(PathBuf::from)
+            .filter(|path| path.is_absolute() && path.is_dir())
+            .unwrap_or(fallback_home);
+        std::fs::create_dir_all(&home)?;
         Ok(Self {
             items: Mutex::new(HashMap::new()),
             directory,
+            home,
             redactor,
             stop,
             executor: fenix_execution::Executor::from_environment()?,
@@ -363,7 +372,9 @@ impl Processes {
             None
         };
         let timeout = remote.as_ref().map_or(timeout, |lease| lease.timeout);
-        let environment = fenix_execution::local_environment(&cwd);
+        // The remote executor supplies its own tenant-scoped home. These
+        // allowlisted defaults are used only by standalone shell processes.
+        let environment = fenix_execution::local_environment(&self.home);
         if task_cancel.is_cancelled() || self.stop.is_cancelled() {
             bail!("Task cancelled before starting command");
         }
@@ -593,11 +604,30 @@ impl Processes {
                 _ = tokio::time::sleep(Duration::from_secs(2).min(total.saturating_sub(started.elapsed())).min(idle.saturating_sub(last_activity.elapsed()))) => {}
             }
         };
-        Ok(
-            json!({"reason":reason,"waited_ms":started.elapsed().as_millis(),
+        let mut event = json!({"reason":reason,"waited_ms":started.elapsed().as_millis(),
             "process_elapsed_ms":process.started.elapsed().as_millis(),
-            "instruction":"Silence alone does not establish a hang or input prompt. Inspect output before intervening; continue waiting if appropriate. The wait never kills the process. Explicit command timeout and cancellation remain enforced."}),
-        )
+            "instruction":"Silence alone does not establish a hang. Inspect recent output for an explicit input prompt before waiting again. Respond only with task-authorized settings; do not guess credentials, consent or owner intent. Without such evidence, continue waiting as appropriate. This advisory never sends input or kills the process; timeout and cancellation remain enforced."});
+        if reason == "quiet_process" {
+            // Incremental status may now be empty although the last output was a
+            // prompt. Reuse the redacted log without advancing any reader cursor.
+            let mut state = process.state.lock().await;
+            state.log.flush().await?;
+            let end = state.bytes;
+            drop(state);
+            let (text, _, _) = output::read_page(
+                &process.log_path,
+                end.saturating_sub(1200),
+                end,
+                1200,
+                false,
+            )
+            .await?;
+            if !text.is_empty() {
+                event["recent_output"] = json!(text);
+                event["recent_output_is_replayed"] = json!(true);
+            }
+        }
+        Ok(event)
     }
     pub async fn status(&self, owner: &str, reader: &str, id: &str, args: &Value) -> Result<Value> {
         if let Some(port) = args["ready_port"].as_u64()
@@ -633,6 +663,14 @@ impl Processes {
         });
         if state.exit_code.is_some_and(|code| code != 0) {
             result["failure"] = json!({"code":"command_exit_nonzero","category":"program_exit","permissions_relaxed":false,"instruction":"Inspect the output; nonzero exit alone does not prove a permission denial or a program bug."});
+            if crate::execution_state::missing_dependency_diagnostic(
+                result["output"].as_str().unwrap_or(""),
+            ) {
+                result["failure"]["category"] = json!("missing_dependency");
+                result["failure"]["instruction"] = json!(
+                    "A required executable/module is missing. Inspect the build metadata and install the necessary dependency within existing authorization, then resume the failed step. An APT _apt download warning is not a denial of the requested build. This diagnostic does not grant permissions."
+                );
+            }
         }
         drop(state);
         if let Some(port) = args["ready_port"].as_u64() {
@@ -835,6 +873,139 @@ mod tests {
             Processes::new(dir.path().join("logs"), redactor, CancellationToken::new()).unwrap();
         (dir, processes)
     }
+    #[tokio::test]
+    async fn git_identity_survives_directory_changes_in_pipe_and_terminal() {
+        let (dir, mut processes) = fixture();
+        let home = dir.path().join("account-home");
+        std::fs::create_dir(&home).unwrap();
+        std::fs::write(
+            home.join(".gitconfig"),
+            "[user]\nname = Test Account\nemail = test@example.invalid\n",
+        )
+        .unwrap();
+        processes.home = home;
+        for tty in [false, true] {
+            let cwd = dir
+                .path()
+                .join(if tty { "terminal-repo" } else { "pipe-repo" });
+            std::fs::create_dir_all(cwd.join("nested")).unwrap();
+            let broken = std::process::Command::new("git")
+                .args(["var", "GIT_COMMITTER_IDENT"])
+                .current_dir(&cwd)
+                .env_clear()
+                .envs(fenix_execution::local_environment(&cwd))
+                .output()
+                .unwrap();
+            assert!(
+                !broken.status.success(),
+                "cwd must not supply account identity"
+            );
+            let run = processes.start(
+                "task",
+                "git init -q -b main && git commit --allow-empty -qm 'Check account identity' && cd nested && git var GIT_COMMITTER_IDENT && git status --porcelain",
+                &cwd, 10, &CancellationToken::new(), None,
+                ProcessOptions { tty, ..Default::default() },
+            ).await.unwrap();
+            let result = complete(&processes, run["process_id"].as_str().unwrap()).await;
+            assert_eq!(result["exit_code"], 0, "{result}");
+            assert!(
+                result["output"]
+                    .as_str()
+                    .unwrap()
+                    .contains("Test Account <test@example.invalid>"),
+                "{result}"
+            );
+            assert!(!cwd.join(".gitconfig").exists());
+        }
+    }
+    #[tokio::test]
+    async fn quiet_wait_replays_the_prompt_without_consuming_output_or_answering() {
+        let (dir, processes) = fixture();
+        let cancel = CancellationToken::new();
+        let run = processes
+            .start(
+                "task",
+                "printf 'Choose a region: '; read -r answer; printf 'selected=%s\\n' \"$answer\"",
+                dir.path(),
+                10,
+                &cancel,
+                None,
+                ProcessOptions::default(),
+            )
+            .await
+            .unwrap();
+        let id = run["process_id"].as_str().unwrap();
+        // Consume the prompt through the normal incremental reader first.
+        tokio::time::timeout(Duration::from_secs(3), async {
+            loop {
+                let page = processes
+                    .status("task", "task", id, &json!({"wait_ms":0}))
+                    .await
+                    .unwrap();
+                if page["output"]
+                    .as_str()
+                    .unwrap()
+                    .contains("Choose a region:")
+                {
+                    break;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .unwrap();
+        for _ in 0..2 {
+            let event = processes
+                .wait_event(
+                    "task",
+                    id,
+                    &cancel,
+                    Duration::from_secs(1),
+                    Duration::from_millis(30),
+                )
+                .await
+                .unwrap();
+            assert_eq!(event["reason"], "quiet_process");
+            assert_eq!(event["recent_output_is_replayed"], true);
+            assert!(
+                event["recent_output"]
+                    .as_str()
+                    .unwrap()
+                    .contains("Choose a region:")
+            );
+            let page = processes
+                .status("task", "task", id, &json!({"wait_ms":0}))
+                .await
+                .unwrap();
+            assert_eq!(page["status"], "running");
+            assert_eq!(page["output"], "");
+        }
+        assert!(
+            processes
+                .wait_event(
+                    "other-task",
+                    id,
+                    &cancel,
+                    Duration::from_secs(1),
+                    Duration::from_millis(30)
+                )
+                .await
+                .is_err()
+        );
+        processes
+            .input("task", id, &json!({"text":"known-setting\n"}), &cancel)
+            .await
+            .unwrap();
+        let result = complete(&processes, id).await;
+        assert_eq!(result["exit_code"], 0);
+        assert!(
+            result["output"]
+                .as_str()
+                .unwrap()
+                .contains("selected=known-setting")
+        );
+    }
+
     #[tokio::test]
     async fn event_wait_finishes_or_returns_advisory_without_killing() {
         let (dir, processes) = fixture();

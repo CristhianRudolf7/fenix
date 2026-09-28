@@ -39,7 +39,3 @@ Check requested text, nearby structure, links and untouched sections. Return the
 ## Limits
 
 Missing connection means remote edits cannot run. Rendering, comments and revision operations depend on discovered tools, not on the existence of this skill.
-
-## Español
-
-Lee pestañas y estructura antes de editar. Usa cambios localizados, controla revisiones y verifica el resultado sin reconstruir todo el documento.

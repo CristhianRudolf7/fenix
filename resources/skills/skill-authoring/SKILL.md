@@ -23,8 +23,8 @@ Target task, failure examples, available tools, existing related skills and inte
 ## Workflow
 
 1. Search the current library by purpose and aliases. Extend the best existing skill if the outcome is the same; split only when discovery or workflow needs a distinct capability.
-2. Write name and a specific trigger description, then version/category/tags/aliases/required_tools/requires/effects metadata. Keep metadata values strings and tool names real.
-3. Use Scope, Inputs, Workflow, Verification, Limits and Español sections. Put bulky optional detail in a relative references file and state when to load it.
+2. Write name and a specific trigger description, then version/category/tags/aliases/required_tools/requires/effects metadata. Keep metadata values strings and tool names real. Select category from the current category catalog supplied at load time; never create category IDs or synonyms. All categories share the same catalog; categories never grant permissions. Write the executable source in English; Fénix creates Spanish display translations separately.
+3. Use Scope, Inputs, Workflow, Verification and Limits sections in the canonical English SKILL.md. Store the complete Spanish translation separately as SKILL.es.md; do not append a bilingual summary to the canonical file. Put bulky optional detail in a relative references file and state when to load it.
 4. Write original instructions aligned to Fénix capabilities. Do not copy upstream install commands, provider schemas or hidden permission rules.
 5. Validate format, discovery on realistic EN/ES requests, irrelevant-query behavior and tool availability. For behavior changes, compare baseline/candidate on representative tasks and retain failures.
 
@@ -51,13 +51,3 @@ Check all links and resource boundaries, duplicate purposes and dependency hones
 ## Limits
 
 Do not install unreviewed scripts or treat a skill as permission to use unavailable tools. Keep customized user skills and activation state intact.
-
-## Español
-
-Busca duplicados antes de crear. Escribe instrucciones propias con metadatos uniformes y valida formato, recuperación y comportamiento por separado.
-
-Para evaluar una mejora carga la referencia de evaluación: compara con una línea base, incluye casos de presión y negativos y no presentes recuperación léxica como calidad medida del modelo.
-
-Al convertir un flujo en automatización, usa una ejecución observada y prueba variaciones o fallos. Una captura antigua no verifica la web actual. Excluye credenciales y conserva personalizaciones y activación al actualizar.
-
-Para revisar un catálogo, distingue capacidades canónicas, profundidad de lectura y recursos asociados. Usa huellas de contenido y no confundas falta de registros con falta de utilidad.

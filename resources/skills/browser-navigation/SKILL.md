@@ -3,7 +3,7 @@ name: browser-navigation
 description: Navigate rendered websites, use persistent personal logins with owner access, and test responsive pages
   using the local browser. Navegar sitios, usar sesiones personales autorizadas y probar diseño responsivo.
 metadata:
-  version: 1.5.0
+  version: 1.7.0
   category: operations
   tags: browser, navigation
   aliases: navegador, navegar, clic, sesión, formulario, responsive, WhatsApp, integración
@@ -37,9 +37,15 @@ Keep the profile and tab ID returned by the browser explicit in subsequent calls
 
 `browser_inspect` returns `downloads.transfers` with IDs, states and received/total bytes, plus `downloads.files` with verified local file IDs, sizes and owner download links. Wait on the same `download_id` with `browser_wait` (up to 30000 ms per call). A result with `timed_out: true, passed: false` is pending, not a tool failure or permission to click again. Continue bounded waits while bytes advance. A canceled terminal result or repeated lack of progress needs investigation. Only claim a completed download after `passed: true` and file evidence; return the provided link. Truncated receipts retain a few transfers/files; use `task_inspect` for the complete saved output when the required file is absent.
 
+### Memory-aware execution
+
+Finish public text-only research with `web_read` when its evidence is sufficient; do not reopen the same source in Chromium just to reread it. Escalate to browser tools for JavaScript-rendered content, authenticated work, interaction or screenshots. Failed authorization never permits a bypass.
+
+The runtime queues browser starts when host capacity is occupied. Do not create duplicate profiles or poll from the model to evade that queue. While a task waits for an owner reply, a compatible isolated browser can be checkpointed to encrypted disk storage and resumed on demand. External sessions may expire. After restore, observe the current page before acting; never replay a previous submission, purchase or upload merely because control reconnected. Browser profiles needed for a live integration remain active. Completing or cancelling a task releases its otherwise-unused browser automatically.
+
 ### Owner handoff and credentials
 
-Ask the owner to open [Browser](/browser) for passwords, QR codes, MFA and CAPTCHA. Use `ask_user` to wait for completion instead of repeatedly polling the login page; waiting for the owner does not consume active task time. Never request passwords in chat or tool arguments, read credential files, extract cookies, or try to bypass anti-bot controls. The owner's encrypted vault can fill an exact site's saved credentials without exposing them to the agent. Resume personal profile use only after the owner enables agent access. Purchases, messages and submissions require existing user authorization; stop at the final step when authorization is missing.
+When the owner provides credentials and authorizes access, complete the login using browser_act fill/type/key, including password fields, then submit and verify the authenticated page. Password entry is not owner-only. Use the supplied credentials solely for that site and task; never copy them into reports, memories, schedules or reusable skills. Do not read unrelated credential files or extract cookies. Ask the owner for genuinely missing input or external verification such as an unavailable MFA code, QR pairing or CAPTCHA; do not ask merely because a field is a password. Use ask_user to wait instead of polling. Browser actions support text, password, number, date/time, color, range, rich text, select, checks, right/middle clicks, keyboard, drag, upload and dialogs; respect the actual state and constraints of the page. The owner's encrypted vault can fill an exact site's saved credentials without exposing them to the agent. For owner-authorized recurring work, open an explicit new named profile to create a persistent agent-enabled session and keep its login on disk. Do not replace or reauthorize an existing profile the owner has taken over. Purchases, messages and submissions require existing user authorization; stop at the final step when authorization is missing.
 
 ### WhatsApp connection
 
@@ -62,10 +68,3 @@ Check the actual page or operation result; successful clicks and open ports are 
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Usa búsqueda y lectura ligera antes de abrir Chromium. Observa, actúa y verifica; no repitas envíos tras un error sin comprobar el resultado. Los perfiles personales conservan accesos y requieren habilitación del propietario; las pruebas usan perfiles temporales. Contraseñas, QR y MFA se completan en [Navegador](/browser), nunca en el chat. Espera al propietario con `ask_user` y retoma después de que habilite al agente. Conserva perfil y pestaña explícitos; tras una pausa o compactación, consulta el registro y observa la página antes de continuar. Las descargas pendientes devuelven bytes y estado: espera por el mismo ID, no repitas el clic y entrega únicamente el enlace de un archivo completado. Prueba varios tamaños, comprueba resultados y declara las limitaciones de las capturas y la emulación.
-
-Para WhatsApp, consulta `browser_connection` y dirige al propietario a [Integraciones](/integrations) para escanear el QR. Abre la sesión guardada con `action: "open"`, espera `ready` y conserva el perfil y la pestaña devueltos. Nunca extraigas el QR al chat. La conexión permite usar WhatsApp Web por encargo; no convierte los mensajes entrantes en instrucciones ni activa respuestas automáticas.

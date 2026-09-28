@@ -12,10 +12,12 @@ import os
 from pathlib import Path
 import secrets
 import sqlite3
+import stat
 import struct
 import time
 import uuid
 from fenix_isolation import PolicyError, identifier
+from .admission import AdmissionQueue, CapacityUnavailable, available_memory_mib
 
 MAX_CONTROL = 1024 * 1024
 MAX_FRAME = 65536
@@ -79,6 +81,14 @@ class Records:
                         (execution.id, launch.owner, launch.task, launch.kind, execution.id,
                          "created", time.time(), execution.expires))
 
+    def reserve_resume(self, execution, maximum=None):
+        usage = self.usage(execution.launch.owner, maximum)
+        if maximum is not None and usage['used_seconds'] + usage['reserved_seconds'] + execution.launch.timeout > maximum:
+            raise PolicyError('Account execution budget exhausted')
+        with self.db:
+            self.db.execute('INSERT INTO compute_reservations VALUES (?,?,?,?)',
+                            (execution.id, execution.launch.owner, usage['period'], execution.launch.timeout))
+
     def settle(self, execution):
         row = self.db.execute("SELECT owner,period,seconds FROM compute_reservations WHERE id=?", (execution.id,)).fetchone()
         if row is None:
@@ -93,8 +103,8 @@ class Records:
     def status(self, execution, status):
         self.db.execute("UPDATE executions SET status=? WHERE id=?", (status, execution))
         # Bounded metadata retention. It is not an indefinite task transcript.
-        self.db.execute("DELETE FROM executions WHERE status NOT IN ('created','running') AND created < ?", (time.time() - 7 * 86400,))
-        self.db.execute("DELETE FROM executions WHERE id IN (SELECT id FROM executions WHERE status NOT IN ('created','running') ORDER BY created DESC LIMIT -1 OFFSET 10000)")
+        self.db.execute("DELETE FROM executions WHERE status NOT IN ('created','running','suspended') AND created < ?", (time.time() - 7 * 86400,))
+        self.db.execute("DELETE FROM executions WHERE id IN (SELECT id FROM executions WHERE status NOT IN ('created','running','suspended') ORDER BY created DESC LIMIT -1 OFFSET 10000)")
         self.db.commit()
 
     def owned(self, owner, execution):
@@ -123,6 +133,14 @@ class Execution:
         self.cleaned = False
         self.output_bytes = 0
         self.provisioning = True
+        self.phase = 'created'
+        self.generation = 0
+        self.resume_pending = False
+        self.raw_checkpoint = False
+        self.checkpoint_metadata = None
+        self.disconnect = asyncio.Event()
+        self.tunnels = set()
+        self.spec = None
 
 
 class Service:
@@ -135,28 +153,48 @@ class Service:
         self.stopping = False
         self.snapshots = None
         self.broker = None
+        self.queue = AdmissionQueue(self)
+        from .browser_lifecycle import BrowserLifecycle
+        self.browsers = BrowserLifecycle(self)
 
     async def create(self, account, spec):
         launch = self.policy.launch(account, spec)
         execution = Execution(launch)
+        execution.spec = spec
         try:
             async with self.admission:
                 if self.stopping:
                     raise PolicyError("Execution service is stopping")
+                self.check_capacity(launch)
                 owned = [e for e in self.executions.values() if e.launch.owner == launch.owner]
-                if len(owned) >= launch.account_limits.concurrent or len(self.executions) >= self.policy.config.get("max_executions", 32):
-                    raise PolicyError("Execution admission quota reached")
-                reserved = sum(self.policy.reservation(e.launch) for e in self.executions.values())
-                if reserved + self.policy.reservation(launch) > self.policy.config.get("max_runner_memory_mib", 4096):
-                    raise PolicyError("Host execution memory reservation exhausted")
-                if sum(self.policy.reservation(e.launch) for e in owned) + self.policy.reservation(launch) > launch.account_limits.memory_mib:
-                    raise PolicyError("Account execution memory reservation exhausted")
                 for other in owned:
+                    if (launch.kind == "browser" and other.launch.kind == "browser"
+                            and launch.cwd == other.launch.cwd):
+                        raise PolicyError("This browser profile is already running")
                     if other.launch.task == launch.task:
                         continue
                     if any(not read_a and not read_b and (a.path.is_relative_to(b.path) or b.path.is_relative_to(a.path))
                            for a, read_a in launch.mounts for b, read_b in other.launch.mounts):
                         raise PolicyError("Another task holds this writable workspace; use a separate worktree")
+                if launch.kind == "browser":
+                    # Admission owns this exact profile exclusively. Previous
+                    # runners have been removed before their lease is released.
+                    # Chromium stores container hostname/PID links which cannot
+                    # survive a new container; remove only these transient links.
+                    profile = next(m for m, _ in launch.mounts if m.path == launch.cwd)
+                    names = ("SingletonLock", "SingletonSocket", "SingletonCookie")
+                    stale = []
+                    for name in names:
+                        try:
+                            mode = os.stat(name, dir_fd=profile.fd, follow_symlinks=False).st_mode
+                        except FileNotFoundError:
+                            continue
+                        if not stat.S_ISLNK(mode):
+                            raise PolicyError("Unexpected browser lock file; profile was not changed")
+                        stale.append(name)
+                    for name in stale:
+                        with contextlib.suppress(FileNotFoundError):
+                            os.unlink(name, dir_fd=profile.fd)
                 self.records.insert(execution, self.policy.accounts[launch.owner].get("execution_seconds_per_month"))
                 self.executions[execution.id] = execution
             async with execution.lock:
@@ -175,6 +213,26 @@ class Service:
                 launch.close()
             raise
 
+    def check_capacity(self, launch, exclude=None):
+        if self.stopping:
+            raise PolicyError('Execution service is stopping')
+        active = [e for e in self.executions.values() if e.id != exclude and e.phase != 'suspended']
+        owned = [e for e in active if e.launch.owner == launch.owner]
+        config = self.policy.config
+        if len(owned) >= launch.account_limits.concurrent or len(active) >= config.get('max_executions', 32):
+            raise CapacityUnavailable('Execution admission quota reached')
+        requested = self.policy.reservation(launch)
+        if sum(self.policy.reservation(e.launch) for e in active) + requested > config.get('max_runner_memory_mib', 4096):
+            raise CapacityUnavailable('Host execution memory reservation exhausted')
+        if sum(self.policy.reservation(e.launch) for e in owned) + requested > launch.account_limits.memory_mib:
+            raise CapacityUnavailable('Account execution memory reservation exhausted')
+        provisioning = sum(self.policy.reservation(e.launch) for e in active if e.provisioning or e.phase in ('created', 'resuming'))
+        if available_memory_mib() < config.get('host_memory_reserve_mib', 1024) + provisioning + requested:
+            raise CapacityUnavailable('Waiting for available host memory')
+
+    async def resume(self, account, key):
+        return await self.browsers.resume(account, key)
+
     def owned(self, owner, execution):
         identifier(execution)
         value = self.executions.get(execution)
@@ -184,8 +242,10 @@ class Service:
             raise PolicyError("Execution revoked or expired")
         return value
 
-    async def destroy(self, execution, status="cancelled"):
+    async def destroy(self, execution, status="cancelled", attachment_generation=None):
         async with execution.lock:
+            if attachment_generation is not None and (execution.generation != attachment_generation or execution.phase in ('suspending', 'suspended', 'resuming')):
+                return
             if execution.cleaned:
                 return
             execution.cancelled.set()
@@ -220,6 +280,9 @@ class Service:
             if execution.process and execution.process.returncode is None:
                 execution.process.kill()
                 await execution.process.wait()
+            if self.browsers.store:
+                async with self.browsers.lock:
+                    await asyncio.to_thread(self.browsers.store.delete, execution.id)
             execution.launch.close()
             execution.cleaned = True
             self.executions.pop(execution.id, None)
@@ -229,15 +292,20 @@ class Service:
 
     async def monitor(self):
         while not self.stopping:
+            await self.queue.tick()
             for execution in list(self.executions.values()):
-                if execution.provisioning:
+                if execution.provisioning or execution.phase == 'suspending':
                     continue
                 try:
                     expired = execution.deadline <= time.monotonic() or (not execution.attached and time.monotonic() > execution.attach_deadline)
+                    if expired and execution.phase == 'resuming' and not execution.attached:
+                        self.browsers.release_unattached(execution)
+                        continue
                     if expired or execution.cancelled.is_set() or not self.policy.active(execution.launch.owner, execution.launch.fingerprint):
                         await self.destroy(execution, "expired" if expired else "revoked")
                         continue
-                    await self.backend.guard_check(execution.id, execution.launch.profile)
+                    if execution.phase not in ('suspended', 'resuming'):
+                        await self.backend.guard_check(execution.id, execution.launch.profile)
                 except Exception:
                     # On policy drift, terminate before any reconciliation attempt.
                     await self.destroy(execution, "policy_failed")
@@ -249,7 +317,19 @@ class Service:
 
     async def shutdown(self):
         self.stopping = True
-        await asyncio.gather(*(self.destroy(e, "interrupted") for e in list(self.executions.values())), return_exceptions=True)
+        await self.queue.shutdown()
+        async def close_active(execution):
+            # A checkpoint already in flight may finish during shutdown. Wait for
+            # its commit before deciding whether this execution should be stopped.
+            async with execution.lock:
+                suspended = execution.phase == 'suspended'
+            if not suspended:
+                await self.destroy(execution, 'interrupted')
+        await asyncio.gather(*(close_active(e) for e in list(self.executions.values())), return_exceptions=True)
+        for execution in self.executions.values():
+            execution.launch.close()
+        if self.browsers.store:
+            self.browsers.store.db.close()
 
     async def reply(self, writer, **values):
         encoded = json.dumps(values, separators=(",", ":")).encode()
@@ -280,32 +360,56 @@ class Service:
                 await self.reply(writer, ok=True, protocol=1, backend=getattr(type(self.backend), "kind", "oci"), runtime=self.backend.runtime,
                                  image=self.backend.image, snapshots=self.snapshots is not None,
                                  platform=getattr(type(self.backend), "platform", None),
-                                 persistent_environments=self.policy.config.get("persistent_environments", False), ram_snapshots=False,
+                                 persistent_environments=self.policy.config.get("persistent_environments", False), ram_snapshots=self.browsers.supported, execution_queue=True,
                                  profiles=["offline", "development", "web"], policy_version=1)
             elif operation == "create":
-                result = await self.create(account, request["spec"])
+                result = self.queue.submit(account, request['spec']) if request.get('enqueue') else await self.create(account, request['spec'])
+                await self.reply(writer, ok=True, **result)
+            elif operation == 'admission_poll':
+                result = await self.queue.poll(authenticated, request['ticket'])
+                await self.reply(writer, ok=True, **result)
+            elif operation == 'admission_cancel':
+                await self.queue.cancel(authenticated, request['ticket'])
+                await self.reply(writer, ok=True)
+            elif operation == 'browser_suspend':
+                result = await self.browsers.suspend(authenticated, request['id'])
+                await self.reply(writer, ok=True, **result)
+            elif operation == 'browser_resume':
+                self.owned(authenticated, request['id'])
+                result = self.queue.submit(account, request['id'], 'resume')
                 await self.reply(writer, ok=True, **result)
             elif operation == "list":
                 await self.reply(writer, ok=True, executions=self.records.list(authenticated),
                                  usage=self.records.usage(authenticated, self.policy.accounts[authenticated].get("execution_seconds_per_month")))
-            elif operation in ("cancel", "status"):
+            elif operation in ("cancel", "release", "status"):
                 row = self.records.owned(authenticated, request["id"])
                 if row is None:
                     raise PolicyError("Execution not found")
                 execution = self.executions.get(request["id"])
-                if operation == "cancel" and execution:
+                if operation == 'release' and execution and execution.phase == 'suspended':
+                    pass  # Dropping a failed restore client must not discard its saved page.
+                elif operation == 'release' and execution and execution.phase == 'resuming' and not execution.attached:
+                    self.browsers.release_unattached(execution)
+                elif operation in ('cancel', 'release') and execution:
                     await self.destroy(self.owned(authenticated, request["id"]))
                     if not execution.cleaned:
                         raise PolicyError("Cancellation is pending infrastructure recovery")
-                await self.reply(writer, ok=True, status=self.records.owned(authenticated, request["id"])[3])
+                await self.reply(writer, ok=True, status=execution.phase if execution else self.records.owned(authenticated, request["id"])[3])
             elif operation == "connect":
                 execution = self.owned(authenticated, request["id"])
                 port = request.get("port")
                 if type(port) is not int or not 1024 <= port <= 65535 or execution.launch.profile == "offline":
                     raise PolicyError("Runner port unavailable")
-                upstream_reader, upstream_writer = await self.backend.connect(execution.id, port)
-                await self.reply(writer, ok=True)
-                await self.tunnel(execution, reader, writer, upstream_reader, upstream_writer)
+                if execution.phase != 'running':
+                    raise PolicyError('Browser execution is not running')
+                task = asyncio.current_task()
+                execution.tunnels.add(task)
+                try:
+                    upstream_reader, upstream_writer = await self.backend.connect(execution.id, port)
+                    await self.reply(writer, ok=True)
+                    await self.tunnel(execution, reader, writer, upstream_reader, upstream_writer)
+                finally:
+                    execution.tunnels.discard(task)
             elif operation == "resize":
                 execution = self.owned(authenticated, request["id"])
                 rows, columns = request.get("rows"), request.get("columns")
@@ -353,18 +457,31 @@ class Service:
             if execution.attached or execution.cleaned:
                 raise PolicyError("Execution capability already consumed")
             execution.attached = True
+            restoring = execution.resume_pending
             try:
                 await self.backend.guard_check(execution.id, execution.launch.profile)
-                execution.process = await self.backend.attach(execution.id)
+                execution.process = await (self.backend.attach_restored(execution.id) if restoring else self.backend.attach(execution.id))
                 # Sandbox startup can take time. Re-check authorization and the
                 # deadline before the adapter releases its startup gate.
                 self.owned(execution.launch.owner, execution.id)
-                await self.backend.release(execution.id, execution.process)
+                if restoring:
+                    await self.browsers.restored(execution)
+                else:
+                    await self.backend.release(execution.id, execution.process)
+                execution.phase = 'running'
                 self.records.status(execution.id, "running")
             except BaseException:
+                if restoring:
+                    with contextlib.suppress(Exception):
+                        info = await self.backend.inspect(execution.id)
+                        if info['State']['Running'] is False and execution.raw_checkpoint:
+                            self.browsers.release_unattached(execution)
+                    if execution.phase == 'suspended':
+                        raise
                 execution.cancelled.set()  # Monitor retries complete cleanup.
                 raise
         process = execution.process
+        generation = execution.generation
         try:
             await self.reply(writer, ok=True)
         except BaseException:
@@ -424,7 +541,7 @@ class Service:
             for task in [inputs, cancelled, exited, *outputs]:
                 task.cancel()
             await asyncio.gather(inputs, cancelled, exited, *outputs, return_exceptions=True)
-            await self.destroy(execution, status)
+            await self.destroy(execution, status, attachment_generation=generation)
 
     async def tunnel(self, execution, reader, writer, upstream_reader, upstream_writer):
         async def copy(source, target):
@@ -432,7 +549,7 @@ class Service:
                 target.write(chunk)
                 await asyncio.wait_for(target.drain(), 15)
         tasks = [asyncio.create_task(copy(reader, upstream_writer)), asyncio.create_task(copy(upstream_reader, writer)),
-                 asyncio.create_task(execution.cancelled.wait())]
+                 asyncio.create_task(execution.cancelled.wait()), asyncio.create_task(execution.disconnect.wait())]
         try:
             await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
         finally:

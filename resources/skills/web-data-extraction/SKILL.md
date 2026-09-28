@@ -36,7 +36,3 @@ Check missing fields, repeated pages, duplicate identities, locale-sensitive num
 ## Limits
 
 No universal scraper or external provider is installed. Extraction does not authorize purchases, form submissions, contact enrichment or exporting unrelated personal data.
-
-## Español
-
-Define campos y claves, verifica páginas representativas y conserva procedencia por registro. Detecta paginación repetida, separa ausente de cero y valida el archivo final. Usa las herramientas nativas y comunica cobertura parcial.

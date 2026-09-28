@@ -3,7 +3,7 @@ name: software-implementation
 description: Implement a new program, parser, interpreter or utility with a concrete runnable artifact. Crear programas
   y utilidades.
 metadata:
-  version: 1.6.0
+  version: 1.10.0
   category: engineering
   tags: software, implementation
   aliases: programación, implementar, implementa, programa, software, parser, utilidad, command-line program, CLI
@@ -43,9 +43,13 @@ Use a language-specific skill when the task hinges on ownership, concurrency, ru
 
 For new behavior with a meaningful automated check, establish the expected result independently of the implementation and observe the missing behavior before filling it in. Preserve existing working code; use test-strategy if test sensitivity is uncertain. Prose or cosmetic edits need proportionate inspection, not an artificial test-first ceremony.
 
+## Focused execution checks
+
+Do not turn unspecified optional/edge behavior into an indispensable owner requirement. For a precise objective, use a conventional reversible choice within the requested scope and record consequential assumptions; ask for genuine missing intent or conflicts. Continue independently defined work. Never report completed while admitting that required final execution or verification remains pending. Repair authorized missing dependencies and rerun the relevant checks after the last edit.
+
 ## Verification
 
-Run the actual entrypoint on representative inputs and check the delivered artifact.
+Run the actual entrypoint on representative inputs and check the delivered artifact. Choose checks from explicit requirements and plausible failures introduced by this change. Reuse existing tests and tool evidence first; add only a missing case that could change acceptance. An import or successful exit is insufficient when the request concerns observable behavior. Batch related checks in one command when practical, then stop once the relevant evidence passes; do not invent requirements, arbitrary coverage targets or unrelated edge cases.
 
 For an explicit delivery audit, delegated results or competing success signals, discover and load completion-verification. It checks the current artifact against the requested outcome and also applies to non-software deliverables. Ordinary implementation still uses the entrypoint checks above.
 
@@ -55,15 +59,16 @@ For a delivery governed by several requirements, also read [completion evidence]
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
 
-## Español
+## Differential verification
 
+A self-authored differential test needs validated fixtures, matching effective paths and identical starting data. A mismatched or truncated fixture is not evidence of a code defect. Preserve the failed receipt; repair the fixture and rerun the comparison. If the command changes, task_contract resolve_check requires the original requirement ID, a source-grounded reason and a fresh passing comparison receipt. Do not dismiss a failed requested check or relabel unfinished work as completed.
 
-Identifica el archivo entregable y su interfaz en la solicitud original. Ante una contradicción aparente del resumen, recupera la fuente. Crea pronto una versión mínima ejecutable y amplíala con comprobaciones funcionales. Las decisiones de implementación no añaden requisitos. Comprueba el resultado mediante su invocación o consumidor real y comunica lo pendiente.
+Valida las pruebas propias antes de diagnosticar un defecto: entradas, rutas efectivas y datos iniciales equivalentes. Conserva el fallo y ejecuta la comparación corregida. No descartes comprobaciones solicitadas ni cambies a «completado» si queda trabajo relevante pendiente.
 
-Para comportamiento nuevo comprobable, define resultados independientes y observa el caso que falta. Para auditar una entrega, usa completion-verification; las comprobaciones normales de implementación siguen siendo parte de esta skill.
+Vincula las comprobaciones al requisito y al riesgo del cambio. Reutiliza pruebas y resultados existentes, añade solo casos relevantes que falten y agrupa comprobaciones económicas. Una importación no demuestra el comportamiento solicitado. No inventes requisitos ni prolongues pruebas sin evidencia nueva.
 
-En repositorios con LSP configurado, ubica archivos y consulta símbolos antes de leer cuerpos completos. Usa referencias con contexto si necesitas comprobar impacto; resuelve nombres ambiguos y no edites desde un cuerpo truncado. Mantén las herramientas de edición actuales. Para cambios pequeños o sin LSP, basta buscar y leer archivos: no hace falta instalar infraestructura adicional.
+Use the current runtime autonomy preference for implementation choices. Regardless of mode, clarify genuinely unresolved objective/scope/acceptance questions at intake before dependent changes. During execution, resolve ordinary technical uncertainty from evidence and repair installable dependencies within authorization. An autonomous preference never changes the requirements, approval policy or completion audits. A coherent diagnosis/repair/check loop should not end just because an edit failed. Use a patch error's file and candidate lines to narrow the repair, then rerun the relevant check.
 
-Al implementar una especificación, conserva referencias a requisitos y ejemplos de aceptación en tareas y comprobaciones. Contrasta contratos vigentes, límites y errores entre productor y consumidor; no cambies lo pedido para justificar el código. Revisa cobertura de requisitos además del resultado de las pruebas y conserva trabajo válido al corregir pendientes.
+En español: la autonomía decide quién resuelve detalles técnicos; las dudas reales sobre el objetivo inicial siempre se consultan. No cambia permisos ni requisitos ni auditorías. Repara dependencias y parches dentro del encargo, sin abandonar tras un error recuperable.
 
-Usa directamente las herramientas disponibles. Agrupa cambios relacionados en un parche y verifica después; no elimines archivos para recrearlos en otro turno.
+No conviertas detalles de borde no especificados en requisitos bloqueantes. Conserva las preguntas sobre intención o conflictos reales y avanza en lo independiente. No declares completado mientras falten comprobaciones requeridas de la versión final.

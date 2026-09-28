@@ -36,7 +36,3 @@ Measure time to first output, total latency, throughput and error rate at stated
 ## Limits
 
 Do not call a loaded model healthy before inference succeeds or assume quantization preserves every capability.
-
-## Español
-
-Dimensiona pesos y caché, valida plantillas y streaming y mide calidad junto con latencia y concurrencia.

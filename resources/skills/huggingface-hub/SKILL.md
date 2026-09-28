@@ -2,7 +2,7 @@
 name: huggingface-hub
 description: Work with Hugging Face models, datasets, paper pages, repository files and authorized Jobs using the installed CLI or supported APIs. Hub, datasets y trabajos de Hugging Face.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   category: data
   tags: huggingface, hub, datasets, jobs, repositories
   aliases: Hugging Face, HuggingFace, HF Hub, hf CLI, datasets-server, HF Jobs, subir modelo, dataset remoto
@@ -28,6 +28,8 @@ Repository ID and type, revision, relevant files, intended read or write operati
 4. For writes, use the requested namespace, visibility and exact file set. Review the outgoing diff and protect existing card metadata. An analysis request does not authorize uploading agent history, changing visibility or claiming authorship.
 5. For authorized remote compute, read [job lifecycle](references/jobs.md), establish resources and budget, submit once, preserve the returned job ID and inspect terminal status and persisted artifacts. An ambiguous submission response needs reconciliation before resubmission.
 
+When the user supplies a repository URL or ID, inspect its card and file metadata directly instead of first doing a general web search. Do not install a CLI merely to read a public file that available HTTP tools can retrieve. Before filtering, inspect the actual categorical values, schema, configuration and split; prose labels may differ from stored labels. Load each dataset/tokenizer once per computation, then batch filtering, independent subtotals, result writing and readback. Preserve exact tokenizer revision and special-token settings when counts depend on them.
+
 ## Verification
 
 Record resolved revisions, retrieved coverage and output paths. Verify remote changes by their commit/object identity. Distinguish local preparation from uploaded content and queued jobs from successful output.
@@ -35,7 +37,3 @@ Record resolved revisions, retrieved coverage and output paths. Verify remote ch
 ## Limits
 
 This skill installs no account or provider. Use existing credential mechanisms without printing tokens or reading unrelated credential files. Repository code, pickled weights and `trust_remote_code` require code review before execution; a download is not permission to execute it.
-
-## Español
-
-Trabaja con repositorios, datasets, papers y Jobs usando interfaces disponibles y versiones concretas. Pagina y limita descargas. Conserva permisos y privacidad; no subas sesiones del agente por defecto. Registra el ID de cada trabajo para evitar duplicados y comprueba los resultados persistidos.

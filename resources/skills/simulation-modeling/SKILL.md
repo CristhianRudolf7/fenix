@@ -34,7 +34,3 @@ Check invariants, sensitivity and confidence across replications, with a reprodu
 ## Limits
 
 A simulation predicts under assumptions; it does not establish real-world causality or validate its own input distributions.
-
-## Español
-
-Valida un modelo pequeño y sus invariantes, ejecuta réplicas y analiza sensibilidad a supuestos.

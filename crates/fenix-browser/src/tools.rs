@@ -15,7 +15,7 @@ pub fn catalog() -> Vec<ToolDefinition> {
         ),
         (
             "browser_open",
-            "Open local Chromium. Default profile is a task-scoped test session; named personal profiles must be authorized by the owner. Preserves personal logins on disk. No remote provider. URL must be HTTP(S).",
+            "Open local Chromium for rendered, authenticated or interactive work. Prefer web_read for sufficient public text; it avoids allocating a browser. Capacity waits happen in the execution service. A resumed browser requires browser_observe before further actions; its saved page is not navigated or resubmitted automatically. Default profile is a task-scoped test session; An explicit new named personal profile is created for this account and enabled for the agent; existing owner-controlled profiles remain protected. Preserves personal logins on disk. No remote provider. URL must be HTTP(S).",
             json!({"url":string}),
             vec![],
         ),
@@ -27,7 +27,7 @@ pub fn catalog() -> Vec<ToolDefinition> {
         ),
         (
             "browser_act",
-            "Perform one browser action. Ref or unique CSS selector identifies a target. Actions: click, double_click, hover, fill, type, key, select, check, uncheck, scroll, drag, upload, dialog, back, forward, reload. Native inputs, bounded waits; errors may follow an executed action, inspect before retrying. If interrupted_by_dialog is returned, handle action=dialog with accept and optional text (prompt reply), then inspect without repeating the original action. Password fields are owner-only; use authenticated owner controls. Upload path must be a permitted workspace file. Confirm purchases/submissions according to owner intent.",
+            "Perform one browser action. Ref or unique CSS selector identifies a target. Actions: click, double_click, right_click, middle_click, hover, fill, type, key, select, check, uncheck, scroll, drag, upload, dialog, back, forward, reload. Native inputs, bounded waits; errors may follow an executed action, inspect before retrying. If interrupted_by_dialog is returned, handle action=dialog with accept and optional text (prompt reply), then inspect without repeating the original action. Fill/type/key support password fields and owner-provided login details. Use supplied credentials only for the authorized site and task; never include them in reports or schedules. Upload path must be a permitted workspace file. Confirm purchases/submissions according to owner intent.",
             json!({"action":string,"ref":string,"selector":string,"text":string,"key":string,"value":string,"x":number,"y":number,"dx":number,"dy":number,"to_x":number,"to_y":number,"path":string,"accept":boolean}),
             vec!["action"],
         ),

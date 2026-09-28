@@ -88,15 +88,15 @@ impl Runtime {
         if cancel.is_cancelled() {
             self.processes.cancel_task(&run.task_id).await;
         }
-        let message = format!(
-            "Flujo «{}»: {}.{}",
-            run.workflow.spec.name,
-            run.status,
-            run.error
-                .as_ref()
-                .map(|e| format!(" {e}"))
-                .unwrap_or_default()
-        );
+        let outcome = match run.status.as_str() {
+            "completed" => "ha terminado",
+            "cancelled" => "se ha detenido; los cambios ya realizados se conservan",
+            "interrupted" => "se interrumpió antes de terminar",
+            "blocked" => "necesita atención antes de poder continuar",
+            _ => "no pudo terminar; puedes pedirme que revise qué pasó",
+        };
+        // Keep diagnostic details in the run record, not in the conversational notice.
+        let message = format!("La automatización «{}» {outcome}.", run.workflow.spec.name);
         self.notify(Some(&run.task_id), &message)?;
         Ok(())
     }

@@ -36,7 +36,3 @@ Check desired/ready replicas, endpoints and an actual request; report degraded d
 ## Limits
 
 Do not grant cluster-admin or disable isolation to make a deployment work. This skill does not provision cluster access.
-
-## Español
-
-Confirma clúster y namespace, revisa diffs y valida rollout y servicio; un rollback no revierte datos automáticamente.

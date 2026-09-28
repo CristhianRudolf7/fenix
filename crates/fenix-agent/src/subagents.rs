@@ -78,7 +78,7 @@ impl Runtime {
             bail!("Only a running master task can delegate work");
         }
         let mut spec = SubagentSpec {
-            profile: args["profile"].as_str().unwrap_or("general").to_owned(),
+            profile: "general".into(),
             objective: required_text(args, "objective", 8_000)?,
             expected_output: required_text(args, "expected_output", 8_000)?,
             context: optional_text(args, "context", 24_000)?,
@@ -314,6 +314,7 @@ impl Runtime {
         if let Some(error) = error {
             self.settle_task(&job_id).await;
             self.clear_pending(&job_id).await;
+            self.browser.task_waiting(&job_id, true).await;
             let status = if self.stop.is_cancelled() {
                 "interrupted"
             } else {
@@ -479,7 +480,11 @@ impl Runtime {
             // An input arrived while this result was being finalized. Continue the
             // same context without another attempt or replaying completed effects.
         };
-        let _ = outcome;
+        if matches!(outcome["status"].as_str(), Some("completed" | "cancelled")) {
+            self.browser.task_finished(&job.id).await;
+        } else {
+            self.browser.task_waiting(&job.id, true).await;
+        }
         Ok(())
     }
 

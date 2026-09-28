@@ -1,0 +1,54 @@
+{
+  "date": "2026-09-25",
+  "task": "build-cython-ext",
+  "model": "gpt-6-luna",
+  "reasoning": "low",
+  "attempts": 1,
+  "official_reward": 0,
+  "passed": 9,
+  "total": 11,
+  "agent_seconds": 714.311129638,
+  "agent_status": "completed",
+  "timed_out": false,
+  "openai_429": 0,
+  "quota_wait_seconds": 13.862,
+  "credential_calls": {
+    "2": 17,
+    "1": 18
+  },
+  "metrics": {
+    "decision_cache_hits": 0,
+    "decision_calls": 1,
+    "decision_estimated_cost_usd": 0.00014742000000000002,
+    "decision_fallbacks": 0,
+    "decision_input_tokens": 3510,
+    "decision_output_tokens": 47,
+    "decision_usage_missing": 0,
+    "input_tokens": 869756,
+    "output_tokens": 4710,
+    "recorded_model_calls": 34,
+    "recoveries": 0,
+    "tool_calls": 34,
+    "tool_errors": 0,
+    "usage_missing": 0
+  },
+  "jev": {
+    "calls": 1,
+    "milliseconds": 477,
+    "choice": "repair",
+    "confidence": 0.41,
+    "applied": false,
+    "gateway_reported_cost_usd": "0"
+  },
+  "failures": [
+    "test_outputs.py::test_ccomplexity",
+    "test_outputs.py::test_pyknotid_repository_tests"
+  ],
+  "audit": [
+    "Global installation, native extension imports and user example passed.",
+    "ccomplexity still uses np.int on a runtime path.",
+    "Agent observed missing pytest, but marked task completed instead of installing it and running the required regression suite.",
+    "Official repository suite produced 17 passes and one failure."
+  ],
+  "comparison_limits": "Model reasoning, prompt, skill and quota policy changed together; no causal attribution to one change. Jev recommendation was rejected for low confidence."
+}

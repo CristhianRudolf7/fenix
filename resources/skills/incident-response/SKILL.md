@@ -40,7 +40,3 @@ Correlate timestamps and distinguish detection, onset and recovery. Report remai
 ## Limits
 
 Do not infer compromise from an outage alone or blame a person without evidence. This skill does not create an always-on monitoring service.
-
-## Español
-
-Conserva evidencia, determina impacto y aplica mitigaciones autorizadas. Verifica recuperación real y documenta causas comprobadas y preguntas pendientes.

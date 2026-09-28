@@ -51,6 +51,20 @@ impl Store {
             CREATE INDEX IF NOT EXISTS public_catalog ON publications(public,category,updated_at);")?;
         // A restart never publishes a half-completed review. At most two worker attempts.
         db.execute("UPDATE publications SET status=CASE WHEN attempts<2 THEN 'queued' ELSE 'failed' END WHERE status='reviewing'", [])?;
+        let entries = {
+            let mut statement = db.prepare("SELECT id,original FROM publications")?;
+            statement
+                .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)))?
+                .collect::<rusqlite::Result<Vec<_>>>()?
+        };
+        for (id, source) in entries {
+            let bundle: Bundle = serde_json::from_str(&source)?;
+            let category = fenix_agent::skills::category_from_content(&bundle.files["SKILL.md"])?;
+            db.execute(
+                "UPDATE publications SET category=?1 WHERE id=?2",
+                params![category, id],
+            )?;
+        }
         Ok(Self(Mutex::new(db)))
     }
     fn db(&self) -> Result<std::sync::MutexGuard<'_, Connection>> {
@@ -58,21 +72,9 @@ impl Store {
             .lock()
             .map_err(|_| anyhow::anyhow!("Publication store unavailable"))
     }
-    pub fn submit(&self, owner: &str, bundle: &Bundle, category: &str) -> Result<Publication> {
+    pub fn submit(&self, owner: &str, bundle: &Bundle, _category: &str) -> Result<Publication> {
         bundle.validate()?;
-        ensure!(
-            [
-                "productivity",
-                "development",
-                "research",
-                "design",
-                "data",
-                "office",
-                "other"
-            ]
-            .contains(&category),
-            "Invalid category"
-        );
+        let category = fenix_agent::skills::category_from_content(&bundle.files["SKILL.md"])?;
         let mut db = self.db()?;
         let tx = db.transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)?;
         let hash = bundle.hash();

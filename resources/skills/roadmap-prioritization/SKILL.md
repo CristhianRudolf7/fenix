@@ -34,7 +34,3 @@ Check that top priorities serve agreed outcomes and fit actual capacity; expose 
 ## Limits
 
 A prioritization framework is optional. Do not promise delivery dates or reject explicit user priorities because a score says otherwise.
-
-## Español
-
-Agrupa necesidades, explicita incertidumbre y dependencias y distingue compromisos de opciones por validar.

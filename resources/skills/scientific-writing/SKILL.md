@@ -37,7 +37,3 @@ Reconcile all tables/figures and numeric statements with source outputs and veri
 ## Limits
 
 Do not invent experiments, ethics approvals, authors, affiliations or statistical significance.
-
-## Español
-
-Redacta desde evidencia real, conserva resultados negativos y revisa cifras, métodos y referencias.

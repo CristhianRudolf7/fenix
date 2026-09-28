@@ -1,0 +1,7 @@
+# Requirement-based verification and execution home
+
+Coding checks should establish the requested outcome and cover realistic failures introduced by the change. Reuse existing tests and tool receipts first. Add missing behavioral checks only when they could affect acceptance, batch cheap independent checks, and stop after relevant checks pass unless new evidence warrants more. Import checks alone do not validate cancellation or data integrity. No extra reviewer, model call per tool, arbitrary coverage threshold or generated acceptance contract is required.
+
+Standalone shell execution captures the launching account's absolute, existing HOME once when its process manager starts; changing a command's cwd no longer changes its home or hides Git identity. If no valid HOME exists, a stable home under the local process data directory is used. Child environments remain an explicit allowlist, without inheriting provider keys, loader variables or shell startup hooks. Multi-user commands continue through the execution service, whose private persistent workspace homes are unchanged; there is no fallback to another user's or host home.
+
+The Git skill inspects the origin of an authorized configured identity before requesting it again. It must never invent an author or copy a historical committer's identity. A regression check performs real commits from different directories through both pipe and PTY execution. No production deployment accompanies this change.

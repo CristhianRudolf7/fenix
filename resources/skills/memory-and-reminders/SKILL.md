@@ -51,16 +51,3 @@ Report actual stored IDs, provenance, scope and timezone; keep candidates and co
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Resuelve el proyecto antes de consultar o guardar. Conserva hechos atómicos con procedencia exacta, tipo, estado y vigencia. Lo extraído automáticamente permanece como candidato; tres mensajes distintos pueden confirmar una preferencia repetida. Los supuestos siguen identificados como inferencias. Corrige con evidencia y conserva el historial; retirar un recuerdo no borra conversaciones ni backups.
-
-Consulta entidades y alias antes de crearlos. Adapta los tipos de relación a cada proyecto mediante esquemas versionados: investigaciones, software y vida personal pueden coexistir. Una relación confirmada necesita evidencia vigente del mismo ámbito. La semejanza no demuestra causalidad ni contradicción. Revisa los pares sugeridos y pregunta cuando no se pueda decidir con las fuentes. Cambiar un esquema exige revalidar sus relaciones.
-
-La búsqueda léxica, temporal, tarjetas y recorridos no requieren llamadas al modelo. La búsqueda semántica es opcional. La extracción sí utiliza el modelo configurado y se puede desactivar desde la web. Los compromisos guardados no crean recordatorios ni ejecutan acciones automáticamente; usa las herramientas de programación y aclara las fechas ambiguas.
-
-Un resumen generado, la falta de corrección o extracciones repetidas no son confirmación independiente. Conserva ámbito, evidencia y excepciones; verifica vigencia y no conviertas patrones de proyectos en preferencias globales automáticamente.
-
-La búsqueda devuelve evidencia de coincidencias, rutas de relaciones y avisos de revisión. La antigüedad no implica falsedad; los cambios temporales no siempre son contradicciones. Ante un par ambiguo relevante, compara las fuentes y pregunta si no bastan. `memory_context health` permite diagnosticar índices, relaciones desactualizadas y revisiones agotadas sin eliminar datos.

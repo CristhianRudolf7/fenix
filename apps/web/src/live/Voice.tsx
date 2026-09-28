@@ -46,17 +46,35 @@ export function Voice() {
       call.current?.close();
       dictation.current?.dispose();
     };
+    const stopDictation = () => {
+      dictation.current?.dispose();
+      dictation.current = undefined;
+      setDictating(false);
+    };
+    const submit = (event: Event) => {
+      if ((event.target as HTMLElement)?.id === "chat-form") stopDictation();
+    };
+    const edit = (event: Event) => {
+      if (event.isTrusted && (event.target as HTMLElement)?.id === "chat-input")
+        stopDictation();
+    };
+    document.addEventListener("input", edit);
+    document.addEventListener("submit", submit, true);
+    window.addEventListener("fenix:stop-dictation", stopDictation);
     window.addEventListener("pagehide", close);
     return () => {
       window.removeEventListener("fenix:view", view);
       window.removeEventListener("pagehide", close);
+      document.removeEventListener("submit", submit, true);
+      document.removeEventListener("input", edit);
+      window.removeEventListener("fenix:stop-dictation", stopDictation);
       close();
     };
   }, []);
   const loadConfig = async () => {
     try {
       const [value, list] = await Promise.all([
-        api<LiveStatus>("/live/settings"),
+        api<LiveStatus>("/model-roles/fast"),
         api<{ id: string }[]>("/providers"),
       ]);
       setConfig(value);
@@ -85,20 +103,26 @@ export function Voice() {
       return;
     }
     try {
+      dictation.current?.dispose();
+      const input = document.querySelector<HTMLTextAreaElement>("#chat-input");
+      if (!input) return;
+      const prefix = input.value.trimEnd();
       dictation.current = recognizer(
         language === "es" ? "es-PE" : "en-US",
-        (value) => {
-          const input =
-            document.querySelector<HTMLTextAreaElement>("#chat-input");
-          if (input) {
-            input.value = (input.value + " " + value).trim();
-            input.dispatchEvent(new Event("input", { bubbles: true }));
-          }
-        },
+        () => {},
         () => {},
         (e) => {
           setError(e);
           setDictating(false);
+        },
+        {
+          restart: false,
+          onStopped: () => setDictating(false),
+          onTranscript: (value) => {
+            if (!input.isConnected) return;
+            input.value = [prefix, value].filter(Boolean).join(" ");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+          },
         },
       );
       dictation.current.start();
@@ -250,7 +274,7 @@ export function Voice() {
           >
             <div className="flex justify-between">
               <h2 id="voice-settings-title">
-                {t("Conversation settings", "Configuración de conversación")}
+                {t("Fast model settings", "Configuración del modelo rápido")}
               </h2>
               <button
                 type="button"
@@ -265,8 +289,8 @@ export function Voice() {
             </div>
             <p>
               {t(
-                "This conversational model handles web chat, Telegram and Live while the master executes tasks independently. Browser speech requires microphone permission; recognition may use browser vendor servers.",
-                "Este modelo atiende el chat web, Telegram y Live mientras el maestro ejecuta tareas de forma independiente. La voz requiere permiso del micrófono; el reconocimiento puede usar servidores del navegador.",
+                "The fast model handles web chat, Telegram, Live and skill translations. The intelligent model executes tasks independently. Browser speech requires microphone permission; recognition may use browser vendor servers.",
+                "El modelo rápido atiende el chat web, Telegram, Live y las traducciones de skills. El modelo inteligente ejecuta las tareas de forma independiente. La voz requiere permiso del micrófono; el reconocimiento puede usar servidores del navegador.",
               )}
             </p>
             {config && (
@@ -279,10 +303,11 @@ export function Voice() {
                   try {
                     const form = e.currentTarget;
                     const data = new FormData(form);
-                    await api("/live/settings", {
+                    await api("/model-roles/fast", {
                       provider: data.get("provider"),
                       model: data.get("model"),
                       base_url: data.get("base_url") || null,
+                      reasoning_effort: data.get("reasoning_effort") || null,
                       api_key: data.get("api_key") || null,
                     });
                     form.reset();
@@ -313,6 +338,15 @@ export function Voice() {
                     required
                     defaultValue={config.settings.model}
                   />
+                </label>
+                <label>
+                  {t("Reasoning effort", "Nivel de pensamiento")}
+                  <select name="reasoning_effort" defaultValue={config.settings.reasoning_effort ?? ""}>
+                    <option value="">{t("Provider default", "Predeterminado del proveedor")}</option>
+                    <option value="low">{t("Low", "Bajo")}</option>
+                    <option value="medium">{t("Medium", "Medio")}</option>
+                    <option value="high">{t("High", "Alto")}</option>
+                  </select>
                 </label>
                 <label>
                   API URL

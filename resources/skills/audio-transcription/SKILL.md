@@ -36,7 +36,3 @@ Spot-check difficult passages and timing; report inaudible sections and any unre
 ## Limits
 
 Do not infer personal identity or sensitive attributes from a voice. No STT provider is installed by this skill.
-
-## Español
-
-Marca incertidumbre y revisa cifras y nombres; etiquetas de voz no demuestran identidad de personas.

@@ -32,8 +32,3 @@ Compare columns, rows, duplicates and ordering on unchanged data before comparin
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Preserva semántica, filas y columnas. Limita mediciones lentas, guarda el candidato, compara resultados y mide en condiciones equivalentes.

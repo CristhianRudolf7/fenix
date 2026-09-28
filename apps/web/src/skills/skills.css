@@ -31,6 +31,11 @@
   flex: 1;
   min-width: 0;
 }
+.skills-filters > select {
+  width: auto;
+  flex: 0 1 16rem;
+  min-width: 0;
+}
 .skills-filters label {
   display: grid;
   gap: 0.4rem;
@@ -92,7 +97,50 @@
     flex-direction: column;
     align-items: stretch;
   }
+  .skills-filters > select {
+    flex: none;
+    width: 100%;
+  }
   .skill-modal {
     padding: 0.6rem;
   }
+}
+
+.skill-modal {
+  z-index: 500;
+}
+.skill-modal > .card {
+  padding: 0;
+  overflow: auto;
+}
+.skill-modal > .card > .row {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  padding: 16px 22px;
+  gap: 12px;
+}
+.skill-modal > .card > .row h2 {
+  margin: 0;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.skill-reader {
+  padding: 24px;
+  background: var(--bg);
+}
+.skill-modal > form.card {
+  padding: 24px;
+}
+.skill-modal .markdown-content pre {
+  white-space: pre;
+  overflow-wrap: normal;
+}
+.skills-hero {
+  padding: 0 0 20px;
+}
+.skills-hero h1 {
+  margin: 0;
 }

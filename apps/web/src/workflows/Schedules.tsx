@@ -1,3 +1,4 @@
+import { Loading } from "../components/loading";
 import { useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { api } from "../live/api";
@@ -7,6 +8,7 @@ import { type Flow, type Schedule, stateLabel, tr } from "./types";
 import "./workflows.css";
 
 function Schedules({ language }: { language: string }) {
+  const [initialLoading, setInitialLoading] = useState(true);
   const t = tr(language);
   const [schedules, setSchedules] = useState<Schedule[]>([]),
     [flows, setFlows] = useState<Flow[]>([]),
@@ -30,9 +32,13 @@ function Schedules({ language }: { language: string }) {
   }
   useEffect(() => {
     const controller = new AbortController();
-    void refresh(controller.signal).catch((e) => {
-      if (!controller.signal.aborted) setError(String(e));
-    });
+    void refresh(controller.signal)
+      .catch((e) => {
+        if (!controller.signal.aborted) setError(String(e));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setInitialLoading(false);
+      });
     return () => controller.abort();
   }, []);
   async function act(schedule: Schedule) {
@@ -78,6 +84,7 @@ function Schedules({ language }: { language: string }) {
     });
     setCreate(true);
   }
+  if (initialLoading) return <Loading />;
   return (
     <section className="schedules-page">
       {selected ? (

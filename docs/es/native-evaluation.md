@@ -14,6 +14,15 @@ a partir de 160.000. Se conservan los valores explícitos ya guardados; la capac
 debe ser compatible con el modelo elegido. Esto no aumenta el tiempo del
 benchmark ni garantiza que la tarea se complete.
 
+El 28 de septiembre de 2026 se actualizaron explícitamente las configuraciones
+guardadas de producción y desarrollo local a 200.000 tokens, con compactación a
+160.000. Cambiar solo el valor predeterminado del código no migra una base de
+datos existente: al desplegar, verifica también `settings.coding` en el endpoint
+autenticado de estado y actualiza su configuración. Las evaluaciones nuevas
+heredan estos valores cuando omiten `coding`. Los resultados históricos y las
+pruebas unitarias que fuerzan contextos pequeños para comprobar la compactación
+conservan sus valores originales.
+
 ## Delegación y evaluación bloqueada
 
 El contrato durable del trabajador conserva la petición original del maestro y
@@ -161,3 +170,130 @@ El maestro puede liberar el turno con un mensaje de progreso mientras sus propio
 El proxy local de evaluación puede alternar dos credenciales que permanecen en el host. Reenvía las cabeceras de límites y respeta una pausa compartida ante HTTP 429; alternar no aumenta cuotas compartidas. Los reintentos de subagentes respetan la duración completa de Retry-After.
 
 La paginación con task_inspect(after=0 y luego next_after) devuelve solo eventos, sin repetir el contrato completo. En reparaciones de paquetes estrechamente ligadas, conserva diagnóstico, reparación y verificación en un mismo trabajador y la auditoría final del trabajo sustancial.
+
+### Jev y credenciales de OpenAI con cuotas independientes
+
+La configuración de evaluación acepta `decisions: {"enabled":true,"shadow":false}` junto con `proxy_upstream`. Jev usa el mismo túnel local y una credencial ficticia; las claves reales permanecen en el proxy del host, fuera del contenedor.
+
+`openai_decision_proxy.py` distribuye solicitudes entre grupos de cuota confirmados, respeta los encabezados de OpenAI y las pausas 429. Varias claves de una misma organización deben compartir grupo: no se presupone una cuota independiente por clave. No se duplican solicitudes en carrera ni efectos de herramientas. Las métricas deben incluir esperas del proxy y llamadas a Jev.
+
+Tras varias rondas de lectura, Jev puede recomendar una reparación respaldada por evidencia, una comprobación concreta, más lectura o abstenerse. No autoriza acciones ni certifica éxito. El flujo de programación prioriza corregir el error observado y comprobarlo, completando compilación, instalación y uso desde el entorno solicitado antes de ampliar las pruebas.
+
+### Requisitos de cierre con evidencia de herramientas
+
+El contrato conserva comprobaciones obligatorias separadas de las anotaciones. Las solicitudes explícitas de suite reconocidas por el motor generan una comprobación pendiente; `task_contract(action="require")` permite registrar comandos inmutables citando literalmente la tarea. Solo sus resultados observados pueden aprobarlos. Que falte pytest, no se recojan pruebas, se ejecute una prueba filtrada o funcione un ejemplo no sustituye la suite. Las exclusiones reconocidas deben aparecer en la instrucción.
+
+El cierre como completado se rechaza si quedan comprobaciones pendientes, fallidas o desactualizadas. Los procesos asíncronos conservan su comando y revisión. Las ediciones mediante herramientas y compilaciones/instalaciones reconocidas invalidan evidencia anterior. El contexto compacto conserva estados e identificadores. Los trabajadores de revisión y auditoría mantienen sus validadores específicos.
+
+No es una prueba semántica de todos los requisitos: reconocer instrucciones, salidas de runners y modificaciones del shell usa heurísticas limitadas. Scripts arbitrarios, directorios incorrectos en suites inferidas, escrituras no reconocidas o tests debilitados requieren revisión. Los comandos registrados explícitamente pueden restringir el directorio. El evaluador oficial sigue siendo independiente.
+
+Para evaluar sin Jev, omite `decisions` y `jev_key_file`: la pasarela rechaza su ruta sin cargar su clave.
+
+Evaluación oficial única (2026-09-25), GPT-6 Luna low, sin Jev: recompensa **0**, **2/11 comprobaciones aprobadas**, **18,69 segundos** de tarea nativa (72,05 segundos de trabajo Harbor completo). El modelo clonó y decidió cerrar con `failed` sin bloqueo concreto. No se activó el control de `completed`; los otros estados terminales aún aceptan un texto de bloqueo sin demostrar que la recuperación esté agotada. Las cinco solicitudes al proveedor, incluida conexión inicial, devolvieron HTTP 200; no hubo fallo de cuota ni compactación. No se realizó otro intento. Validación local: 216 pruebas del agente aprobadas, 3 omitidas; 4 de pasarela aprobadas; compilación correcta. Véase [registro](../benchmarks/luna-low-completion-gate-2026-09-25.json). La recuperación sigue sin quedar resuelta.
+
+### Cierres sin éxito respaldados por evidencia
+
+Los ejecutores deben justificar `failed`/`blocked` con `stop_reason` y `blocker_call_id` de su propia tarea. El motor comprueba una denegación o fallo externo observado sin resolver, o tres contextos distintos de reparación seguidos del mismo chequeo fallido. Una explicación sin evidencia, una preparación exitosa, resultados de otra tarea o fallos ya resueltos no justifican abandonar. Las dependencias faltantes generan orientación para recuperarse.
+
+El contrato conserva las observaciones tras compactar. Consultar varias veces un proceso terminado cuenta una sola vez. Repetir el mismo fallo sin cambios no es otra estrategia. Tras tres fallos idénticos sin reparación observada, o tres cierres rechazados sin progreso, el motor pausa con `runtime_stagnation`: informa del trabajo incompleto y de la necesidad de intervención del usuario/supervisor, sin declarar imposible la tarea. Cancelaciones, permisos y efectos inciertos conservan sus controles. Los subagentes ejecutores usan la misma validación; los revisores mantienen sus validadores específicos.
+
+No se añade un modelo clasificador. Reconocer diagnósticos y reparaciones usa heurísticas limitadas: comandos equivalentes o escrituras arbitrarias del shell pueden no reconocerse, y la pertinencia de un fallo externo aún requiere criterio del agente. Nunca se sortean denegaciones ni decisiones pendientes. Las pruebas locales verifican recuperación después de un cierre rechazado, cancelación, evidencia por tarea, reparaciones diferentes, procesos asíncronos y estancamiento.
+
+Un intento oficial, 2026-09-25 (Luna low, sin Jev): **9/11 comprobaciones aprobadas; recompensa 0; timeout externo de 900 segundos**. Recuperó dependencias y ejecutó la suite, sin abandonar. Quedaron fallos por `numpy.int` en Cython y compatibilidad con planarity. Las esperas por cuota sumaron **379,095 segundos**. También consumieron tiempo las ediciones ambiguas repetidas y 14 búsquedas de herramientas. No intentó un cierre injustificado: esta ejecución por sí sola no prueba causalidad del control nuevo. Después del intento se agruparon los parches fallidos por archivo/diagnóstico/revisión de reparación para que variaciones superficiales no evadan el detector. Este último ajuste solo tiene validación local: no se repitió el benchmark ni se desplegó. [Auditoría](../benchmarks/luna-low-stop-gate-2026-09-25.json).
+
+El ajuste posterior aprobó las siete pruebas específicas del control de abandono, incluida la repetición de parches equivalentes. El resultado del benchmark corresponde exclusivamente a su binario congelado original.
+
+### Comparaciones propias y cierre de tareas
+
+El cierre registra comparaciones de archivos fallidas con `cmp`/`diff` aunque el usuario no haya pedido una suite. Se conservan en el contrato de la tarea al compactar o reiniciar. Un comando ajeno que termine bien, una lectura o volver a consultar el mismo proceso no borran el fallo. Repetir correctamente la comparación permite resolverlo; una edición posterior invalida la evidencia.
+
+Si la prueba estaba mal construida, `task_contract resolve_check` exige justificar la corrección, citar el requerimiento original y aportar una comparación exitosa de la misma tarea, posterior al fallo y vigente. Conserva el resultado fallido y su reemplazo. No permite descartar suites solicitadas ni comprobaciones explícitas. Patrones comunes que ocultan fallos, como `cmp ... || true`, no sirven como evidencia. No añade otro modelo ni un revisor obligatorio.
+
+Las instrucciones de programación exigen revisar formato, anchura de registros, rutas efectivas y datos iniciales equivalentes antes de comparar. El motor valida procedencia y ejecución; la pertinencia de una prueba corregida sigue requiriendo criterio del modelo. La detección de comandos y de errores ocultos es heurística, no un análisis completo de scripts o escrituras desde shell. Las regresiones locales reproducen el cierre contradictorio de la séptima tarea; no se repitió el benchmark para afirmar una mejora de puntuación.
+
+## Aislamiento de evaluación y eficiencia del contexto (tareas 16–18)
+
+La evaluación nativa desactiva el aprendizaje de skills antes de arrancar trabajadores. La política impide encolar aprendizaje, arrancar su trabajador o reactivarlo mediante herramientas, y aparece en report.json. No modifica el aprendizaje en producción ni los skills manuales. Así evita iniciar llamadas de aprendizaje que se cancelarían al cerrar la prueba; no trata el consumo desconocido como cero.
+
+El contexto sustituye copias exactamente iguales de la solicitud por referencias, conservando el mensaje original, intenciones diferentes, dudas, alcance y registros durables. Las instrucciones permiten operaciones conocidas sin cargar un skill por formalidad y agrupar inspecciones independientes. No se añaden llamadas de resumen ni se descarta evidencia.
+
+## Comprobaciones de requisitos y composición de herramientas
+
+Antes de transformar datos desconocidos, se inspeccionan registros representativos, campos y unidades. Las instrucciones de cierre separan condiciones obligatorias y preferencias y piden comprobar el comportamiento pertinente, no solo existencia o formato. Los skills de pruebas y datos refuerzan esto sin otro modelo revisor. Los programas de herramientas exponen el esquema de pasos, usan nombres sin prefijos, aclaran referencias completas y rechazan programas inválidos antes de ejecutar efectos. Son mejoras de instrucciones y validación, no una garantía semántica general.
+
+## Diagnóstico y reparación basados en evidencia (tareas 22–26)
+
+La inspección del entorno incluye un resumen acotado y de solo lectura de Git cuando el repositorio está en la raíz del espacio de trabajo. No incluye contenido ni descubre repositorios superiores; la caché no representa un estado en vivo. Si la misma prueba falla tras una reparación observada, el contexto existente recomienda aislar un caso mínimo. Es orientación: no añade modelos, revisores, reglas de reintento ni permisos. La comprobación exitosa elimina el consejo. Los prompts y skills distinguen hipótesis de requisitos ausentes, escalan pruebas pertinentes y reutilizan datos. Se mantienen las preguntas legítimas y las comprobaciones de cierre. No constituye una prueba semántica de que el diagnóstico sea correcto.
+
+## Procedencia de consultas y coherencia del resultado
+
+Una pregunta que no puede entregarse en modo no interactivo ya no crea por sí sola evidencia para abandonar. Las decisiones, datos privados o autorizaciones indispensables deben indicar su tipo y citar el encargo o una actualización del usuario. Las dudas técnicas vuelven a investigación autorizada. Las preguntas del chat y las políticas de aprobación se mantienen. Comprobaciones acotadas en español e inglés rechazan justificaciones que reconocen que la pregunta era innecesaria.
+
+El cierre existente rechaza requisitos declarados sin verificar. Una incertidumbre admitida exige reconciliar el resultado; non_required_limitations permite explicar una limitación ajena al encargo, pero no omitir comprobaciones obligatorias ni requisitos pendientes. Aplica al maestro y trabajadores normales; los revisores especializados conservan sus validadores. No añade llamadas a modelos. Son controles de procedencia, estado y texto conservadores, no una prueba semántica general. Los prompts y skills existentes priorizan metadatos reales, comprobaciones independientes de convenciones importantes, cobertura de datos y representaciones visuales legibles.
+
+## Diagnósticos durables y recuperación real (tareas 27–31)
+
+El estado de cierre y verificación conserva extractos del principio y final de los errores con el resumidor existente. La salida completa sigue recuperable; el fragmento omitido no es evidencia revisada. Una edición file_edit verificada con hashes idénticos no cuenta como reparación, reinicio del control de bucles ni cambio que invalide una prueba vigente. Sin hashes suficientes se conserva el comportamiento conservador.
+
+El aviso de proceso en silencio incluye hasta 1.200 bytes recientes del log redactado y los marca como repetidos, sin mover los cursores. Así una pregunta anterior sigue visible aunque no haya salida nueva. No clasifica preguntas, responde, cancela ni cambia tiempos automáticamente. Conserva propiedad de tarea, cancelación y plazos explícitos.
+
+Se refuerzan skills existentes: instalación sin diálogos innecesarios, reinicio de servicios propios editados, entrada/salida mínima en otro ABI, primitivas numéricas probadas, aserciones reales y límites de caja negra. No añade modelos ni revisores. Las cinco pruebas midieron el binario anterior congelado; los cambios posteriores solo tienen validación local. Véase la [auditoría](../benchmarks/fenix-tasks-27-31-luna-low-2026-09-26.es.md).
+
+## TerminalWorld, Terminal-Bench 4.0 y Gaia2
+
+La evaluación utiliza el motor real de Rust. Se añadieron selección reproducible de
+los datasets oficiales y una sesión interactiva opcional para Gaia2. Esa sesión
+conserva el mismo contexto entre notificaciones, evita repetir mensajes con el
+mismo ID y envía respuestas a las aclaraciones por el mecanismo normal del agente.
+Las notificaciones se encolan como trabajo nuevo y no responden aclaraciones pendientes.
+Una respuesta terminada no cierra el escenario: lo decide el controlador externo.
+
+`python scripts/benchmarks/prepare.py BENCHMARK --revision COMMIT --output DIRECTORIO`
+prepara una tarea con revisión inmutable y hashes. Admite `terminalworld`,
+`terminal-bench-4.0` y `gaia2-cli`. El índice cero corresponde al primer registro
+oficial de TerminalWorld Verified, al primer directorio ordenado de Terminal-Bench
+o al primer identificador ordenado del split de Gaia2 (por defecto `execution`).
+El directorio debe ser nuevo y privado; sus verificadores y soluciones nunca deben
+copiarse al contexto, skills o espacio de trabajo del agente.
+
+Para los dos benchmarks de terminal, `scripts/benchmarks/harbor/run_native.py`
+ejecuta un intento mediante el adaptador existente, conservando instrucciones,
+recursos, límites y verificadores oficiales. Terminal-Bench 4.0 utiliza un
+verificador separado y permite hasta ocho horas; esto no implica que cada tarea
+dure ese tiempo.
+
+En un servidor limitado se puede indicar `--override-cpus N`; la desviación queda
+registrada en el trabajo de Harbor. No cambia la tarea ni el verificador, pero sus
+tiempos no son directamente comparables con la asignación oficial.
+
+Para Gaia2 se integra la **variante oficial Gaia2-CLI**. `gaia2/build.py` construye
+la imagen sobre una revisión fija de ARE y `gaia2/run_native.py` usa su controlador,
+daemon y juez oficiales. Python solo conecta el entorno con `fenix eval`; no
+sustituye el arnés. El proceso del agente no puede leer los archivos privados del
+escenario, que pertenecen a otro usuario del contenedor. Las herramientas oficiales
+median las acciones sobre aplicaciones. La conexión utiliza una red Docker aislada
+del espacio de red del host, con un puerto de control publicado en loopback.
+
+Solo las respuestas finales y preguntas de aclaración marcan cambios de turno para
+Gaia2. El progreso permanece en la traza nativa. El informe distingue errores del
+entorno, resultado oficial, tokens, espera por cuotas y coste del juez. En esta
+primera integración se usa Luna low también como juez configurable; no es el juez
+de referencia calibrado del leaderboard. No se deben comparar sus puntuaciones
+como si fueran protocolos idénticos.
+
+El arranque comprueba el juez con su biblioteca real antes de iniciar el agente.
+El adaptador descarta la temperatura 0 incompatible que trae esa biblioteca para
+respetar la temperatura 1 configurada para Luna. Las reglas de calificación siguen
+siendo las oficiales. La comprobación inicial consume unos pocos tokens.
+
+Si falla el transporte del juez, `gaia2/rejudge.py` permite volver a calificar una
+traza guardada de **un solo turno**, sin ejecutar otra vez al agente ni repetir sus
+acciones. Conserva el resultado original y guarda el nuevo dictamen por separado,
+con hashes de los archivos de entrada.
+
+La [primera auditoría de tres tareas](../benchmarks/three-benchmarks-luna-low-2026-09-26.es.md)
+detalla resultados, consumo, cambios del adaptador y límites de interpretación.
+
+La guía [en inglés](../en/native-evaluation.md#terminalworld-terminal-bench-40-and-gaia2)
+incluye revisiones, comandos y detalles de reproducción. Estos cambios no despliegan
+ni modifican las sesiones de producción.

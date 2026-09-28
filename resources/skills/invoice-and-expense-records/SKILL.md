@@ -38,7 +38,3 @@ Reconcile source count, accepted rows, duplicates and unresolved entries. Totals
 ## Limits
 
 Do not infer tax deductibility or pay a bill. Scans need an available OCR capability; extraction confidence is not proof of authenticity.
-
-## Español
-
-Organiza comprobantes con procedencia, moneda y fechas distintas. Reconcilia importes y marca dudas sin borrar originales ni efectuar pagos.

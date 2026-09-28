@@ -34,7 +34,3 @@ Recompute scenario arithmetic and ensure margin calculations use the correct den
 ## Limits
 
 Do not publish new prices or change customer billing as part of analysis.
-
-## Español
-
-Modela unidades y costes por escenarios, revisa márgenes y sensibilidad sin convertir supuestos en certezas.

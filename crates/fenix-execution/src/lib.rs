@@ -7,7 +7,10 @@ use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
     time::Duration,
 };
 use tokio::{
@@ -77,6 +80,7 @@ pub struct Lease {
     pub id: String,
     capability: Zeroizing<String>,
     pub timeout: u64,
+    suspended: AtomicBool,
 }
 
 impl Executor {
@@ -139,7 +143,12 @@ impl Executor {
         request["account_id"] = json!(self.account);
         request["credential"] = json!(self.credential.as_str());
         request["auth_epoch"] = json!(self.auth_epoch);
-        let result = tokio::time::timeout(Duration::from_secs(90), async {
+        let deadline = if request["operation"] == "browser_suspend" {
+            240
+        } else {
+            90
+        };
+        let result = tokio::time::timeout(Duration::from_secs(deadline), async {
             let mut stream = UnixStream::connect(&self.socket)
                 .await
                 .context("Isolated execution service unavailable; no host fallback")?;
@@ -165,10 +174,23 @@ impl Executor {
         self.request(json!({"operation":"health"})).await
     }
 
-    pub async fn create(&self, spec: Specification) -> Result<Lease> {
-        let response = self
-            .request(json!({"operation":"create", "spec":spec}))
-            .await?;
+    async fn admitted(&self, request: Value) -> Result<Lease> {
+        let mut response = self.request(request).await?;
+        let mut waiting = QueueTicket {
+            executor: self.clone(),
+            ticket: response["ticket"].as_str().map(str::to_owned),
+        };
+        while response["queued"] == true {
+            let ticket = waiting
+                .ticket
+                .as_deref()
+                .context("Missing admission ticket")?;
+            tokio::time::sleep(Duration::from_millis(1000)).await;
+            response = self
+                .request(json!({"operation":"admission_poll","ticket":ticket}))
+                .await?;
+        }
+        waiting.ticket = None;
         let id = response["id"]
             .as_str()
             .context("Missing execution identity")?
@@ -188,11 +210,69 @@ impl Executor {
             timeout: response["timeout"]
                 .as_u64()
                 .context("Missing execution deadline")?,
+            suspended: AtomicBool::new(false),
         })
+    }
+
+    pub async fn create(&self, spec: Specification) -> Result<Lease> {
+        self.admitted(json!({"operation":"create","spec":spec,"enqueue":true}))
+            .await
+    }
+
+    pub async fn resume_browser(&self, id: &str) -> Result<Lease> {
+        self.admitted(json!({"operation":"browser_resume","id":id}))
+            .await
+    }
+
+    pub async fn cancel_browser(&self, id: &str) -> Result<()> {
+        self.request(json!({"operation":"cancel","id":id})).await?;
+        Ok(())
+    }
+}
+
+struct QueueTicket {
+    executor: Executor,
+    ticket: Option<String>,
+}
+impl Drop for QueueTicket {
+    fn drop(&mut self) {
+        if let Some(ticket) = self.ticket.take() {
+            let executor = self.executor.clone();
+            if let Ok(runtime) = tokio::runtime::Handle::try_current() {
+                runtime.spawn(async move {
+                    let _ = executor
+                        .request(json!({"operation":"admission_cancel","ticket":ticket}))
+                        .await;
+                });
+            }
+        }
     }
 }
 
 impl Lease {
+    pub async fn suspend_browser(&self) -> Result<()> {
+        let result = self
+            .executor
+            .request(json!({"operation":"browser_suspend","id":self.id}))
+            .await;
+        // Cancellation must not delete a successfully committed checkpoint.
+        if result.is_ok()
+            || self
+                .executor
+                .request(json!({"operation":"status","id":self.id}))
+                .await
+                .is_ok_and(|v| v["status"] == "suspended")
+        {
+            self.suspended.store(true, Ordering::Release);
+        }
+        result?;
+        Ok(())
+    }
+
+    pub fn is_suspended(&self) -> bool {
+        self.suspended.load(Ordering::Acquire)
+    }
+
     pub fn command(&self) -> Result<tokio::process::Command> {
         let mut command = tokio::process::Command::new(std::env::current_exe()?);
         command
@@ -244,12 +324,15 @@ impl Lease {
 
 impl Drop for Lease {
     fn drop(&mut self) {
+        if self.is_suspended() {
+            return;
+        }
         let executor = self.executor.clone();
         let id = self.id.clone();
         if let Ok(runtime) = tokio::runtime::Handle::try_current() {
             runtime.spawn(async move {
                 let _ = executor
-                    .request(json!({"operation":"cancel", "id":id}))
+                    .request(json!({"operation":"release", "id":id}))
                     .await;
             });
         }
@@ -371,6 +454,9 @@ pub async fn relay() -> Result<i32> {
     heartbeat.abort();
     result
 }
+
+#[cfg(test)]
+mod lifecycle_tests;
 
 #[cfg(test)]
 mod tests {

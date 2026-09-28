@@ -42,7 +42,3 @@ Confirm start is before end, intended day in each relevant timezone and no dupli
 ## Limits
 
 A calendar invitation sends information to others. Reuse existing user authorization but do not infer it from a request to inspect availability.
-
-## Español
-
-Resuelve fechas con zona horaria y distingue una ocurrencia de toda la serie. Revisa disponibilidad, duplicados y notificaciones antes de confirmar la cita.

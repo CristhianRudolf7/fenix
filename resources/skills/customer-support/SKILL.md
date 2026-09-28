@@ -36,9 +36,3 @@ Check the proposed answer against product behavior and confirm the actual resolu
 ## Limits
 
 Do not promise refunds, timelines or features outside policy, and do not expose another customer’s data.
-
-## Español
-
-Revisa historial y evidencia, propone pasos concretos y escala con contexto sin prometer resultados no autorizados.
-
-Para envíos y devoluciones, reconcilia entregas parciales, reposiciones y reembolsos. Comprueba la política vigente y conserva la diferencia entre una propuesta y una acción ejecutada.

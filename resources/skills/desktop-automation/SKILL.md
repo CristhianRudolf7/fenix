@@ -35,7 +35,3 @@ Record the relevant window, observed transition and saved output. A successful i
 ## Limits
 
 This skill adds no desktop driver, privileged daemon or persistent watcher. Do not auto-dismiss permission prompts, close unrelated apps or bypass owner access settings. Keep screenshot/clipboard scope limited to the task.
-
-## Español
-
-Comprueba sesión, herramienta, ventana y foco; actúa con observaciones recientes y verifica el resultado real. No presupongas compatibilidad X11/Wayland ni cierres aplicaciones ajenas. Sin adaptador disponible, explica la limitación concreta.

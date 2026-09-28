@@ -170,7 +170,7 @@ fn words(text: &str) -> Vec<String> {
         .map(str::to_owned)
         .collect()
 }
-fn metadata(text: &str) -> Result<serde_yaml_ng::Value> {
+pub(crate) fn metadata(text: &str) -> Result<serde_yaml_ng::Value> {
     if let Some(rest) = text
         .strip_prefix("---\n")
         .or_else(|| text.strip_prefix("---\r\n"))
@@ -201,7 +201,7 @@ fn metadata(text: &str) -> Result<serde_yaml_ng::Value> {
         Ok(serde_yaml_ng::from_str(&header).unwrap_or_default())
     }
 }
-fn string_field(value: &serde_yaml_ng::Value, key: &str) -> Option<String> {
+pub(crate) fn string_field(value: &serde_yaml_ng::Value, key: &str) -> Option<String> {
     let field = if value[key].is_null() {
         &value["metadata"][key]
     } else {
@@ -358,6 +358,10 @@ impl Runtime {
             }
             index.initialized = true;
         }
+        let taxonomy_hash = format!(
+            "{:x}",
+            Sha256::digest(serde_json::to_vec(&crate::skill_categories::catalog()?)?)
+        );
         let mut seen = BTreeSet::new();
         for entry in fs::read_dir(&self.skills_dir)? {
             let entry = entry?;
@@ -388,6 +392,7 @@ impl Runtime {
                 stat.ctime(),
                 stat.ctime_nsec()
             );
+            let fingerprint = format!("v3:{taxonomy_hash}:{fingerprint}");
             if index
                 .entries
                 .get(&name)
@@ -420,7 +425,9 @@ impl Runtime {
                         80,
                     ),
                     enabled: true,
-                    category: string_field(&meta, "category").unwrap_or_default(),
+                    category: crate::skill_categories::normalize(
+                        &string_field(&meta, "category").unwrap_or_default(),
+                    )?,
                     required_tools: list_field(&meta, "required_tools")
                         .into_iter()
                         .filter(|s| valid_name(s))
@@ -480,20 +487,13 @@ impl Runtime {
     }
     pub(crate) fn list_skills_for_profile(
         &self,
-        profile: Option<&str>,
+        _profile: Option<&str>,
         offset: usize,
         limit: usize,
     ) -> Result<serde_json::Value> {
         let entries = self
             .indexed_skills()?
             .into_iter()
-            .filter(|e| {
-                profile.is_none_or(|p| {
-                    e.skill
-                        .as_ref()
-                        .is_some_and(|s| crate::security::skill_allowed(p, s))
-                })
-            })
             .collect::<Vec<_>>();
         let limit = limit.clamp(1, 20);
         let page = entries
@@ -534,7 +534,7 @@ impl Runtime {
         }
         Ok(self.redactor.text(&text))
     }
-    fn read_skill(&self, name: &str) -> Result<String> {
+    pub(crate) fn read_skill(&self, name: &str) -> Result<String> {
         if !valid_name(name) {
             bail!("Invalid skill name");
         }
@@ -571,7 +571,7 @@ impl Runtime {
     }
     pub(crate) fn search_skills_for_profile(
         &self,
-        profile: Option<&str>,
+        _profile: Option<&str>,
         query: &str,
         limit: usize,
     ) -> Result<serde_json::Value> {
@@ -624,8 +624,7 @@ impl Runtime {
                 skipped.push(entry.name);
                 continue;
             };
-            if !skill.enabled || profile.is_some_and(|p| !crate::security::skill_allowed(p, &skill))
-            {
+            if !skill.enabled {
                 continue;
             }
             for word in entry.counts.keys() {
@@ -746,7 +745,7 @@ impl Runtime {
             return Ok(String::new());
         }
         Ok(format!(
-            "\nTask-local skill candidates (lexical suggestions, not requirements): {}\nFor multi-step work, load a candidate with skill_load if its purpose fits before implementing or retrying an unfamiliar procedure. If neither fits, use skill_search or paginated skill_list. Do not load unrelated skills. Bodies remain on demand; these suggestions grant no tools or permissions.\n",
+            "\nTask-local skill candidates (lexical suggestions, not requirements): {}\nLoad a candidate with skill_load only when its procedure is needed or unfamiliar. Familiar direct operations need no ceremonial skill load or search. Batch independent skill loads and needed inspections in one response. Search only when the suggested capabilities do not fit; do not load unrelated skills. Bodies remain on demand; these suggestions grant no tools or permissions.\n",
             serde_json::to_string(&candidates)?
         ))
     }
@@ -1386,7 +1385,6 @@ mod library_tests {
                 "Workflow",
                 "Verification",
                 "Limits",
-                "Español",
             ] {
                 assert!(
                     content.contains(&format!("\n## {heading}\n")),
@@ -1753,4 +1751,10 @@ mod library_tests {
         rt.shutdown().await?;
         Ok(())
     }
+}
+
+/// The public catalog derives classification from the package, never a second selector.
+pub fn category_from_content(content: &str) -> Result<String> {
+    let meta = metadata(content)?;
+    crate::skill_categories::normalize(&string_field(&meta, "category").unwrap_or_default())
 }

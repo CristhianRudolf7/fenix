@@ -1,0 +1,506 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "tasks": [
+      "large-scale-text-editing",
+      "log-summary-date-ranges",
+      "constraints-scheduling"
+    ],
+    "selection_indices": [
+      16,
+      17,
+      18
+    ],
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "tier": "standard",
+    "attempts": 1,
+    "agent_deadline_seconds": 900,
+    "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "fenix_binary_sha256": "8f42d79a3c295eba61395cc0f671421da3613bfa721ba59fe9461a5cdbd07528",
+    "codex": "0.157.1",
+    "opencode": "1.18.32",
+    "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "production_changed": false,
+    "changes": [
+      "Disable auxiliary skill learning before evaluation worker startup, and report that policy",
+      "Exact duplicate request text is referenced instead of repeated in prompt projections",
+      "Familiar operations need no ceremonial skill loading; batch independent inspections"
+    ],
+    "validation": {
+      "agent_tests_passed": 255,
+      "agent_optional_tests_ignored": 3,
+      "transport_tests_passed": 4,
+      "server_build": "passed",
+      "notes": "An initial prompt-duplication regression was fixed; one existing worktree reopen-lock test failed transiently. Final full suite passed."
+    },
+    "opencode_auxiliary_model": "openai/gpt-6-luna",
+    "notes": [
+      "Official task instruction with identical task-independent execution context; hidden tests and solutions never supplied.",
+      "Sequential attempts, rotating harness order across tasks; no behavioral changes during measurement.",
+      "The execution-target context is unchanged from tasks 13-15. Background learning is now disabled only for native evaluation; all other model calls remain recorded."
+    ]
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "artifact_root": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926",
+  "provider_validation": {
+    "background_learning_disabled_in_all_native_reports": true,
+    "background_learning_extraction_requests": 0,
+    "completed_responses": [
+      {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "service_tier": "default",
+        "count": 64
+      }
+    ],
+    "max_request_input_tokens": 17309
+  },
+  "totals": {
+    "fenix": {
+      "passed": 1,
+      "graded_tasks": 3,
+      "execution_seconds": 273.979742,
+      "cost_usd": 0.01924079,
+      "input_tokens": 297712,
+      "output_tokens": 3512,
+      "api_calls": 24,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "codex": {
+      "passed": 3,
+      "graded_tasks": 3,
+      "execution_seconds": 237.965859,
+      "cost_usd": 0.01267726,
+      "input_tokens": 206736,
+      "output_tokens": 4349,
+      "api_calls": 18,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "opencode": {
+      "passed": 2,
+      "graded_tasks": 3,
+      "execution_seconds": 259.03947,
+      "cost_usd": 0.00913417,
+      "input_tokens": 136071,
+      "output_tokens": 4274,
+      "api_calls": 22,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    }
+  },
+  "attempts": [
+    {
+      "job": "fenix-large-scale-text-editing",
+      "harness": "fenix",
+      "task": "large-scale-text-editing",
+      "reward": 1.0,
+      "execution_seconds": 206.016626,
+      "trial_seconds": 353.993966,
+      "setup_seconds": 1.636274,
+      "verifier_seconds": 117.409271,
+      "input_tokens": 125863,
+      "cached_input_tokens": 63439,
+      "cache_write_tokens": 57690,
+      "output_tokens": 1753,
+      "cost_usd": 0.00919554,
+      "api_calls": 10,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 10
+      },
+      "throttle_seconds": 0.018,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/fenix-large-scale-text-editing/large-scale-text-editing__CKncczA",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 10,
+      "checks": {
+        "tests": 5,
+        "passed": 5,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 16
+    },
+    {
+      "job": "codex-large-scale-text-editing",
+      "harness": "codex",
+      "task": "large-scale-text-editing",
+      "reward": 1.0,
+      "execution_seconds": 208.750846,
+      "trial_seconds": 338.195043,
+      "setup_seconds": 15.870695,
+      "verifier_seconds": 91.516816,
+      "input_tokens": 126526,
+      "cached_input_tokens": 101482,
+      "cache_write_tokens": 25011,
+      "output_tokens": 2610,
+      "cost_usd": 0.00544949,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.013,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/codex-large-scale-text-editing/large-scale-text-editing__EMih8ui",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 11,
+      "checks": {
+        "tests": 5,
+        "passed": 5,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 16
+    },
+    {
+      "job": "opencode-large-scale-text-editing",
+      "harness": "opencode",
+      "task": "large-scale-text-editing",
+      "reward": 1.0,
+      "execution_seconds": 196.682538,
+      "trial_seconds": 351.232527,
+      "setup_seconds": 11.194022,
+      "verifier_seconds": 122.554806,
+      "input_tokens": 52883,
+      "cached_input_tokens": 37613,
+      "cache_write_tokens": 14282,
+      "output_tokens": 1930,
+      "cost_usd": 0.00322518,
+      "api_calls": 9,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 9
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/opencode-large-scale-text-editing/large-scale-text-editing__Yv7RJ2P",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 9,
+      "checks": {
+        "tests": 5,
+        "passed": 5,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 16
+    },
+    {
+      "job": "fenix-log-summary-date-ranges",
+      "harness": "fenix",
+      "task": "log-summary-date-ranges",
+      "reward": 0.0,
+      "execution_seconds": 32.980293,
+      "trial_seconds": 64.332243,
+      "setup_seconds": 4.059451,
+      "verifier_seconds": 11.506358,
+      "input_tokens": 75338,
+      "cached_input_tokens": 41598,
+      "cache_write_tokens": 32215,
+      "output_tokens": 1101,
+      "cost_usd": 0.00514585,
+      "api_calls": 6,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 6
+      },
+      "throttle_seconds": 0.009,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/fenix-log-summary-date-ranges/log-summary-date-ranges__tdRHVSN",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 6,
+      "checks": {
+        "tests": 2,
+        "passed": 1,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_summary_structure_and_counts"
+      ],
+      "task_selection_index": 17
+    },
+    {
+      "job": "codex-log-summary-date-ranges",
+      "harness": "codex",
+      "task": "log-summary-date-ranges",
+      "reward": 1.0,
+      "execution_seconds": 14.143951,
+      "trial_seconds": 62.399499,
+      "setup_seconds": 11.544798,
+      "verifier_seconds": 11.689962,
+      "input_tokens": 46952,
+      "cached_input_tokens": 21859,
+      "cache_write_tokens": 25081,
+      "output_tokens": 689,
+      "cost_usd": 0.00369942,
+      "api_calls": 4,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 4
+      },
+      "throttle_seconds": 0.004,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/codex-log-summary-date-ranges/log-summary-date-ranges__fs4ooKC",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 4,
+      "checks": {
+        "tests": 2,
+        "passed": 2,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 17
+    },
+    {
+      "job": "opencode-log-summary-date-ranges",
+      "harness": "opencode",
+      "task": "log-summary-date-ranges",
+      "reward": 0.0,
+      "execution_seconds": 22.784596,
+      "trial_seconds": 58.851608,
+      "setup_seconds": 8.648495,
+      "verifier_seconds": 11.735909,
+      "input_tokens": 20106,
+      "cached_input_tokens": 5303,
+      "cache_write_tokens": 13797,
+      "output_tokens": 408,
+      "cost_usd": 0.00208226,
+      "api_calls": 4,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 4
+      },
+      "throttle_seconds": 0.004,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/opencode-log-summary-date-ranges/log-summary-date-ranges__WTnw3yM",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 4,
+      "checks": {
+        "tests": 2,
+        "passed": 1,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_summary_structure_and_counts"
+      ],
+      "task_selection_index": 17
+    },
+    {
+      "job": "fenix-constraints-scheduling",
+      "harness": "fenix",
+      "task": "constraints-scheduling",
+      "reward": 0.0,
+      "execution_seconds": 34.982823,
+      "trial_seconds": 95.606451,
+      "setup_seconds": 0.957004,
+      "verifier_seconds": 42.883804,
+      "input_tokens": 96511,
+      "cached_input_tokens": 64713,
+      "cache_write_tokens": 29739,
+      "output_tokens": 658,
+      "cost_usd": 0.0048994,
+      "api_calls": 8,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 8
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/fenix-constraints-scheduling/constraints-scheduling__Ki6MhNz",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 8,
+      "checks": {
+        "tests": 3,
+        "passed": 2,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_constraints_conflicts_business_hours"
+      ],
+      "task_selection_index": 18
+    },
+    {
+      "job": "codex-constraints-scheduling",
+      "harness": "codex",
+      "task": "constraints-scheduling",
+      "reward": 1.0,
+      "execution_seconds": 15.071062,
+      "trial_seconds": 71.100201,
+      "setup_seconds": 14.615442,
+      "verifier_seconds": 20.316914,
+      "input_tokens": 33258,
+      "cached_input_tokens": 10032,
+      "cache_write_tokens": 23217,
+      "output_tokens": 1050,
+      "cost_usd": 0.00352835,
+      "api_calls": 3,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 3
+      },
+      "throttle_seconds": 0.007,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/codex-constraints-scheduling/constraints-scheduling__4yVkY3h",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 3,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 18
+    },
+    {
+      "job": "opencode-constraints-scheduling",
+      "harness": "opencode",
+      "task": "constraints-scheduling",
+      "reward": 1.0,
+      "execution_seconds": 39.572336,
+      "trial_seconds": 86.261717,
+      "setup_seconds": 2.937107,
+      "verifier_seconds": 22.590545,
+      "input_tokens": 63082,
+      "cached_input_tokens": 43703,
+      "cache_write_tokens": 19352,
+      "output_tokens": 1936,
+      "cost_usd": 0.00382673,
+      "api_calls": 9,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 9
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-16-18-20260926-180926/jobs/opencode-constraints-scheduling/constraints-scheduling__SpmBnFR",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 9,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 18
+    }
+  ],
+  "limitations": [
+    "Three diagnostic tasks, one attempt per combination; not an overall harness ranking.",
+    "Fenix contains the evaluation lifecycle and prompt efficiency changes; no behavioral changes or retries during measurement.",
+    "Official hidden tests were never provided to evaluated agents.",
+    "Costs are usage-based estimates, including reported cache reads/writes, excluding infrastructure and taxes.",
+    "A lower cost for an incomplete/blocked task is not evidence of better efficiency.",
+    "Background skill learning is disabled for native evaluation; production behavior is unchanged. Compare this policy when interpreting earlier rounds.",
+    "Passing the official verifier does not imply comprehensive self-verification or correctness outside the tested cases."
+  ]
+}

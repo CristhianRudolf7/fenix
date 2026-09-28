@@ -5,6 +5,8 @@ import os
 import shlex
 from pathlib import Path
 
+from evaluation_context import contextualize
+
 from harbor.agents.base import BaseAgent
 from harbor.models.agent.context import AgentContext
 
@@ -60,7 +62,7 @@ class NativeFenixAgent(BaseAgent):
         endpoint = config["settings"].get("base_url")
         if endpoint:
             config["settings"]["base_url"] = endpoint.replace("{trial}", "native-" + self.logs_dir.parent.name)
-        config.update(instruction=instruction, api_key_file="/opt/fenix-eval/proxy-key",
+        config.update(instruction=contextualize(instruction), api_key_file="/opt/fenix-eval/proxy-key",
                       task_name=self.logs_dir.parent.name)
         source = self.logs_dir / "native-config.json"
         source.write_text(json.dumps(config))

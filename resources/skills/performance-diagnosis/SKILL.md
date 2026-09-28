@@ -3,7 +3,7 @@ name: performance-diagnosis
 description: Measure and diagnose latency, memory, CPU or throughput regressions before optimizing the relevant
   bottleneck.
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   category: engineering
   tags: performance, diagnosis
   aliases: rendimiento, lento, RAM, CPU, latencia, optimizar, optimization loop, freshness age, bucle de optimización, frescura de datos
@@ -35,6 +35,8 @@ Retain the comparison baseline instead of overwriting it with the current result
 
 For repeated optimization, define a finite time/variant/resource budget and an unchanged correctness gate. Keep each hypothesis, input identity, measurement, failure and accepted baseline; compare against the best verified candidate, not just the previous attempt. Confirm the winner with repeated comparable runs and describe it as the best measured option, not a global optimum. For streaming systems measure data age and queue depth separately from request latency: a fast stale response is not a fresh result. Preserve backpressure and validation.
 
+For numerical optimization, first check whether an established library primitive satisfies the actual input domain. Verify algorithm assumptions (for example symmetry, complex eigenpairs or convergence conditions) before replacing it with a custom iteration. Use the supplied correctness/performance evaluator early. Only pursue a more complex method if the observed baseline or task constraints justify it; a fast wrong result is not an optimization.
+
 ## Verification
 
 Run correctness checks as well as the performance scenario. Repeat enough to distinguish noise; report sample count and variability.
@@ -42,11 +44,3 @@ Run correctness checks as well as the performance scenario. Repeat enough to dis
 ## Limits
 
 Do not claim improvement from different hardware, input sizes or cache states. Unavailable profiling is a limitation, not evidence that a component is efficient.
-
-## Español
-
-Mide primero y localiza el cuello de botella. Compara con la misma carga y verifica corrección, latencia y memoria sin ocultar variabilidad.
-
-En navegador compara la misma versión, sesión, datos y condiciones. Conserva la línea base y la variabilidad; carga de página no equivale a respuesta a interacciones y una medición ausente no es cero.
-
-En optimizaciones repetidas fija límites y conserva todos los candidatos y fallos. Verifica al ganador con mediciones comparables; una respuesta rápida puede contener datos obsoletos.

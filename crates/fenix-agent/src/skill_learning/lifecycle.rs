@@ -136,6 +136,7 @@ impl Runtime {
             )?;
         }
         self.store.put("learned_skill_versions", &c.name, &json!({"candidate_id":job.id,"sha256":hash(&c.content),"source_task":job.task_id,"activated_at":fenix_storage::now()}))?;
+        self.translation_notify.notify_one();
         job.status = "active".into();
         self.store.put("skill_learning", &job.id, job)?;
         self.store.event(
@@ -216,6 +217,7 @@ impl Runtime {
             "skill_learning_rolled_back",
             &json!({"id":job.id,"name":revision.name}),
         )?;
+        self.translation_notify.notify_one();
         Ok(json!({"status":"rolled_back","name":revision.name,"deleted":false}))
     }
 

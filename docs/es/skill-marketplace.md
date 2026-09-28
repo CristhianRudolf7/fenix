@@ -1,6 +1,6 @@
 # Marketplace de skills y Fénix Sentinel
 
-Fénix Sentinel es un revisor propio implementado en Rust. No incorpora ni depende de NVIDIA SkillSpector. Combina reglas locales con Nemotron, sin herramientas disponibles para el modelo auditor. Crear, editar o utilizar un skill privado no activa esta auditoría de publicación.
+Fénix Sentinel es un revisor propio implementado en Rust. No incorpora ni depende de NVIDIA SkillSpector. Combina reglas locales con el modelo rápido configurado, sin herramientas disponibles para el modelo auditor. Crear, editar o utilizar un skill privado no activa esta auditoría de publicación.
 
 ## Uso
 
@@ -10,7 +10,7 @@ La publicación es una copia fija. Los cambios privados no modifican la versión
 
 ## Correcciones sin perder funciones
 
-Nemotron identifica las capacidades legítimas con evidencia y propone cambios mínimos sobre una copia. Otra revisión comprueba la seguridad y una comparación separada verifica cada capacidad. El motor conserva archivos, permisos de ejecución, metadatos, encabezados, bloques de código, código en línea y enlaces. El original privado queda intacto; el autor puede ver el informe y las diferencias.
+El modelo rápido identifica las capacidades legítimas con evidencia y propone cambios mínimos sobre una copia. Otra revisión comprueba la seguridad y una comparación separada verifica cada capacidad. El motor conserva archivos, permisos de ejecución, metadatos, encabezados, bloques de código, código en línea y enlaces. El original privado queda intacto; el autor puede ver el informe y las diferencias.
 
 Una corrección que cambia código ejecutable queda pendiente de pruebas funcionales; el servicio no ejecuta scripts desconocidos ni inventa resultados. Tampoco publica si el análisis está incompleto o no puede establecer la conservación de funciones. La revisión semántica no garantiza equivalencia de comportamiento ni ausencia total de vulnerabilidades.
 
@@ -18,9 +18,9 @@ Esta versión admite paquetes completos de texto UTF-8: hasta 128 archivos y 128
 
 ## Servicio y protección contra abuso
 
-El gateway autenticado mantiene el marketplace central fuera de los directorios accesibles a los agentes de usuarios. La identidad procede de la sesión. En ejecución individual, se reutiliza la conexión de conversación de Nemotron.
+El gateway autenticado mantiene el marketplace central fuera de los directorios accesibles a los agentes de usuarios. La identidad procede de la sesión. En ejecución individual, se reutiliza la conexión del modelo rápido de conversación.
 
-En el servicio compartido, el operador configura `FENIX_SENTINEL_CONFIG` con la ruta de un JSON privado, con permisos 0600, que contiene `model`, `base_url` y `api_key`. El modelo debe ser Nemotron. Véase el ejemplo y los detalles operativos en la [documentación en inglés](../en/skill-marketplace.md). Si no se define la variable, se usa `skill-exchange/sentinel.json` junto al registro del gateway, cuando existe. No existe un endpoint para que un usuario cambie estas credenciales.
+En el servicio compartido, el operador configura `FENIX_SENTINEL_CONFIG` con la ruta de un JSON privado, con permisos 0600, que contiene `provider`, `model`, `reasoning_effort`, `base_url` y `api_key`. El despliegue actual utiliza GPT-6 Luna con pensamiento bajo. Véase el ejemplo y los detalles operativos en la [documentación en inglés](../en/skill-marketplace.md). Si no se define la variable, se usa `skill-exchange/sentinel.json` junto al registro del gateway, cuando existe. No existe un endpoint para que un usuario cambie estas credenciales.
 
 La misma versión genera una sola revisión aunque se pulse repetidamente. El hash abarca todos los archivos y sus indicadores de ejecución. Se permiten cinco versiones nuevas por hora, veinte al día y dos pendientes por usuario, con una cola global de 64 trabajos y dos trabajadores. Hay un límite de 120 solicitudes por minuto y cuenta. Cada revisión usa como máximo cuatro llamadas al modelo. Los intentos están limitados y se conserva la cola en SQLite.
 

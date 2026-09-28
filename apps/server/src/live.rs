@@ -3,6 +3,8 @@ use fenix_agent::live::{LiveInput, LiveSettings};
 pub(crate) fn routes() -> Router<Arc<Runtime>> {
     Router::new()
         .route("/api/live/settings", get(status).post(configure))
+        .route("/api/model-roles", get(roles))
+        .route("/api/model-roles/fast", get(status).post(configure))
         .route("/api/live/sessions", post(start))
         .route("/api/live/sessions/{id}/turn", post(turn))
         .route("/api/live/sessions/{id}", axum::routing::delete(end))
@@ -31,4 +33,8 @@ async fn turn(
 }
 async fn end(State(r): State<Arc<Runtime>>, Path(id): Path<String>) -> ApiResult<Value> {
     Ok(Json(r.end_live(&id).await?))
+}
+
+async fn roles(State(r): State<Arc<Runtime>>) -> ApiResult<Value> {
+    Ok(Json(r.model_roles().await?))
 }

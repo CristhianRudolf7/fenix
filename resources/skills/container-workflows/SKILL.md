@@ -36,7 +36,3 @@ Build the actual image and test startup, shutdown and the service endpoint using
 ## Limits
 
 Do not mount the host root/socket or run privileged merely to bypass a failing permission check.
-
-## Español
-
-Verifica contexto, capas, permisos y señales; conserva volúmenes y prueba el servicio real.

@@ -34,7 +34,3 @@ Check launch, navigation, rotation or resizing, background return and accessible
 ## Limits
 
 Do not migrate the mobile stack or promise background execution that the target OS does not permit.
-
-## Español
-
-Respeta plataforma y arquitectura; maneja permisos, cancelación y restauración de estado y verifica en un dispositivo compatible.

@@ -34,7 +34,3 @@ Check that the process still satisfies required controls and that improvement is
 ## Limits
 
 Do not replace human approval required by the real business process or change staffing commitments from a speculative model.
-
-## Español
-
-Mide trabajo y espera reales, reduce reprocesos y valida mejoras sin ocultar errores ni trasladar carga.

@@ -104,8 +104,10 @@ pub fn router_with_public_origin(
         .route("/schedules", get(assets::index))
         .route("/activity", get(assets::index))
         .route("/settings", get(assets::index))
+        .route("/profile", get(assets::index))
         .route("/assets/{*path}", get(assets::asset))
         .route("/api/status", get(status))
+        .route("/api/account/usage", get(account_usage))
         .route("/api/web/status", get(web_status))
         .route("/api/web/search", post(web_search))
         .route("/api/progress", get(progress))
@@ -132,6 +134,9 @@ pub fn router_with_public_origin(
             get(decision_settings).post(configure_decisions),
         )
         .route("/api/skills", get(skills))
+        .route("/api/skill-categories", get(skill_categories))
+        .route("/api/skill-localizations", post(skill_localizations))
+        .route("/api/skill-localizations/preview", post(skill_preview))
         .route("/api/skills/{name}", get(skill).put(skill_enabled))
         .route("/api/schedules", get(schedules).post(schedule))
         .route("/api/tasks", get(tasks))
@@ -216,6 +221,19 @@ async fn local_guard(
 }
 async fn status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
     Ok(Json(runtime.status().await?))
+}
+#[derive(Deserialize)]
+struct UsageQuery {
+    days: Option<u32>,
+}
+async fn account_usage(
+    State(runtime): State<Arc<Runtime>>,
+    Query(query): Query<UsageQuery>,
+) -> ApiResult<Value> {
+    let days = query.days.unwrap_or(30);
+    Ok(Json(
+        tokio::task::spawn_blocking(move || runtime.store.usage_summary(days)).await??,
+    ))
 }
 
 async fn web_status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
@@ -507,8 +525,61 @@ async fn delete_memory(
 async fn skills(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
     Ok(Json(json!(runtime.skills()?)))
 }
-async fn skill(State(runtime): State<Arc<Runtime>>, Path(name): Path<String>) -> ApiResult<Value> {
+#[derive(Deserialize, Default)]
+struct SkillLanguage {
+    language: Option<String>,
+}
+async fn skill(
+    State(runtime): State<Arc<Runtime>>,
+    Path(name): Path<String>,
+    Query(q): Query<SkillLanguage>,
+) -> ApiResult<Value> {
+    if let Some(lang) = q.language {
+        return Ok(Json(runtime.skill_display(&name, &lang).await?));
+    }
     Ok(Json(json!({"content":runtime.skill_load(&name)?})))
+}
+async fn skill_categories() -> ApiResult<Value> {
+    Ok(Json(json!(fenix_agent::skill_categories::catalog()?)))
+}
+#[derive(Deserialize)]
+struct SkillLocalizations {
+    #[serde(default)]
+    names: Vec<String>,
+    #[serde(default)]
+    cards: Vec<fenix_agent::skill_localization::Card>,
+    language: String,
+}
+async fn skill_localizations(
+    State(runtime): State<Arc<Runtime>>,
+    Json(input): Json<SkillLocalizations>,
+) -> ApiResult<Value> {
+    if !input.names.is_empty() && !input.cards.is_empty() {
+        return Err(anyhow::anyhow!("Choose names or cards").into());
+    }
+    let cards = if input.cards.is_empty() {
+        runtime.skill_cards(&input.names, &input.language).await?
+    } else {
+        runtime
+            .localize_cards(&input.cards, &input.language)
+            .await?
+    };
+    Ok(Json(json!({"cards":cards})))
+}
+#[derive(Deserialize)]
+struct SkillPreview {
+    content: String,
+    language: String,
+}
+async fn skill_preview(
+    State(runtime): State<Arc<Runtime>>,
+    Json(input): Json<SkillPreview>,
+) -> ApiResult<Value> {
+    Ok(Json(
+        runtime
+            .localize_skill_source(&input.content, &input.language)
+            .await?,
+    ))
 }
 #[derive(Deserialize)]
 struct Enabled {

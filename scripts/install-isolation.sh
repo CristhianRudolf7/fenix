@@ -12,7 +12,10 @@ for command in docker systemctl iptables iptables-restore mount umount mkfs.ext4
 done
 /usr/bin/python3 -c 'from cryptography.hazmat.primitives.ciphers.aead import AESGCM'
 install -d -m 0755 /opt/fenix/isolation /opt/fenix/isolation/fenix_execution
-install -d -m 0700 /etc/fenix /var/lib/fenix /var/lib/fenix/users /var/lib/fenix/volumes /var/lib/fenix-execution
+# Existing operators may grant directory traversal to the gateway for a public
+# category catalog. Preserve that ACL; individual secrets remain root-private.
+if [[ ! -d /etc/fenix ]]; then install -d -m 0700 /etc/fenix; fi
+install -d -m 0700 /var/lib/fenix /var/lib/fenix/users /var/lib/fenix/volumes /var/lib/fenix-execution
 for file in execution-service.py fenix_isolation.py tenant-container.py tenant-network-guard.py tenant-storage.py tenant-preflight.py sandbox-gate.py prepare-gvisor.py gvisor-preflight.py microvm-gate.py prepare-microvm.py microvm-preflight.py; do
     install -m 0644 "$fenix_source/scripts/$file" "/opt/fenix/isolation/$file"
 done

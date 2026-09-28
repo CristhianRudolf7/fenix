@@ -23,7 +23,7 @@ resources/skills/
     assets/        # optional templates/data
 ```
 
-Cada entrada usa `name`, `description` y `metadata` con valores de texto: `version`, `category`, `tags`, `aliases`, `required_tools`, `requires`, `effects`. El cuerpo define alcance, entradas, procedimiento, verificación, límites y resumen en español. Los alias en ambos idiomas facilitan búsqueda léxica. [Plantilla](../../resources/skills/skill-authoring/references/template.md).
+Cada entrada usa `name`, `description` y `metadata` con valores de texto: `version`, `category`, `tags`, `aliases`, `required_tools`, `requires`, `effects`. El cuerpo canónico define alcance, entradas, procedimiento, verificación y límites en inglés. La traducción completa al español se guarda por separado en `SKILL.es.md` para la interfaz; el archivo canónico no incluye un resumen en español. Los alias en ambos idiomas facilitan búsqueda léxica. [Plantilla](../../resources/skills/skill-authoring/references/template.md).
 
 `required_tools` contiene herramientas nativas existentes; el motor las descubre con los permisos de la tarea. `requires` describe dependencias externas. `effects` documenta efectos esperados; no aplica permisos ni instala conexiones. La activación/desactivación se conserva en el estado del motor, no en una segunda bandera contradictoria del YAML.
 
@@ -275,7 +275,7 @@ Las incorporaciones actuales y los límites de validación constan en [la revisi
 
 ## Especialista de seguridad
 
-Los procedimientos de auditoría se reservan al perfil `security`; la biblioteca administrativa permanece completa. Se añaden seis procedimientos propios para cambios, hallazgos, análisis estático, Rust, propiedades y correcciones. Consulta [el perfil, el catálogo y las evidencias](security-specialist.md).
+Los procedimientos de auditoría comparten el catálogo general y están disponibles para el maestro y los subagentes normales. Se añaden seis procedimientos propios para cambios, hallazgos, análisis estático, Rust, propiedades y correcciones. Consulta [el perfil, el catálogo y las evidencias](security-specialist.md).
 
 La revisión de gstack añade 26 casos de descubrimiento y comprobaciones de actualización; consulta los [resultados actuales](gstack-review.md).
 

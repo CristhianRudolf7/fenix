@@ -36,7 +36,3 @@ Rebuild from declared inputs and verify pages, figures, bibliography and expecte
 ## Limits
 
 Do not enable shell escape for untrusted documents or fabricate a PDF review when no renderer was available.
-
-## Español
-
-Respeta motor y plantilla; comprueba compilación y apariencia del PDF, referencias y caracteres.

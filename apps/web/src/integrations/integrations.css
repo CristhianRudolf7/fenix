@@ -162,3 +162,59 @@
 .connector-checks ul {
   padding-left: 20px;
 }
+
+.connector-slot {
+  min-width: 0;
+  display: flex;
+}
+.connector-slot > .connector-card {
+  width: 100%;
+}
+.whatsapp-dialog {
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+}
+.whatsapp-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.whatsapp-dialog .integration-title {
+  margin-top: 16px;
+}
+.whatsapp-dialog > p {
+  line-height: 1.65;
+}
+@media (max-width: 720px) {
+  .whatsapp-dialog {
+    padding: 20px 16px;
+  }
+}
+
+.pairing-loading {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 28px 0;
+  color: var(--muted);
+}
+.pairing-loading > span {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent, #a8432e);
+  border-radius: 50%;
+  animation: pairing-spin 1s linear infinite;
+}
+@keyframes pairing-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pairing-loading > span {
+    animation: none;
+  }
+}

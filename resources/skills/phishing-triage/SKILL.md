@@ -36,7 +36,3 @@ Distinguish verified impersonation indicators from mere unusual wording. Do not 
 ## Limits
 
 Do not execute attachments, scan QR destinations by navigating automatically or enter credentials to test a site.
-
-## Español
-
-Analiza remitente y destino sin activar contenido; verifica por canales independientes y conserva evidencia.

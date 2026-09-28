@@ -2,7 +2,7 @@
 name: test-driven-repair
 description: Diagnose root causes of software bugs, flaky tests and repeated failed fixes, then verify a focused repair. Depurar causa raíz y pruebas intermitentes.
 metadata:
-  version: 1.4.0
+  version: 1.5.0
   category: engineering
   tags: test, driven, repair
   aliases: bug, depurar, error código, reparar, pruebas, causa raíz, prueba intermitente, flaky test, root cause
@@ -32,6 +32,8 @@ An import or successful build does not prove behavior. For crashes or memory cor
 
 For terminal adapters, test actual input delivery, newline, interrupt and output, not merely object creation. If tests cannot run, report the specific blocker and unverified claims. Seek an independent read-only review for material uncertainty that executable checks cannot resolve; do not create a reviewer for routine successful edits.
 
+For an unspecified repository defect, first inspect tracked changes (including staged changes) and the relevant existing test behavior. Do not convert an untested suspicion about a function into a conflicting user requirement. Preserve pre-existing work. Distinguish a genuinely missing goal or permission from a hypothesis you can investigate locally. After an unsuccessful correction, reduce the reproducer and predict one observable difference before editing again. Retain working cases and rerun the required checks on the final files.
+
 ## Verification
 
 Rerun the failing scenario and relevant regressions; distinguish a build from a behavioral test.
@@ -39,12 +41,3 @@ Rerun the failing scenario and relevant regressions; distinguish a build from a 
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Reproduce el fallo, revisa contratos e interfaces, corrige y ejecuta pruebas funcionales y regresiones. Tras localizar el problema, cambia y comprueba en vez de releer sin avance. En fallos de memoria, revisa propiedad, vida útil, límites y tamaños; verifica los modos de compilación pertinentes. Distingue compilación de comportamiento y conserva las pruebas y restricciones existentes.
-
-Si la causa raíz no está clara, la prueba es intermitente o una corrección falla, carga la referencia de investigación. Comprueba que la prueba falla por el defecto, sigue el dato entre componentes y contrasta una hipótesis cada vez.
-
-Ante una prueba nueva fallida, distingue preparación, expectativa y comportamiento. Sigue las transiciones de estado y comprueba que preparas la misma instancia del recurso utilizado. Si persiste el fallo, inspecciona la operación antes de volver a corregir. Conserva las pruebas de aceptación suministradas.

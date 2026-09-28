@@ -34,7 +34,3 @@ Tie each finding to clause/page evidence and check dates, totals and defined ter
 ## Limits
 
 Do not invent missing clauses, certify enforceability or sign/accept terms. Preserve legal meaning rather than simplifying away exceptions.
-
-## Español
-
-Resume obligaciones y cambios con cláusulas concretas; conserva excepciones y verifica conclusiones jurídicas según jurisdicción.

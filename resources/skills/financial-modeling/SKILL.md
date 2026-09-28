@@ -34,7 +34,3 @@ Check arithmetic, timing and balance consistency; compare a few rows independent
 ## Limits
 
 Do not present projections as guarantees or infer investment suitability. Native XLSX export stores formulas but does not calculate them.
-
-## Español
-
-Distingue reales y proyecciones, caja y devengo; conserva supuestos y verifica balances y escenarios.

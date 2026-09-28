@@ -50,13 +50,21 @@ def provision(args):
            "FENIX_USER_ID": account["id"], "HOME": str(root / "workspace"),
            "FENIX_AUTH_EPOCH": str(account.get("auth_epoch", 0)),
            "FENIX_EXECUTION_SOCKET": str(Path(config["socket"])), "FENIX_EXECUTION_REQUIRED": "1"}
+    category_mount = []
+    if config.get("skill_categories"):
+        category_path = Path(config["skill_categories"]).resolve(strict=True)
+        category_stat = category_path.stat()
+        if not category_path.is_file() or category_stat.st_uid != 0 or category_stat.st_mode & 0o022 or category_path.is_relative_to(args.users_root.resolve()):
+            raise PolicyError("Skill category catalog must be a root-owned read-only operator file")
+        env["FENIX_SKILL_CATEGORIES"] = "/etc/fenix/skill-categories.json"
+        category_mount = ["--mount", f"type=bind,src={category_path},dst=/etc/fenix/skill-categories.json,readonly"]
     env_path = args.registry.parent / (account["id"] + ".env")
     if env_path.is_relative_to(root):
         raise PolicyError("Controller environment file must remain outside account storage")
     private_write(env_path, "".join(f"{k}={v}\n" for k, v in env.items()).encode())
     command = ["docker", "create", "--name", name, "--restart", "no", "--init",
                "--label", "fenix.controller=" + config.get("instance", "default"), "--label", "fenix.owner=" + account["id"],
-               "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
+               "--read-only", *category_mount, "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
                "--user", f"{uid}:{gid}", "--network", name, "--cgroup-parent", parent,
                "--sysctl", "net.ipv6.conf.all.disable_ipv6=1", "--sysctl", "net.ipv6.conf.default.disable_ipv6=1",
                "--publish", f"127.0.0.1:{urlsplit(account['upstream']).port}:{account.get('runtime_port', 4173)}",

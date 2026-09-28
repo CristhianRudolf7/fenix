@@ -36,7 +36,3 @@ Check overlap across splits, label distributions, schema and reproducibility of 
 ## Limits
 
 Synthetic examples must be labeled as synthetic. Dataset availability does not imply permission to train or publish it.
-
-## Español
-
-Conserva procedencia y separa conjuntos sin fuga por entidad o tiempo; documenta exclusiones y datos sintéticos.

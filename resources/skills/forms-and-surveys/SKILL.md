@@ -38,7 +38,3 @@ Test representative branches and exports; inspect duplicate responses and sample
 ## Limits
 
 Do not collect sensitive data without a task-specific need or present convenience samples as representative populations.
-
-## Español
-
-Diseña preguntas y rutas coherentes, distingue faltantes y valida exportación y alcance de la muestra.

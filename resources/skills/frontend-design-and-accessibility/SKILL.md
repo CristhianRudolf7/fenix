@@ -43,9 +43,3 @@ Check the requested behavior and existing flows, contrast, focus order, overflow
 ## Limits
 
 A screenshot cannot prove accessibility. Do not trade readability for decorative animation or introduce a new design system for a small component change.
-
-## Español
-
-Conserva el stack y diseño existentes. Incluye estados, teclado, foco y adaptación móvil; verifica flujos reales y aclara el alcance de la revisión accesible.
-
-En auditorías visuales informativas no edites. Para correcciones autorizadas compara la misma vista y verifica por separado jerarquía, interacción y accesibilidad.

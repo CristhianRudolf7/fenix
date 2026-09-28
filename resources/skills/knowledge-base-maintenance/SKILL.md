@@ -36,7 +36,3 @@ Check destination links, retained provenance and unresolved contradictions. Ensu
 ## Limits
 
 Do not build a graph or embeddings merely because notes exist. No automatic background cleanup or memory promotion is enabled by this skill.
-
-## Español
-
-Consulta índices y fragmentos, conserva procedencia y distingue duplicados de contradicciones. Repara enlaces sin borrar evidencia ni confundir notas con la memoria canónica.

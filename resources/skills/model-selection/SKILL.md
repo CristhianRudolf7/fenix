@@ -39,7 +39,3 @@ Link each technical or score claim to its current source. Report estimation assu
 ## Limits
 
 A memory estimate is not a benchmark or a successful load. This skill does not buy compute, download large weights or switch Fénix's configured provider automatically.
-
-## Español
-
-Compara modelos según tarea, idioma, licencia, hardware y condiciones reales de evaluación. Separa pesos, caché KV y memoria de ejecución. Explica supuestos y límites: caber en una estimación no demuestra que el modelo funcione bien ni autoriza cambiar el proveedor del agente.

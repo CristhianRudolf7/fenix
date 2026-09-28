@@ -37,9 +37,3 @@ Check examples against the schema and exercise a representative consumer or cont
 ## Limits
 
 Do not force REST, GraphQL or a new dependency when existing requirements do not need it. Examples must not contain real credentials.
-
-## Español
-
-Define entradas, errores, permisos y reintentos con ejemplos verificables. Conserva compatibilidad y comprueba el contrato desde un consumidor real.
-
-Cuando haya consumidores independientes, usa un contrato canónico y comprueba respuestas serializadas y expectativas del cliente contra el mismo esquema, incluidos errores y compatibilidad.

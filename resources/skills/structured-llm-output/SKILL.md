@@ -34,7 +34,3 @@ Test malformed, extra, missing and adversarial fields plus a correct response th
 ## Limits
 
 Do not equate valid JSON with a correct answer or silently coerce a dangerous action into validity.
-
-## Español
-
-Valida formato y significado por separado; repara el límite fallido sin repetir efectos ya ejecutados.

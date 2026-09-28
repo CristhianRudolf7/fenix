@@ -39,7 +39,3 @@ Confirm slide count, object text, order and source attribution. A successful API
 ## Limits
 
 Remote editing requires a connection. Do not claim that unsupported transitions, image generation or exports have been performed.
-
-## Español
-
-Conserva plantillas y objetos, aplica cambios por diapositiva y revisa vistas previas cuando existan. Distingue validación del contenido de revisión visual.

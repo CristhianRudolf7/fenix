@@ -36,7 +36,3 @@ Check that evidence reflects the target users and that the proposed experiment c
 ## Limits
 
 Do not invent demand from enthusiasm, stakeholder opinion or a small convenience sample.
-
-## Español
-
-Separa problemas y soluciones, identifica supuestos críticos y diseña pruebas capaces de cambiar la decisión.

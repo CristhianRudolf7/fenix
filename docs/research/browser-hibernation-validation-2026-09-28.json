@@ -1,0 +1,83 @@
+{
+  "validated_on": "2026-09-28",
+  "environment": "production and disposable gVisor acceptance accounts",
+  "public_url": "https://fenix.crehlabs.com",
+  "gateway_binary_sha256": "7312c9892fa0d10fbbd7218c2cc9b280db594d2494898ccc68ea2c4f607ee67b",
+  "tenant_image": "fenix-tenant:browser-hibernation-20260928",
+  "tenant_image_sha256": "1ce2856cd7e241bf166a804d3a736754feab6c7018af8bc81f54701d3dd998fd",
+  "runtime": "gVisor release-20260914.0, systrap",
+  "production_browser": {
+    "memory_running_bytes": 302628864,
+    "pids_running": 104,
+    "memory_suspended_bytes": 0,
+    "pids_suspended": 0,
+    "container_stopped": true,
+    "snapshot_bytes": 153781569,
+    "form_retained": true,
+    "js_retained": true,
+    "duplicate_submissions": 0,
+    "automatic_hibernation": true,
+    "production_queue_passed": true
+  },
+  "gvisor_acceptance": {
+    "passed": true,
+    "consecutive_checkpoint_cycles": 2,
+    "round_trip_seconds": [
+      29.78,
+      31.83
+    ],
+    "verified": [
+      "unsent form preserved",
+      "JavaScript state preserved",
+      "no repeated submission",
+      "stopped sandbox",
+      "released compute reservations",
+      "encrypted snapshots at rest",
+      "other owner denied",
+      "recovery after broker restart"
+    ]
+  },
+  "automated_checks": {
+    "rust_backend_build": "passed",
+    "frontend_build": "passed",
+    "isolation_python_tests": {
+      "passed": 75,
+      "skipped": 41
+    },
+    "focused_frontend_navigation_tests": {
+      "passed": 3
+    },
+    "frontend_integrations_tests": {
+      "passed": 4
+    },
+    "full_frontend_suite": "Not fully rerun. Initial run stopped on an obsolete navigation selector; updated selectors passed the focused rerun."
+  },
+  "final_health": {
+    "authenticated_public_api": {
+      "auth_session": 200,
+      "status": 200,
+      "browser_status": 200
+    },
+    "unauthenticated_session": 401,
+    "public_frontend": 200,
+    "systemd_services": {
+      "gateway": "active",
+      "frontend": "active",
+      "tunnel": "active",
+      "execution_broker": "active",
+      "account_controller": "active"
+    },
+    "broker_ram_snapshots": true,
+    "broker_execution_queue": true,
+    "browser_idle_seconds": 600,
+    "remaining_browser_sessions": 0,
+    "temporary_profile_removed": true,
+    "temporary_checkpoint_removed": true
+  },
+  "scope_limits": [
+    "RAM numbers describe the browser execution cgroup only, excluding the controller, broker and OS disk cache.",
+    "A synthetic form does not establish compatibility with all sites or multi-user load capacity.",
+    "Remote sessions and CSRF tokens can expire while the browser is suspended.",
+    "WhatsApp connections and active downloads remain exempt from automatic closure; their live external flows were not exercised."
+  ]
+}

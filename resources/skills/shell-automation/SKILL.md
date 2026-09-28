@@ -34,7 +34,3 @@ Exercise spaces, leading dashes, empty input, command failure and interruption; 
 ## Limits
 
 Never treat JSON serialization as shell escaping or evaluate untrusted text. Preserve user files during cleanup.
-
-## Español
-
-Cita argumentos correctamente y verifica códigos de salida. Prueba nombres difíciles, interrupciones y repetición sin efectos duplicados.

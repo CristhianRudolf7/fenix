@@ -32,6 +32,7 @@ mod projects;
 pub use project_specs::{ProjectRequirement, ProjectSpecChange, RequirementDelta, SpecDeltaInput};
 mod subagents;
 mod tool_output_search;
+mod usage;
 pub use memory::{Memory, MemoryEvidence, MemoryMetadata};
 pub use projects::{Project, ProjectInput, TaskBinding};
 pub use subagents::{Subagent, SubagentSpec};

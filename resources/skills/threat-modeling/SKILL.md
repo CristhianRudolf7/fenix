@@ -35,7 +35,3 @@ Every prioritized risk should connect to a real flow and a testable control. Rev
 ## Limits
 
 Do not label recommendations as implemented controls or turn a threat model into live penetration testing.
-
-## Español
-
-Relaciona amenazas con activos y flujos reales. Prioriza controles verificables y conserva explícitos los supuestos y riesgos pendientes.

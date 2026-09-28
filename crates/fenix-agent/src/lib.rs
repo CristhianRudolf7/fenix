@@ -1,13 +1,16 @@
 //! Personal assistant runtime. The web and Telegram are adapters to this same service.
 
 mod active_context;
+mod autonomy;
 mod coding;
 mod completion_audits;
+mod completion_gate;
 pub mod config;
 pub mod connectors;
 mod content_safety;
 mod context;
 mod context_budget;
+mod conversation;
 pub mod decisions;
 pub mod designs;
 mod documents;
@@ -21,6 +24,9 @@ mod files;
 mod harness_improvements_tests;
 pub mod library;
 pub mod live;
+pub mod skill_categories;
+pub mod skill_localization;
+pub mod model_roles;
 pub mod memory;
 mod operational_context;
 mod permissions;
@@ -37,6 +43,7 @@ mod restart_recovery;
 pub mod schedules;
 mod skill_learning;
 pub mod skills;
+mod stop_gate;
 mod subagents;
 pub mod telegram;
 mod tool_discovery;
@@ -81,6 +88,7 @@ pub struct Runtime {
     pub browser: Arc<fenix_browser::Browser>,
     pub data_dir: PathBuf,
     pub skills_dir: PathBuf,
+    pub(crate) translation_notify: tokio::sync::Notify,
     pub(crate) skill_index: std::sync::Mutex<skills::SkillIndex>,
     pub tenant_root: Option<PathBuf>,
     pub execution: Option<fenix_execution::Executor>,
@@ -161,6 +169,7 @@ impl Runtime {
             browser: fenix_browser::Browser::open(&data_dir)?,
             data_dir,
             skills_dir,
+            translation_notify: tokio::sync::Notify::new(),
             skill_index: std::sync::Mutex::new(skills::SkillIndex::default()),
             tenant_root,
             execution,
@@ -250,13 +259,15 @@ impl Runtime {
         let runtime = self.clone();
         let memory = tokio::spawn(async move { runtime.memory_worker().await });
         let runtime = self.clone();
+        let narrator = tokio::spawn(async move { runtime.narration_worker().await });
+        let runtime = self.clone();
         let library = tokio::spawn(async move { runtime.library_worker().await });
         let browser = self.browser.clone();
         let stop = self.stop.clone();
         let browser = tokio::spawn(async move { browser.maintain(stop).await });
         vec![
             worker, scheduler, telegram, subagents, planner, events, browser, memory, library,
-            workflows, learning,
+            workflows, learning, narrator,
         ]
     }
 
@@ -309,7 +320,7 @@ impl Runtime {
 
     /// Human-facing notices are history, but not unpaired tool messages in model context.
     pub fn notify(&self, task: Option<&str>, text: &str) -> Result<()> {
-        let text = self.redactor.text(text);
+        let text = self.conversation_text(text);
         self.store
             .publish_message(task, &Message::text(Role::Assistant, &text), false, "agent")?;
         self.bus_wake.notify_waiters();
@@ -320,7 +331,7 @@ impl Runtime {
         self.store.publish_message_once(
             &format!("notice:{event_id}"),
             task,
-            &Message::text(Role::Assistant, self.redactor.text(text)),
+            &Message::text(Role::Assistant, self.conversation_text(text)),
             false,
             "agent",
         )?;

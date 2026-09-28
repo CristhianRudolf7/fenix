@@ -1,0 +1,7 @@
+# Verificación según requisitos y directorio personal
+
+Las pruebas de programación deben comprobar lo solicitado y los fallos plausibles del cambio. Se reutilizan pruebas y resultados existentes, se añaden solo casos relevantes que faltan y se agrupan comprobaciones económicas. Se deja de probar cuando pasan las comprobaciones pertinentes, salvo evidencia nueva. Importar un módulo no verifica cancelación ni integridad de datos. No se añade otro revisor, una llamada al modelo por herramienta, un porcentaje de cobertura arbitrario ni un contrato generado.
+
+La ejecución local conserva el HOME absoluto y existente de la cuenta que inicia el motor. Cambiar la carpeta de un comando ya no cambia su directorio personal ni oculta la identidad Git. Si HOME no es válido, se utiliza un directorio estable dentro de los datos locales de procesos. El entorno de los comandos sigue siendo una lista explícita que excluye claves y variables de arranque. En modo multiusuario se mantienen el servicio de ejecución y sus directorios privados por espacio de trabajo, sin heredar el directorio del host ni de otro usuario.
+
+El skill de Git comprueba configuración y procedencia antes de volver a pedir una identidad autorizada. No debe inventar una identidad ni tomar la de un autor histórico. La regresión realiza commits reales desde distintas carpetas, tanto con pipes como con terminal. Estos cambios no se despliegan a producción.

@@ -5,35 +5,35 @@
   overflow: visible;
   flex-shrink: 0;
 }
-.loading-emblem {
+.boot .loading-emblem {
   display: grid;
   place-items: center;
   width: 96px;
   height: 96px;
   color: var(--accent, #b84d35);
 }
-.loading-emblem .flame {
+.boot .loading-emblem .flame {
   width: 76px;
   height: 76px;
 }
-.loading-emblem .phoenix-wing-left,
-.loading-emblem .phoenix-feather-left {
+.boot .loading-emblem .phoenix-wing-left,
+.boot .loading-emblem .phoenix-feather-left {
   transform-origin: 60px 72px;
   animation: phoenix-wing-left 1.4s ease-in-out infinite;
 }
-.loading-emblem .phoenix-wing-right,
-.loading-emblem .phoenix-feather-right {
+.boot .loading-emblem .phoenix-wing-right,
+.boot .loading-emblem .phoenix-feather-right {
   transform-origin: 70px 72px;
   animation: phoenix-wing-right 1.4s ease-in-out infinite;
 }
-.loading-emblem .phoenix-feather-left,
-.loading-emblem .phoenix-feather-right {
+.boot .loading-emblem .phoenix-feather-left,
+.boot .loading-emblem .phoenix-feather-right {
   animation-delay: -70ms;
 }
-.loading-emblem .phoenix-bird {
+.boot .loading-emblem .phoenix-bird {
   animation: phoenix-flight 1.4s ease-in-out infinite;
 }
-.loading-emblem .phoenix-bird-tail {
+.boot .loading-emblem .phoenix-bird-tail {
   transform-origin: 65px 84px;
   animation: phoenix-tail 1.4s ease-in-out infinite;
 }
@@ -74,7 +74,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .loading-emblem .flame * {
+  .boot .loading-emblem .flame * {
     animation: none;
   }
 }

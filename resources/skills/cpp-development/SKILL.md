@@ -34,7 +34,3 @@ Reproduce the original input under relevant debug/release configurations and ver
 ## Limits
 
 Do not change the language standard or ABI casually. Sanitizer startup failure is not evidence the program is correct.
-
-## Español
-
-Rastrea vida útil, límites y ABI; usa diagnósticos adecuados y verifica la configuración de compilación afectada.

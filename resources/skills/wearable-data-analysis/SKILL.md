@@ -36,7 +36,3 @@ Reconcile sessions, days, duplicates and excluded records. Independently check u
 ## Limits
 
 No provider integration or health database is installed. Do not import credential archives, enable continuous syncing or copy raw health records to external services merely to prepare a summary.
-
-## Español
-
-Conserva sesiones, fechas, unidades y cobertura. Distingue ausencia de cero y evita sumar la misma actividad de varios dispositivos. Resume observaciones sin convertir puntuaciones de consumo en diagnósticos.

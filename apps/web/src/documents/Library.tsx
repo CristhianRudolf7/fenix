@@ -465,6 +465,7 @@ function ChatSources() {
   );
 }
 function Library() {
+  const [initialLoading, setInitialLoading] = useState(true);
   const [docs, setDocs] = useState<Doc[]>([]),
     [projects, setProjects] = useState<Project[]>([]),
     [project, setProject] = useState(""),
@@ -539,7 +540,12 @@ function Library() {
   useEffect(() => {
     setHits(null);
     setError("");
-    void refresh().catch((e) => setError(message(e)));
+    setInitialLoading(true);
+    void refresh()
+      .catch((e) => setError(message(e)))
+      .finally(() => {
+        if (alive.current) setInitialLoading(false);
+      });
   }, [project]);
   useEffect(() => {
     if (
@@ -574,6 +580,7 @@ function Library() {
       setBusy(false);
     }
   }
+  if (initialLoading) return <Loading />;
   return (
     <main className="library-page">
       <header className="library-heading">
@@ -972,8 +979,12 @@ function Library() {
             >
               {tr("Delete", "Eliminar")}
             </button>
-            <button onClick={() => setEditing(null)}>
-              {tr("Close", "Cerrar")}
+            <button
+              className="subtle icon-button"
+              aria-label={tr("Close", "Cerrar")}
+              onClick={() => setEditing(null)}
+            >
+              <Icon name="close" />
             </button>
           </div>
         </section>

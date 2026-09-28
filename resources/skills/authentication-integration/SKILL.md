@@ -36,7 +36,3 @@ Exercise the complete flow through the real callback/session boundary and verify
 ## Limits
 
 Do not add public account registration when only login was requested or treat an unsigned token payload as verified identity.
-
-## Español
-
-Separa identidad de autorización y prueba sesiones y aislamiento; conserva la política existente de creación de usuarios.

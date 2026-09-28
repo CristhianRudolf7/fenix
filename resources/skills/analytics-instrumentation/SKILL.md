@@ -34,7 +34,3 @@ Trace known test journeys into raw events and derived metrics, including duplica
 ## Limits
 
 Avoid personal payloads in event properties and do not interpret instrumentation gaps as zero usage.
-
-## Español
-
-Define eventos y denominadores, controla identidades y duplicados y verifica recorridos desde datos crudos.

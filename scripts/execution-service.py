@@ -40,7 +40,8 @@ async def serve(config):
     if config.get("integrations_file"):
         from fenix_execution.broker import Broker
         service.broker = Broker(policy, records, config)
-    await backend.cleanup_orphans()
+    kept = await service.browsers.recover()
+    await backend.cleanup_orphans(keep=kept)
     socket = Path(config["socket"])
     socket.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
     metadata = socket.parent.stat()

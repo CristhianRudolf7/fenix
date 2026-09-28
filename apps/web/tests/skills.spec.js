@@ -1,13 +1,16 @@
+import { createHash } from "node:crypto";
 import { test, expect } from "@playwright/test";
-import { createServer } from "vite";
+import { preview } from "vite";
 let server, url;
 test.beforeAll(async () => {
-  server = await createServer({ server: { host: "127.0.0.1", port: 0 } });
-  await server.listen();
+  server = await preview({ preview: { host: "127.0.0.1", port: 0 } });
   url = server.resolvedUrls.local[0];
 });
 test.afterAll(async () => {
-  await server?.close();
+  await new Promise((done) => {
+    server.httpServer.close(done);
+    server.httpServer.closeAllConnections();
+  });
 });
 
 test("private/public controls, review diffs and marketplace private installation", async ({
@@ -21,6 +24,11 @@ test("private/public controls, review diffs and marketplace private installation
     files: { "SKILL.md": "# Reports\n\n**Prepare** reports." },
     executable: [],
   };
+  bundle.files["SKILL.es.md"] = `---
+${JSON.stringify({ title: "Asistente de oficina", description: "Preparar informes de oficina", source_hash: "v1-es-" + createHash("sha256").update(bundle.files["SKILL.md"]).digest("hex") })}
+---
+# Informes
+Preparar informes.`;
   const publicSkill = {
     id: "public-1",
     name: "office-helper",
@@ -53,11 +61,37 @@ test("private/public controls, review diffs and marketplace private installation
           name: "reports",
           description: "Prepare office reports",
           version: "1.0",
+          category: "office",
           enabled: true,
         },
       ];
+    else if (pathname === "/api/skill-categories")
+      data = [
+        { id: "office", labels: { en: "Office", es: "Oficina" }, aliases: [] },
+        {
+          id: "research",
+          labels: { en: "Research", es: "Investigación" },
+          aliases: [],
+        },
+      ];
+    else if (pathname === "/api/skill-localizations") {
+      const body = request.postDataJSON();
+      data = {
+        cards: (body.names || body.cards.map((c) => c.name)).map((name) => ({
+          name,
+          title: name === "reports" ? "Informes" : "Asistente de oficina",
+          description: "Preparar informes de oficina",
+        })),
+      };
+    } else if (pathname === "/api/skill-localizations/preview")
+      throw new Error("Opening a skill must not request live translation");
     else if (pathname === "/api/skills/reports")
-      data = { content: bundle.files["SKILL.md"] };
+      data = {
+        content:
+          new URL(request.url()).searchParams.get("language") === "es"
+            ? "# Informes\n\nPreparar informes."
+            : bundle.files["SKILL.md"],
+      };
     else if (pathname === "/api/skills/reports/bundle") data = bundle;
     else if (pathname === "/api/skills/install") {
       installed = request.postDataJSON();
@@ -72,6 +106,7 @@ test("private/public controls, review diffs and marketplace private installation
         items: params.get("category") === "research" ? [] : [publicSkill],
       };
     } else if (pathname === "/api/skill-exchange/publications") {
+      expect(request.postDataJSON()).not.toHaveProperty("category");
       submissions++;
       publication = {
         ...publicSkill,
@@ -103,7 +138,7 @@ test("private/public controls, review diffs and marketplace private installation
           },
         },
       };
-    else if (pathname === "/api/live/settings")
+    else if (["/api/live/settings", "/api/model-roles/fast"].includes(pathname))
       data = {
         configured: false,
         settings: { provider: "openrouter", model: "nemotron-test" },
@@ -124,8 +159,18 @@ test("private/public controls, review diffs and marketplace private installation
   });
   await page.goto(`${url}skills`);
   await expect(
-    page.getByRole("heading", { name: "reports", exact: true }),
+    page.getByRole("heading", { name: "Informes", exact: true }),
   ).toBeVisible();
+  await expect(page.getByText("Publicar en", { exact: true })).toHaveCount(0);
+  expect(
+    (await page.getByLabel("Buscar skills", { exact: true }).boundingBox())
+      .width,
+  ).toBeGreaterThan(180);
+  await page
+    .getByRole("button", { name: "Ver instrucciones", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("Preparar informes");
+  await page.getByRole("button", { name: "Cerrar", exact: true }).click();
   await page
     .getByRole("button", { name: "Hacer público", exact: true })
     .click();
@@ -148,7 +193,7 @@ test("private/public controls, review diffs and marketplace private installation
   await page.getByRole("button", { name: "Cerrar", exact: true }).click();
   await page.getByRole("tab", { name: "Marketplace", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "office-helper", exact: true }),
+    page.getByRole("heading", { name: "Asistente de oficina", exact: true }),
   ).toBeVisible();
   await page.getByLabel("Categoría", { exact: true }).selectOption("research");
   await expect(
@@ -160,14 +205,32 @@ test("private/public controls, review diffs and marketplace private installation
   await page
     .getByRole("button", { name: "Instalar copia", exact: true })
     .click();
-  await expect(page.locator(".skill-exchange [role=status]")).toContainText(
-    "Copia privada instalada",
-  );
+  await expect(
+    page
+      .locator(".skill-exchange [role=status]")
+      .filter({ hasText: "Copia privada instalada" }),
+  ).toContainText("Copia privada instalada");
   expect(installed.name).toBe("my-office-helper");
   expect(installed.bundle.files).toEqual(bundle.files);
+  await page
+    .getByRole("button", { name: "Cambiar idioma", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Marketplace", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "office helper", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByLabel("Category", { exact: true })
+      .locator('option[value="office"]'),
+  ).toHaveText("Office");
+  await page
+    .getByRole("button", { name: "Change language", exact: true })
+    .click();
+  await page.getByRole("tab", { name: "Marketplace", exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
-    page.getByRole("heading", { name: "office-helper", exact: true }),
+    page.getByRole("heading", { name: "Asistente de oficina", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(

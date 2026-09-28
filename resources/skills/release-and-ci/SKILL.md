@@ -41,9 +41,3 @@ Link the commit, workflow run and artifact when available. Distinguish prepared,
 ## Limits
 
 Do not invent release notes from uncommitted assumptions or rewrite remote tags without authorization.
-
-## Español
-
-Prepara versiones y artefactos con comprobaciones reproducibles. Distingue lo preparado de lo publicado y verifica el estado remoto antes de repetir acciones.
-
-Vincula los checks al artefacto final, incluidos manifiestos y configuración. Repite lo afectado tras integrar cambios. Para verificar producción, carga la referencia de observación y distingue PR, despliegue y funcionamiento real.

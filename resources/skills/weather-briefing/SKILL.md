@@ -35,7 +35,3 @@ State location, local dates, units, source and freshness. Check that recommendat
 ## Limits
 
 This skill adds no weather provider. Consult current [Open-Meteo field/timezone documentation](https://open-meteo.com/en/docs) when that source is used; do not hardcode historical limits, pricing or station coverage.
-
-## Español
-
-Resuelve lugar y fechas locales, diferencia observación de pronóstico y conserva unidades y vigencia. Separa probabilidad de cantidad de lluvia y viento de ráfagas. Las alertas requieren su fuente oficial.

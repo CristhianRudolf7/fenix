@@ -371,3 +371,53 @@ async fn unresolved_write_errors_prevent_automatic_restart() -> Result<()> {
     rt.shutdown().await?;
     Ok(())
 }
+
+#[tokio::test]
+async fn evaluation_learning_is_disabled_before_jobs_or_provider_calls() -> Result<()> {
+    let (_dir, rt, _settings, task) = fixture().await?;
+    rt.store
+        .put("evaluation", "background_learning_disabled", &true)?;
+    // Even a stale mutable preference cannot override the evaluation policy.
+    rt.store.put("skill_learning_settings", "enabled", &true)?;
+    rt.store.set_task_status(&task.id, "completed", None)?;
+    for index in 0..8 {
+        rt.store.event(&task.id,"tool_result",&json!({"call_id":format!("read-{index}"),"tool":"file_read","result":{"content":"useful"},"is_error":false}))?;
+    }
+    rt.queue_skill_learning(&task.id)?;
+    assert!(rt.store.records::<Value>("skill_learning")?.is_empty());
+    assert!(
+        rt.skill_learning(
+            &task.id,
+            &json!({"action":"configure","enabled":true}),
+            &CancellationToken::new()
+        )
+        .await
+        .is_err()
+    );
+    tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        rt.clone().skill_learning_worker(),
+    )
+    .await?;
+    rt.shutdown().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn prompt_preserves_owner_text_once_and_keeps_distinct_routing_intents() -> Result<()> {
+    let (_dir, rt, settings, task) = fixture().await?;
+    rt.store.put("project_route", &task.id, &json!({"resolved_request":task.request,"intents":[{"request":task.request},{"request":"Separate constraint must survive"}]}))?;
+    let model = rt.model_connection(settings, ApiKey::new("fake-test-key")?)?;
+    let messages = rt.build_context(&task, &model).await?;
+    let text = messages
+        .iter()
+        .map(|m| m.text_content())
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert_eq!(text.matches(&task.request).count(), 1);
+    assert!(text.contains("Separate constraint must survive"));
+    let route: Value = rt.store.get("project_route", &task.id)?.unwrap();
+    assert_eq!(route["resolved_request"], task.request);
+    rt.shutdown().await?;
+    Ok(())
+}

@@ -34,7 +34,3 @@ Report achieved load, percentiles, errors, saturation point and recovery evidenc
 ## Limits
 
 Do not stress a public or production service without authorization or turn timeout removal into a performance fix.
-
-## Español
-
-Mide carga representativa, colas y recuperación; controla el generador y conserva errores y ensayos incompletos.

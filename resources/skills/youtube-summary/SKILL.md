@@ -36,7 +36,3 @@ Check each main point against its cited segments, temporal ordering and the requ
 ## Limits
 
 YouTube can block datacenter IPs, require login, omit captions or change its endpoints. The helper cannot guarantee access to every video, verify claims as facts, recover uncaptioned speech or observe visual content. No private caption content enters the public web index. A skill does not grant network or account permissions.
-
-## Español
-
-Recibe el enlace, obtiene los subtítulos disponibles y elabora un resumen en el idioma del usuario con enlaces temporales. Distingue subtítulos manuales y automáticos, lee todos los segmentos relevantes y declara cobertura parcial. No resume desde el título o descripción cuando falta la transcripción. Ante bloqueos, usa solo una transcripción visible autorizada o un archivo aportado; no requiere GPU ni descargar el video.

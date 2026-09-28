@@ -1,0 +1,494 @@
+{
+  "date": "2026-09-26",
+  "benchmark": "terminal-bench-2.1",
+  "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+  "selection": {
+    "tasks": [
+      "hf-model-inference",
+      "largest-eigenval",
+      "make-doom-for-mips",
+      "merge-diff-arc-agi-task",
+      "model-extraction-relu-logits"
+    ],
+    "ordinals": [
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "rule": "Next alphabetically unattempted text-input CPU tasks with official agent timeout <=900s, fixed before observing outcomes; image-input chess excluded. Official resources, sequential.",
+    "harnesses": [
+      "fenix"
+    ],
+    "model": "gpt-6-luna",
+    "reasoning_effort": "low",
+    "attempts_per_task": 1,
+    "runtime_changes_between_tasks": false,
+    "post_round_improvement_authorized": true,
+    "environment_note": "hf-model-inference uses Harbor force_build with the unmodified official Dockerfile because the published image layer is 5.72 GiB compressed and extraction exceeds safe host disk capacity. Other tasks use published images. No task/verifier/instruction changes."
+  },
+  "evaluated_source": {
+    "branch": "main",
+    "head": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "dirty_worktree": true,
+    "local_validation": {
+      "agent_tests_passed": 261,
+      "agent_tests_ignored": 3,
+      "agent_tests_failed": 0,
+      "gateway_tests_passed": 4
+    },
+    "binary_sha256": "452d4439a01eaac559de9c8e108e5ad2f4f9151fc47c34f90230f2e6c94e06e2",
+    "build_passed": true
+  },
+  "post_round_validation": {
+    "agent_tests_passed": 265,
+    "agent_tests_failed": 0,
+    "agent_tests_ignored": 3,
+    "new_regressions_failed_before": 4,
+    "new_regressions_passed_after": 4,
+    "gateway_tests_passed_pre_round": 4,
+    "gateway_changed_post_round": false,
+    "build_passed": true,
+    "benchmark_repeated_after_final_changes": false,
+    "binary_sha256": "0b9fbcd3a0183de4d76396e3638f99719ea01351334fda6a0bc146161360ced0",
+    "source_files_sha256": {
+      "crates/fenix-agent/src/autonomy.rs": "07373527ff0ff40db6840e6d5dcb8a2cb688252aefde9b7257bd0f19155300bf",
+      "crates/fenix-agent/src/autonomy/tests.rs": "f67bdf37152cd916b1681c8e0b692c0e07c7416aafe8eab6f54aa33527e39c67",
+      "crates/fenix-agent/src/stop_gate.rs": "5a128273c435f6830a5d3b21045217e6f4d725a6edd453de3f301235180bd108",
+      "crates/fenix-agent/src/stop_gate/tests.rs": "c6e01c46700b24c0cc6a3595d64b6717ea1c33202c9391f8ce324d9ee40d31d0",
+      "crates/fenix-agent/src/completion_gate.rs": "c21fd42bd26de16db62cd3155b39530355ae823b374a49507ecf6fcdad3b29f9",
+      "crates/fenix-agent/src/completion_gate/tests.rs": "4358510ade01dda494a7d36d78e0cb34f93b33f711ca2136ad9e002b17cdb163",
+      "crates/fenix-agent/src/engine.rs": "14dea122adced320b955714a402363036cd58b570c149614763a76581d20481b",
+      "crates/fenix-agent/src/context.rs": "fb61b5e89f08b97c29283b03ee3603a4ccd90cd442b66d6a6f27b223de70d613",
+      "crates/fenix-agent/src/execution_state.rs": "3225643430b1d2215a12337f2c8ddfd33367387c48a1a95261438945369aa340",
+      "crates/fenix-agent/src/processes.rs": "05829c32b988e1573d4690070cc74b844bdc8ea250a66bff2e263ee36a528ce9",
+      "crates/fenix-agent/src/tool_receipt.rs": "75b1b19d1d1241b6d4a00f12ae528402767af4451e834a508e21ff75dca639f9",
+      "crates/fenix-agent/src/tools.rs": "4eb8e6a58426c7d70194cebb04309223be7dbb1a338c5721a3612a432603894c",
+      "resources/agent-system.md": "659af73c3f607b4e8b05eee76d7eddacccb27d19b1d774beb4f95b053b5c475f",
+      "resources/skills-legacy-hashes.json": "ca5547817683c7f163d3c3ca99467548c2b8485f3bfd2d8328d6ee0bfc001bde",
+      "docs/en/native-evaluation.md": "25de9d3a4dc8b2659e75c0e45270306ce06d0ca6de7514b636d76b040db31c6d",
+      "docs/es/native-evaluation.md": "8257319a896aa55249ea407c3095dc8c0d26baafbb8e4a9c087e6be293f75573",
+      "resources/skills/data-pipelines/SKILL.md": "5db9df0ee1f7525cb4721fa47c2ce3c0a787645e1c774de8ea9feed3e17d5393",
+      "resources/skills/image-workflows/SKILL.md": "0faa78bb9d05930726984be1d482b99db871f02d9113c88f6487328a753ecfb3",
+      "resources/skills/reverse-engineering/SKILL.md": "4834d370b1488dd15d7f65a74aaa2e680d1fda4d1553e898331723d64c6bbdbe",
+      "resources/skills/environment-and-dependencies/SKILL.md": "2ca9ee0a575d53a9c718852c51d6804e88681e9b9a920a5cf9997daca2650e6b",
+      "resources/skills/process-and-service-management/SKILL.md": "dc7dbe823b1a87aa0ebdcf2bae0bf1fdc7d22fa76c5ccc3630e1c91e38666d75",
+      "resources/skills/package-build-and-install/SKILL.md": "3b1a4c7a8bcf91bf4c17cfa0a7b6890cc26f13ed08271ef894401608eba61453",
+      "resources/skills/performance-diagnosis/SKILL.md": "bbb81f2f90cccd40f20e64437e727b53f62c71c5466bb4a9e2c428e7c85fd55a",
+      "resources/skills/test-strategy/SKILL.md": "9df1298273f6285b3c2323255764086337cbdab6fc586d3dba8e6280e21b3839"
+    },
+    "test_log_sha256": "f4c07e0275a672ca43bd360e18f34b50da9b3fd654189d762d63ef1c2bf47b36",
+    "regression_before_log_sha256": "85be1e271ee0dc1922cfd2885197e6c86391dee7631296b80a03af203c0fc3ca"
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "totals": {
+    "passed_tasks": 3,
+    "tasks": 5,
+    "pass_rate": 0.6,
+    "input_tokens": 5726195,
+    "cached_input_tokens": 4725644,
+    "cache_write_tokens": 769223,
+    "output_tokens": 32822,
+    "api_calls": 167,
+    "execution_seconds": 2002.59861,
+    "throttle_seconds": 648.5959999999999,
+    "usage_missing": 1,
+    "recorded_cost_usd_estimate": 0.18295312,
+    "driver_wall_seconds_sum": 2655.3988617153373
+  },
+  "methodology": {
+    "harness": "Fenix native Harbor adapter only",
+    "model": "gpt-6-luna",
+    "reasoning_effort": "low",
+    "flex": false,
+    "jev": false,
+    "fresh_container_each_task": true,
+    "runtime_frozen_all_five": true,
+    "attempts_per_task": 1,
+    "official_timeout_seconds": 900,
+    "cpu_per_task": 1,
+    "memory_mb": {
+      "merge-diff-arc-agi-task": 4096,
+      "others": 2048
+    },
+    "official_verifiers_unchanged": true,
+    "hidden_verifiers_inspected_only_after_completion": true,
+    "manual_task_intervention": false,
+    "usage_includes_auxiliary_calls": true,
+    "missing_usage_records": 1,
+    "background_skill_learning_disabled": true,
+    "other_auxiliary_calls_not_disabled": true,
+    "production_deployed": false,
+    "push_performed": false,
+    "git_branch": "main",
+    "environment_note": "hf-model-inference uses Harbor force_build with the unmodified official Dockerfile because the published image layer is 5.72 GiB compressed and extraction exceeds safe host disk capacity. Other tasks use published images. No task/verifier/instruction changes."
+  },
+  "limitations": [
+    "Five different tasks, one attempt each; not an overall benchmark score or a controlled before/after comparison.",
+    "The post-round improvements were validated locally but were not present in these five measured attempts; no second benchmark attempts were run.",
+    "One HTTP 200 stream was interrupted at the Doom timeout with no final usage receipt. Recorded cost/tokens are incomplete, not a total invoice.",
+    "Doom quota waiting consumes the official wall-clock deadline. No unthrottled control establishes whether it would pass with more active time.",
+    "The ReLU attempt inspected implementation internals and validated against real A1 despite the query-only objective; its method is not a clean black-box reconstruction. Official verifier results are reported separately from this method audit.",
+    "Prompt/skill guidance and narrow receipt checks do not prove semantic correctness or guarantee these tasks will pass in a new attempt.",
+    "The HF image was built from the unmodified official Dockerfile instead of pulling the published image, due to host disk capacity. Setup time is separate from agent execution."
+  ],
+  "results": [
+    {
+      "job": "fenix-hf-model-inference",
+      "harness": "fenix",
+      "task": "hf-model-inference",
+      "reward": 1.0,
+      "execution_seconds": 202.623967,
+      "trial_seconds": 414.564415,
+      "setup_seconds": 0.771323,
+      "verifier_seconds": 16.773659,
+      "input_tokens": 527532,
+      "cached_input_tokens": 382917,
+      "cache_write_tokens": 108241,
+      "output_tokens": 3747,
+      "cost_usd": 0.02287019,
+      "api_calls": 28,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 28
+      },
+      "throttle_seconds": 20.921,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "audit": {
+        "ordinal": 27,
+        "official_checks_passed": 4,
+        "official_checks_total": 4,
+        "summary_en": "Downloaded the model and wrote a Flask endpoint; observed actual response-shape failure, removed an incorrect nested-list assumption, restarted its persistent service and verified positive/negative cases and invalid input. All four official checks passed. Extra calls came from repeated tool discovery, readiness/status polling and testing before restart.",
+        "summary_es": "Descargó el modelo, creó el endpoint, detectó el error de formato con solicitudes reales, corrigió la suposición de lista anidada, reinició el servicio y verificó casos positivos, negativos y entrada inválida. Pasó las cuatro pruebas. Hubo llamadas evitables por búsqueda repetida de herramientas, sondeos y una prueba anterior al reinicio.",
+        "improvement_en": "Reinforce the existing service skill: dependency readiness, intentional restart after code changes, then bounded endpoint readiness and the behavioral check; reuse visible tool schemas. No blanket restart automation or new reviewer.",
+        "improvement_es": "Reforzar el skill de servicios: dependencias listas, reinicio intencional tras editar, espera acotada del endpoint y comprobación funcional. Reutilizar herramientas visibles; no automatizar reinicios indiscriminados ni añadir revisores."
+      },
+      "ordinal": 27,
+      "official_checks_passed": 4,
+      "official_checks_total": 4,
+      "exception_type": null,
+      "cost_usage_complete": true,
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "tool_calls": {
+        "tool_search": 7,
+        "environment_inspect": 1,
+        "skill_load": 1,
+        "command_run": 10,
+        "file_write": 1,
+        "command_status": 4,
+        "file_edit": 1,
+        "command_cancel": 1,
+        "task_finish": 1
+      },
+      "artifact_hashes": {
+        "result.json": "cedd2c1288e102642fbf4405b9c2aeaf2267f0585186d09edabd57c2cc8372c7",
+        "verifier/ctrf.json": "d39590cfb01c467c27a780d9a2c36d21cf8584e4fb3a2180ff215956b5d9d641",
+        "verifier/reward.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "agent/native/report.json": "5e8a3e78a4e6dddc6a35724f1ff9995fca465eeae14950a4653cb5982ec83dc8"
+      },
+      "trial_path_relative": "jobs/fenix-hf-model-inference/hf-model-inference__gekD4cP"
+    },
+    {
+      "job": "fenix-largest-eigenval",
+      "harness": "fenix",
+      "task": "largest-eigenval",
+      "reward": 1.0,
+      "execution_seconds": 72.901784,
+      "trial_seconds": 109.154642,
+      "setup_seconds": 0.742032,
+      "verifier_seconds": 5.827283,
+      "input_tokens": 230150,
+      "cached_input_tokens": 178063,
+      "cache_write_tokens": 36495,
+      "output_tokens": 2217,
+      "cost_usd": 0.00901021,
+      "api_calls": 15,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 15
+      },
+      "throttle_seconds": 0.023,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "audit": {
+        "ordinal": 28,
+        "official_checks_passed": 3,
+        "official_checks_total": 3,
+        "summary_en": "Initially tried complex power iteration, which failed the supplied evaluator. Replaced it with scipy.linalg.eig(check_finite=False), selected the eigenvalue of largest magnitude, and reran the evaluator successfully. The official eigen-pair, dominance and speed checks all passed. No owner question or unsupported closure was attempted.",
+        "summary_es": "Primero intentó iteración de potencias compleja y falló el evaluador suministrado. Cambió a scipy.linalg.eig(check_finite=False), seleccionó el autovalor de mayor módulo y volvió a verificar. Pasó las pruebas oficiales de par propio, dominancia y velocidad. No pidió aclaraciones ni intentó abandonar.",
+        "improvement_en": "Prefer a proven numerical primitive before implementing a custom optimization unless measurements justify it; check algorithm applicability to nonsymmetric/complex cases. Preserve the successful recovery flow rather than adding a numerical-specific runtime gate.",
+        "improvement_es": "Preferir una primitiva numérica probada antes de una optimización propia salvo que las mediciones la justifiquen; revisar sus hipótesis para matrices no simétricas y pares complejos. Conservar la recuperación exitosa, sin añadir controles numéricos al motor."
+      },
+      "ordinal": 28,
+      "official_checks_passed": 3,
+      "official_checks_total": 3,
+      "exception_type": null,
+      "cost_usage_complete": true,
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "tool_calls": {
+        "environment_inspect": 1,
+        "ask_user": 1,
+        "files_list": 2,
+        "task_finish": 2,
+        "tool_search": 1,
+        "tool_program": 1,
+        "file_patch": 2,
+        "command_run": 4
+      },
+      "artifact_hashes": {
+        "result.json": "5a04bbb09df59d99ebd4ad3d9a769bf69ea1f073844dda79f2f4bce8037de482",
+        "verifier/ctrf.json": "09d00ff74abefa38622d79a675d0a309f1bff237a5aa5b92b55296c07f6889a5",
+        "verifier/reward.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "agent/native/report.json": "4eb0fa5e1c265552b0139b1771f541721403f48026404ea44508a1afbfb87eea"
+      },
+      "trial_path_relative": "jobs/fenix-largest-eigenval/largest-eigenval__pZjxoFS"
+    },
+    {
+      "job": "fenix-make-doom-for-mips",
+      "harness": "fenix",
+      "task": "make-doom-for-mips",
+      "reward": 0.0,
+      "execution_seconds": 900.312774,
+      "trial_seconds": 1004.285417,
+      "setup_seconds": 1.29703,
+      "verifier_seconds": 57.73932,
+      "input_tokens": 3219113,
+      "cached_input_tokens": 2777280,
+      "cache_write_tokens": 327325,
+      "output_tokens": 12866,
+      "cost_usd": 0.08657223,
+      "api_calls": 59,
+      "local_rejections": 0,
+      "usage_missing": 1,
+      "http_status": {
+        "200": 59
+      },
+      "throttle_seconds": 521.185,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "audit": {
+        "ordinal": 29,
+        "official_checks_passed": 0,
+        "official_checks_total": 3,
+        "summary_en": "Built a MIPS ELF but never produced the required frame. An unsupported early failed closure was rejected and work continued. Repeated glibc/ABI variants and edits to the supplied VM did not establish a compatible minimal runtime. Several diagnostic shells printed that the frame was absent yet returned zero. Harbor stopped the attempt at 900 seconds; 521.185 seconds were gateway quota waits. The final API stream was interrupted with no usage receipt, so its cost is incomplete.",
+        "summary_es": "Compiló un ELF MIPS, pero no produjo el fotograma requerido. El motor rechazó un cierre fallido prematuro y continuó. Probó variantes de ABI/glibc y modificó la máquina virtual sin validar primero un programa mínimo compatible. Varias comprobaciones imprimían que faltaba la imagen pero terminaban con código cero. Agotó 900 segundos; 521,185 fueron espera preventiva del medidor para respetar la cuota. La última llamada se interrumpió sin recibo de tokens: el coste registrado es incompleto.",
+        "improvement_en": "Keep the tail of long failure diagnostics in durable recovery state; test a tiny target executable and required I/O before porting a full program. Preserve the acceptance runner and avoid unvalidated no-op emulation. Use assertions/nonzero exit status for missing required output. Reinforce existing skills, not a new cross-compilation subsystem.",
+        "improvement_es": "Conservar el final de errores largos en el estado recuperable; probar primero un ejecutable mínimo y su entrada/salida en el destino. Preservar el ejecutor de aceptación y evitar emulaciones vacías sin validar. Comprobar la salida requerida con aserciones que fallen. Reforzar los skills existentes sin crear otro subsistema."
+      },
+      "ordinal": 29,
+      "official_checks_passed": 0,
+      "official_checks_total": 3,
+      "exception_type": "AgentTimeoutError",
+      "cost_usage_complete": false,
+      "native_stop_reason": "cancelled",
+      "native_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "tool_calls": {
+        "tool_search": 4,
+        "environment_inspect": 1,
+        "files_list": 2,
+        "files_glob": 1,
+        "file_read": 11,
+        "command_run": 33,
+        "skill_load": 1,
+        "task_inspect": 3,
+        "file_write": 1,
+        "task_finish": 2,
+        "task_contract": 1,
+        "file_patch": 6,
+        "files_search": 2
+      },
+      "artifact_hashes": {
+        "result.json": "67cba12cf9d562a022c208cc0757596a9c9345ee011852d4665c5976820c1657",
+        "verifier/ctrf.json": "0c5425ef69d4522c576e96a8f66baba5ac4d696276cb2064d94a136b7892110e",
+        "verifier/reward.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "agent/native/report.json": "4fecdc4b3f5f08ecde4c893098c793e6320253b184e0d353fb4fcf7d73957881"
+      },
+      "trial_path_relative": "jobs/fenix-make-doom-for-mips/make-doom-for-mips__En7WAsA"
+    },
+    {
+      "job": "fenix-merge-diff-arc-agi-task",
+      "harness": "fenix",
+      "task": "merge-diff-arc-agi-task",
+      "reward": 1.0,
+      "execution_seconds": 355.050894,
+      "trial_seconds": 396.731315,
+      "setup_seconds": 1.579932,
+      "verifier_seconds": 14.743896,
+      "input_tokens": 570062,
+      "cached_input_tokens": 400075,
+      "cache_write_tokens": 139274,
+      "output_tokens": 2843,
+      "cost_usd": 0.0259028,
+      "api_calls": 25,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 25
+      },
+      "throttle_seconds": 46.616,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "audit": {
+        "ordinal": 30,
+        "official_checks_passed": 5,
+        "official_checks_total": 5,
+        "summary_en": "Passed all five official Git and hidden mapping checks. The revised question policy rejected an optional request for additional merge criteria; the agent continued from the supplied examples. An interactive tzdata package dialog caused two unchanged waits and an unsupported failed close; it then cancelled the stalled installer, recovered dpkg configuration/PATH and completed the merge. It recovered from trying to fetch/reset the checked-out branch by using a remote ref and detached checkout. The final mapping passed all supplied examples and the hidden case.",
+        "summary_es": "Pasó las cinco comprobaciones oficiales de Git y transformación. El nuevo control rechazó una aclaración opcional y continuó con los ejemplos. Un diálogo interactivo de tzdata causó esperas repetidas y un intento prematuro de cerrar como fallo. Después canceló el instalador atascado, reparó configuración/PATH y completó la fusión. También corrigió el intento de actualizar una rama activa mediante una referencia remota y checkout separado. Pasó todos los ejemplos y el caso oculto.",
+        "improvement_en": "Expose the recent redacted log tail on a quiet-process advisory without moving incremental cursors or answering automatically; reinforce unattended setup and observed-prompt handling in the existing environment skill. Preserve effective optional-question rejection and Git recovery instead of adding a new Git workflow manager.",
+        "improvement_es": "Mostrar la salida reciente redactada cuando un proceso queda en silencio, sin avanzar cursores ni responder automáticamente. Reforzar instalación automática y atención a preguntas explícitas en el skill existente. Conservar la recuperación Git y el rechazo efectivo de dudas opcionales; no crear otro gestor."
+      },
+      "ordinal": 30,
+      "official_checks_passed": 5,
+      "official_checks_total": 5,
+      "exception_type": null,
+      "cost_usage_complete": true,
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "tool_calls": {
+        "environment_inspect": 1,
+        "ask_user": 1,
+        "command_run": 13,
+        "tool_search": 2,
+        "command_status": 4,
+        "task_finish": 2,
+        "command_cancel": 1
+      },
+      "artifact_hashes": {
+        "result.json": "776cc768dc2b7057b1029b4aa886b6fd38c901d96323e0672a701597e8131dc1",
+        "verifier/ctrf.json": "83845346535080ce7197ad07a54db3ad885f12e19a2f8e4e7e239fa85df221d3",
+        "verifier/reward.txt": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "agent/native/report.json": "21ada409e742ded905c4d99cb37808a65d77fee2dc6ba820a33c8d0fc4428f89"
+      },
+      "trial_path_relative": "jobs/fenix-merge-diff-arc-agi-task/merge-diff-arc-agi-task__Extber3"
+    },
+    {
+      "job": "fenix-model-extraction-relu-logits",
+      "harness": "fenix",
+      "task": "model-extraction-relu-logits",
+      "reward": 0.0,
+      "execution_seconds": 471.709191,
+      "trial_seconds": 659.640848,
+      "setup_seconds": 2.650399,
+      "verifier_seconds": 152.514495,
+      "input_tokens": 1179338,
+      "cached_input_tokens": 987309,
+      "cache_write_tokens": 157888,
+      "output_tokens": 11149,
+      "cost_usd": 0.03859769,
+      "api_calls": 40,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 40
+      },
+      "throttle_seconds": 59.851,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "audit": {
+        "ordinal": 31,
+        "official_checks_passed": 0,
+        "official_checks_total": 1,
+        "summary_en": "Wrote a query-based finite-difference/kink extractor, but read forward.py internals and fixed the unknown hidden width to the visible 20. It repeatedly used the actual A1 for local validation and tuned offsets, density and clustering; several unsupported failed closes were rejected. One edit had identical before/after hashes yet counted as recovery. Its eventual local cosine check passed, but the official verifier substituted a network with 30 neurons and a different scale/seed: 20 of 30 reference directions failed the required tolerance. The fixed count and incomplete generality violated the unknown-shape requirement; privileged local validation was not evidence of a black-box solution.",
+        "summary_es": "Creó un extractor por consultas y diferencias finitas, pero leyó internals de forward.py y fijó en 20 una cantidad que era desconocida. Comparó reiteradamente contra A1 real y ajustó pasos, densidad y agrupamiento; el motor rechazó varios cierres fallidos sin evidencia suficiente. Una edición conservó los mismos hashes y aun así contó como reparación. Finalmente pasó su comprobación local de coseno, pero el verificador sustituyó la red por otra de 30 neuronas y distinta escala/semilla: 20 de 30 direcciones no cumplieron la tolerancia. La cantidad fija y la falta de generalización incumplieron la forma desconocida; consultar pesos internos no demuestra una solución de caja negra.",
+        "improvement_en": "Use existing native before/after hashes to avoid counting unchanged edits as recovery or invalidating fresh checks. Strengthen existing guidance for query-only information boundaries, unknown dimensions inferred from permitted evidence, independent input variation and real failing assertions. Do not hard-code the hidden network or add a task-specific extractor to the harness. These changes still require a future controlled benchmark run to establish effectiveness.",
+        "improvement_es": "Usar hashes nativos antes/después para no contar ediciones idénticas como reparaciones ni invalidar pruebas vigentes. Reforzar guías para respetar la caja negra, inferir dimensiones con evidencia permitida, variar entradas y usar aserciones que fallen. No introducir la respuesta del test ni un extractor específico en el arnés. Su eficacia necesita una evaluación futura controlada."
+      },
+      "ordinal": 31,
+      "official_checks_passed": 0,
+      "official_checks_total": 1,
+      "exception_type": null,
+      "cost_usage_complete": true,
+      "native_stop_reason": "all_tasks_terminal",
+      "native_error": null,
+      "background_learning": {
+        "enabled": false,
+        "policy": "disabled_before_worker_start",
+        "reason": "isolated_reproducible_evaluation"
+      },
+      "tool_calls": {
+        "environment_inspect": 1,
+        "files_glob": 1,
+        "files_search": 1,
+        "file_read": 3,
+        "file_write": 1,
+        "command_run": 12,
+        "file_edit": 10,
+        "tool_program": 2,
+        "task_finish": 6,
+        "file_patch": 1,
+        "tool_search": 1,
+        "command_status": 1
+      },
+      "artifact_hashes": {
+        "result.json": "c797fac7b348c3b2797d66f0ccfd40b07473cab4caf671e36f5b6cfb1830de6c",
+        "verifier/ctrf.json": "4aa5b0bd28f64f1cf2d7c4a21be2129d4463fd75d1e2db94037e7ef5e1b6cc4c",
+        "verifier/reward.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "agent/native/report.json": "d2c7997ab275697b26fc160e9802d3809514d70dd23d477c3c0163418c69a559"
+      },
+      "trial_path_relative": "jobs/fenix-model-extraction-relu-logits/model-extraction-relu-logits__4ok7UhL"
+    }
+  ]
+}

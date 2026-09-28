@@ -44,6 +44,11 @@ impl Runtime {
             )?;
             return Ok(answer);
         }
+        if self.autonomy_context(task)?["interactive"] == false {
+            bail!(
+                "noninteractive_input_unavailable: Interactive approval or clarification is unavailable in this evaluation. Do not grant permission or invent an answer. Report blocked using stop_reason=owner_input_unavailable and this call as blocker_call_id."
+            );
+        }
         let request_id = fenix_storage::id();
         let question = self.redactor.text(question);
         let view = PendingView {
@@ -64,15 +69,14 @@ impl Runtime {
             },
         );
         self.store.set_task_status(task, "waiting", None)?;
+        self.browser.task_waiting(task, true).await;
         self.store.event(task, "question", &json!(view))?;
         self.store.save_question(&json!(view))?;
         self.bus_wake.notify_waiters();
         let instruction = if kind == "approval" {
-            format!("Responde «aprobar {request_id}» o «rechazar {request_id}».")
+            "Puedes confirmar o rechazar esta acción con tus propias palabras."
         } else {
-            format!(
-                "Responde «responder {request_id} tu respuesta». Puedes seguir conversando mientras esta pregunta queda pendiente."
-            )
+            "Puedes responder aquí con tus propias palabras."
         };
         let details = view
             .action
@@ -98,12 +102,15 @@ impl Runtime {
             _=self.stop.cancelled()=>Err(anyhow::anyhow!("Service stopping")),
             reply=receive=>reply.map_err(|_|anyhow::anyhow!("Pending request closed")),
         };
+        self.browser.task_waiting(task, false).await;
         self.pending.lock().await.remove(&request_id);
         if result.is_err() {
             self.store
                 .resolve_question(&request_id, "cancelled", None)?;
         }
-        self.store.set_task_status(task, "running", None)?;
+        if result.is_ok() {
+            self.store.set_task_status(task, "running", None)?;
+        }
         if kind == "clarification"
             && let Ok(answer) = &result
         {
@@ -123,6 +130,16 @@ impl Runtime {
             let _ = self.store.resolve_question(&id, "cancelled", None);
             pending.remove(&id);
         }
+        // Also close durable questions whose in-memory sender no longer exists.
+        if let Ok(questions) = self.store.saved_questions(Some(task)) {
+            for question in questions {
+                if question["status"] == "pending"
+                    && let Some(id) = question["id"].as_str()
+                {
+                    let _ = self.store.resolve_question(id, "cancelled", None);
+                }
+            }
+        }
     }
 
     pub(crate) async fn approve(
@@ -135,7 +152,7 @@ impl Runtime {
             .ask(
                 task,
                 "approval",
-                "Necesito tu aprobación para ejecutar esta acción.",
+                "¿Me das permiso para hacer lo siguiente?",
                 Some(action),
                 cancel,
             )
@@ -144,6 +161,15 @@ impl Runtime {
     }
 
     pub(crate) async fn handle_control(&self, text: &str, origin: &str) -> Result<Option<Value>> {
+        self.handle_control_text(text, text, origin).await
+    }
+
+    pub(crate) async fn handle_control_text(
+        &self,
+        text: &str,
+        user_text: &str,
+        origin: &str,
+    ) -> Result<Option<Value>> {
         let lowered = text.trim().to_lowercase();
         let words = lowered.split_whitespace().collect::<Vec<_>>();
         if words
@@ -163,13 +189,16 @@ impl Runtime {
                 }
             };
             let Some(id) = requested.as_deref() else {
-                bail!("There is no active master task. Use cancelar followed by a task ID");
+                return Ok(None);
             };
-            if self.store.task(id)?.origin == "subagent" {
+            let Ok(task) = self.store.task(id) else {
+                return Ok(None);
+            };
+            if task.origin == "subagent" {
                 self.store
-                    .append(Some(id), &Message::user(text), true, false, origin)?;
+                    .append(Some(id), &Message::user(user_text), true, false, origin)?;
                 let result = self.cancel_subagent(id).await?;
-                self.notify(Some(id), "Cancelación del subagente solicitada. Los efectos que ya ocurrieron no se revierten.")?;
+                self.notify(Some(id), "He pedido que se detenga este trabajo. Los cambios ya realizados se conservan.")?;
                 return Ok(Some(result));
             }
             let active = self.active.lock().await;
@@ -179,7 +208,7 @@ impl Runtime {
             }
             self.store.append(
                 Some(id),
-                &Message::text(Role::User, text),
+                &Message::text(Role::User, user_text),
                 true,
                 false,
                 origin,
@@ -192,9 +221,13 @@ impl Runtime {
                 self.store
                     .set_task_status(id, "cancelled", Some("Cancelled by the owner"))?;
             }
+            drop(active);
+            self.browser.task_finished(id).await;
+            self.clear_pending(id).await;
+            self.bus_wake.notify_waiters();
             self.notify(
                 Some(id),
-                "Cancelación solicitada. Los efectos que ya ocurrieron no se revierten.",
+                "He pedido que se detenga este trabajo. Los cambios ya realizados se conservan.",
             )?;
             return Ok(Some(json!({"cancelled":id})));
         }
@@ -224,7 +257,7 @@ impl Runtime {
         };
         let Some(current) = current else {
             if is_control {
-                bail!("Include the exact pending request ID; no approval or reply was applied");
+                return Ok(None);
             }
             return Ok(None);
         };
@@ -264,7 +297,7 @@ impl Runtime {
             self.store.check_plan_worker(&view.task_id)?;
             self.store.append(
                 Some(&view.task_id),
-                &Message::text(Role::User, text),
+                &Message::text(Role::User, user_text),
                 true,
                 false,
                 origin,
@@ -283,9 +316,52 @@ impl Runtime {
             Ok(Some(json!({"answered":view.id})))
         } else {
             // Unknown text does not authorize anything. It remains a separate FIFO request.
-            self.notify(Some(&view.task_id),&format!("La solicitud {} sigue pendiente. Tu nuevo mensaje se encolará; para resolverla, usa la respuesta indicada arriba.",view.id))?;
             Ok(None)
         }
+    }
+
+    /// Resolve an interpreted user reply against a still-pending request. IDs
+    /// remain internal; the conversation stores only the user's original words.
+    pub(crate) async fn answer_pending(
+        &self,
+        request_id: &str,
+        text: &str,
+        approval: Option<bool>,
+        origin: &str,
+        reference: Option<&str>,
+    ) -> Result<Value> {
+        let view = self
+            .pending
+            .lock()
+            .await
+            .get(request_id)
+            .map(|p| p.view.clone());
+        let Some(view) = view else {
+            bail!("Esta pregunta ya no está pendiente. No se aplicó ninguna confirmación.");
+        };
+        if reference.is_some_and(|id| id != view.task_id) {
+            bail!("La respuesta corresponde a otra tarea. Indica cuál quieres continuar.");
+        }
+        if text.trim().is_empty() {
+            bail!("Escribe tu respuesta para continuar.");
+        }
+        let command = if view.kind == "approval" {
+            let Some(approved) = approval else {
+                bail!("Confirma si quieres que realice esta acción o que la rechace.");
+            };
+            format!(
+                "{} {}",
+                if approved { "approve" } else { "reject" },
+                view.id
+            )
+        } else {
+            format!("responder {} {}", view.id, text.trim())
+        };
+        self.handle_control_text(&command, text, origin)
+            .await?
+            .ok_or_else(|| {
+                anyhow::anyhow!("La pregunta ya no está disponible. No se aplicó la respuesta.")
+            })
     }
 
     /// Native replies bind a short answer to its original pending task, even if
@@ -296,6 +372,41 @@ impl Runtime {
         origin: &str,
         reply_to_task_id: Option<&str>,
     ) -> Result<Option<Value>> {
+        // Recognize unambiguous short stop requests before treating a reply as
+        // an answer to a pending clarification. Never guess between multiple tasks.
+        let natural_stop = matches!(
+            text.trim()
+                .trim_end_matches(['.', '!'])
+                .to_lowercase()
+                .as_str(),
+            "deserta la tarea"
+                | "cancela la tarea"
+                | "cancela eso"
+                | "detén la tarea"
+                | "deten la tarea"
+                | "detén eso"
+                | "cancel the task"
+                | "stop the task"
+        );
+        if natural_stop {
+            let candidates = self
+                .store
+                .tasks(200)?
+                .into_iter()
+                .filter(|task| {
+                    task.origin != "subagent"
+                        && matches!(task.status.as_str(), "queued" | "running" | "waiting")
+                })
+                .collect::<Vec<_>>();
+            let target = reply_to_task_id
+                .or_else(|| (candidates.len() == 1).then(|| candidates[0].id.as_str()));
+            if let Some(id) = target {
+                return self
+                    .handle_control_text(&format!("cancelar {id}"), text, origin)
+                    .await;
+            }
+            return Ok(None);
+        }
         let Some(task_id) = reply_to_task_id else {
             return self.handle_control(text, origin).await;
         };
@@ -342,12 +453,16 @@ impl Runtime {
                     "sí" | "si" | "yes" | "no" | "aprobar" | "approve" | "rechazar" | "reject"
                 ) {
                     return self
-                        .handle_control(&format!("{} {}", text.trim(), view.id), origin)
+                        .handle_control_text(&format!("{} {}", text.trim(), view.id), text, origin)
                         .await;
                 }
             } else {
                 return self
-                    .handle_control(&format!("responder {} {}", view.id, text.trim()), origin)
+                    .handle_control_text(
+                        &format!("responder {} {}", view.id, text.trim()),
+                        text,
+                        origin,
+                    )
                     .await;
             }
         }
@@ -383,23 +498,28 @@ fn describe_action(action: &Value) -> String {
         ),
         Some("file_patch") => format!("\n\nAplicar parche:\n{}", text("patch")),
         Some("command_run") => format!(
-            "\n\nDirectorio: {}\nComando:\n{}\n\nTerminal interactiva: {}. Persistente entre turnos: {}. Tiempo: {}.",
+            "\n\nEjecutar este comando en {}:\n\n```sh\n{}\n```{}",
             text("cwd"),
             text("command"),
-            args["tty"] == true,
-            args["persistent"] == true,
-            args["timeout_seconds"]
-                .as_u64()
-                .map(|v| format!("{v} segundos"))
-                .unwrap_or_else(|| "límite configurado en ajustes".into())
+            if args["persistent"] == true {
+                "\nSeguirá funcionando en segundo plano después de esta tarea."
+            } else {
+                ""
+            }
         ),
         Some("command_input") => format!(
-            "\n\nEnviar al proceso {}:\n{}\n\nEOF: {}. Filas/columnas: {}/{}",
-            text("process_id"),
+            "\n\nEnviar lo siguiente al programa que está en ejecución:\n\n```text\n{}\n```{}{}",
             text("text"),
-            args["eof"] == true,
-            args["rows"],
-            args["columns"]
+            if args["eof"] == true {
+                "\nDespués cerraré su entrada de datos."
+            } else {
+                ""
+            },
+            if args["rows"].is_number() || args["columns"].is_number() {
+                "\nTambién ajustaré el tamaño de su ventana."
+            } else {
+                ""
+            }
         ),
         _ => format!("\n\n{}", action),
     }
@@ -409,6 +529,94 @@ fn describe_action(action: &Value) -> String {
 mod tests {
     use super::*;
     use std::time::Duration;
+
+    #[tokio::test]
+    async fn natural_answers_resolve_pending_questions_without_exposing_ids() {
+        let dir = tempfile::tempdir().unwrap();
+        let runtime = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+            .await
+            .unwrap();
+        for (kind, words, approval, expected) in [
+            ("approval", "Sí, hazlo por favor", Some(true), "approved"),
+            ("approval", "No, no lo hagas", Some(false), "denied"),
+            (
+                "clarification",
+                "Elige tú el tema y usa un enlace temporal",
+                None,
+                "Elige tú el tema y usa un enlace temporal",
+            ),
+        ] {
+            let task = runtime
+                .store
+                .enqueue("Build a landing page", "web", None)
+                .unwrap();
+            let cloned = runtime.clone();
+            let task_id = task.id.clone();
+            let answer = tokio::spawn(async move {
+                cloned
+                    .ask(
+                        &task_id,
+                        kind,
+                        "¿Cómo quieres continuar?",
+                        None,
+                        &CancellationToken::new(),
+                    )
+                    .await
+            });
+            let view = tokio::time::timeout(Duration::from_secs(2), async {
+                loop {
+                    if let Some(view) = runtime
+                        .pending
+                        .lock()
+                        .await
+                        .values()
+                        .next()
+                        .map(|p| p.view.clone())
+                    {
+                        break view;
+                    }
+                    tokio::task::yield_now().await;
+                }
+            })
+            .await
+            .unwrap();
+            let unrelated = runtime
+                .store
+                .enqueue("Unrelated task", "web", None)
+                .unwrap();
+            assert!(
+                runtime
+                    .answer_pending(&view.id, words, approval, "web", Some(&unrelated.id))
+                    .await
+                    .is_err()
+            );
+            if kind == "approval" {
+                assert!(
+                    runtime
+                        .answer_pending(&view.id, "¿Es seguro?", None, "web", None)
+                        .await
+                        .is_err()
+                );
+            }
+            let messages = runtime.store.conversation(None, 20).unwrap();
+            assert!(messages.iter().all(|m| !m.text.contains(&view.id)));
+            runtime
+                .answer_pending(&view.id, words, approval, "web", None)
+                .await
+                .unwrap();
+            assert_eq!(answer.await.unwrap().unwrap(), expected);
+            assert!(runtime.pending.lock().await.is_empty());
+            let messages = runtime.store.conversation(None, 20).unwrap();
+            assert!(messages.iter().any(|m| m.text == words));
+            assert!(messages.iter().all(|m| !m.text.contains(&view.id)));
+            assert!(
+                runtime
+                    .answer_pending(&view.id, words, approval, "web", None)
+                    .await
+                    .is_err()
+            );
+        }
+    }
 
     #[tokio::test]
     async fn telegram_reply_resolves_original_request_without_approving_an_unrelated_task() {
@@ -505,7 +713,13 @@ mod tests {
                 .unwrap()
                 .is_none()
         );
-        assert!(runtime.handle_control("yes", "web").await.is_err());
+        assert!(
+            runtime
+                .handle_control("yes", "web")
+                .await
+                .unwrap()
+                .is_none()
+        );
         assert_eq!(runtime.pending.lock().await.len(), 2);
         let first_id = views.iter().find(|v| v["task_id"] == first.id).unwrap()["id"]
             .as_str()

@@ -1,9 +1,6 @@
 //! Bounded transfer state, independent of the diagnostic event ring.
 use serde_json::{Value, json};
-use std::{
-    collections::VecDeque,
-    time::{Duration, Instant},
-};
+use std::{collections::VecDeque, time::Instant};
 
 #[derive(Default)]
 pub(crate) struct Downloads {
@@ -94,7 +91,11 @@ impl Downloads {
     pub fn values(&self) -> Vec<Value> {
         self.entries.iter().rev().map(Transfer::value).collect()
     }
-    pub fn active_recently(&self, idle: Duration) -> bool {
+    pub fn has_pending(&self) -> bool {
+        self.entries.iter().any(|entry| entry.state == "inProgress")
+    }
+    #[cfg(test)]
+    pub fn active_recently(&self, idle: std::time::Duration) -> bool {
         self.entries
             .iter()
             .any(|entry| entry.state == "inProgress" && entry.progressed.elapsed() < idle)
@@ -104,6 +105,7 @@ impl Downloads {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::Duration;
     fn event(id: &str, state: &str, bytes: u64) -> Value {
         json!({"method":"Browser.downloadProgress","params":{"guid":id,"state":state,"receivedBytes":bytes,"totalBytes":1000}})
     }

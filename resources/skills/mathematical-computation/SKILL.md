@@ -34,7 +34,3 @@ Use substitution, an independent identity or a second numerical resolution where
 ## Limits
 
 Do not discard complex roots or singular cases without a domain reason, or present extra digits as accuracy.
-
-## Español
-
-Explicita dominio y unidades, verifica soluciones en el problema original y distingue precisión de exactitud.

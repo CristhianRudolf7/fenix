@@ -41,7 +41,3 @@ Every citation must resolve to the actual work and support its attached claim. R
 ## Limits
 
 Do not invent DOI values or turn reported benchmark scores into independent reproductions. A review does not require image generation or a paid research service.
-
-## Español
-
-Define criterios y registra búsquedas. Compara métodos y condiciones, verifica referencias y aclara qué textos completos pudiste leer.

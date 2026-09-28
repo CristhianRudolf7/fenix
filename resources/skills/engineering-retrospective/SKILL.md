@@ -36,7 +36,3 @@ Every substantial claim links to changes, PRs, deployments or incident records w
 ## Limits
 
 Stay within authorized repositories and team data. Do not scan neighboring workspaces, invent delivery counts from commit subjects, or treat an automatically generated narrative as a durable fact about an individual.
-
-## Español
-
-Revisa entregas, reprocesos y bloqueos en un periodo explícito con evidencia de cambios, PR, despliegues e incidentes. Compara ventanas equivalentes y declara datos ausentes. Los commits no equivalen a horas trabajadas, PR ni productividad personal. Propón un experimento medible; no publiques informes ni asignes tareas automáticamente.

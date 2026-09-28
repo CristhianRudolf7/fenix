@@ -42,7 +42,3 @@ Trace at least one real scenario through the diagram and verify every material r
 ## Limits
 
 Do not generate a repository knowledge graph or invent service dependencies merely to fill a diagram.
-
-## Español
-
-Selecciona el tipo adecuado, distingue relaciones reales y propuestas y entrega una fuente recuperable. El usuario solo navega y lee; todas las modificaciones y restauraciones se solicitan al agente. Lee primero la revisión actual y usa las herramientas de diseños para guardar los cambios y sus archivos privados.

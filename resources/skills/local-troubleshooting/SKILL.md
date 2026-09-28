@@ -40,10 +40,3 @@ Repeat the failing operation after a focused fix and report unresolved causes.
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Do not claim success or automatic rollback without observed evidence.
-
-## Español
-
-
-Diagnostica con evidencia y una hipótesis explícita. Usa comandos acotados, evita bucles y verifica las correcciones autorizadas. Consulta documentación pública con `web_search` o `web_read`, respetando su cobertura y límites; no los evadas con descargas por shell. Explica los bloqueos pendientes, conserva referencias y no expongas credenciales ni prometas revertir acciones.
-
-Para analizar decisiones o acciones repetidas del agente, usa agent-workflow-diagnosis. Esa investigación es de solo lectura y debe sustentar cualquier corrección posterior.

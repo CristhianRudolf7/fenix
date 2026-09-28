@@ -30,6 +30,11 @@ export function recognizer(
   onFinal: (text: string) => void,
   onInterim: (text: string) => void,
   onError: (error: string) => void,
+  options: {
+    restart?: boolean;
+    onStopped?: () => void;
+    onTranscript?: (text: string) => void;
+  } = {},
 ) {
   const Constructor =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -39,25 +44,40 @@ export function recognizer(
     );
   const recognition = new Constructor();
   recognition.lang = language;
-  recognition.continuous = true;
+  recognition.continuous = options.restart !== false;
   recognition.interimResults = true;
   let wanted = false,
     paused = false,
     running = false,
     disposed = false,
     retry: ReturnType<typeof setTimeout> | undefined;
+  const delivered = new Set<number>();
   recognition.onresult = (e) => {
+    if (disposed || !wanted || paused) return;
+    if (options.onTranscript) {
+      // The browser sends a snapshot of the utterance, not text to append.
+      const parts = Array.from(e.results, (result) =>
+        result[0].transcript.trim(),
+      ).filter(Boolean);
+      options.onTranscript(parts.join(" "));
+      return;
+    }
     let interim = "";
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const result = e.results[i];
-      if (result.isFinal) onFinal(result[0].transcript);
-      else interim += result[0].transcript;
+      if (result.isFinal) {
+        if (!delivered.has(i)) {
+          delivered.add(i);
+          onFinal(result[0].transcript);
+        }
+      } else interim += result[0].transcript;
     }
     onInterim(interim);
   };
   const start = () => {
     if (!wanted || paused || running || disposed) return;
     try {
+      delivered.clear();
       recognition.start();
       running = true;
     } catch (error) {
@@ -66,7 +86,13 @@ export function recognizer(
   };
   recognition.onend = () => {
     running = false;
-    if (wanted && !paused && !disposed) retry = setTimeout(start, 400);
+    if (wanted && !paused && !disposed) {
+      if (options.restart !== false) retry = setTimeout(start, 400);
+      else {
+        wanted = false;
+        options.onStopped?.();
+      }
+    }
   };
   recognition.onerror = (e) => {
     if (e.error === "aborted" || e.error === "no-speech") return;

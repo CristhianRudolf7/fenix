@@ -3,7 +3,7 @@ name: image-workflows
 description: Create, edit or prepare images using available generation and local processing tools with clear asset
   provenance.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   category: creative
   tags: image, workflows
   aliases: imagen, ilustración, editar foto, recortar, comprimir
@@ -30,6 +30,8 @@ Source image if editing, purpose, dimensions, style and export requirements. Pre
 
 For visual delivery in Fénix, discover `design_templates`, `design_present`, `design_publish` and `design_import` with `tool_search`. Present a few template choices only when the choice matters; publish the finished structured result or import its workspace file so it appears in the chat panel and Design. Use the existing design ID and current revision for updates, preserve project scope, and label sample data. HTML previews disable scripts/network; Office imports extract content rather than reproduce original layout or recalculate formulas.
 
+For geometry-to-text tasks, first validate coordinates and relevant layers, then create a readable rendering or use available authorized OCR/vision tools. Check orientation, scale and cropping against the full geometry. If a text-only projection is unreadable, improve the representation; do not substitute an object filename or label for the requested visual content.
+
 ## Verification
 
 Check final dimensions, format, file size and visible artifacts in the actual output.
@@ -37,7 +39,3 @@ Check final dimensions, format, file size and visible artifacts in the actual ou
 ## Limits
 
 This skill does not install an image-generation provider. Do not fabricate a generated image or claim pixel-exact edits without inspection.
-
-## Español
-
-Inspecciona originales y resultado, diferencia generación de transformación y conserva procedencia y dimensiones.

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { Loading } from "../components/loading";
+import { useEffect, useState, type ReactNode } from "react";
 import { api } from "../live/api";
 import { tr } from "../workflows/types";
 import "../workflows/workflows.css";
@@ -33,7 +34,14 @@ type Connection = {
   };
 };
 type Catalog = { catalog: Provider[]; connections: Connection[] };
-export function ConnectorCatalog({ language }: { language: string }) {
+export function ConnectorCatalog({
+  language,
+  whatsappCard,
+}: {
+  language: string;
+  whatsappCard?: ReactNode;
+}) {
+  const [initialLoading, setInitialLoading] = useState(true);
   const t = tr(language),
     [data, setData] = useState<Catalog>({ catalog: [], connections: [] }),
     [error, setError] = useState(""),
@@ -47,9 +55,13 @@ export function ConnectorCatalog({ language }: { language: string }) {
   };
   useEffect(() => {
     const controller = new AbortController();
-    void load(controller.signal).catch((e) => {
-      if (!controller.signal.aborted) setError(String(e));
-    });
+    void load(controller.signal)
+      .catch((e) => {
+        if (!controller.signal.aborted) setError(String(e));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setInitialLoading(false);
+      });
     return () => controller.abort();
   }, []);
   async function action(id: string, action: string) {
@@ -75,6 +87,7 @@ export function ConnectorCatalog({ language }: { language: string }) {
     ),
     partially_checked: t("Partially checked", "Comprobada parcialmente"),
   };
+  if (initialLoading) return <Loading />;
   return (
     <div className="connector-catalog">
       <label className="connector-search">
@@ -96,15 +109,31 @@ export function ConnectorCatalog({ language }: { language: string }) {
         </p>
       )}
       <div className="connector-grid">
-        {data.catalog
-          .filter(
-            (p) =>
-              p.id !== "whatsapp" &&
-              `${p.name} ${p.services?.join(" ") || ""}`
-                .toLowerCase()
-                .includes(search.toLowerCase()),
+        {(data.catalog.some((p) => p.id === "whatsapp")
+          ? data.catalog
+          : [
+              ...data.catalog,
+              {
+                id: "whatsapp",
+                name: "WhatsApp",
+                category: "communication",
+                auth: "existing",
+                services: ["WhatsApp Web"],
+              },
+            ]
+        )
+          .filter((p) =>
+            `${p.name} ${p.services?.join(" ") || ""}`
+              .toLowerCase()
+              .includes(search.toLowerCase()),
           )
           .map((provider) => {
+            if (provider.id === "whatsapp")
+              return (
+                <div className="connector-slot" key={provider.id}>
+                  {whatsappCard}
+                </div>
+              );
             const accounts = data.connections.filter(
                 (c) => c.provider === provider.id,
               ),

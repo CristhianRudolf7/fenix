@@ -684,7 +684,7 @@ async fn supervisor_messages_interrupt_stale_actions_and_reuse_finished_context(
 }
 
 #[tokio::test]
-async fn security_worker_loads_its_catalog_and_cannot_finish_without_a_report() {
+async fn ordinary_worker_can_audit_and_validates_optional_security_reports() {
     let (_dir, runtime, server) = fixture().await;
     Mock::given(method("POST")).and(path("/responses"))
         .respond_with(move |request: &Request| {
@@ -693,14 +693,14 @@ async fn security_worker_loads_its_catalog_and_cannot_finish_without_a_report() 
                 return ResponseTemplate::new(200).set_body_json(answer("Security report received"));
             }
             let input=body["input"].to_string();
-            assert!(input.contains("Security specialist"));
+            assert!(!input.contains("## Security specialist"));
             assert!(!body["tools"].as_array().unwrap().iter().any(|t|t["name"]=="subagent_spawn"));
             if !has_result(&body,"security-skill") {
                 return ResponseTemplate::new(200).set_body_json(call("security-skill","skill_load",json!({"name":"security-finding-validation"})));
             }
             assert!(input.contains("Evidence criteria" ) || input.contains("security-finding-validation"));
             if !has_result(&body,"invalid-finish") {
-                return ResponseTemplate::new(200).set_body_json(call("invalid-finish","subagent_finish",json!({"status":"completed","summary":"No defects"})));
+                return ResponseTemplate::new(200).set_body_json(call("invalid-finish","subagent_finish",json!({"status":"completed","summary":"No defects","security_report":{}})));
             }
             assert!(input.contains("Security report requires nonempty scope"));
             ResponseTemplate::new(200).set_body_json(call("valid-finish","subagent_finish",json!({
@@ -728,7 +728,7 @@ async fn security_worker_loads_its_catalog_and_cannot_finish_without_a_report() 
     let workers = runtime.start();
     wait_task(&runtime, child, "completed").await;
     let job = runtime.store.subagent(child).unwrap();
-    assert_eq!(job.spec.profile, "security");
+    assert_eq!(job.spec.profile, "general");
     assert_eq!(
         job.result.unwrap()["security_report"]["coverage"][0]["status"],
         "not_tested"

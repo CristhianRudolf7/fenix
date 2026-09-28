@@ -4,7 +4,25 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use wiremock::{Mock, MockServer, ResponseTemplate, matchers::method};
 fn sample() -> Bundle {
-    Bundle {name:"report-helper".into(),files:BTreeMap::from([("SKILL.md".into(),"---\ndescription: Prepare reports\n---\n# Reports\nSummarize the supplied notes in a report.\n".into())]),executable:BTreeSet::new()}
+    Bundle {name:"report-helper".into(),files:BTreeMap::from([("SKILL.md".into(),"---\ndescription: Prepare reports\ncategory: office\n---\n# Reports\nSummarize the supplied notes in a report.\n".into())]),executable:BTreeSet::new()}
+}
+#[test]
+fn publication_category_comes_from_source_and_survives_reopening() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("market.sqlite");
+    let store = store::Store::open(&path).unwrap();
+    let bundle = sample();
+    let publication = store.submit("alice", &bundle, "development").unwrap();
+    assert_eq!(publication.category, "office");
+    drop(store);
+    let db = rusqlite::Connection::open(&path).unwrap();
+    db.execute("UPDATE publications SET category='productivity'", []).unwrap();
+    drop(db);
+    let store = store::Store::open(&path).unwrap();
+    let restored = store.get("alice", &publication.id).unwrap();
+    assert_eq!(restored.category, "office");
+    assert_eq!(restored.source_hash, publication.source_hash);
+    assert!(!restored.public);
 }
 fn assessment(safe: bool) -> Value {
     json!({"safe":safe,"complete":true,"summary":"All supplied files reviewed","inspected_files":["SKILL.md"],"static_review":{"instruction-override":"Injected directive must be removed"},"capabilities":[{"id":"report","description":"Summarize notes","evidence_file":"SKILL.md","evidence":"Summarize the supplied notes in a report."}],"findings":if safe {json!([])} else {json!([{"rule":"injection","severity":"high","file":"SKILL.md","line":6,"explanation":"Overrides governing instructions"}])}})
@@ -179,6 +197,8 @@ async fn mock_reviewer(responses: Vec<Value>) -> (Reviewer, MockServer, Arc<Atom
     }).mount(&server).await;
     (
         Reviewer::Hosted(Some(Config {
+            provider: fenix_core::ProviderId::OpenRouter,
+            reasoning_effort: None,
             model: "nemotron-test".into(),
             base_url: format!("{}/v1", server.uri()),
             api_key: "test-key".into(),

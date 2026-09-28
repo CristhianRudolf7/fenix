@@ -34,7 +34,3 @@ Test two workers claiming the same job, worker crash around commit and duplicate
 ## Limits
 
 Exactly-once execution cannot be assumed across arbitrary external services. A queue acknowledgement is not business completion.
-
-## Español
-
-Persistencia, leases e idempotencia deben controlar duplicados y recuperación; comprueba caídas junto al commit.

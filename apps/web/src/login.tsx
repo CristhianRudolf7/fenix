@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import { Flame, Icon } from "./components/icons";
 import wing from "./assets/phoenix-wing.webp";
+import { navigateTo } from "./components/routing";
 
 function Login() {
   const [error, setError] = useState("");
@@ -218,118 +219,17 @@ export function placeAccountControl(detach = false) {
 }
 
 function AccountMenu({ email }: { email: string }) {
-  const [open, setOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const menu = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const profile = useRef<HTMLDialogElement>(null);
   const t = (en: string, es: string) =>
     document.documentElement.lang === "en" ? en : es;
-  useEffect(() => {
-    if (!open) return;
-    menu.current
-      ?.querySelector<HTMLButtonElement>(".account-dropdown button")
-      ?.focus();
-    const outside = (event: PointerEvent) => {
-      if (!menu.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const key = (event: KeyboardEvent) => {
-      if (event.key === "Tab") {
-        setTimeout(() => {
-          if (!menu.current?.contains(document.activeElement)) setOpen(false);
-        }, 0);
-      }
-      if (event.key === "Escape") {
-        setOpen(false);
-        trigger.current?.focus();
-      }
-    };
-    document.addEventListener("pointerdown", outside);
-    document.addEventListener("keydown", key);
-    return () => {
-      document.removeEventListener("pointerdown", outside);
-      document.removeEventListener("keydown", key);
-    };
-  }, [open]);
-  async function signOut() {
-    setBusy(true);
-    setError("");
-    try {
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      });
-      if (!response.ok) throw Error("Logout failed");
-      location.reload();
-    } catch {
-      setError(
-        t(
-          "Could not sign out. Try again.",
-          "No se pudo cerrar sesión. Inténtalo de nuevo.",
-        ),
-      );
-      setBusy(false);
-    }
-  }
   return (
-    <div ref={menu}>
-      <button
-        ref={trigger}
-        type="button"
-        className="subtle icon-button"
-        aria-label={t("User menu", "Menú de usuario")}
-        aria-expanded={open}
-        aria-controls="account-dropdown"
-        onClick={() => setOpen(!open)}
-      >
-        <Icon name="user" />
-      </button>
-      {open && (
-        <div id="account-dropdown" className="account-dropdown">
-          <button
-            type="button"
-            className="subtle"
-            onClick={() => {
-              setOpen(false);
-              profile.current?.showModal();
-            }}
-          >
-            <Icon name="user" />
-            {t("Profile", "Perfil")}
-          </button>
-          <button
-            type="button"
-            className="subtle"
-            disabled={busy}
-            onClick={signOut}
-          >
-            <Icon name="logout" />
-            {t("Sign out", "Cerrar sesión")}
-          </button>
-          {error && <p role="alert">{error}</p>}
-        </div>
-      )}
-      <dialog
-        ref={profile}
-        className="account-profile"
-        onClose={() => trigger.current?.focus()}
-      >
-        <div className="row spread">
-          <h2>{t("Profile", "Perfil")}</h2>
-          <button
-            type="button"
-            className="subtle icon-button"
-            aria-label={t("Close profile", "Cerrar perfil")}
-            onClick={() => profile.current?.close()}
-          >
-            <Icon name="close" />
-          </button>
-        </div>
-        <p className="muted">{t("Email", "Correo")}</p>
-        <p>{email || t("Local account", "Cuenta local")}</p>
-      </dialog>
-    </div>
+    <button
+      type="button"
+      className="account-card"
+      aria-label={t("View my profile", "Ver mi perfil")}
+      title={`${t("View my profile", "Ver mi perfil")} · ${email}`}
+      onClick={() => navigateTo("profile")}
+    >
+      <Icon name="user" />
+    </button>
   );
 }

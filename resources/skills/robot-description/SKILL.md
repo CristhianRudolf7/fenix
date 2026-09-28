@@ -39,7 +39,3 @@ Report the target version, checks run, unresolved resources and physical assumpt
 ## Limits
 
 No hardware controller is invoked by these checks. Publishing to a live robot, disabling protections or executing motion requires its own task scope and operational checks.
-
-## Español
-
-Construye URDF, SRDF o SDF según su función, con nombres reales, unidades SI, ejes e inercias sustentadas. Verifica topología y límites antes de simular. La comprobación estática no demuestra movimiento correcto ni autoriza controlar un robot físico.

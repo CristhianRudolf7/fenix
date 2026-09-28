@@ -34,7 +34,3 @@ Reproduce counts and estimates from raw aggregates and examine sensitivity to ex
 ## Limits
 
 Do not stop on the first favorable p-value or interpret a nonsignificant result as proof of equivalence.
-
-## Español
-
-Verifica asignación y unidad experimental; informa efecto e incertidumbre sin detenerte por un resultado favorable aislado.

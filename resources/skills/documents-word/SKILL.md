@@ -48,8 +48,3 @@ Read back affected paragraphs/tables and preserve unrelated package parts.
 ## Limits
 
 Use only tools authorized for this task and respect the configured user/project workspace. A skill does not expand permissions. Preserve customized user data and disclose unavailable capabilities. Native document tools do not render pages or calculate formulas. Do not install OfficeCLI or a cloud office dependency as an implicit fallback.
-
-## Español
-
-
-Crea informes DOCX con títulos, párrafos y tablas sin proveedores externos. Lee antes de editar y usa el hash y la parte devueltos por `document_read`. Conserva el formato ajeno; una edición no equivale a revisar visualmente las páginas. No inventes datos ni prometas funciones de maquetación todavía no disponibles.

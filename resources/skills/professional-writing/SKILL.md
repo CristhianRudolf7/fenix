@@ -38,7 +38,3 @@ Check factual fidelity, required sections, links, numeric consistency and whethe
 ## Limits
 
 Do not invent testimonials, citations, achievements or guarantees. Do not promise that writing will evade AI detectors.
-
-## Español
-
-Redacta para un lector y propósito concretos. Mejora claridad sin alterar hechos, cifras ni incertidumbre; entregar un borrador no equivale a publicarlo.

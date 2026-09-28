@@ -14,7 +14,7 @@ metadata:
 
 ## Scope
 
-Use within the security worker's assigned objective, target and permitted operations. Load linked details only when relevant. Inherit runtime isolation and approvals; this procedure grants no additional authority.
+Use within the task's assigned objective, target and permitted operations. Load linked details only when relevant. Inherit runtime isolation and approvals; this procedure grants no additional authority.
 
 ## Inputs
 
@@ -35,7 +35,3 @@ Keep evidence tied to the tested revision and distinguish confirmed, suspected, 
 ## Limits
 
 No nested delegation, automatic scope expansion or self-approval. Reuse configured tool permissions. This skill does not establish a new sandbox or certify the absence of vulnerabilities.
-
-## Español
-
-Procedimiento especializado de seguridad para el alcance asignado. Carga las referencias según la tarea, conserva evidencias verificables y separa fallos confirmados, sospechas y comprobaciones pendientes. Las correcciones requieren verificar también el funcionamiento legítimo.

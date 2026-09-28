@@ -34,7 +34,3 @@ Check eligibility, page limits, arithmetic, consistency between aims and budget,
 ## Limits
 
 Submission and institutional signatures require the appropriate authorization; a polished proposal does not imply eligibility or funding.
-
-## Español
-
-Alinea objetivos y presupuesto con la convocatoria vigente y marca compromisos o anexos pendientes.

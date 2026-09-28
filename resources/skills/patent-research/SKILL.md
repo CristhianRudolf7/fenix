@@ -36,7 +36,3 @@ Check document identity, dates and cited passages against the source. Count docu
 ## Limits
 
 No filing, fee payment or legal opinion is provided by this skill. Do not infer worldwide rights from a single publication or promise that a search found every relevant document.
-
-## Español
-
-Busca documentos de patentes con consultas reproducibles y verifica identificadores, fechas y estado en registros oficiales. Distingue publicación, solicitud, concesión y familia. Compara características con pasajes concretos; no conviertas resultados de búsqueda en dictámenes de patentabilidad o libertad de operación.

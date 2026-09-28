@@ -36,7 +36,3 @@ Check whether the learner can apply the concept to a changed example, not merely
 ## Limits
 
 Do not invent learning diagnoses or force a quiz when the user asked for a direct answer.
-
-## Español
-
-Explica desde la duda concreta y adapta práctica y feedback a lo demostrado, sin imponer un curso completo.

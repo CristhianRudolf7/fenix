@@ -37,9 +37,3 @@ When a software delivery has multiple acceptance criteria or a mismatch with its
 ## Limits
 
 Checking delivery does not authorize publishing, sending messages, merging, deletion or an unsafe rerun of external effects. Tests and consumer checks can themselves write files or trigger actions; inspect their side effects before running them. Do not introduce new approval stages, test suites or reviewers merely to fill a checklist.
-
-## Español
-
-Comprueba si lo entregado cumple todo lo pedido mediante requisitos originales, archivos actuales y resultados observados. Si el agente dice que ya terminó, verifica el entregable. Si las pruebas pasaron antes del último cambio, repite lo afectado. Distingue existencia, compilación, funcionamiento, integración y publicación. Informa requisitos verificados, fallidos o sin verificar, conservando las limitaciones. Aplica la comprobación propia de cada documento o sistema sin repetir efectos externos ni añadir aprobaciones rutinarias.
-
-Para entregas de software con varios criterios o discrepancias, consulta la referencia de conciliación. Separa incumplimientos observados de evidencia no disponible; registra correcciones acotadas en el plan vigente. Una auditoría técnica no demuestra resultados comerciales aún no medidos.

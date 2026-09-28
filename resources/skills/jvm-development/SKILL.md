@@ -34,7 +34,3 @@ Exercise serialization, rollback and cancellation as applicable, under the confi
 ## Limits
 
 Do not force a JDK/framework upgrade or a new architecture because an upstream guide uses it.
-
-## Español
-
-Respeta versiones y wrappers; valida transacciones reales, nulabilidad y cancelación en Java/Kotlin.

@@ -41,7 +41,3 @@ Confirm the resolved dependency changed and inspect remaining advisory findings.
 ## Limits
 
 Do not upload private source to a scanner without permission, blindly force major upgrades, or claim regex scans prove absence of secrets.
-
-## Español
-
-Revisa versiones resueltas y secretos sin mostrarlos. Verifica avisos y alcance; borrar una clave del archivo no la revoca ni limpia el historial.

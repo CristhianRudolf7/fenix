@@ -34,7 +34,3 @@ Reconcile all records into accepted, rejected or unresolved groups and preserve 
 ## Limits
 
 Do not create an arbitrary composite quality score or impute missing values without documenting the model/assumption.
-
-## Español
-
-Audita claves, unidades, faltantes y cruces; conserva evidencia y no borres anomalías sin analizarlas.

@@ -628,7 +628,7 @@ async fn security_plan_reviewer_keeps_read_only_tools_and_the_plan_report_contra
             .unwrap()
             .spec
             .profile,
-        "security"
+        "general"
     );
     stop(&runtime, handles).await;
 }

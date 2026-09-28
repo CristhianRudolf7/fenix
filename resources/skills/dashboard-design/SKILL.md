@@ -36,7 +36,3 @@ Recompute representative numbers independently and check responsive layout, labe
 ## Limits
 
 A dashboard does not create data access or prove causation. Never mix currencies or incompatible cohorts into one unlabeled total.
-
-## Español
-
-Diseña métricas trazables y comparables, con unidades, fecha de actualización y filtros coherentes.

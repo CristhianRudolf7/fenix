@@ -39,7 +39,3 @@ Record runtime, model revision, artifacts, dtype and backend actually used. Chec
 ## Limits
 
 Model files and runtimes remain external dependencies. Local inference still downloads model assets unless provisioned otherwise. Do not claim that text/audio remains local until network behavior and provider fallbacks have been checked.
-
-## Español
-
-Ejecuta modelos compatibles con Transformers.js y ONNX, verificando backend, cuantización, descarga y procesado. Gestiona workers, cancelación y liberación de memoria. Prueba WebGPU y las alternativas declaradas; compilar la web no demuestra inferencia ni funcionamiento sin conexión.

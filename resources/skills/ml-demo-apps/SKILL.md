@@ -35,7 +35,3 @@ Exercise a normal request, invalid input and cancellation or an error path. Conf
 ## Limits
 
 No GPU entitlement, HF account or model is installed by this skill. Creating a demo does not authorize public sharing, paid hardware, persistent telemetry or external alerts. Preserve explicit authorization already provided.
-
-## Español
-
-Crea demos Gradio desde una inferencia comprobada, con componentes compatibles y estado aislado por usuario. Verifica modelo base y LoRA, recursos y salidas reales. Distingue funcionamiento local, compilación del Space e inferencia alojada; no presupongas acceso a GPU ni publicación pública.

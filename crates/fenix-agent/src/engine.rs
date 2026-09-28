@@ -23,6 +23,31 @@ mod operational_tests {
     };
 
     #[tokio::test]
+    async fn command_run_preserves_missing_dependency_diagnosis() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue_bound(
+            "Check tool availability",
+            "web",
+            None,
+            &fenix_storage::TaskBinding {
+                bound: true,
+                ..Default::default()
+            },
+        )?;
+        let settings = crate::config::Settings::initial(dir.path().into());
+        let result=rt.execute_tool(&task.id,"probe",&settings,"command_run",&json!({"command":"fenix_nonexistent_test_executable_79321","cwd":dir.path(),"timeout_seconds":5}),&CancellationToken::new()).await?;
+        assert_eq!(result["exit_code"], 127, "{result}");
+        assert_eq!(
+            result["failure"]["category"], "missing_dependency",
+            "{result}"
+        );
+        assert_eq!(result["failure"]["permissions_relaxed"], false);
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn saved_output_search_uses_redacted_journal_and_preserves_worker_scope() -> Result<()> {
         let dir = tempfile::tempdir()?;
         let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
@@ -146,7 +171,7 @@ mod operational_tests {
             let output = match count.fetch_add(1, Ordering::SeqCst) {
                 0 => json!([{"type":"function_call","call_id":"write","name":"file_write","arguments":json!({"path":"artifact.txt","content":"partial work"}).to_string()}]),
                 1 => json!([{"type":"message","role":"assistant","content":[{"type":"output_text","text":"I have not finished the requested verification."}]}]),
-                _ => json!([{"type":"function_call","call_id":"finish","name":"task_finish","arguments":json!({"status":"blocked","summary":"Partial artifact saved; external fixture unavailable.","blockers":"Required fixture is unavailable"}).to_string()}]),
+                _ => json!([{"type":"function_call","call_id":"finish","name":"task_finish","arguments":json!({"status":"blocked","summary":"Partial artifact saved; external fixture unavailable.","blockers":"Required fixture is unavailable","stop_reason":"external_dependency","blocker_call_id":"fixture-outage"}).to_string()}]),
             };
             ResponseTemplate::new(200).set_body_json(json!({"id":"response","status":"completed","output":output,"usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20}}))
         }).mount(&server).await;
@@ -166,6 +191,13 @@ mod operational_tests {
             },
         )?;
         rt.store.set_task_status(&task.id, "running", None)?;
+        rt.record_tool_outcome(
+            &task.id,
+            "fixture-outage",
+            "connector_call",
+            &json!({"action":"fixture"}),
+            Ok(json!({"status_code":503,"error":"Fixture unavailable"})),
+        )?;
         let mut messages = vec![Message::user(task.request.clone())];
         let result = rt
             .run_loop(&task, &model, &mut messages, &CancellationToken::new())
@@ -185,6 +217,190 @@ mod operational_tests {
         assert!(events.iter().any(|e| e["kind"] == "tool_result"
             && e["data"]["tool"] == "task_finish"
             && e["data"]["result"]["status"] == "blocked"));
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn completed_tool_is_rejected_when_the_required_suite_was_not_run() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue_bound(
+            "Install the package and run the tests in tests/.",
+            "web",
+            None,
+            &fenix_storage::TaskBinding {
+                bound: true,
+                ..Default::default()
+            },
+        )?;
+        rt.record_tool_outcome(
+            &task.id,
+            "missing-runner",
+            "command_run",
+            &json!({"command":"python -m pytest tests/"}),
+            Ok(json!({"exit_code":1,"output":"No module named pytest"})),
+        )?;
+        rt.record_tool_outcome(
+            &task.id,
+            "owner-denial",
+            "request_approval",
+            &json!({}),
+            Ok(json!({"approved":false})),
+        )?;
+        let server = MockServer::start().await;
+        let index = Arc::new(AtomicUsize::new(0));
+        let calls = index.clone();
+        Mock::given(method("POST")).and(path("/responses")).respond_with(move |_:&wiremock::Request| {
+            let first=calls.fetch_add(1,Ordering::SeqCst)==0;
+            let args=if first {json!({"status":"completed","summary":"Example works","evidence":"Import and example passed; pytest unavailable"})} else {json!({"status":"blocked","summary":"Required tests not verified","blockers":"Owner denied further work","stop_reason":"permission_denied","blocker_call_id":"owner-denial"})};
+            ResponseTemplate::new(200).set_body_json(json!({"id":"gate","status":"completed","output":[{"type":"function_call","call_id":if first {"finish-premature"} else {"finish-blocked"},"name":"task_finish","arguments":args.to_string()}],"usage":{"input_tokens":10,"output_tokens":10}}))
+        }).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        let model = rt.model_connection(settings, ApiKey::new("test-gate-key")?)?;
+        let result = rt
+            .run_loop(
+                &task,
+                &model,
+                &mut vec![Message::user(task.request.clone())],
+                &CancellationToken::new(),
+            )
+            .await?;
+        assert_eq!(result["status"], "blocked");
+        assert_eq!(index.load(Ordering::SeqCst), 2);
+        assert!(
+            rt.store
+                .events(&task.id, 0, 100)?
+                .iter()
+                .any(|e| e["kind"] == "completion_rejected")
+        );
+        rt.shutdown().await?;
+        Ok(())
+    }
+    #[tokio::test]
+    async fn completed_tool_cannot_bypass_failed_comparison_with_a_contradictory_summary()
+    -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue_bound(
+            "Port the program and preserve its outputs.",
+            "web",
+            None,
+            &fenix_storage::TaskBinding {
+                bound: true,
+                ..Default::default()
+            },
+        )?;
+        rt.record_tool_outcome(
+            &task.id,
+            "failed-comparison",
+            "command_run",
+            &json!({"command":"cmp reference/output actual/output"}),
+            Ok(json!({"exit_code":1,"output":"reference/output actual/output differ: byte 25, line 1"})),
+        )?;
+        rt.record_tool_outcome(
+            &task.id,
+            "owner-denial",
+            "request_approval",
+            &json!({}),
+            Ok(json!({"approved":false})),
+        )?;
+        let server = MockServer::start().await;
+        let index = Arc::new(AtomicUsize::new(0));
+        let calls = index.clone();
+        Mock::given(method("POST")).and(path("/responses")).respond_with(move |_:&wiremock::Request| {
+            let first=calls.fetch_add(1,Ordering::SeqCst)==0;
+            let args=if first {json!({"status":"completed","summary":"Created the script, but the output still differs and I have not repaired it","evidence":"The comparison failed; there is no successful equivalence check"})} else {json!({"status":"blocked","summary":"Required tests not verified","blockers":"Owner denied further work","stop_reason":"permission_denied","blocker_call_id":"owner-denial"})};
+            ResponseTemplate::new(200).set_body_json(json!({"id":"gate","status":"completed","output":[{"type":"function_call","call_id":if first {"finish-premature"} else {"finish-blocked"},"name":"task_finish","arguments":args.to_string()}],"usage":{"input_tokens":10,"output_tokens":10}}))
+        }).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        let model = rt.model_connection(settings, ApiKey::new("test-gate-key")?)?;
+        let result = rt
+            .run_loop(
+                &task,
+                &model,
+                &mut vec![Message::user(task.request.clone())],
+                &CancellationToken::new(),
+            )
+            .await?;
+        assert_eq!(result["status"], "blocked");
+        assert_eq!(index.load(Ordering::SeqCst), 2);
+        assert!(
+            rt.store
+                .events(&task.id, 0, 100)?
+                .iter()
+                .any(|e| e["kind"] == "completion_rejected")
+        );
+        rt.shutdown().await?;
+        Ok(())
+    }
+    #[tokio::test]
+    async fn unsupported_failure_returns_to_work_and_cancellation_still_wins() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue_bound(
+            "Create result.txt containing done",
+            "web",
+            None,
+            &fenix_storage::TaskBinding {
+                bound: true,
+                ..Default::default()
+            },
+        )?;
+        let server = MockServer::start().await;
+        let count = Arc::new(AtomicUsize::new(0));
+        let calls = count.clone();
+        Mock::given(method("POST")).and(path("/responses")).respond_with(move |_:&wiremock::Request| {
+            let step=calls.fetch_add(1,Ordering::SeqCst);
+            let (name,args)=match step {
+                0 => ("task_finish",json!({"status":"failed","summary":"Nothing was done","blockers":"No concrete blocker exists"})),
+                1 => ("file_write",json!({"path":"result.txt","content":"done"})),
+                _ => ("task_finish",json!({"status":"completed","summary":"Created requested file"})),
+            };
+            ResponseTemplate::new(200).set_body_json(json!({"id":"stop-gate","status":"completed","output":[{"type":"function_call","call_id":format!("step-{step}"),"name":name,"arguments":args.to_string()}],"usage":{"input_tokens":10,"output_tokens":10}}))
+        }).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        settings.file_write_policy = ActionPolicy::Allow;
+        let model = rt.model_connection(settings, ApiKey::new("test-stop-key")?)?;
+        let result = rt
+            .run_loop(
+                &task,
+                &model,
+                &mut vec![Message::user(task.request.clone())],
+                &CancellationToken::new(),
+            )
+            .await?;
+        assert_eq!(result["status"], "completed");
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("result.txt"))?,
+            "done"
+        );
+        assert_eq!(count.load(Ordering::SeqCst), 3);
+        assert!(result["evidence"].as_str().unwrap().contains("step-1"));
+        assert!(
+            rt.store
+                .events(&task.id, 0, 100)?
+                .iter()
+                .any(|e| e["kind"] == "abandonment_rejected")
+        );
+        let cancel = CancellationToken::new();
+        cancel.cancel();
+        assert!(
+            rt.run_loop(
+                &task,
+                &model,
+                &mut vec![Message::user(task.request.clone())],
+                &cancel
+            )
+            .await
+            .unwrap_err()
+            .to_string()
+            .contains("cancelled")
+        );
+        assert_eq!(count.load(Ordering::SeqCst), 3);
         rt.shutdown().await?;
         Ok(())
     }
@@ -289,7 +505,19 @@ mod operational_tests {
         assert!(!first.contains("Runtime operational snapshot"));
         assert_eq!(second.matches("Runtime operational snapshot").count(), 1);
         let second_body: Value = serde_json::from_slice(&requests[1].body)?;
-        assert_eq!(second_body["input"][0]["role"], "user");
+        let conversation = second_body["input"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|item| !matches!(item["role"].as_str(), Some("system" | "developer")))
+            .collect::<Vec<_>>();
+        assert_eq!(conversation[0]["role"], "user");
+        assert_eq!(second.matches("Runtime autonomy policy").count(), 1);
+        assert!(
+            !messages
+                .iter()
+                .any(|m| m.text_content().contains("Runtime autonomy policy"))
+        );
         assert!(second.contains("failed_approaches"));
         assert!(second.contains("missing-file"));
         assert!(
@@ -391,6 +619,8 @@ impl Runtime {
         ) {
             self.store.put("explicit_execution_outcome", task, &true)?;
         }
+        self.record_completion_check(task, call_id, name, args, &output, is_error)?;
+        self.record_stop_observation(task, call_id, name, args, &output, is_error)?;
         if name != "task_contract" {
             let mut contract = self.task_contract(task)?;
             if !contract["recent_tool_evidence"].is_array() {
@@ -489,6 +719,7 @@ impl Runtime {
                 let _ =
                     self.store
                         .set_task_status(&task, "failed", Some(&self.redactor.text(&error)));
+                self.browser.task_waiting(&task, true).await;
                 let _ = self.notify(
                     Some(&task),
                     "La ejecución se interrumpió. El historial de acciones sigue disponible.",
@@ -586,12 +817,21 @@ impl Runtime {
                 let _ = self.store.discard_context(&task.id);
                 let _ = self.notify(
                     Some(&task.id),
-                    &format!("Tarea {} · {status}\n{error}", task.id),
+                    match status {
+                        "cancelled" => "He detenido el trabajo. Los cambios ya realizados se conservan.",
+                        "interrupted" => "El servicio se interrumpió antes de terminar. Puedo revisar lo que quedó pendiente cuando volvamos a continuar.",
+                        _ => "No pude terminar lo que me pediste porque se produjo un error. El trabajo quedó incompleto; puedes pedirme que revise qué pasó para intentar continuar.",
+                    },
                 );
                 let _ = self.store.append(Some(&task.id), &Message::user(format!("Previous request: {}\nOutcome: {status}: {error}. Inspect saved task events before repeating effects.",task.request)),false,true,"runtime");
                 (status, Some(error))
             }
         };
+        if matches!(status, "completed" | "cancelled") {
+            self.browser.task_finished(&task.id).await;
+        } else {
+            self.browser.task_waiting(&task.id, true).await;
+        }
         let _ = self.execution_stage(&task.id, status);
         let _ = self
             .store
@@ -700,6 +940,7 @@ impl Runtime {
                 .unwrap_or_else(|| task.id.clone())
         };
         let mut repetition = crate::execution_state::LoopGuard::default();
+        let mut inspection_rounds = 0usize;
         let mut browser_progress = crate::execution_state::BrowserProgress::default();
         messages.push(Message::user(format!(
             "Persistent task contract (bounded observational history): {}",
@@ -735,11 +976,31 @@ impl Runtime {
             if cancel.is_cancelled() {
                 bail!("Task cancelled");
             }
+            if !self.processes.has_running(&task.id).await
+                && let Some(paused) = self.repeated_failure_pause(&task.id)?
+            {
+                return Ok(paused);
+            }
             let catalog = self.exposed_tools(&task.id)?;
+            let advisory = if inspection_rounds >= 3 && inspection_rounds % 3 == 0 {
+                tokio::select! { _=cancel.cancelled()=>bail!("Task cancelled"), note=self.diagnostic_advice(task)=>note }
+            } else {
+                None
+            };
             let operational = self.operational_context(task)?;
-            let reserved = operational.as_ref().map_or(0, |message| {
-                crate::active_context::estimated_tokens(std::slice::from_ref(message), &[])
-            });
+            let autonomy = Message::text(
+                Role::System,
+                format!(
+                    "Runtime autonomy policy (owner preferences; never permission to alter requirements or waive checks): {}",
+                    self.autonomy_context(&task.id)?
+                ),
+            );
+            let reserved =
+                crate::active_context::estimated_tokens(std::slice::from_ref(&autonomy), &[])
+                    + advisory.as_ref().map_or(0, |v| v.len() / 3 + 32)
+                    + operational.as_ref().map_or(0, |message| {
+                        crate::active_context::estimated_tokens(std::slice::from_ref(message), &[])
+                    });
             self.compact_active_context(task, model, messages, &catalog, reserved, cancel)
                 .await?;
             let recoverable = !self
@@ -752,6 +1013,14 @@ impl Runtime {
             self.execution_stage(&task.id, "inferring")?;
             let inference_started = std::time::Instant::now();
             let mut input = messages.clone();
+            let system_end = input
+                .iter()
+                .take_while(|message| message.role == Role::System)
+                .count();
+            input.insert(system_end, autonomy);
+            if let Some(advisory) = advisory {
+                input.push(Message::text(Role::System, advisory));
+            }
             if let Some(operational) = operational {
                 // Keep a stable request prefix, with only one transient snapshot.
                 // Never append repeated copies to durable history or checkpoints.
@@ -810,6 +1079,23 @@ impl Runtime {
                     _ => None,
                 })
                 .collect::<Vec<_>>();
+            inspection_rounds = if !calls.is_empty()
+                && calls.iter().all(|(_, name, _)| {
+                    matches!(
+                        name.as_str(),
+                        "file_read"
+                            | "files_search"
+                            | "files_list"
+                            | "task_inspect"
+                            | "skill_load"
+                            | "skill_search"
+                            | "tool_search"
+                    )
+                }) {
+                inspection_rounds + 1
+            } else {
+                0
+            };
             if response.finish_reason == FinishReason::ContentFilter {
                 bail!("The provider filtered the response; no proposed tool calls were executed");
             }
@@ -857,7 +1143,6 @@ impl Runtime {
             let handoff =
                 calls.is_empty() && !delegated && self.store.has_active_delegation(&task.id)?;
             if calls.is_empty()
-                && !delegated
                 && !handoff
                 && self
                     .store
@@ -866,7 +1151,7 @@ impl Runtime {
             {
                 self.store.event(&task.id, "premature_completion", &json!({"message":message,"published":false,"reason":"missing_explicit_outcome"}))?;
                 self.recover_execution(&task.id, "completion_without_outcome", json!({"instruction":"An execution task needs an explicit outcome, not a progress-only final answer."}))?;
-                messages.push(Message::user("Your final response did not finish the execution task. Continue the remaining authorized work: inspect errors, repair actionable failures and run the requested checks. Do not merely restate pending work. When genuinely finished, call task_finish alone with completed and observed evidence; if no authorized path remains, use blocked/failed with a concrete blocker. Ask the owner only for a genuinely missing decision or authorization. Do not repeat completed effects."));
+                messages.push(Message::user("Your final response did not finish the execution task. Continue the remaining authorized work: inspect errors, repair actionable failures and run the requested checks. Do not merely restate pending work. When genuinely finished, call task_finish (subagent_finish for children) alone with completed and observed evidence; if no authorized path remains, use blocked/failed with a concrete blocker. Ask the owner only for a genuinely missing decision or authorization. Do not repeat completed effects."));
                 continue;
             }
             self.recovery_boundary(&task.id, messages, false)?;
@@ -874,9 +1159,32 @@ impl Runtime {
                 self.store
                     .event(&task.id, "subagent_message", &json!({"message":message}))?;
             } else {
-                let message_id =
+                let message_id = if self.has_interlocutor() && !calls.is_empty() {
+                    // Keep the master's exact tool messages for execution and auditing.
+                    // The interlocutor turns useful commentary into durable conversation.
+                    let id = self
+                        .store
+                        .append(Some(&task.id), &message, false, true, "agent")?;
+                    if !message.text_content().trim().is_empty() {
+                        self.queue_narration(&task.id, &message.text_content())?;
+                    }
+                    id
+                } else if self.has_interlocutor() {
                     self.store
-                        .publish_message(Some(&task.id), &message, true, "agent")?;
+                        .append(Some(&task.id), &message, false, true, "agent")?;
+                    self.store.publish_message(
+                        Some(&task.id),
+                        &Message::text(
+                            Role::Assistant,
+                            self.conversation_text(&message.text_content()),
+                        ),
+                        false,
+                        "agent",
+                    )?
+                } else {
+                    self.store
+                        .publish_message(Some(&task.id), &message, true, "agent")?
+                };
                 self.progress.send_modify(|progress| {
                     if progress.task_id.as_deref() != Some(&task.id) {
                         return;
@@ -939,6 +1247,7 @@ impl Runtime {
                         bail!("Task cancelled");
                     }
                     self.report_progress(&task.id, Phase::Tool, Some(name));
+                    self.queue_tool_narration(&task.id, name, args);
                     self.store.event(
                         &task.id,
                         "tool_started",
@@ -970,13 +1279,14 @@ impl Runtime {
             } else {
                 None
             };
-            for (call_id, name, args) in calls {
+            for (call_id, name, mut args) in calls {
                 self.check_plan_editor(&task.id)?;
                 self.store.check_plan_worker(&task.id)?;
                 if cancel.is_cancelled() {
                     bail!("Task cancelled");
                 }
                 self.report_progress(&task.id, Phase::Tool, Some(&name));
+                self.queue_tool_narration(&task.id, &name, &args);
                 let action = json!({"tool":name,"arguments":args});
                 if !read_batch {
                     self.store.event(
@@ -1001,8 +1311,13 @@ impl Runtime {
                         if call_count != 1 { bail!("Finish must be the only tool call in its response"); }
                         if self.processes.has_running(&task.id).await { bail!("Wait for foreground commands before finishing"); }
                         if args["summary"].as_str().is_none_or(|s| s.trim().is_empty()) { bail!("A concrete outcome summary is required"); }
+                        if args["status"] == "completed" && args["evidence"].as_str().is_none_or(|s|s.trim().is_empty()) {
+                            args["evidence"] = json!(self.completion_receipt_evidence(&task.id)?);
+                        }
                         let field = if args["status"] == "completed" { "evidence" } else { "blockers" };
                         if args[field].as_str().is_none_or(|s| s.trim().is_empty()) { bail!("An execution outcome requires {field}"); }
+                        if args["status"] == "completed" { self.validate_completion_claim(&task.id, &args)?; }
+                        else if let Some(paused) = self.validate_task_stop(&task.id, &args)? { finished=Some(paused); return Ok(json!({"recorded":true,"status":"blocked","runtime_stagnation":true})); }
                         finished = Some(args.clone());
                         return Ok(json!({"recorded":true,"status":args["status"]}));
                     }
@@ -1019,7 +1334,11 @@ impl Runtime {
                             self.store.validate_completion_report(&task.id, &report)?;
                             self.validate_completion_observations(&task.id, &report)?;
                         }
-                        if self.task_profile(&task.id)? == "security" && self.store.review_for_worker(&task.id)?.is_none() { crate::security::validate_report(&args)?; }
+                        if args.get("security_report").is_some() { crate::security::validate_report(&args)?; }
+                        if self.store.review_for_worker(&task.id)?.is_none() && self.store.completion_audit_for_worker(&task.id)?.is_none() {
+                            if args["status"] == "completed" { self.validate_completion_claim(&task.id, &args)?; }
+                            else if let Some(paused) = self.validate_task_stop(&task.id, &args)? { finished=Some(paused); return Ok(json!({"recorded":true,"status":"blocked","runtime_stagnation":true})); }
+                        }
                         finished = Some(args.clone());
                         return Ok(json!({"recorded":true}));
                     }
@@ -1060,6 +1379,7 @@ impl Runtime {
                     browser_progress.revision
                 );
                 let effect_completed = !is_error
+                    && !crate::execution_state::unchanged_file_edit(&name, &output)
                     && output["executed"] != false
                     && output["denied"] != true
                     && matches!(
@@ -1128,8 +1448,15 @@ impl Runtime {
                         Role::Assistant,
                         result["summary"].as_str().unwrap_or_default(),
                     );
-                    self.store
-                        .publish_message(Some(&task.id), &summary, true, "agent")?;
+                    self.store.publish_message(
+                        Some(&task.id),
+                        &Message::text(
+                            Role::Assistant,
+                            self.conversation_text(&summary.text_content()),
+                        ),
+                        true,
+                        "agent",
+                    )?;
                     self.bus_wake.notify_waiters();
                 }
                 return Ok(result);
@@ -1153,11 +1480,15 @@ impl Runtime {
                 phase: Phase::Generating,
                 ..Progress::default()
             });
+            let conversational = self.has_interlocutor();
             let mut raw_preview = String::new();
             let mut saw_delta = false;
             let mut published = std::time::Instant::now() - Duration::from_secs(1);
             let mut preview = |delta: &str| {
                 saw_delta = true;
+                if conversational {
+                    return;
+                }
                 // Keep previews bounded; the provider client bounds the entire response.
                 let available = 32_000usize.saturating_sub(raw_preview.len());
                 let mut end = delta.len().min(available);

@@ -1,0 +1,507 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "tasks": [
+      "polyglot-rust-c",
+      "git-multibranch",
+      "configure-git-webserver"
+    ],
+    "selection_indices": [
+      10,
+      11,
+      12
+    ],
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "tier": "standard",
+    "attempts": 1,
+    "agent_deadline_seconds": 900,
+    "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "fenix_binary_sha256": "580f0588c8757a90304a327c9f3914a1d923adb860211351cc5d6054d3a17b32",
+    "codex": "0.157.1",
+    "opencode": "1.18.32",
+    "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "production_changed": false,
+    "changes": [
+      "Independent differential fixtures with a successful state-changing case",
+      "Noninteractive owner blockers require an indispensable-dependency explanation; genuine interactive requirements remain mandatory",
+      "Fresh completion receipts for simple owner-declared executable paths",
+      "Preserve missing dependency diagnostics through command_run",
+      "Persistent services must survive task completion"
+    ],
+    "validation": {
+      "agent_tests_passed": 251,
+      "agent_optional_tests_ignored": 3,
+      "server_build": "passed"
+    },
+    "opencode_auxiliary_model": "openai/gpt-6-luna",
+    "notes": [
+      "Official instructions only; hidden tests and solutions never supplied to agents.",
+      "Sequential attempts, rotating harness order across tasks; no behavioral changes during measurement."
+    ]
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "artifact_root": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316",
+  "provider_validation": {
+    "completed_responses": [
+      {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "service_tier": "default",
+        "count": 124
+      }
+    ],
+    "max_request_input_tokens": 28833
+  },
+  "totals": {
+    "fenix": {
+      "passed": 2,
+      "graded_tasks": 3,
+      "execution_seconds": 359.491082,
+      "cost_usd": 0.05412827,
+      "input_tokens": 961734,
+      "output_tokens": 12881,
+      "api_calls": 53,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "codex": {
+      "passed": 1,
+      "graded_tasks": 3,
+      "execution_seconds": 115.31398300000001,
+      "cost_usd": 0.01659553,
+      "input_tokens": 261631,
+      "output_tokens": 10190,
+      "api_calls": 20,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "opencode": {
+      "passed": 1,
+      "graded_tasks": 3,
+      "execution_seconds": 249.074207,
+      "cost_usd": 0.01991214,
+      "input_tokens": 432962,
+      "output_tokens": 14847,
+      "api_calls": 51,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    }
+  },
+  "attempts": [
+    {
+      "job": "fenix-polyglot-rust-c",
+      "harness": "fenix",
+      "task": "polyglot-rust-c",
+      "reward": 1.0,
+      "execution_seconds": 161.791181,
+      "trial_seconds": 254.049417,
+      "setup_seconds": 1.838566,
+      "verifier_seconds": 37.033309,
+      "input_tokens": 376236,
+      "cached_input_tokens": 280208,
+      "cache_write_tokens": 64731,
+      "output_tokens": 7568,
+      "cost_usd": 0.01780715,
+      "api_calls": 22,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 22
+      },
+      "throttle_seconds": 28.535,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/fenix-polyglot-rust-c/polyglot-rust-c__awNmZJm",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 22,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 10
+    },
+    {
+      "job": "codex-polyglot-rust-c",
+      "harness": "codex",
+      "task": "polyglot-rust-c",
+      "reward": 0.0,
+      "execution_seconds": 25.845645,
+      "trial_seconds": 114.817014,
+      "setup_seconds": 17.037115,
+      "verifier_seconds": 32.59481,
+      "input_tokens": 19079,
+      "cached_input_tokens": 0,
+      "cache_write_tokens": 19073,
+      "output_tokens": 2329,
+      "cost_usd": 0.00354923,
+      "api_calls": 2,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 2
+      },
+      "throttle_seconds": 0.004,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/codex-polyglot-rust-c/polyglot-rust-c__Q8YaCkx",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 2,
+      "checks": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_fibonacci_polyglot"
+      ],
+      "task_selection_index": 10
+    },
+    {
+      "job": "opencode-polyglot-rust-c",
+      "harness": "opencode",
+      "task": "polyglot-rust-c",
+      "reward": 0.0,
+      "execution_seconds": 97.878445,
+      "trial_seconds": 162.724644,
+      "setup_seconds": 13.596924,
+      "verifier_seconds": 31.911492,
+      "input_tokens": 135373,
+      "cached_input_tokens": 112515,
+      "cache_write_tokens": 22145,
+      "output_tokens": 6705,
+      "cost_usd": 0.00731708,
+      "api_calls": 17,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 17
+      },
+      "throttle_seconds": 0.024,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/opencode-polyglot-rust-c/polyglot-rust-c__CbiQt4V",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 17,
+      "checks": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_fibonacci_polyglot"
+      ],
+      "task_selection_index": 10
+    },
+    {
+      "job": "fenix-git-multibranch",
+      "harness": "fenix",
+      "task": "git-multibranch",
+      "reward": 1.0,
+      "execution_seconds": 163.675678,
+      "trial_seconds": 214.899266,
+      "setup_seconds": 3.533837,
+      "verifier_seconds": 28.28392,
+      "input_tokens": 485799,
+      "cached_input_tokens": 294446,
+      "cache_write_tokens": 165649,
+      "output_tokens": 4536,
+      "cost_usd": 0.02848899,
+      "api_calls": 23,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 23
+      },
+      "throttle_seconds": 34.341,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/fenix-git-multibranch/git-multibranch__wmKbGVi",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 23,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 11
+    },
+    {
+      "job": "codex-git-multibranch",
+      "harness": "codex",
+      "task": "git-multibranch",
+      "reward": 1.0,
+      "execution_seconds": 62.271289,
+      "trial_seconds": 168.021916,
+      "setup_seconds": 15.764489,
+      "verifier_seconds": 35.870252,
+      "input_tokens": 202864,
+      "cached_input_tokens": 165325,
+      "cache_write_tokens": 37497,
+      "output_tokens": 5452,
+      "cost_usd": 0.00907058,
+      "api_calls": 14,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 14
+      },
+      "throttle_seconds": 0.018,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/codex-git-multibranch/git-multibranch__YHfFdkY",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 14,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 11
+    },
+    {
+      "job": "opencode-git-multibranch",
+      "harness": "opencode",
+      "task": "git-multibranch",
+      "reward": 1.0,
+      "execution_seconds": 96.899355,
+      "trial_seconds": 166.580084,
+      "setup_seconds": 6.74746,
+      "verifier_seconds": 42.717858,
+      "input_tokens": 220814,
+      "cached_input_tokens": 192111,
+      "cache_write_tokens": 27867,
+      "output_tokens": 4592,
+      "cost_usd": 0.00778408,
+      "api_calls": 23,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 23
+      },
+      "throttle_seconds": 0.039,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/opencode-git-multibranch/git-multibranch__R78XC3K",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 23,
+      "checks": {
+        "tests": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 11
+    },
+    {
+      "job": "fenix-configure-git-webserver",
+      "harness": "fenix",
+      "task": "configure-git-webserver",
+      "reward": 0.0,
+      "execution_seconds": 34.024223,
+      "trial_seconds": 68.403869,
+      "setup_seconds": 0.922148,
+      "verifier_seconds": 17.853647,
+      "input_tokens": 99699,
+      "cached_input_tokens": 43203,
+      "cache_write_tokens": 54480,
+      "output_tokens": 777,
+      "cost_usd": 0.00783213,
+      "api_calls": 8,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 8
+      },
+      "throttle_seconds": 0.01,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/fenix-configure-git-webserver/configure-git-webserver__zWQGaLP",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 8,
+      "checks": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_hello_html_exists"
+      ],
+      "task_selection_index": 12
+    },
+    {
+      "job": "codex-configure-git-webserver",
+      "harness": "codex",
+      "task": "configure-git-webserver",
+      "reward": 0.0,
+      "execution_seconds": 27.197049,
+      "trial_seconds": 81.341834,
+      "setup_seconds": 15.038579,
+      "verifier_seconds": 17.257612,
+      "input_tokens": 39688,
+      "cached_input_tokens": 19039,
+      "cache_write_tokens": 20637,
+      "output_tokens": 2409,
+      "cost_usd": 0.00397572,
+      "api_calls": 4,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 4
+      },
+      "throttle_seconds": 0.004,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/codex-configure-git-webserver/configure-git-webserver__yPm89GF",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 4,
+      "checks": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_hello_html_exists"
+      ],
+      "task_selection_index": 12
+    },
+    {
+      "job": "opencode-configure-git-webserver",
+      "harness": "opencode",
+      "task": "configure-git-webserver",
+      "reward": 0.0,
+      "execution_seconds": 54.296407,
+      "trial_seconds": 98.994721,
+      "setup_seconds": 6.470309,
+      "verifier_seconds": 18.226319,
+      "input_tokens": 76775,
+      "cached_input_tokens": 56905,
+      "cache_write_tokens": 19197,
+      "output_tokens": 3550,
+      "cost_usd": 0.00481098,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.017,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-tasks-10-12-20260926-165316/jobs/opencode-configure-git-webserver/configure-git-webserver__Zg48QDd",
+      "official_verifier_valid": true,
+      "unreported_usage_requests": 0,
+      "cost_is_lower_bound": false,
+      "transport_errors": [],
+      "upstream_attempts": 11,
+      "checks": {
+        "tests": 1,
+        "passed": 0,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_hello_html_exists"
+      ],
+      "task_selection_index": 12
+    }
+  ],
+  "limitations": [
+    "Three diagnostic tasks, one attempt per combination; not an overall harness ranking.",
+    "Fenix contains the new autonomy and execution changes; no behavioral changes or retries during measurement.",
+    "Official hidden tests were never provided to evaluated agents.",
+    "Costs are usage-based estimates, including reported cache reads/writes, excluding infrastructure and taxes.",
+    "A lower cost for an incomplete/blocked task is not evidence of better efficiency.",
+    "Passing the official verifier does not imply comprehensive self-verification or correctness outside the tested cases.",
+    "Task 11 verifier may pass on preexisting HTTP content despite rejected non-fast-forward test pushes; successful agent push traces are complementary evidence, not a repair of that verifier."
+  ]
+}

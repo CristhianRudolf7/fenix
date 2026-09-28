@@ -35,7 +35,3 @@ Confirm updated blocks and unchanged neighboring content; return actual page lin
 ## Limits
 
 A local Markdown export is not a live workspace update. No hosted connector is installed by this skill.
-
-## Español
-
-Respeta bloques, propiedades y revisiones; verifica páginas reales y no confundas exportar con actualizar la nube.

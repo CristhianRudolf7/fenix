@@ -140,7 +140,11 @@ def verify_storage(root: Path, maximum_bytes: int) -> None:
         raise PolicyError("Account storage must not share the parent filesystem")
 
 def account_fingerprint(account: dict) -> str:
-    return hashlib.sha256(json.dumps(account, sort_keys=True).encode()).hexdigest()
+    # Profile edits and self-service sign-in password changes do not revoke
+    # execution credentials. Explicit disable/CLI resets still change auth_epoch.
+    execution = {key: value for key, value in account.items()
+                 if key not in {"display_name", "password_hash"}}
+    return hashlib.sha256(json.dumps(execution, sort_keys=True).encode()).hexdigest()
 
 def account_slice(account_id: str, limits: Limits) -> str:
     name = f"fenixacct-{identifier(account_id).replace('-', '')}.slice"

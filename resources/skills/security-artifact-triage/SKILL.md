@@ -36,7 +36,3 @@ Confirm originals are unchanged and derived outputs link to them. Distinguish pr
 ## Limits
 
 Do not upload files or private indicators to public analysis services without authorization; even a hash query discloses interest in an artifact. No malware engine, forensic platform or dynamic sandbox is installed by this skill.
-
-## Español
-
-Conserva originales y analiza copias con parsers aislados, sin activar macros, scripts, vistas previas ni enlaces. Limita extracción y recursos, registra objetos y hashes, y marca contenido cifrado o no procesado como desconocido. Un análisis estático sin alertas no certifica que el archivo sea seguro.

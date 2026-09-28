@@ -1,0 +1,533 @@
+{
+  "schema_version": 1,
+  "protocol": {
+    "tasks": [
+      "multi-source-data-merger",
+      "build-cython-ext",
+      "build-pmars"
+    ],
+    "selection_indices": [
+      4,
+      5,
+      6
+    ],
+    "model": "gpt-6-luna",
+    "reasoning": "low",
+    "tier": "standard",
+    "attempts": 1,
+    "agent_deadline_seconds": 900,
+    "source_revision": "7a0b28e6697abf3d71af001463da744ea5aee2e6",
+    "fenix_binary_sha256": "9c12ff4046cf267bd0f29876cebf8650b7a3cf39622fd1f5e31b91242ee8a910",
+    "codex": "0.157.1",
+    "opencode": "1.18.32",
+    "dataset_revision": "7131e4375048a0e408a8fb404b5f499d726b695b",
+    "production_changed": false,
+    "changes": [
+      "Stable standalone HOME instead of cwd; remote tenant environment unchanged.",
+      "Requirement/risk-based verification using existing evidence; no mandatory model reviewer.",
+      "Git identity diagnostic guidance and known builtin skill migrations."
+    ],
+    "validation": {
+      "processes": 12,
+      "execution": 5,
+      "skill_customizations": 1,
+      "server_build": "passed"
+    },
+    "opencode_auxiliary_model": "openai/gpt-6-luna",
+    "notes": [
+      "Official instructions only; hidden tests and solutions never supplied to agents.",
+      "Sequential attempts, rotating harness order across tasks; no behavioral changes during measurement."
+    ],
+    "infrastructure_retry": {
+      "job": "fenix-build-pmars-infrastructure-retry",
+      "replaces_ungraded_job": "fenix-build-pmars",
+      "reason": "Original verifier failed to install curl due to Debian package 404s; no CTRF test report was produced. Original agent stopped for user input before building and remains reported.",
+      "same_frozen_agent": true,
+      "preserve_container": true,
+      "selection": "First retry with a functioning verifier, regardless of pass/fail; no best-of selection.",
+      "container_preservation": "Requested; Harbor removed the container after execution. Traces and verifier outputs are retained."
+    }
+  },
+  "pricing": {
+    "currency": "USD",
+    "per_million_tokens": {
+      "input": 0.1,
+      "cached_input": 0.01,
+      "cache_write": 0.125,
+      "output": 0.5
+    },
+    "context_tier": "short, all requests below 272000 input tokens",
+    "service_tier": "standard",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "retrieved": "2026-09-26",
+    "exclude": [
+      "infrastructure cost",
+      "taxes"
+    ],
+    "calculation": "per request usage, not invoice"
+  },
+  "artifact_root": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704",
+  "provider_validation": {
+    "completed_responses": [
+      {
+        "model": "gpt-6-luna",
+        "reasoning_effort": "low",
+        "service_tier": "default",
+        "count": 211
+      }
+    ],
+    "max_request_input_tokens": 59900
+  },
+  "totals": {
+    "fenix": {
+      "passed": 2,
+      "graded_tasks": 3,
+      "selected_execution_seconds": 1052.1462900000001,
+      "selected_cost_usd": 0.09151361,
+      "all_attempts_cost_usd": 0.09570396,
+      "cost_is_lower_bound": true,
+      "attempts": 4
+    },
+    "codex": {
+      "passed": 2,
+      "graded_tasks": 3,
+      "selected_execution_seconds": 460.923878,
+      "selected_cost_usd": 0.02791756,
+      "all_attempts_cost_usd": 0.02791756,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    },
+    "opencode": {
+      "passed": 3,
+      "graded_tasks": 3,
+      "selected_execution_seconds": 819.9510329999999,
+      "selected_cost_usd": 0.039157290000000004,
+      "all_attempts_cost_usd": 0.039157290000000004,
+      "cost_is_lower_bound": false,
+      "attempts": 3
+    }
+  },
+  "attempts": [
+    {
+      "job": "codex-build-cython-ext",
+      "harness": "codex",
+      "task": "build-cython-ext",
+      "reward": 0.0,
+      "execution_seconds": 343.088736,
+      "trial_seconds": 382.704079,
+      "setup_seconds": 2.203016,
+      "verifier_seconds": 8.223951,
+      "input_tokens": 387553,
+      "cached_input_tokens": 345881,
+      "cache_write_tokens": 41597,
+      "output_tokens": 3567,
+      "cost_usd": 0.01044943,
+      "api_calls": 25,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 25
+      },
+      "throttle_seconds": 0.054,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/codex-build-cython-ext/build-cython-ext__ZuCgARF",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 11,
+        "passed": 2,
+        "failed": 9
+      },
+      "failed_checks": [
+        "test_outputs.py::test_pyknotid_core_import",
+        "test_outputs.py::test_chelpers_cython_extension",
+        "test_outputs.py::test_ccomplexity_cython_extension",
+        "test_outputs.py::test_cinvariants_cython_extension",
+        "test_outputs.py::test_chelpers",
+        "test_outputs.py::test_ccomplexity",
+        "test_outputs.py::test_cinvariants_python_vs_cython",
+        "test_outputs.py::test_example_usage",
+        "test_outputs.py::test_pyknotid_repository_tests"
+      ],
+      "task_selection_index": 5
+    },
+    {
+      "job": "codex-build-pmars",
+      "harness": "codex",
+      "task": "build-pmars",
+      "reward": 1.0,
+      "execution_seconds": 94.865645,
+      "trial_seconds": 142.873464,
+      "setup_seconds": 15.306059,
+      "verifier_seconds": 11.577619,
+      "input_tokens": 420290,
+      "cached_input_tokens": 351311,
+      "cache_write_tokens": 68919,
+      "output_tokens": 2740,
+      "cost_usd": 0.01350399,
+      "api_calls": 20,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 20
+      },
+      "throttle_seconds": 13.322,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/codex-build-pmars/build-pmars__YnwZz9j",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 4,
+        "passed": 4,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 6
+    },
+    {
+      "job": "codex-multi-source-data-merger",
+      "harness": "codex",
+      "task": "multi-source-data-merger",
+      "reward": 1.0,
+      "execution_seconds": 22.969497,
+      "trial_seconds": 72.34749,
+      "setup_seconds": 9.669505,
+      "verifier_seconds": 19.901134,
+      "input_tokens": 52868,
+      "cached_input_tokens": 30226,
+      "cache_write_tokens": 22627,
+      "output_tokens": 1664,
+      "cost_usd": 0.00396414,
+      "api_calls": 5,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 5
+      },
+      "throttle_seconds": 0.005,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/codex-multi-source-data-merger/multi-source-data-merger__YatzYHo",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 4
+    },
+    {
+      "job": "fenix-build-cython-ext",
+      "harness": "fenix",
+      "task": "build-cython-ext",
+      "reward": 0.0,
+      "execution_seconds": 900.433485,
+      "trial_seconds": 938.921963,
+      "setup_seconds": 3.842593,
+      "verifier_seconds": 10.971207,
+      "input_tokens": 2161739,
+      "cached_input_tokens": 1764812,
+      "cache_write_tokens": 283300,
+      "output_tokens": 15724,
+      "cost_usd": 0.07228532,
+      "api_calls": 61,
+      "local_rejections": 0,
+      "usage_missing": 1,
+      "http_status": {
+        "200": 61
+      },
+      "throttle_seconds": 368.366,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": {
+        "exception_type": "AgentTimeoutError",
+        "exception_message": "Agent execution timed out after 900.0 seconds",
+        "exception_traceback": "Traceback (most recent call last):\n  File \"/usr/lib/python3.13/asyncio/tasks.py\", line 507, in wait_for\n    return await fut\n           ^^^^^^^^^\n  File \"/home/Rudy/proyectos/fenix/scripts/benchmarks/harbor/native_fenix.py\", line 79, in run\n    await wait_for_report(environment)\n  File \"/home/Rudy/proyectos/fenix/scripts/benchmarks/harbor/native_fenix.py\", line 25, in wait_for_report\n    alive = await environment.exec('kill -0 \"$(cat /opt/fenix-eval/pid)\"')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/environments/docker/docker.py\", line 1249, in exec\n    return await self._compose_exec(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<6 lines>...\n    )\n    ^\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/environments/docker/docker.py\", line 1326, in _compose_exec\n    return await self._run_docker_compose_command(\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<4 lines>...\n    )\n    ^\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/environments/docker/docker.py\", line 697, in _run_docker_compose_command\n    result = await self._collect_buffered_output(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    ...<3 lines>...\n    )\n    ^\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/environments/docker/docker.py\", line 727, in _collect_buffered_output\n    stdout_bytes, stderr_bytes = await process.communicate(input=stdin_data)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/asyncio/subprocess.py\", line 201, in communicate\n    stdin, stdout, stderr = await tasks.gather(stdin, stdout, stderr)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/asyncio/subprocess.py\", line 181, in _read_stream\n    output = await stream.read()\n             ^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/asyncio/streams.py\", line 723, in read\n    block = await self.read(self._limit)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.13/asyncio/streams.py\", line 730, in read\n    await self._wait_for_data('read')\n  File \"/usr/lib/python3.13/asyncio/streams.py\", line 539, in _wait_for_data\n    await self._waiter\nasyncio.exceptions.CancelledError\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/trial/trial.py\", line 554, in _run_agent_phase\n    await asyncio.wait_for(\n    ...<6 lines>...\n    )\n  File \"/usr/lib/python3.13/asyncio/tasks.py\", line 506, in wait_for\n    async with timeouts.timeout(timeout):\n               ~~~~~~~~~~~~~~~~^^^^^^^^^\n  File \"/usr/lib/python3.13/asyncio/timeouts.py\", line 116, in __aexit__\n    raise TimeoutError from exc_val\nTimeoutError\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/trial/single_step.py\", line 77, in _run_agent\n    await self._run_agent_phase(\n    ...<5 lines>...\n    )\n  File \"/home/Rudy/proyectos/fenix/.fenix/audits/terminal-bench-20260915/venv/lib/python3.13/site-packages/harbor/trial/trial.py\", line 563, in _run_agent_phase\n    raise AgentTimeoutError(\n        f\"Agent execution timed out after {timeout_sec} seconds\"\n    ) from exc\nharbor.trial.errors.AgentTimeoutError: Agent execution timed out after 900.0 seconds\n",
+        "occurred_at": "2026-09-26T14:58:22.449480Z"
+      },
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/fenix-build-cython-ext/build-cython-ext__maGyVnt",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": true,
+      "checks": {
+        "tests": 11,
+        "passed": 10,
+        "failed": 1
+      },
+      "failed_checks": [
+        "test_outputs.py::test_ccomplexity"
+      ],
+      "task_selection_index": 5
+    },
+    {
+      "job": "fenix-build-pmars",
+      "harness": "fenix",
+      "task": "build-pmars",
+      "reward": 0.0,
+      "execution_seconds": 47.304011,
+      "trial_seconds": 71.678109,
+      "setup_seconds": 4.223834,
+      "verifier_seconds": 4.766369,
+      "input_tokens": 63378,
+      "cached_input_tokens": 35155,
+      "cache_write_tokens": 27060,
+      "output_tokens": 680,
+      "cost_usd": 0.00419035,
+      "api_calls": 6,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 6
+      },
+      "throttle_seconds": 0.005,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/fenix-build-pmars/build-pmars__MFj2xwi",
+      "official_verifier_valid": false,
+      "selected": false,
+      "cost_is_lower_bound": false,
+      "checks": null,
+      "failed_checks": [],
+      "verifier_issue": "Debian package 404s prevented curl/uv/pytest bootstrap. Recorded reward=0 is not a valid functional grade.",
+      "task_selection_index": 6
+    },
+    {
+      "job": "fenix-build-pmars-infrastructure-retry",
+      "harness": "fenix",
+      "task": "build-pmars",
+      "reward": 1.0,
+      "execution_seconds": 95.336686,
+      "trial_seconds": 154.772855,
+      "setup_seconds": 4.358299,
+      "verifier_seconds": 11.801803,
+      "input_tokens": 173789,
+      "cached_input_tokens": 121326,
+      "cache_write_tokens": 46193,
+      "output_tokens": 1583,
+      "cost_usd": 0.00840589,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.015,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/fenix-build-pmars-infrastructure-retry/build-pmars__WttYFFE",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 4,
+        "passed": 4,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 6
+    },
+    {
+      "job": "fenix-multi-source-data-merger",
+      "harness": "fenix",
+      "task": "multi-source-data-merger",
+      "reward": 1.0,
+      "execution_seconds": 56.376119,
+      "trial_seconds": 120.512688,
+      "setup_seconds": 0.961488,
+      "verifier_seconds": 19.77941,
+      "input_tokens": 182870,
+      "cached_input_tokens": 113440,
+      "cache_write_tokens": 67200,
+      "output_tokens": 2130,
+      "cost_usd": 0.0108224,
+      "api_calls": 12,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 12
+      },
+      "throttle_seconds": 0.019,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "None"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/fenix-multi-source-data-merger/multi-source-data-merger__eYGXwVw",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 4
+    },
+    {
+      "job": "opencode-build-cython-ext",
+      "harness": "opencode",
+      "task": "build-cython-ext",
+      "reward": 1.0,
+      "execution_seconds": 521.872661,
+      "trial_seconds": 562.47822,
+      "setup_seconds": 11.095529,
+      "verifier_seconds": 10.607343,
+      "input_tokens": 1018581,
+      "cached_input_tokens": 935596,
+      "cache_write_tokens": 81940,
+      "output_tokens": 7576,
+      "cost_usd": 0.02349096,
+      "api_calls": 40,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 40
+      },
+      "throttle_seconds": 23.356,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/opencode-build-cython-ext/build-cython-ext__i8oazfx",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 11,
+        "passed": 11,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 5
+    },
+    {
+      "job": "opencode-build-pmars",
+      "harness": "opencode",
+      "task": "build-pmars",
+      "reward": 1.0,
+      "execution_seconds": 250.530339,
+      "trial_seconds": 302.695432,
+      "setup_seconds": 11.355684,
+      "verifier_seconds": 12.573252,
+      "input_tokens": 368692,
+      "cached_input_tokens": 312159,
+      "cache_write_tokens": 55795,
+      "output_tokens": 3078,
+      "cost_usd": 0.01170876,
+      "api_calls": 21,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 21
+      },
+      "throttle_seconds": 0.035,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/opencode-build-pmars/build-pmars__Q7ySff9",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 4,
+        "passed": 4,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 6
+    },
+    {
+      "job": "opencode-multi-source-data-merger",
+      "harness": "opencode",
+      "task": "multi-source-data-merger",
+      "reward": 1.0,
+      "execution_seconds": 47.548033,
+      "trial_seconds": 89.824394,
+      "setup_seconds": 7.28063,
+      "verifier_seconds": 19.746645,
+      "input_tokens": 71278,
+      "cached_input_tokens": 52430,
+      "cache_write_tokens": 17839,
+      "output_tokens": 2205,
+      "cost_usd": 0.00395757,
+      "api_calls": 11,
+      "local_rejections": 0,
+      "usage_missing": 0,
+      "http_status": {
+        "200": 11
+      },
+      "throttle_seconds": 0.013,
+      "reasoning_efforts": [
+        "low"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "exception": null,
+      "trial_path": "/home/Rudy/.local/share/fenix-evaluations/three-harness-next-three-20260926-141704/jobs/opencode-multi-source-data-merger/multi-source-data-merger__SUBXpEF",
+      "official_verifier_valid": true,
+      "selected": true,
+      "cost_is_lower_bound": false,
+      "checks": {
+        "tests": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "failed_checks": [],
+      "task_selection_index": 4
+    }
+  ],
+  "limitations": [
+    "Three diagnostic tasks, not a general ranking or a paired before/after experiment.",
+    "One attempt per combination plus one explicitly reported infrastructure replacement for Fenix pMARS; original incomplete execution remains in data and costs.",
+    "One Fenix Cython stream was interrupted at the 900-second deadline before usage was returned; that cost and token count are lower bounds.",
+    "Runtime includes explicit provider-rate pacing. No 429 responses occurred. Fenix Cython includes 368.366 seconds of pacing.",
+    "Hidden tests were not provided to any evaluated agent. No behavior was changed during measurement."
+  ]
+}

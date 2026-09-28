@@ -36,9 +36,3 @@ Check cross-user isolation, stale updates, simultaneous misses and recovery afte
 ## Limits
 
 Do not add a cache before locating the bottleneck or treat cached authorization as permanently valid.
-
-## Español
-
-Define vigencia y claves por ámbito; prueba invalidación, fallos y estampidas de misses.
-
-En procesamiento de archivos, la clave incluye contenido, versión del procesador, opciones y ámbito. Publica solo resultados completos y prueba cambios de contenido y de configuración.

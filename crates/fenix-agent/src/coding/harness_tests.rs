@@ -115,6 +115,13 @@ async fn short_commands_modes_process_references_and_environment() -> Result<()>
         )
         .await?;
     assert_eq!(env["runtime_probe"]["exit_code"], 0);
+    let probe = env["runtime_probe"]["output"].as_str().unwrap();
+    assert!(
+        probe.contains("workspace=")
+            && probe.contains("uid=")
+            && probe.contains("git=")
+            && probe.contains("probe_complete=true")
+    );
     let cached = runtime
         .execute_tool(
             &task.id,

@@ -34,6 +34,9 @@ function Integrations({ language }: { language: string }) {
   const t = (en: string, es: string) => (language === "es" ? es : en);
   const [connection, setConnection] = useState<Connection>();
   const [qr, setQr] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const openButton = useRef<HTMLButtonElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
   const [error, setError] = useState("");
   const [pollError, setPollError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -67,14 +70,23 @@ function Integrations({ language }: { language: string }) {
       const value = data.connections.find((c) => c.id === "whatsapp");
       setConnection(value);
       setPollError("");
-      if (value?.state === "awaiting_qr" && value.qr_available) {
+      if (dialogOpen && value?.state === "awaiting_qr" && value.qr_available) {
         const response = await fetch("/api/integrations/whatsapp/qr", {
           signal: controller.signal,
           cache: "no-store",
         });
         // A QR may disappear between the status poll and image request after scanning.
         if (!response.ok) {
-          if (current()) clearQr();
+          if (current()) {
+            clearQr();
+            if (response.status >= 500)
+              setPollError(
+                t(
+                  "Could not load the QR. Please try again.",
+                  "No se pudo cargar el QR. Vuelve a intentarlo.",
+                ),
+              );
+          }
           return;
         }
         if (!response.headers.get("content-type")?.startsWith("image/png"))
@@ -111,6 +123,40 @@ function Integrations({ language }: { language: string }) {
       if (imageUrl.current) URL.revokeObjectURL(imageUrl.current);
     };
   }, []);
+  useEffect(() => {
+    if (!dialogOpen) {
+      revision.current++;
+      poll.current?.abort();
+      poll.current = undefined;
+      clearQr();
+      return;
+    }
+    closeButton.current?.focus();
+    const keydown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDialogOpen(false);
+      if (event.key === "Tab") {
+        const elements = Array.from(
+          document.querySelectorAll<HTMLElement>(
+            ".whatsapp-dialog button:not(:disabled), .whatsapp-dialog a[href]",
+          ),
+        );
+        const first = elements[0],
+          last = elements[elements.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => {
+      document.removeEventListener("keydown", keydown);
+      openButton.current?.focus();
+    };
+  }, [dialogOpen]);
   async function act(action: "connect" | "pause" | "forget") {
     if (working.current) return;
     working.current = true;
@@ -171,163 +217,259 @@ function Integrations({ language }: { language: string }) {
           )}
         </p>
       </header>
-      <ConnectorCatalog language={language} />
-      <article
-        className="integration-card"
-        aria-labelledby="whatsapp-title"
-        aria-busy={busy}
-      >
-        <div className="integration-title">
-          <span className="integration-symbol">
-            <ProviderIcon provider="whatsapp" />
-          </span>
-          <div>
-            <h2 id="whatsapp-title">WhatsApp</h2>
-            <p className="muted">WhatsApp Web</p>
-          </div>
-          <span
-            className={`connection-badge ${state === "ready" ? "is-ready" : ""}`}
-            role="status"
+      <ConnectorCatalog
+        language={language}
+        whatsappCard={
+          <article
+            className="connector-card"
+            aria-labelledby="whatsapp-card-title"
           >
-            {busy
-              ? t("One moment…", "Un momento…")
-              : labels[state] || t("Checking session…", "Comprobando sesión…")}
-          </span>
-        </div>
-        <p>
-          {t(
-            "Scan the QR with your phone. Your login is saved in your Fénix browser, so you can reopen it later.",
-            "Escanea el QR con tu teléfono. Tu inicio de sesión se guarda en tu navegador de Fénix para que puedas volver a abrirlo después.",
-          )}
-        </p>
-        {state === "awaiting_qr" && !busy && (
-          <div className="integration-pairing">
-            <div className="integration-qr">
-              {qr ? (
-                <img
-                  src={qr}
-                  width="260"
-                  height="260"
-                  alt={t("WhatsApp pairing QR", "QR para vincular WhatsApp")}
-                />
-              ) : (
-                <span>{t("Refreshing QR…", "Actualizando QR…")}</span>
-              )}
+            <div className="connector-title">
+              <span className="connector-symbol">
+                <ProviderIcon provider="whatsapp" />
+              </span>
+              <div>
+                <h2 id="whatsapp-card-title">WhatsApp</h2>
+                <small className="muted">WhatsApp Web</small>
+              </div>
             </div>
-            <div>
-              <h3>{t("On your phone", "En tu teléfono")}</h3>
-              <ol>
-                <li>
-                  {t(
-                    "Open WhatsApp and go to Linked devices.",
-                    "Abre WhatsApp y entra en Dispositivos vinculados.",
-                  )}
-                </li>
-                <li>
-                  {t("Choose Link a device.", "Elige Vincular un dispositivo.")}
-                </li>
-                <li>
-                  {t(
-                    "Scan this QR and wait for the session to finish syncing.",
-                    "Escanea este QR y espera a que termine la sincronización.",
-                  )}
-                </li>
-              </ol>
-              <p className="muted">
-                {t(
-                  "The QR refreshes automatically while this page is open.",
-                  "El QR se actualiza automáticamente mientras esta página esté abierta.",
-                )}
-              </p>
-            </div>
-          </div>
-        )}
-        {state === "ready" && (
-          <p className="integration-ready">
-            {connection?.agent_access
-              ? t(
-                  "Ready for Fénix. Tell the agent what you want to do with WhatsApp.",
-                  "Listo para Fénix. Dile al agente qué quieres hacer con WhatsApp.",
-                )
-              : t(
-                  "You have control. Enable agent access to let Fénix use this session.",
-                  "Tú tienes el control. Habilita el acceso del agente para que Fénix use esta sesión.",
-                )}
-          </p>
-        )}
-        {state === "saved" && (
-          <p>
-            {t(
-              "Your login remains on disk without keeping Chromium running. Fénix can reopen the authorized session when needed.",
-              "Tu acceso permanece guardado sin mantener Chromium abierto. Fénix puede volver a abrir la sesión autorizada cuando lo necesite.",
-            )}
-          </p>
-        )}
-        {[
-          "loading",
-          "syncing",
-          "unexpected_page",
-          "browser_incompatible",
-        ].includes(state) &&
-          connection && (
             <p className="muted">
               {t(
-                "If this takes too long or WhatsApp asks for another step, continue in Browser, then return here to enable agent access.",
-                "Si tarda demasiado o WhatsApp pide otro paso, continúa en Navegador y vuelve aquí para habilitar el acceso del agente.",
+                "Link your phone securely with a QR code.",
+                "Vincula tu teléfono mediante un código QR.",
               )}
             </p>
-          )}
-        {(error || pollError) && (
-          <p className="integration-error" role="alert">
-            {error || pollError}
-          </p>
-        )}
-        <div className="integration-actions">
-          <button
-            type="button"
-            className="primary"
-            disabled={
-              busy ||
-              !connection ||
-              (state === "ready" && !!connection.agent_access)
-            }
-            onClick={() => void act("connect")}
-          >
-            {state === "ready"
-              ? t("Enable agent access", "Habilitar acceso del agente")
-              : connection?.session_saved
-                ? t("Open session", "Abrir sesión")
+            <span
+              className={`flow-state ${state === "ready" ? "completed" : "paused"}`}
+            >
+              {labels[state] ||
+                t("Checking connection…", "Comprobando conexión…")}
+            </span>
+            <button
+              ref={openButton}
+              className="connector-connect"
+              disabled={busy}
+              onClick={() => {
+                setDialogOpen(true);
+                if (
+                  !connection ||
+                  [
+                    "disconnected",
+                    "saved",
+                    "needs_open",
+                    "browser_incompatible",
+                    "unexpected_page",
+                  ].includes(state)
+                )
+                  void act("connect");
+              }}
+            >
+              {connection?.session_saved
+                ? t("Manage connection", "Gestionar conexión")
                 : t("Connect WhatsApp", "Conectar WhatsApp")}
-          </button>
-          {canClose && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void act("pause")}
-            >
-              {t("Close browser", "Cerrar navegador")}
             </button>
-          )}
-          {connection?.profile && (
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void act("forget")}
-            >
-              {t("Forget session", "Olvidar sesión")}
-            </button>
-          )}
-          {connection?.profile && (
-            <a href="/browser">{t("Open Browser", "Abrir Navegador")}</a>
-          )}
+          </article>
+        }
+      />
+      {dialogOpen && (
+        <div
+          className="flow-modal-backdrop"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setDialogOpen(false);
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            className="flow-modal whatsapp-dialog"
+            aria-labelledby="whatsapp-title"
+            aria-busy={busy}
+          >
+            <header className="whatsapp-dialog-header">
+              <h2 id="whatsapp-title">
+                {t("Connect WhatsApp", "Conectar WhatsApp")}
+              </h2>
+              <button
+                ref={closeButton}
+                type="button"
+                className="subtle icon-button"
+                onClick={() => setDialogOpen(false)}
+                aria-label={t("Close", "Cerrar")}
+              >
+                <Icon name="close" />
+              </button>
+            </header>
+            <div className="integration-title">
+              <span className="integration-symbol">
+                <ProviderIcon provider="whatsapp" />
+              </span>
+              <div>
+                <strong>WhatsApp</strong>
+                <p className="muted">WhatsApp Web</p>
+              </div>
+              <span
+                className={`connection-badge ${state === "ready" ? "is-ready" : ""}`}
+                role="status"
+              >
+                {busy
+                  ? t("One moment…", "Un momento…")
+                  : labels[state] ||
+                    t("Checking session…", "Comprobando sesión…")}
+              </span>
+            </div>
+            <p>
+              {t(
+                "Scan the QR with your phone. Your login is saved in your Fénix browser, so you can reopen it later.",
+                "Escanea el QR con tu teléfono. Tu inicio de sesión se guarda en tu navegador de Fénix para que puedas volver a abrirlo después.",
+              )}
+            </p>
+            {(busy || state === "loading" || state === "syncing") && !error && (
+              <div className="pairing-loading" role="status">
+                <span aria-hidden="true" />
+                {state === "syncing"
+                  ? t("Syncing your session…", "Sincronizando tu sesión…")
+                  : t("Preparing your QR code…", "Preparando tu código QR…")}
+              </div>
+            )}
+            {state === "awaiting_qr" && !busy && (
+              <div className="integration-pairing">
+                <div className="integration-qr">
+                  {qr ? (
+                    <img
+                      src={qr}
+                      width="260"
+                      height="260"
+                      alt={t(
+                        "WhatsApp pairing QR",
+                        "QR para vincular WhatsApp",
+                      )}
+                    />
+                  ) : (
+                    <span>{t("Refreshing QR…", "Actualizando QR…")}</span>
+                  )}
+                </div>
+                <div>
+                  <h3>{t("On your phone", "En tu teléfono")}</h3>
+                  <ol>
+                    <li>
+                      {t(
+                        "Open WhatsApp and go to Linked devices.",
+                        "Abre WhatsApp y entra en Dispositivos vinculados.",
+                      )}
+                    </li>
+                    <li>
+                      {t(
+                        "Choose Link a device.",
+                        "Elige Vincular un dispositivo.",
+                      )}
+                    </li>
+                    <li>
+                      {t(
+                        "Scan this QR and wait for the session to finish syncing.",
+                        "Escanea este QR y espera a que termine la sincronización.",
+                      )}
+                    </li>
+                  </ol>
+                  <p className="muted">
+                    {t(
+                      "The QR refreshes automatically while this page is open.",
+                      "El QR se actualiza automáticamente mientras esta página esté abierta.",
+                    )}
+                  </p>
+                </div>
+              </div>
+            )}
+            {state === "ready" && (
+              <p className="integration-ready">
+                {connection?.agent_access
+                  ? t(
+                      "Ready for Fénix. Tell the agent what you want to do with WhatsApp.",
+                      "Listo para Fénix. Dile al agente qué quieres hacer con WhatsApp.",
+                    )
+                  : t(
+                      "You have control. Enable agent access to let Fénix use this session.",
+                      "Tú tienes el control. Habilita el acceso del agente para que Fénix use esta sesión.",
+                    )}
+              </p>
+            )}
+            {state === "saved" && (
+              <p>
+                {t(
+                  "Your login remains on disk without keeping Chromium running. Fénix can reopen the authorized session when needed.",
+                  "Tu acceso permanece guardado sin mantener Chromium abierto. Fénix puede volver a abrir la sesión autorizada cuando lo necesite.",
+                )}
+              </p>
+            )}
+            {[
+              "loading",
+              "syncing",
+              "unexpected_page",
+              "browser_incompatible",
+            ].includes(state) &&
+              connection && (
+                <p className="muted">
+                  {t(
+                    "If this takes too long or WhatsApp asks for another step, continue in Browser, then return here to enable agent access.",
+                    "Si tarda demasiado o WhatsApp pide otro paso, continúa en Navegador y vuelve aquí para habilitar el acceso del agente.",
+                  )}
+                </p>
+              )}
+            {(error || pollError) && (
+              <p className="integration-error" role="alert">
+                {error || pollError}
+              </p>
+            )}
+            <div className="integration-actions">
+              <button
+                type="button"
+                className="primary"
+                disabled={
+                  busy ||
+                  !connection ||
+                  (state === "ready" && !!connection.agent_access)
+                }
+                onClick={() => void act("connect")}
+              >
+                {state === "ready"
+                  ? t("Enable agent access", "Habilitar acceso del agente")
+                  : connection?.session_saved
+                    ? t("Open session", "Abrir sesión")
+                    : t("Try connecting again", "Reintentar conexión")}
+              </button>
+              {canClose && (
+                <button
+                  className="subtle icon-button"
+                  aria-label={t("Close browser", "Cerrar navegador")}
+                  title={t("Close browser", "Cerrar navegador")}
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void act("pause")}
+                >
+                  <Icon name="close" />
+                </button>
+              )}
+              {connection?.profile && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void act("forget")}
+                >
+                  {t("Forget session", "Olvidar sesión")}
+                </button>
+              )}
+              {connection?.profile && (
+                <a href="/browser">{t("Open Browser", "Abrir Navegador")}</a>
+              )}
+            </div>
+            <p className="integration-footnote muted">
+              {t(
+                "Connecting enables Fénix to use this session after login. Messages are sent only when you ask. Closing the browser frees RAM and preserves your login; forgetting removes the local session. To unlink this device from your account, use Linked devices on your phone.",
+                "Conectar habilita a Fénix para usar esta sesión después de iniciar sesión. Los mensajes se envían solo cuando se lo pidas. Cerrar el navegador libera RAM y conserva tu acceso; olvidar elimina la sesión local. Para desvincular este dispositivo de tu cuenta, usa Dispositivos vinculados en tu teléfono.",
+              )}
+            </p>
+          </section>
         </div>
-        <p className="integration-footnote muted">
-          {t(
-            "Connecting enables Fénix to use this session after login. Messages are sent only when you ask. Closing the browser frees RAM and preserves your login; forgetting removes the local session. To unlink this device from your account, use Linked devices on your phone.",
-            "Conectar habilita a Fénix para usar esta sesión después de iniciar sesión. Los mensajes se envían solo cuando se lo pidas. Cerrar el navegador libera RAM y conserva tu acceso; olvidar elimina la sesión local. Para desvincular este dispositivo de tu cuenta, usa Dispositivos vinculados en tu teléfono.",
-          )}
-        </p>
-      </article>
+      )}
     </section>
   );
 }

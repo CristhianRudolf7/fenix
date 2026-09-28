@@ -144,27 +144,30 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
           className="nav"
           aria-label={t("Main navigation", "Navegación principal")}
         >
-          {Object.entries(labels).map(([key, label]) => (
-            <NavLink
-              key={key}
-              onClick={() => {
-                if (mobile) closeMenu();
-              }}
-              to={`/${key}`}
-              data-page={key}
-              title={label}
-              aria-label={label}
-              className={page === key ? "active" : ""}
-              aria-current={page === key ? "page" : undefined}
-            >
-              <span className="nav-icon" aria-hidden="true">
-                <Icon name={key} />
-              </span>
-              <span className="nav-text">{label}</span>
-            </NavLink>
-          ))}
+          {Object.entries(labels)
+            .filter(([key]) => key !== "profile")
+            .map(([key, label]) => (
+              <NavLink
+                key={key}
+                onClick={() => {
+                  if (mobile) closeMenu();
+                }}
+                to={`/${key}`}
+                data-page={key}
+                title={label}
+                aria-label={label}
+                className={page === key ? "active" : ""}
+                aria-current={page === key ? "page" : undefined}
+              >
+                <span className="nav-icon" aria-hidden="true">
+                  <Icon name={key} />
+                </span>
+                <span className="nav-text">{label}</span>
+              </NavLink>
+            ))}
         </nav>
         <div className="sidebar-bottom">
+          <div id="account-controls" />
           <div className="row">
             <small className="grow sidebar-version">Fénix · v0.3.0</small>
           </div>
@@ -215,7 +218,6 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
             >
               <Icon name="projects" />
             </button>
-            <div id="account-controls" />
           </div>
         </header>
         <div id="page" key={page} />
@@ -299,10 +301,7 @@ export function renderChatLayout(language: Language, model: string) {
             <span id="document-upload-control" />
             <textarea
               id="chat-input"
-              placeholder={t(
-                "Message Fénix…",
-                "Escribe a Fénix…",
-              )}
+              placeholder={t("Message Fénix…", "Escribe a Fénix…")}
               maxLength={32000}
               rows={1}
               required

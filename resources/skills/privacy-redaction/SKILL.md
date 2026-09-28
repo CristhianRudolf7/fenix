@@ -34,7 +34,3 @@ Search for known sensitive values and inspect hidden/metadata layers relevant to
 ## Limits
 
 Pattern matching cannot guarantee anonymity; do not claim complete redaction when the tool cannot inspect all layers.
-
-## Español
-
-Redacta contenido y metadatos en una copia, no solo la vista, y verifica extracción y posibles identificadores indirectos.

@@ -39,7 +39,3 @@ Confirm actual output, extrusion/motion preview and profile identity. Slicing su
 ## Limits
 
 This skill adds no slicer, printer connection or manufacturer credentials. It does not package generic G-code as a vendor-specific job archive or start paid fabrication by implication.
-
-## Español
-
-Comprueba malla, escala y requisitos del proceso. Genera G-code con un laminador real y el perfil correcto; revisa trayectorias, temperaturas y comandos. Distingue preparación, subida, aceptación e impresión. No inventes perfiles ni conexiones a máquinas.

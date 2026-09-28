@@ -34,7 +34,3 @@ Test fragmentation, reconnect, duplicate/out-of-order events, slow clients and t
 ## Limits
 
 A live connection is not proof of task progress. Do not narrate hidden reasoning as observable execution state.
-
-## Español
-
-Define eventos e IDs, reconexión y ámbito; cerrar el canal no debe cancelar tareas independientes por accidente.

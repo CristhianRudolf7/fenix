@@ -39,7 +39,3 @@ Every decision and owner should map to source material. Check dates and names, a
 ## Limits
 
 Do not infer personality, intent or consensus from speaking frequency. No recording/transcription capability is installed by this skill.
-
-## Español
-
-Convierte notas en acuerdos y acciones con fuente. No inventes responsables ni fechas y no confundas propuestas con decisiones aprobadas.

@@ -34,7 +34,3 @@ Link each claimed control to evidence and each gap to a requirement or stated po
 ## Limits
 
 Do not declare GDPR/SOC/ISO compliance from a checklist or invent legal bases, approvals or certifications.
-
-## Español
-
-Relaciona prácticas reales con obligaciones vigentes y evidencia; una checklist no equivale a certificación.
