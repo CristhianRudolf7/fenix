@@ -2,7 +2,7 @@
 use super::*;
 
 fn public_profile(account: &Account) -> serde_json::Value {
-    json!({"email":account.email,"display_name":account.display_name})
+    json!({"email":account.email,"display_name":account.display_name,"google_connected":account.google_subject.is_some(),"password_available":account.password_login})
 }
 fn failure(status: StatusCode, code: &str) -> Response {
     (status, Json(json!({"error":code}))).into_response()
@@ -155,6 +155,9 @@ mod tests {
             id: uuid::Uuid::new_v4().to_string(),
             email: "owner@example.test".into(),
             display_name: String::new(),
+            google_subject: None,
+            signup_available: false,
+            password_login: true,
             password_hash: hash_password("old-password")?,
             upstream: "http://127.0.0.1:4500".into(),
             upstream_token: token(),
@@ -222,7 +225,7 @@ mod tests {
         let value: serde_json::Value = serde_json::from_slice(&bytes)?;
         assert_eq!(
             value,
-            json!({"email":"owner@example.test","display_name":"Cristhian"})
+            json!({"email":"owner@example.test","display_name":"Cristhian","google_connected":false,"password_available":true})
         );
         assert!(RegistrySource::File(path.clone()).load()?.accounts[1] == other);
         assert_eq!(

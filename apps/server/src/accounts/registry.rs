@@ -44,7 +44,18 @@ pub(super) fn validate(registry: &Registry) -> Result<()> {
         HashSet::new(),
         HashSet::new(),
     );
+    let mut subjects = HashSet::new();
     for account in &registry.accounts {
+        if let Some(subject) = &account.google_subject {
+            ensure!(
+                !subject.is_empty() && subject.len() <= 255 && subjects.insert(subject),
+                "Invalid or duplicate Google identity"
+            );
+            ensure!(
+                !account.signup_available,
+                "Claimed tenant cannot be reserved"
+            );
+        }
         ensure!(
             uuid::Uuid::parse_str(&account.id)?.to_string() == account.id,
             "Invalid account identity"

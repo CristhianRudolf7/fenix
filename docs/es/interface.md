@@ -19,7 +19,7 @@ Para compilar mientras otra tarea modifica la interfaz, se puede construir una c
 
 ## Rutas y estados de carga
 
-React Router gestiona `/chat`, `/projects`, `/memory`, `/skills`, `/design`, `/browser`, `/schedules`, `/activity` y `/settings`. Los enlaces directos, las recargas y el historial conservan la sección seleccionada; el login mantiene la URL solicitada. Las rutas de aplicación no interceptan APIs ni archivos inexistentes.
+React Router gestiona `/chat`, `/projects`, `/memory`, `/skills`, `/browser`, `/schedules`, `/activity` y `/settings`. La antigua página `/design` redirige a `/chat` y `/design?template=<id>` abre esa vista previa sobre el chat. Los enlaces directos, las recargas y el historial conservan la sección seleccionada; el login mantiene la URL solicitada. Las rutas de aplicación no interceptan APIs ni archivos inexistentes.
 
 La pantalla Navegador en `/browser` permite iniciar sesión, conservar perfiles, habilitar al agente, elegir pestañas, ajustar tamaños y usar la bóveda cifrada. Las entradas del propietario usan las API del navegador sin pasar por la conversación. Los estados de carga muestran una llama, una barra indeterminada y líneas de contenido, con texto accesible y soporte para movimiento reducido.
 

@@ -306,9 +306,8 @@ export function Voice() {
                     await api("/model-roles/fast", {
                       provider: data.get("provider"),
                       model: data.get("model"),
-                      base_url: data.get("base_url") || null,
+                      base_url: config.settings.base_url || null,
                       reasoning_effort: data.get("reasoning_effort") || null,
-                      api_key: data.get("api_key") || null,
                     });
                     form.reset();
                     await loadConfig();
@@ -341,29 +340,17 @@ export function Voice() {
                 </label>
                 <label>
                   {t("Reasoning effort", "Nivel de pensamiento")}
-                  <select name="reasoning_effort" defaultValue={config.settings.reasoning_effort ?? ""}>
-                    <option value="">{t("Provider default", "Predeterminado del proveedor")}</option>
+                  <select
+                    name="reasoning_effort"
+                    defaultValue={config.settings.reasoning_effort ?? ""}
+                  >
+                    <option value="">
+                      {t("Provider default", "Predeterminado del proveedor")}
+                    </option>
                     <option value="low">{t("Low", "Bajo")}</option>
                     <option value="medium">{t("Medium", "Medio")}</option>
                     <option value="high">{t("High", "Alto")}</option>
                   </select>
-                </label>
-                <label>
-                  API URL
-                  <input
-                    name="base_url"
-                    type="url"
-                    defaultValue={config.settings.base_url || ""}
-                  />
-                </label>
-                <label>
-                  API key
-                  <input
-                    name="api_key"
-                    type="password"
-                    autoComplete="off"
-                    required={!config.configured}
-                  />
                 </label>
                 <button
                   className="primary mt-4"

@@ -53,6 +53,26 @@ async fn browser_profiles_and_credentials_are_local_and_do_not_create_chat_messa
     let response = app
         .clone()
         .oneshot(request(
+            "/api/browser/view",
+            "https://evil.example",
+            json!({}),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    let response = app
+        .clone()
+        .oneshot(request(
+            "/api/browser/view",
+            "http://localhost:4173",
+            json!({"profile":"another-user"}),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    let response = app
+        .clone()
+        .oneshot(request(
             "/api/browser/profiles",
             "http://localhost:4173",
             json!({"name":"personal"}),

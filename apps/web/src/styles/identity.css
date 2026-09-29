@@ -849,24 +849,6 @@ dialog {
 .voice-transcript {
   font-style: italic;
 }
-.design-page .design-heading h1 {
-  font-family: var(--editorial);
-  font-weight: 400;
-  letter-spacing: -1px;
-  font-size: 38px;
-}
-.design-page .design-heading small {
-  color: var(--accent);
-}
-.design-page .design-card {
-  background: var(--bg);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-}
-.design-page .design-tabs button[aria-current="page"] {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
 .design-panel .design-panel-head {
   background: var(--canvas);
 }
@@ -1173,9 +1155,6 @@ dialog {
   .card {
     padding: 21px;
     border-radius: 14px;
-  }
-  .design-page .design-heading h1 {
-    font-size: 32px;
   }
   .voice-panel {
     max-width: calc(100vw - 24px);
@@ -1818,4 +1797,55 @@ body > .account-menu {
 .message.user .message-actions {
   margin-left: auto;
   order: 2;
+}
+
+.login-google-section {
+  display: grid;
+  gap: 10px;
+}
+.login-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface, white);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+.login-google img {
+  flex: 0 0 20px;
+}
+.login-google:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.login-provider-note {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.login-mode {
+  white-space: normal;
+  text-align: center;
+  min-height: 44px;
 }

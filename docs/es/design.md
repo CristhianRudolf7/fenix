@@ -2,18 +2,18 @@
 
 [English](../en/design.md)
 
-Design es un espacio visual conectado a la conversación continua. En escritorio la vista aparece a la derecha y colapsa el menú lateral hasta cerrarla; hasta 900 px ocupa la pantalla, con opción Volver y tecla Escape. Cerrar la vista no cancela tareas del agente.
+Design es el motor visual local de la conversación continua. Ya no existe una página Design: las propuestas de diseño se eligen en el chat y los resultados terminados se abren en el panel derecho del chat. En escritorio ese panel colapsa el menú lateral hasta cerrarlo; hasta 900 px ocupa la pantalla, con opción Volver y tecla Escape. Cerrar la vista no cancela tareas del agente.
 
 ## Catálogo inicial
 
 Incluye **72 ejemplos propios editables**: 20 interfaces web, 10 diagramas Mermaid, 10 presentaciones, 8 gráficas, 8 documentos, 8 hojas de cálculo, 6 imágenes SVG y 2 vídeos WebM cortos y sin sonido. Los datos son ilustrativos. No depende de Open Design ni incorpora sus plantillas.
 
-- **Plantillas:** búsqueda, filtros, paginación y previsualización.
-- **Favoritos:** selección persistente por usuario.
-- **Mis diseños:** resultados guardados, filtro por proyecto e importación.
-- **Identidad visual:** nombre, logo, colores y familia tipográfica. Los colores y la tipografía se aplican explícitamente a webs y presentaciones. El logo queda como recurso privado y aparece en la vista de identidad; las plantillas no lo insertan automáticamente.
+- **Propuestas:** el agente presenta plantillas del catálogo como un carrusel de portadas reales dentro de su respuesta; cada una se abre en una vista modal centrada.
+- **Favoritos:** la estrella de cada tarjeta se guarda por usuario y el agente ve los favoritos al buscar plantillas.
+- **Resultados:** los resultados guardados aparecen sobre el cuadro de mensaje y se abren en el panel derecho, con descarga y versiones.
+- **Identidad visual:** el nombre, logo, colores y tipografía guardados siguen disponibles para el agente mediante `design_templates`. El editor de identidad y la importación de archivos de la antigua página Design se retiraron con ella; los datos y las APIs no cambian.
 
-Usar una plantilla crea una copia en el proyecto elegido o en el ámbito general. El panel permite inspeccionar contenido, guardar cambios, descargar, revisar versiones y restaurar una versión creando otra nueva. Continuar en el chat prepara un borrador con el ID del diseño y su proyecto; no envía el mensaje automáticamente. Los diagramas se consultan en modo de solo lectura y se modifican/restauran por chat. El editor de contenido para otros formatos usa JSON, mientras que los cambios por conversación siguen siendo la opción principal para usuarios no técnicos.
+Los cambios por conversación son la vía principal para modificar un resultado. Los diagramas se consultan en modo de solo lectura y se modifican por chat.
 
 ## Qué puede visualizar
 
@@ -30,7 +30,7 @@ Se importan HTML, Mermaid, TXT/MD, CSV y JSON estructurado. DOCX/XLSX/PPTX se mu
 
 ## Soporte del agente y persistencia
 
-`design_templates` busca plantillas; `design_present` muestra entre una y ocho opciones ordenadas en el chat. `design_list` y `design_read` recuperan resultados; `design_publish` publica o actualiza un resultado, y `design_import` incorpora un archivo del espacio permitido. `diagram_edit` aplica cambios atómicos a nodos, conexiones y grupos con comprobación de revisión. Se descubren mediante `tool_search`.
+`design_templates` busca plantillas e informa su tema de color, composición, los favoritos y si hay una identidad visual guardada; `design_present` muestra entre una y ocho propuestas ordenadas como carrusel en el chat. `design_list` y `design_read` recuperan resultados; `design_publish` publica o actualiza un resultado, y `design_import` incorpora un archivo del espacio permitido. `diagram_edit` aplica cambios atómicos a nodos, conexiones y grupos con comprobación de revisión. Se descubren mediante `tool_search`.
 
 El motor fija el proyecto desde la tarea y evita lecturas o cambios entre proyectos. El modelo de conversación recibe metadatos recientes de resultados y opciones para comunicar su estado. Las revisiones se guardan en SQLite por usuario y las actualizaciones exigen la versión actual; una edición atrasada no sobrescribe otra. Los archivos quedan en `<data-dir>/design-assets`, con IDs generados y acceso a través del usuario autenticado.
 
@@ -44,7 +44,7 @@ y dos piezas animadas. Las referencias fueron las galerías visuales de [Pitch](
 y [Canva](https://www.canva.com/templates/), sin copiar sus plantillas, recursos ni código.
 Las ilustraciones SVG/CSS son locales y no requieren fuentes o imágenes externas.
 
-La galería, navegación y controles no cambian. Los nuevos estilos se aplican solo a
+Los nuevos estilos se aplican solo a
 contenido con `theme`; los diseños anteriores sin tema mantienen su presentación.
 Las copias guardadas por el usuario no se sobrescriben. El contenido sigue siendo editable
 y las miniaturas se capturan del visor real en un lienzo de 960×600.
@@ -54,8 +54,8 @@ Generación: `python3 scripts/build-design-catalog.py` para el catálogo y
 en `scripts/design_template_styles.py`. Tras compilar el servidor, la prueba de catálogo
 de Playwright permite renovar las miniaturas y comprobar todas las plantillas.
 Después de regenerarlas, vuelve a compilar el frontend y el servidor para incluirlas
-en la galería distribuida. La prueba `Template gallery` comprueba las portadas servidas
-y guarda capturas para la revisión visual en escritorio y móvil.
+en el carrusel de propuestas. `tests/design-creation.spec.js` comprueba las portadas
+servidas y guarda capturas para la revisión visual en escritorio y móvil.
 Para renovar solo ciertos formatos, define `DESIGN_TEMPLATE_KINDS` con los tipos
 separados por comas; sin esa variable se comprueban las 72 plantillas.
 
@@ -92,23 +92,30 @@ en navegador y las miniaturas siguen el procedimiento anterior.
 
 ## Elegir un diseño desde el chat
 
-Las peticiones de creación visual abren **Elegir diseño** en el panel derecho existente
-antes de enviarse al agente. Se reconoce la categoría en peticiones habituales en español
-e inglés. El botón **Elegir diseño** del cuadro de mensaje permite abrir el catálogo
-manualmente. Las correcciones de diseños existentes, las consultas explicativas y las
-peticiones explícitas “sin plantilla / desde cero” siguen su flujo normal.
+Para una nueva página web o presentación, el agente primero aprovecha lo que ya sabe:
+la petición, la conversación, la memoria, las plantillas favoritas y la identidad visual
+guardada. Si todavía falta una preferencia visual importante (propósito o público, paleta
+de colores, estilo o tono), hace una sola pregunta breve sobre lo que falta y espera la
+respuesta. No vuelve a preguntar lo que ya se indicó, no inventa respuestas y omite la
+pregunta si le pides que decida, das un encargo completo o quieres un diseño propio.
 
-Se muestran las miniaturas reales de Design y todas las páginas de la categoría, con
-búsqueda y cambio de categoría. Puedes ajustar tu descripción, seleccionar una plantilla
-y pulsar **Generar con esta plantilla**, o continuar con **Generar sin plantilla**. Cerrar
-el panel conserva la descripción en el cuadro del chat durante la misma sesión de página.
-En móvil se aprovecha el panel a pantalla completa existente.
+Con esas preferencias, busca con `design_templates` y llama a `design_present`. El chat
+muestra las propuestas dentro de esa respuesta como un carrusel horizontal y compacto de
+portadas reales, numeradas para que también puedas responder por texto («la segunda»).
+Los botones anterior/siguiente aparecen cuando hay más tarjetas; cada tarjeta se puede
+enfocar con el teclado y tiene una estrella de favorito. Al pulsarla se abre la vista
+modal centrada existente (pantalla completa en móvil, Escape o clic fuera para cerrar).
+El panel derecho nunca se usa para elegir propuestas; queda para resultados terminados,
+archivos y fuentes de la biblioteca.
 
-La selección conserva las fuentes adjuntas y la referencia a la tarea respondida. El
-servidor valida el identificador y transmite la preferencia al agente, que debe adaptar
-el contenido conservando la composición y generar el resultado en el proyecto resuelto.
-El selector no crea una copia vacía ni envía nada al modelo antes de continuar. Los
-resultados publicados se abren con el mecanismo habitual del espacio de trabajo.
+**Elegir este diseño** envía un mensaje breve con la elección (`design_choice`). El
+servidor valida la plantilla y añade su enlace, de modo que el agente continúa con los
+requisitos ya expresados, carga la plantilla, adapta el contenido conservando la
+composición y publica el resultado real. Si no se puede enviar en ese momento, la
+elección queda adjunta sobre el cuadro de mensaje y viaja con el siguiente mensaje.
 
-Los errores de carga o envío conservan la descripción; si el catálogo falla, aún puedes
-crear sin plantilla. Las pruebas y el contrato de API se detallan en la guía en inglés.
+Los enlaces antiguos siguen funcionando: `/design` lleva al chat y
+`/design?template=<id>` abre la vista previa de esa plantilla sobre el chat, tanto al
+cargar la página como al pulsar el enlace guardado en la conversación. Los errores de
+carga se muestran en la vista previa y un favorito que no se guarda vuelve a su estado
+anterior con un aviso. Las pruebas y el contrato de API se detallan en la guía en inglés.

@@ -2,18 +2,18 @@
 
 [Español](../es/design.md)
 
-Design is a local visual workspace connected to the continuous conversation. The desktop preview opens on the right and automatically collapses the navigation menu, restoring it on close; at widths up to 900px it fills the screen and provides Back/Escape navigation. Closing a preview never cancels an agent task.
+Design is the local visual engine behind the continuous conversation. There is no separate Design page: design proposals are chosen in chat, and finished results open in the chat's right-hand panel. On desktop that panel collapses the navigation menu and restores it on close; at widths up to 900px it fills the screen and provides Back/Escape navigation. Closing a preview never cancels an agent task.
 
 ## Library and workflow
 
 The catalog contains **72 original editable examples**: 20 web interfaces, 10 Mermaid diagrams, 10 presentations, 8 charts, 8 documents, 8 spreadsheets, 6 SVG images and 2 short silent WebM examples. Sample content and values are illustrative. No Open Design application, upstream templates or paid design service is bundled.
 
-- **Templates:** search, category filters, paginated gallery and previews.
-- **Favorites:** template choices stored in the authenticated user's database.
-- **My designs:** saved results, optional project filtering and file import.
-- **Brand identity:** name, logo, colors and generic font family. Apply colors/type explicitly to a saved web design or presentation; existing versions remain unchanged. The uploaded logo is available as a private asset and in the identity preview; templates do not automatically insert it.
+- **Proposals:** the agent presents catalog templates as a carousel of real covers inside its chat reply; each opens in a centered preview modal.
+- **Favorites:** the star on a proposal card is stored in the authenticated user's database, and the agent sees favorite IDs when it looks for templates.
+- **Results:** saved results appear as chips above the composer and open in the right-hand panel, with download, revisions and scoped refresh.
+- **Brand identity:** a saved name, logo, colors and font family remain available to the agent through `design_templates`. The former Design page editor for brand identity and file import was removed with the page; the stored data and APIs are unchanged.
 
-Select a template and its destination project to make a private editable copy. The preview has content inspection/editing, download, revision selection and restoration as a new revision. Continue in chat inserts an explicit design/project reference into the draft; it does not submit a message. The source editor edits structured JSON; conversational edits are the primary route for nontechnical users.
+Conversational edits are the primary route for changing a result. Diagrams stay read-only in the viewer and change through the agent.
 
 ## Viewer contracts
 
@@ -34,8 +34,8 @@ Import also accepts HTML, Mermaid (`.mmd`/`.mermaid`), TXT/MD, CSV and a JSON ob
 
 Discover these tools through `tool_search`:
 
-- `design_templates`: metadata pages, selected template body and saved brand metadata.
-- `design_present`: show 1–8 real template choices in chat, in the order used for textual selection.
+- `design_templates`: metadata pages (kind, tags, palette `theme`, `composition`), a selected template body, favorite template IDs and saved brand metadata (`brand_saved` distinguishes a saved brand from the default).
+- `design_present`: show 1–8 real template proposals as an in-chat carousel, in the order used for textual selection.
 - `design_list` / `design_read`: inspect scoped results and revisions.
 - `design_publish`: create a typed visual result or conditionally update an existing ID.
 - `diagram_edit`: atomic, revision-checked changes to structured diagram nodes, edges and groups.
@@ -57,10 +57,10 @@ Real preview thumbnails live in `apps/web/public/assets/design-thumbnails`. Afte
 
 ```bash
 cd apps/web
-UPDATE_DESIGN_THUMBNAILS=1 pnpm test tests/application.spec.js --grep 'welcome validates|Design catalog'
+UPDATE_DESIGN_THUMBNAILS=1 pnpm test tests/application.spec.js --grep 'managed welcome|Design catalog'
 ```
 
-The test uses a local fake model solely for setup, checks every template and takes screenshots. New kinds require coordinated input validation, viewer, tool documentation and tests; new templates use existing kinds without adding another skill or tool.
+The test uses a local fake model solely for setup, opens every template in the chat preview modal (as a saved template link does) and takes screenshots. New kinds require coordinated input validation, viewer, tool documentation and tests; new templates use existing kinds without adding another skill or tool.
 
 ## Original template collection, second edition
 
@@ -71,7 +71,7 @@ came from the visual-first template browsing patterns of [Pitch](https://pitch.c
 and [Canva](https://www.canva.com/templates/); no third-party template assets or code
 were copied. Artwork is local SVG/CSS, with no remote image/font dependency.
 
-The gallery, navigation, filters and editing controls are unchanged. Additional renderer
+Additional renderer
 styles are scoped to content with an explicit `theme`; existing unthemed user designs
 retain their previous rendering. Supported themes are `midnight`, `cobalt`, `coral`,
 `forest`, `plum`, `sand`, `mint` and `ink`. A slide can optionally select `cover`, `split`,
@@ -85,8 +85,9 @@ assets with `node scripts/build-design-motion.mjs`. Thumbnails are screenshots o
 production template renderer at a consistent 960×600 canvas, not generic placeholders.
 Use the catalog Playwright test documented above after rebuilding the server.
 After regenerating thumbnails, rebuild the frontend and server once more so the
-embedded gallery includes the new images. The `Template gallery` browser test checks
-the shipped covers and records desktop/mobile review screenshots.
+embedded proposal carousel includes the new images. `tests/design-creation.spec.js`
+checks that the carousel loads the shipped 960×600 covers and records desktop/mobile
+screenshots.
 For a partial thumbnail refresh, set `DESIGN_TEMPLATE_KINDS` to a comma-separated
 list of kinds; leave it unset for the complete 72-template validation.
 
@@ -144,33 +145,38 @@ browser checks above to verify the real renderer and refresh the covers.
 
 ## Choosing a design from chat
 
-New visual creation requests in the web chat open **Choose a design** in the existing
-right workspace pane before they are submitted to the agent. Common Spanish and English
-creation phrases select the relevant category. The composer also has a manual **Choose
-a design** entry point for other wording or browsing all categories. Editing requests,
-explanatory questions and explicit “without a template / from scratch” requests continue
-through the ordinary chat path.
+For a new web page or slide presentation, the agent first reuses what it already knows:
+the request, earlier conversation, memory, favorite templates and a saved brand. If a
+meaningful visual preference is still missing (purpose or audience, color palette, style
+or tone), it asks one short question about only those points and waits for the reply.
+It does not ask again for preferences already given, does not invent answers, and skips
+the question when the user asks it to decide, gives a complete brief or wants a custom
+design. The guidance lives in `resources/agent-system.md`.
 
-The picker uses the actual Design catalog and its local thumbnail images, loads every
-catalog page for the selected category, and supports category switching and search. The
-original brief remains editable. Selecting a card does not send anything: **Generate with
-this template** submits the choice; **Generate without a template** submits a custom
-creation request. Closing the pane leaves the draft in the composer and allows reopening
-it during the same page session. On phones the picker uses the existing full-width
-workspace pane with keyboard focus containment and Escape to return to chat.
+With the preferences known, the agent searches `design_templates` and calls
+`design_present` with the best-fitting templates. The web chat shows them inside that
+reply as a compact, horizontally scrollable carousel of real 960×600 covers, numbered in
+order so the user can also answer in text ("the second one"). Previous/next buttons appear
+when the row overflows; cards are keyboard-focusable buttons and each carries a favorite
+star. Clicking a card opens the existing centered preview modal (full screen on phones,
+focus contained, Escape or outside click to close). The right-hand panel is never used to
+choose a proposal; it remains for finished results, files and library sources.
 
-The original document IDs and reply-to-task reference travel with the request. The server
-accepts an optional `design_choice` in the existing `/api/messages` and `/api/chat` payload:
-`{"mode":"template","template_id":"research-deck"}` or `{"mode":"custom"}`. It validates
-catalog IDs before starting the turn, then appends the selected direction to the user's
-brief. The agent must load the chosen template, adapt its content, preserve its visual
-composition, carry the choice into delegated work, and publish the requested result in
-the normally resolved project. No unchanged sample artifact is created by the picker.
-Generation still uses the configured agent/model; template selection itself makes no
-model request. Published results continue to open through existing workspace events.
+**Choose this design** in the modal sends a short chat message with
+`design_choice: {"mode":"template","template_id":"…"}`. The server validates the catalog
+ID and appends the selected template link, so the agent continues with the requirements
+already in the conversation, loads that template, adapts its content while preserving the
+composition, and publishes the real result. If the message cannot be sent (for example,
+another message is still being sent or the service fails), the choice stays attached
+above the composer and travels with the next message; it can be removed there.
 
-Loading and submission errors retain the brief. A catalog outage still allows custom
-creation. In-flight submissions disable generation buttons; successful submission clears
-the draft without retrying an accepted message if a later history refresh fails.
+The server still accepts `{"mode":"custom"}` for creation without a catalog template. No
+unchanged sample artifact is created by choosing. Offers load with the existing design
+poll; covers fall back to a drawn placeholder, preview loading errors appear in the modal,
+and failed favorite changes roll back with a visible message.
 
-Validation: `pnpm --dir apps/web run build`, `pnpm --dir apps/web test tests/design-creation.spec.js tests/workspace.spec.js`, and `cargo test --locked -p fenix-server --lib design_choice`.
+Old links keep working: `/design` redirects to the chat, and `/design?template=<id>` (the
+link stored with each chosen template) opens that template's preview modal over the chat,
+both on page load and when clicked in the conversation.
+
+Validation: `pnpm --dir apps/web run build`, `pnpm --dir apps/web test tests/design-creation.spec.js tests/workspace.spec.js`, `cargo test --locked -p fenix-agent --lib catalog_revisions_scope_and_file_imports_are_real` and `cargo test --locked -p fenix-server --lib design_choice`.

@@ -99,17 +99,15 @@ test("library uploads, searches, opens citations, preserves versions and attache
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/documents");
   await expect(
-    page.getByRole("heading", { name: "Biblioteca de documentos" }),
+    page.getByRole("heading", { name: "Biblioteca", exact: true }),
   ).toBeVisible();
-  await page
-    .getByLabel("Subir documentos", { exact: true })
-    .setInputFiles({
-      name: "Contrato.md",
-      mimeType: "text/markdown",
-      buffer: Buffer.from(
-        "# Contrato\n\nLa cancelación requiere treinta días de aviso.\n",
-      ),
-    });
+  await page.getByLabel("Subir documentos", { exact: true }).setInputFiles({
+    name: "Contrato.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.from(
+      "# Contrato\n\nLa cancelación requiere treinta días de aviso.\n",
+    ),
+  });
   await expect(page.locator(".library-card")).toHaveCount(1);
   let doc;
   await expect
@@ -119,10 +117,10 @@ test("library uploads, searches, opens citations, preserves versions and attache
       return doc?.status;
     })
     .toBe("ready");
-  await page.getByLabel("Buscar contenido de documentos").fill("cancelación");
-  await page.getByRole("button", { name: "Buscar", exact: true }).click();
-  await expect(page.locator(".library-hit")).toHaveCount(1);
-  await page.locator(".library-hit").click();
+  await page.getByLabel("Buscar por nombre").fill("Contrato");
+  await page.getByLabel("Tipo de archivo").selectOption("md");
+  await expect(page.locator(".library-card")).toHaveCount(1);
+  await page.locator(".library-title").click();
   await expect(
     page.getByRole("complementary", { name: "Fuente del documento" }),
   ).toBeVisible();
@@ -133,7 +131,7 @@ test("library uploads, searches, opens citations, preserves versions and attache
     fullPage: true,
   });
   await page
-    .getByRole("button", { name: "Volver al chat / cerrar fuente" })
+    .getByRole("button", { name: "Volver al chat", exact: true })
     .click();
   const revision = await page.request.post("/api/documents/import", {
     data: {
@@ -147,17 +145,19 @@ test("library uploads, searches, opens citations, preserves versions and attache
   });
   expect(revision.ok()).toBe(true);
   await page.goto(`/documents?document=${doc.id}&revision=1`);
-  await expect(page.getByLabel("Versión del documento")).toHaveValue("1");
+  await expect(
+    page
+      .locator(".library-panel")
+      .getByRole("link", { name: "Descargar", exact: true }),
+  ).toHaveAttribute("href", new RegExp("revision=1$"));
   await expect(page.locator(".library-panel")).toContainText("treinta días");
   await page
-    .getByRole("button", { name: "Volver al chat / cerrar fuente" })
+    .getByRole("button", { name: "Volver al chat", exact: true })
     .click();
-  await page.goto("/chat");
-  await page.getByRole("button", { name: "Documentos", exact: true }).click();
-  await expect(
-    page.locator(".library-picker-list input[type=checkbox]"),
-  ).toHaveCount(1);
-  await page.locator(".library-picker-list input[type=checkbox]").check();
+  await page.goto("/documents");
+  await page
+    .getByRole("button", { name: "Preguntar a Fénix", exact: true })
+    .click();
   await expect(page.locator(".library-source-chips")).toContainText(
     "Contrato.md",
   );
@@ -174,7 +174,7 @@ test("library uploads, searches, opens citations, preserves versions and attache
     fullPage: true,
   });
   await page
-    .getByRole("button", { name: "Volver al chat / cerrar fuente" })
+    .getByRole("button", { name: "Volver al chat", exact: true })
     .click();
   await expect(page.locator("#chat-input")).toBeVisible();
   expect(errors).toEqual([]);

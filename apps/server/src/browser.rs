@@ -3,6 +3,7 @@ use super::*;
 pub(crate) fn routes() -> Router<Arc<Runtime>> {
     Router::new()
         .route("/api/browser/status", get(status))
+        .route("/api/browser/view", post(view))
         .route("/api/browser/profiles", post(profile))
         .route("/api/browser/command", post(command))
         .route("/api/browser/frame", get(frame))
@@ -13,6 +14,13 @@ pub(crate) fn routes() -> Router<Arc<Runtime>> {
 }
 async fn status(State(r): State<Arc<Runtime>>) -> ApiResult<Value> {
     Ok(Json(r.browser.status().await?))
+}
+#[derive(Deserialize)]
+struct View {
+    profile: Option<String>,
+}
+async fn view(State(r): State<Arc<Runtime>>, Json(v): Json<View>) -> ApiResult<Value> {
+    Ok(Json(r.browser.open_view(v.profile.as_deref()).await?))
 }
 #[derive(Deserialize)]
 struct Profile {
@@ -44,14 +52,24 @@ async fn command(State(r): State<Arc<Runtime>>, Json(c): Json<Command>) -> ApiRe
 struct Frame {
     profile: String,
     tab: Option<String>,
+    format: Option<String>,
 }
 async fn frame(
     State(r): State<Arc<Runtime>>,
     Query(q): Query<Frame>,
 ) -> Result<Response, ApiError> {
+    let jpeg = q.format.as_deref() == Some("jpeg");
     Ok((
-        [(header::CONTENT_TYPE, "image/png")],
-        r.browser.screenshot(&q.profile, q.tab.as_deref()).await?,
+        [
+            (
+                header::CONTENT_TYPE,
+                if jpeg { "image/jpeg" } else { "image/png" },
+            ),
+            (header::CACHE_CONTROL, "private, no-store"),
+        ],
+        r.browser
+            .view_frame(&q.profile, q.tab.as_deref(), jpeg)
+            .await?,
     )
         .into_response())
 }

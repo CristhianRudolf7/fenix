@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fénix</title>
+<style>body{background:#f8f7f3;color:#252a2f;font:16px system-ui;display:grid;min-height:95dvh;place-items:center}main{padding:2rem;max-width:30rem}a{color:#bb4e32}</style></head>
+<body><main><h1>Fénix</h1><p id="status" role="status">Completando tu acceso… · Signing you in…</p><a href="/">Volver · Return</a></main>
+<script nonce="{{nonce}}">
+(async () => {
+  const query = new URLSearchParams(location.search);
+  const input = {state: query.get("state") || "", code: query.get("code"), error: query.get("error")};
+  history.replaceState(null, "", location.pathname);
+  try {
+    const response = await fetch("/api/auth/google/callback", {method:"POST", credentials:"same-origin", headers:{"Content-Type":"application/json"}, body:JSON.stringify(input)});
+    const result = await response.json();
+    const allowed = new Set(["google_unavailable","google_expired","google_cancelled","google_failed","google_link_required","google_registration_required","google_capacity_unavailable","google_account_conflict","google_account_unavailable"]);
+    if (!response.ok) {
+      const code = allowed.has(result.error) ? result.error : "google_failed";
+      const messages = {
+        google_unavailable: ["Google sign-in is not available yet.", "El acceso con Google todavía no está disponible."],
+        google_expired: ["This sign-in expired. Please try again.", "Este acceso caducó. Vuelve a intentarlo."],
+        google_cancelled: ["You cancelled Google sign-in.", "Cancelaste el acceso con Google."],
+        google_registration_required: ["You don't have a Fénix account yet. Return to create one.", "Todavía no tienes una cuenta de Fénix. Vuelve para crearla."],
+        google_capacity_unavailable: ["We cannot open a new space right now. Please try again later.", "Ahora mismo no podemos abrir un nuevo espacio. Vuelve a intentarlo más tarde."],
+        google_link_required: ["Sign in with your password, then link Google from your profile.", "Entra con tu contraseña y vincula Google desde tu perfil."],
+        google_account_conflict: ["Choose the Google account that belongs to this Fénix account.", "Elige la cuenta de Google que corresponde a esta cuenta de Fénix."],
+        google_account_unavailable: ["This account is unavailable. Contact support.", "Esta cuenta no está disponible. Contacta con soporte."],
+        google_failed: ["We couldn't complete sign-in. Please try again.", "No pudimos completar el acceso. Vuelve a intentarlo."]
+      };
+      document.getElementById("status").textContent = messages[code][localStorage.getItem("fenix.language") === "en" ? 0 : 1];
+      document.querySelector("a").href = "/?auth_error=" + code;
+      return;
+    }
+    location.replace("/chat");
+  } catch { location.replace("/?auth_error=google_failed"); }
+})();
+</script></body></html>

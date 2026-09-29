@@ -1,6 +1,6 @@
 # Document library
 
-Fénix keeps private, versioned sources separately from its curated memory. Open **Library** (`/documents`) to upload files, organize them in collections and projects, search their contents, inspect citations, or select sources for the existing chat. The agent can summarize, compare, extract facts, and create derived documents or diagrams using these sources and its existing tools.
+Fénix keeps private, versioned sources separately from its curated memory. Open **Library** (`/documents`) to upload files, filter your account’s documents by name and file type, inspect citations, or select sources for the existing chat. Name and type filters apply before pagination. New uploads enter the general scope; per-document metadata and existing project associations are preserved. Content retrieval remains available to the agent and in document conversations. The agent can summarize, compare, extract facts, and create derived documents or diagrams using these sources and its existing tools.
 
 ## Upload and processing
 
@@ -16,7 +16,7 @@ Processing bounds: 64 MiB per upload, 20,000 indexed fragments, 20-page PDF batc
 
 ## Embeddings and retrieval
 
-The fixed model is OpenAI `text-embedding-3-small`, at 1,536 dimensions. The library reuses the configured official OpenAI API connection, including organization/project headers, or accepts a separate account-local key in Library settings. Keys configured for custom proxies are not forwarded to OpenAI. Enabling embeddings sends extracted text and search queries to OpenAI; originals and vectors remain in the account's local storage.
+The fixed model is OpenAI `text-embedding-3-small`, at 1,536 dimensions. The library reuses the configured official OpenAI API connection, including organization/project headers, or uses a separate account-local credential provisioned by the service operator. The customer interface does not request or display provider keys. Keys configured for custom proxies are not forwarded to OpenAI. Enabling embeddings sends extracted text and search queries to OpenAI; originals and vectors remain in the account's local storage.
 
 Only text requiring indexing is sent, in batches of at most 16 fragments. Unchanged fragment text in later revisions reuses its embedding. Queries also incur embedding input tokens. The integration uses the normal embeddings endpoint, not Batch or Flex. The reference price is USD 0.02 per million input tokens; check [OpenAI pricing](https://platform.openai.com/docs/pricing) for current rates. Actual reported tokens are recorded locally in `library_usage`. Storage, OCR execution and agent replies are separate costs. No LLM reranker runs on every search.
 

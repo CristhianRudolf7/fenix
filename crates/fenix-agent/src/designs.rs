@@ -497,12 +497,28 @@ impl Runtime {
                     .take(20)
                     .map(|x| {
                         let mut x = x.clone();
-                        x.as_object_mut().unwrap().remove("content");
+                        let content = x.as_object_mut().unwrap().remove("content");
+                        // Palette and layout names help match stated color/style preferences.
+                        for key in ["theme", "composition"] {
+                            if let Some(value) = content.as_ref().and_then(|c| c.get(key)) {
+                                x[key] = value.clone();
+                            }
+                        }
                         x
                     })
                     .collect::<Vec<_>>();
+                let favorites = self
+                    .store
+                    .records::<Value>("design_favorite")?
+                    .into_iter()
+                    .filter_map(|f| f["id"].as_str().map(str::to_owned))
+                    .collect::<Vec<_>>();
+                let brand_saved = self
+                    .store
+                    .get::<Value>("design_brand", "default")?
+                    .is_some();
                 Ok(
-                    json!({"templates":rows,"brand":self.design_brand()?,"instruction":"Use id to load a selected template. Sample data is illustrative."}),
+                    json!({"templates":rows,"brand":self.design_brand()?,"brand_saved":brand_saved,"favorite_template_ids":favorites,"instruction":"Use id to load a selected template. Sample data is illustrative. Favorites and a saved brand are user preferences; an unsaved brand is only a default."}),
                 )
             }
             "design_present" => {
@@ -734,6 +750,25 @@ mod tests {
             &json!({"template_ids":["decision-flow","login-sequence"]}),
         )?;
         assert_eq!(offer["templates"][1]["id"], "login-sequence");
+        rt.store
+            .put("design_favorite", "pitch-deck", &json!({"id":"pitch-deck"}))?;
+        let listed = rt.visual_tool(
+            &task.id,
+            dir.path(),
+            "design_templates",
+            &json!({"query":"pitch"}),
+        )?;
+        assert_eq!(listed["favorite_template_ids"], json!(["pitch-deck"]));
+        assert_eq!(listed["brand_saved"], false);
+        let pitch = listed["templates"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|t| t["id"] == "pitch-deck")
+            .unwrap();
+        assert_eq!(pitch["theme"], "midnight");
+        assert_eq!(pitch["composition"], "venture-stack");
+        assert!(pitch.get("content").is_none());
 
         let d = rt.use_design_template("decision-flow", None)?;
         let mut input = DesignInput {

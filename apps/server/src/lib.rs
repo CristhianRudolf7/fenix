@@ -30,6 +30,7 @@ mod documents;
 mod integrations;
 mod live;
 mod skill_guard;
+mod skill_management;
 mod workflows;
 mod workspace;
 
@@ -138,6 +139,12 @@ pub fn router_with_public_origin(
         .route("/api/skill-localizations", post(skill_localizations))
         .route("/api/skill-localizations/preview", post(skill_preview))
         .route("/api/skills/{name}", get(skill).put(skill_enabled))
+        .route(
+            "/api/skills/{name}/source",
+            get(skill_management::source)
+                .put(skill_management::save)
+                .delete(skill_management::remove),
+        )
         .route("/api/schedules", get(schedules).post(schedule))
         .route("/api/tasks", get(tasks))
         .route("/api/tasks/{id}", get(task))
@@ -179,7 +186,10 @@ async fn local_guard(
     // This GET contains only a static OAuth landing page, never owner data.
     // The token exchange is a separate authenticated same-origin JSON POST.
     let oauth_landing = request.method() == axum::http::Method::GET
-        && request.uri().path() == "/api/connectors/oauth/callback";
+        && matches!(
+            request.uri().path(),
+            "/api/connectors/oauth/callback" | "/api/auth/google/callback"
+        );
     if !oauth_landing
         && let Some(origin) = request.headers().get(header::ORIGIN)
         && origin.to_str().ok() != Some(expected_origin.as_str())

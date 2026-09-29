@@ -10,6 +10,7 @@ mod cybersecurity_tests;
 mod ecc_tests;
 #[cfg(test)]
 mod gstack_tests;
+mod management;
 #[cfg(test)]
 mod openclaw_expansion_tests;
 #[cfg(test)]
@@ -36,7 +37,11 @@ pub fn default_directory() -> Result<PathBuf> {
         .join(".fenix/skills"))
 }
 
-fn migrate_legacy_skills(source: &Path, destination: &Path) -> Result<()> {
+fn migrate_legacy_skills(
+    source: &Path,
+    destination: &Path,
+    removed: &HashSet<String>,
+) -> Result<()> {
     let metadata = match fs::symlink_metadata(source) {
         Ok(metadata) => metadata,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
@@ -66,6 +71,13 @@ fn migrate_legacy_skills(source: &Path, destination: &Path) -> Result<()> {
             continue;
         }
         let relative = entry.path().strip_prefix(source)?;
+        if relative
+            .components()
+            .next()
+            .is_some_and(|part| removed.contains(part.as_os_str().to_string_lossy().as_ref()))
+        {
+            continue;
+        }
         let target = destination.join(relative);
         // Do not traverse destination links or conflicting files, including parents.
         let mut parent = destination.to_path_buf();
@@ -239,10 +251,18 @@ include!(concat!(env!("OUT_DIR"), "/bundled_skills.rs"));
 
 impl Runtime {
     pub fn install_resources(&self) -> Result<()> {
-        migrate_legacy_skills(&self.data_dir.join("skills"), &self.skills_dir)?;
+        let removed: HashSet<String> = self
+            .store
+            .records::<String>("deleted_skills")?
+            .into_iter()
+            .collect();
+        migrate_legacy_skills(&self.data_dir.join("skills"), &self.skills_dir, &removed)?;
         let legacy_hashes: HashMap<String, Vec<String>> =
             serde_json::from_str(include_str!("../../../resources/skills-legacy-hashes.json"))?;
         for &(name, content) in DEFAULTS {
+            if removed.contains(name) {
+                continue;
+            }
             let path = self.skills_dir.join(name);
             std::fs::create_dir_all(&path)?;
             if !fs::symlink_metadata(&path)?.is_dir() {
@@ -282,6 +302,9 @@ impl Runtime {
             }
         }
         for &(relative, content) in SKILL_RESOURCES {
+            if removed.contains(relative.split('/').next().unwrap_or_default()) {
+                continue;
+            }
             let target = self.skills_dir.join(relative);
             let mut parent = self.skills_dir.clone();
             for component in Path::new(relative).parent().unwrap().components() {
@@ -491,10 +514,7 @@ impl Runtime {
         offset: usize,
         limit: usize,
     ) -> Result<serde_json::Value> {
-        let entries = self
-            .indexed_skills()?
-            .into_iter()
-            .collect::<Vec<_>>();
+        let entries = self.indexed_skills()?.into_iter().collect::<Vec<_>>();
         let limit = limit.clamp(1, 20);
         let page = entries
             .iter()
@@ -937,7 +957,7 @@ mod tests {
         fs::create_dir_all(legacy.join("blocked"))?;
         fs::write(legacy.join("blocked/new-file"), "must stay local")?;
         symlink(&outside, shared.join("blocked"))?;
-        migrate_legacy_skills(&legacy, &shared)?;
+        migrate_legacy_skills(&legacy, &shared, &HashSet::new())?;
         assert_eq!(
             fs::read_to_string(shared.join("custom/SKILL.md"))?,
             "personal instructions"
@@ -957,7 +977,7 @@ mod tests {
         assert!(!shared.join("custom/linked-file").exists());
         assert!(!outside.join("new-file").exists());
         assert!(legacy.join("custom/SKILL.md").exists());
-        migrate_legacy_skills(&legacy, &shared)?;
+        migrate_legacy_skills(&legacy, &shared, &HashSet::new())?;
         Ok(())
     }
 
@@ -969,7 +989,7 @@ mod tests {
         fs::create_dir_all(&legacy)?;
         fs::create_dir_all(&shared)?;
         fs::File::create(legacy.join("large"))?.set_len(32 * 1024 * 1024 + 1)?;
-        assert!(migrate_legacy_skills(&legacy, &shared).is_err());
+        assert!(migrate_legacy_skills(&legacy, &shared, &HashSet::new()).is_err());
         assert!(!shared.join("large").exists());
         assert!(legacy.join("large").exists());
         Ok(())
@@ -983,8 +1003,8 @@ mod tests {
         fs::create_dir(&shared)?;
         fs::create_dir(legacy.join("custom"))?;
         fs::write(legacy.join("custom/SKILL.md"), "manual instructions")?;
-        migrate_legacy_skills(legacy, &shared)?;
-        migrate_legacy_skills(legacy, &shared)?;
+        migrate_legacy_skills(legacy, &shared, &HashSet::new())?;
+        migrate_legacy_skills(legacy, &shared, &HashSet::new())?;
         assert_eq!(
             fs::read_to_string(shared.join("custom/SKILL.md"))?,
             "manual instructions"
@@ -1379,13 +1399,7 @@ mod library_tests {
                     "{name}: {field}"
                 );
             }
-            for heading in [
-                "Scope",
-                "Inputs",
-                "Workflow",
-                "Verification",
-                "Limits",
-            ] {
+            for heading in ["Scope", "Inputs", "Workflow", "Verification", "Limits"] {
                 assert!(
                     content.contains(&format!("\n## {heading}\n")),
                     "{name}: {heading}"

@@ -1,5 +1,5 @@
 export type Target = {
-  kind: "file" | "design" | "library" | "design-choice" | "workflow";
+  kind: "file" | "design" | "library" | "workflow";
   id?: string;
   path?: string;
   title?: string;
@@ -61,9 +61,7 @@ export const targetKey = (t: Target) =>
   `${t.kind}:${t.id || `${t.project_id || "general"}:${t.path || ""}`}:${t.template ? "template" : ""}`;
 export function openTarget(target: Target) {
   if (
-    !["file", "design", "library", "design-choice", "workflow"].includes(
-      target.kind,
-    ) ||
+    !["file", "design", "library", "workflow"].includes(target.kind) ||
     !(target.id || target.path)
   )
     return;

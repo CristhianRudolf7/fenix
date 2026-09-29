@@ -1,3 +1,4 @@
+import { serviceError } from "../components/service-error";
 export type Kind =
   | "web"
   | "diagram"
@@ -102,16 +103,17 @@ export interface ArtifactPage {
   designs: Visual[];
   next_offset: number | null;
 }
-export const kinds: Kind[] = [
-  "web",
-  "diagram",
-  "presentation",
-  "chart",
-  "document",
-  "spreadsheet",
-  "image",
-  "video",
-];
+/** Template proposals the agent showed in chat with `design_present`. */
+export interface Offer {
+  id: string;
+  task_id?: string | null;
+  project_id?: string | null;
+  templates: Visual[];
+  created_at?: string;
+}
+/** A validated direction the server appends to the user's message. */
+export type DesignChoice =
+  { mode: "template"; template_id: string } | { mode: "custom" };
 export const labels: Record<Kind, [string, string]> = {
   web: ["Web interfaces", "Interfaces web"],
   diagram: ["Diagrams", "Diagramas"],
@@ -135,7 +137,8 @@ export async function api<T>(
     signal,
   });
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+  if (!response.ok)
+    throw new Error(serviceError(data.error || `HTTP ${response.status}`));
   return data as T;
 }
 export const assetUrl = (id: string) =>

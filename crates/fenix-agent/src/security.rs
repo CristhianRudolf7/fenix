@@ -12,7 +12,11 @@ impl Runtime {
     }
     pub(crate) fn authorize_skill(&self, task: &str, name: &str) -> Result<()> {
         self.store.task(task)?;
-        if !self.skills()?.into_iter().any(|s| s.name == name && s.enabled) {
+        if !self
+            .skills()?
+            .into_iter()
+            .any(|s| s.name == name && s.enabled)
+        {
             bail!("Skill is unavailable or disabled");
         }
         Ok(())
@@ -201,43 +205,113 @@ mod tests {
     async fn shared_catalog_keeps_activation_scope_and_delegation_boundaries() -> Result<()> {
         let dir = tempfile::tempdir()?;
         let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
-        let parent = rt.store.enqueue_bound("Audit fixture", "web", None, &TaskBinding::default())?;
+        let parent =
+            rt.store
+                .enqueue_bound("Audit fixture", "web", None, &TaskBinding::default())?;
         rt.store.claim_next()?;
         let child = rt.spawn_subagent(&parent.id, &json!({"profile":"security", "objective":"Audit fixture", "expected_output":"Findings and evidence"})).await?;
         let child = child["subagent_id"].as_str().unwrap();
         assert_eq!(rt.store.subagent(child)?.spec.profile, "general");
-        let legacy = rt.store.create_subagent(&parent.id, &SubagentSpec {
-            profile: "security".into(), objective: "Legacy audit".into(),
-            expected_output: "Evidence".into(), context: String::new(), constraints: "Fixture only".into()
-        })?;
+        let legacy = rt.store.create_subagent(
+            &parent.id,
+            &SubagentSpec {
+                profile: "security".into(),
+                objective: "Legacy audit".into(),
+                expected_output: "Evidence".into(),
+                context: String::new(),
+                constraints: "Fixture only".into(),
+            },
+        )?;
         let custom = rt.skills_dir.join("custom-audit");
         std::fs::create_dir(&custom)?;
-        std::fs::write(custom.join("SKILL.md"), "---\nname: custom-audit\ndescription: zebraflange audit\nmetadata:\n  category: security\n  specialization: security\n---\nPrivate security procedure\n")?;
+        std::fs::write(
+            custom.join("SKILL.md"),
+            "---\nname: custom-audit\ndescription: zebraflange audit\nmetadata:\n  category: security\n  specialization: security\n---\nPrivate security procedure\n",
+        )?;
         for task in [&parent.id, child, &legacy.id] {
-            for name in ["security-code-review", "security-rust-boundaries", "meal-planning", "custom-audit"] {
+            for name in [
+                "security-code-review",
+                "security-rust-boundaries",
+                "meal-planning",
+                "custom-audit",
+            ] {
                 rt.authorize_skill(task, name)?;
             }
-            rt.authorize_project_tool(task, "skill_load", &json!({"name":"security-rust-boundaries","resource":"references/rust.md"}))?;
-            assert!(rt.task_tool_catalog(task)?.iter().any(|t| t.name == "security_scan_read"));
+            rt.authorize_project_tool(
+                task,
+                "skill_load",
+                &json!({"name":"security-rust-boundaries","resource":"references/rust.md"}),
+            )?;
+            assert!(
+                rt.task_tool_catalog(task)?
+                    .iter()
+                    .any(|t| t.name == "security_scan_read")
+            );
         }
         for profile in ["general", "security"] {
-            assert_eq!(rt.search_skills_for_profile(Some(profile), "zebraflange", 8)?["skills"][0]["skill"]["name"], "custom-audit");
+            assert_eq!(
+                rt.search_skills_for_profile(Some(profile), "zebraflange", 8)?["skills"][0]["skill"]
+                    ["name"],
+                "custom-audit"
+            );
         }
-        assert_eq!(rt.list_skills_for_profile(Some("general"), 0, 20)?, rt.list_skills_for_profile(Some("security"), 0, 20)?);
+        assert_eq!(
+            rt.list_skills_for_profile(Some("general"), 0, 20)?,
+            rt.list_skills_for_profile(Some("security"), 0, 20)?
+        );
         rt.set_skill_enabled("security-rust-boundaries", false)?;
         for task in [&parent.id, child, &legacy.id] {
-            assert!(rt.authorize_skill(task, "security-rust-boundaries").is_err());
+            assert!(
+                rt.authorize_skill(task, "security-rust-boundaries")
+                    .is_err()
+            );
         }
         let settings = crate::config::Settings::initial(dir.path().to_owned());
         let cancel = tokio_util::sync::CancellationToken::new();
-        std::fs::write(dir.path().join("scan.sarif"), serde_json::to_vec(&json!({"version":"2.1.0","runs":[{"invocations":[{"executionSuccessful":true}],"results":[]}]}))?)?;
+        std::fs::write(
+            dir.path().join("scan.sarif"),
+            serde_json::to_vec(
+                &json!({"version":"2.1.0","runs":[{"invocations":[{"executionSuccessful":true}],"results":[]}]}),
+            )?,
+        )?;
         for task in [&parent.id, child] {
-            let parsed = rt.execute_tool(task, "web", &settings, "security_scan_read", &json!({"path":"scan.sarif","format":"sarif"}), &cancel).await?;
+            let parsed = rt
+                .execute_tool(
+                    task,
+                    "web",
+                    &settings,
+                    "security_scan_read",
+                    &json!({"path":"scan.sarif","format":"sarif"}),
+                    &cancel,
+                )
+                .await?;
             assert_eq!(parsed["all_invocations_reported_success"], true);
-            assert!(rt.execute_tool(task, "web", &settings, "security_scan_read", &json!({"path":"../scan.sarif","format":"sarif"}), &cancel).await.is_err());
+            assert!(
+                rt.execute_tool(
+                    task,
+                    "web",
+                    &settings,
+                    "security_scan_read",
+                    &json!({"path":"../scan.sarif","format":"sarif"}),
+                    &cancel
+                )
+                .await
+                .is_err()
+            );
         }
-        assert!(!rt.task_tool_catalog(child)?.iter().any(|t| t.name == "subagent_spawn"));
-        assert!(rt.spawn_subagent(child, &json!({"objective":"Nested", "expected_output":"No"})).await.is_err());
+        assert!(
+            !rt.task_tool_catalog(child)?
+                .iter()
+                .any(|t| t.name == "subagent_spawn")
+        );
+        assert!(
+            rt.spawn_subagent(
+                child,
+                &json!({"objective":"Nested", "expected_output":"No"})
+            )
+            .await
+            .is_err()
+        );
         Ok(())
     }
 

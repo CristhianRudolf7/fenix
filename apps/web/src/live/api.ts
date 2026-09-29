@@ -1,3 +1,4 @@
+import { serviceError } from "../components/service-error";
 export async function api<T>(
   path: string,
   body?: unknown,
@@ -11,7 +12,8 @@ export async function api<T>(
     signal,
   });
   const value = await response.json();
-  if (!response.ok) throw new Error(value.error || `HTTP ${response.status}`);
+  if (!response.ok)
+    throw new Error(serviceError(value.error || `HTTP ${response.status}`));
   return value as T;
 }
 export interface LiveConfiguration {

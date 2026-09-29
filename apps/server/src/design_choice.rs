@@ -1,4 +1,4 @@
-//! Validated design directions from the chat template picker.
+//! Validated design directions chosen from the chat design proposals.
 use anyhow::Result;
 use serde::Deserialize;
 

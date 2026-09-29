@@ -16,12 +16,13 @@ use serde_json::json;
 use std::{
     collections::HashMap,
     io::{Read, Write},
-    os::unix::fs::{OpenOptionsExt, PermissionsExt},
+    os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     sync::Arc,
     time::{Duration, Instant},
 };
 use tokio::sync::Mutex;
+mod google;
 mod profile;
 mod registry;
 mod sessions;
@@ -34,6 +35,12 @@ pub struct Account {
     pub email: String,
     #[serde(default)]
     pub display_name: String,
+    #[serde(default)]
+    pub google_subject: Option<String>,
+    #[serde(default)]
+    pub signup_available: bool,
+    #[serde(default = "password_login_default")]
+    pub password_login: bool,
     pub password_hash: String,
     pub upstream: String,
     pub upstream_token: String,
@@ -43,6 +50,9 @@ pub struct Account {
     pub disabled: bool,
     #[serde(default)]
     pub auth_epoch: u64,
+}
+fn password_login_default() -> bool {
+    true
 }
 fn runtime_port() -> u16 {
     4173
@@ -60,6 +70,7 @@ struct Gateway {
     hashing: tokio::sync::Semaphore,
     client: reqwest::Client,
     secure: bool,
+    google: google::GoogleAuth,
 }
 fn token() -> String {
     format!(
@@ -91,6 +102,13 @@ fn private_write(path: &Path, bytes: &[u8]) -> Result<()> {
         .mode(0o600)
         .open(&tmp)?;
     file.write_all(bytes)?;
+    // Host administration may run as root; preserve the gateway's registry owner.
+    if let Ok(owner) = std::fs::metadata(path) {
+        let current = file.metadata()?;
+        if owner.uid() != current.uid() || owner.gid() != current.gid() {
+            std::os::unix::fs::chown(&tmp, Some(owner.uid()), Some(owner.gid()))?;
+        }
+    }
     file.sync_all()?;
     std::fs::rename(tmp, path)?;
     let parent = path
@@ -100,7 +118,7 @@ fn private_write(path: &Path, bytes: &[u8]) -> Result<()> {
     std::fs::File::open(parent)?.sync_all()?;
     Ok(())
 }
-/// Deliberately local-only: there is no account creation HTTP route.
+/// Host-only provisioning; Google registration can claim an unused reserved tenant.
 pub fn admin() -> Result<()> {
     let args: Vec<_> = std::env::args().skip(2).collect();
     let _registry_lock = if let Some(registry_path) = args.get(1) {
@@ -145,6 +163,7 @@ pub fn admin() -> Result<()> {
                     "Password length must be 7–1024 bytes"
                 );
                 account.password_hash = hash_password(password)?;
+                account.password_login = true;
             }
         }
         private_write(&path, &serde_json::to_vec_pretty(&registry)?)?;
@@ -154,13 +173,17 @@ pub fn admin() -> Result<()> {
         return Ok(());
     }
     ensure!(
-        args.len() == 5 && args[0] == "create",
-        "Usage: fenix accounts create REGISTRY USERS_ROOT EMAIL UPSTREAM (password on stdin)"
+        args.len() == 5 && matches!(args[0].as_str(), "create" | "reserve"),
+        "Usage: fenix accounts create|reserve REGISTRY USERS_ROOT EMAIL UPSTREAM (create: password on stdin)"
     );
     let path = PathBuf::from(&args[1]);
     let root = PathBuf::from(&args[2]);
     let email = args[3].trim().to_lowercase();
     ensure!(email.contains('@') && email.len() <= 254, "Invalid email");
+    ensure!(
+        args[0] != "reserve" || email.ends_with("@signup.invalid"),
+        "Reserved tenants require an internal @signup.invalid address"
+    );
     let url = reqwest::Url::parse(&args[4])?;
     ensure!(
         url.scheme() == "http"
@@ -186,7 +209,11 @@ pub fn admin() -> Result<()> {
         "Account or upstream already exists"
     );
     let mut password = String::new();
-    std::io::stdin().take(1025).read_to_string(&mut password)?;
+    if args[0] == "reserve" {
+        password = token();
+    } else {
+        std::io::stdin().take(1025).read_to_string(&mut password)?;
+    }
     let password = password.trim_end_matches(['\r', '\n']);
     ensure!(
         (7..=1024).contains(&password.len()),
@@ -197,6 +224,9 @@ pub fn admin() -> Result<()> {
         id: id.clone(),
         email: email.clone(),
         display_name: String::new(),
+        google_subject: None,
+        signup_available: args[0] == "reserve",
+        password_login: args[0] != "reserve",
         password_hash: hash_password(password)?,
         upstream: args[4].clone(),
         upstream_token: token(),
@@ -236,6 +266,7 @@ impl Gateway {
         let session = sessions.get(&key, now_millis())?;
         registry.accounts.into_iter().find(|account| {
             !account.disabled
+                && !account.signup_available
                 && account.id == session.account_id
                 && account.password_hash == session.password_hash
                 && account.auth_epoch == session.auth_epoch
@@ -288,7 +319,7 @@ async fn login(State(g): State<Arc<Gateway>>, Json(input): Json<Login>) -> Respo
     let account = registry
         .accounts
         .iter()
-        .find(|a| !a.disabled && a.email == email)
+        .find(|a| !a.disabled && !a.signup_available && a.password_login && a.email == email)
         .cloned();
     let Some(hash) = account
         .as_ref()
@@ -378,6 +409,15 @@ async fn proxy(State(g): State<Arc<Gateway>>, request: Request) -> Response {
         .path_and_query()
         .map(|p| p.as_str())
         .unwrap_or("/");
+    // A manual bilingual save waits for translation before committing either document.
+    let upstream_timeout = if parts.method == axum::http::Method::PUT
+        && parts.uri.path().starts_with("/api/skills/")
+        && parts.uri.path().ends_with("/source")
+    {
+        Duration::from_secs(115)
+    } else {
+        Duration::from_secs(60)
+    };
     let mut upstream = g
         .client
         .request(
@@ -399,7 +439,7 @@ async fn proxy(State(g): State<Arc<Gateway>>, request: Request) -> Response {
     if g.account(session_key.clone()).await.as_ref() != Some(&account) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
-    match tokio::time::timeout(Duration::from_secs(60), upstream.send()).await {
+    match tokio::time::timeout(upstream_timeout, upstream.send()).await {
         Ok(Ok(response)) => {
             let mut builder = Response::builder().status(response.status());
             for name in [header::CONTENT_TYPE, header::CONTENT_DISPOSITION] {
@@ -500,6 +540,7 @@ fn router_from_source(
             .build()
             .expect("HTTP client"),
         secure: public.is_some(),
+        google: google::GoogleAuth::from_env(public.as_deref(), port),
     });
     let app = Router::new()
         .route("/", get(crate::assets::index))
@@ -515,6 +556,11 @@ fn router_from_source(
         .route("/settings", get(crate::assets::index))
         .route("/profile", get(crate::assets::index))
         .route("/assets/{*path}", get(crate::assets::asset))
+        .route("/api/auth/google", get(google::status).post(google::start))
+        .route(
+            "/api/auth/google/callback",
+            get(google::landing).post(google::finish),
+        )
         .route("/api/auth/login", post(login))
         .route("/api/auth/logout", post(logout))
         .route("/api/auth/session", get(session))
@@ -638,6 +684,9 @@ mod tests {
                 id: uuid::Uuid::new_v4().to_string(),
                 email: "alice@example.test".into(),
                 display_name: String::new(),
+                google_subject: None,
+                signup_available: false,
+                password_login: true,
                 password_hash: hash_password("test-password").unwrap(),
                 upstream,
                 upstream_token: token(),
@@ -745,6 +794,9 @@ mod tests {
                 id: id.into(),
                 email: format!("{id}@example.test"),
                 display_name: String::new(),
+                google_subject: None,
+                signup_available: false,
+                password_login: true,
                 password_hash: hash_password("test-password").unwrap(),
                 upstream,
                 upstream_token: format!("secret-{id}"),
@@ -861,6 +913,9 @@ mod tests {
                 id: "one".into(),
                 email: "one@example.test".into(),
                 display_name: String::new(),
+                google_subject: None,
+                signup_available: false,
+                password_login: true,
                 password_hash: hash_password("test-password").unwrap(),
                 upstream: "http://127.0.0.1:9".into(),
                 upstream_token: token(),
@@ -952,6 +1007,9 @@ mod tests {
             id: "alice".into(),
             email: "alice@example.test".into(),
             display_name: String::new(),
+            google_subject: None,
+            signup_available: false,
+            password_login: true,
             password_hash: hash_password("test-password").unwrap(),
             upstream: "http://127.0.0.1:9".into(),
             upstream_token: token(),
@@ -1071,6 +1129,9 @@ mod marketplace_tests {
                 id: id.into(),
                 email: format!("{id}@test.invalid"),
                 display_name: String::new(),
+                google_subject: None,
+                signup_available: false,
+                password_login: true,
                 password_hash: "hash".into(),
                 upstream: "http://127.0.0.1:1".into(),
                 upstream_token: "unused".into(),

@@ -10,11 +10,34 @@ nuevo. Su sandbox permanece habilitado; actualízalo con el sistema operativo.
 
 ## Uso y sesiones
 
-En **[Navegador](/browser)**, crea un perfil como `personal`, introduce una URL y pulsa Abrir.
-Puedes hacer clic en la pantalla, escribir, pegar y desplazarte. Completa allí las
-contraseñas, QR, MFA o CAPTCHA cuando sea necesario. El agente también puede escribir las contraseñas que le proporciones y enviar el login autorizado sin intervención manual. Activa **Permitir acceso al agente** cuando quieras
-que Fénix use ese perfil. **Tomar control** impide nuevas acciones del agente; una
-acción que ya se ejecutaba puede finalizar. La interacción manual también lo desactiva.
+Abre **[Navegador](/browser)** para entrar directamente: Fénix reutiliza una
+sesión personal o la crea automáticamente. Abrir la vista no cambia la página de
+una pestaña que ya estaba abierta. Usa la barra de direcciones, pestañas,
+atrás/adelante y recargar; puedes hacer clic, escribir, pegar, arrastrar y desplazarte.
+También admite doble clic, clic derecho, escritura Unicode/IME y desplazamiento
+táctil. La pantalla se adapta automáticamente al espacio disponible cuando tú
+controlas el navegador; observar al agente no cambia su tamaño.
+
+**Dejar continuar a Fénix** permite al agente usar esa sesión. **Tomar control** o
+interactuar manualmente impide nuevas acciones del agente en ese navegador; una
+operación que ya se ejecutaba puede finalizar. Las demás tareas continúan. Se usa
+el mismo Chromium aislado por cuenta y su perfil guardado. Las sesiones existentes,
+descargas, diálogos del sitio y el almacén de contraseñas están en **Sesiones guardadas
+y opciones**.
+
+Lo que escribas directamente utiliza las rutas autenticadas del propietario: no
+pasa por el modelo ni se añade al chat o al registro de herramientas. Completa las
+contraseñas y verificaciones externas cuando haga falta. El agente conserva la
+capacidad de iniciar sesión con credenciales que le proporciones explícitamente.
+Algunos sitios, como Google, pueden rechazar navegadores automatizados: esta vista
+no evita sus restricciones ni garantiza el acceso.
+
+Se transmiten capturas JPEG sucesivas: hasta unas cinco por segundo al interactuar
+y una por segundo en reposo. No es una transmisión completa de escritorio o vídeo.
+Al ocultar la pestaña o salir de la vista se detienen las capturas y las consultas
+pendientes, sin cancelar tareas ni cerrar un navegador en uso. Se conserva el
+mecanismo existente de suspensión en disco para navegadores inactivos elegibles.
+Las capturas no deben guardarse en la caché del navegador o del proxy.
 
 Cerrar el perfil libera sus procesos y conserva cookies, localStorage, IndexedDB y
 otros datos bajo `<data-dir>/browser/profiles/<nombre>`. Reabrirlo reutiliza esos

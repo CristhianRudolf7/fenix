@@ -86,7 +86,7 @@ test("login, private APIs, no registration and logout", async ({
     (await request.post("/api/auth/register", { data: {} })).status(),
   ).toBe(404);
   expect((await request.get("/browser")).status()).toBe(200);
-  await page.goto("/design");
+  await page.goto("/skills");
   await expect(page.getByRole("heading", { name: "Fénix" })).toBeVisible();
   await page.getByLabel("Correo").fill("test@example.test");
   await page.getByLabel("Contraseña", { exact: true }).fill("incorrect");
@@ -99,7 +99,7 @@ test("login, private APIs, no registration and logout", async ({
   await expect(
     page.getByRole("heading", { name: "Conecta tu modelo" }),
   ).toBeVisible({ timeout: 15000 });
-  await expect(page).toHaveURL(/\/design$/);
+  await expect(page).toHaveURL(/\/skills$/);
   await expect(
     page.getByRole("button", { name: "Salir / Sign out" }),
   ).toBeVisible();

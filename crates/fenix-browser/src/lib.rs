@@ -4,6 +4,8 @@ mod cdp;
 mod downloads;
 mod frames;
 mod lifecycle;
+#[cfg(test)]
+mod owner_view_tests;
 mod tools;
 mod vault;
 mod whatsapp;
@@ -203,6 +205,64 @@ impl Browser {
             "profiles":profiles.values().collect::<Vec<_>>(),"sessions":sessions.iter().map(|(name,s)|json!({"profile":name,"tab":s.active,"tabs":s.tabs.keys().collect::<Vec<_>>(),"temporary":s.temporary,"suspended":s.suspended,"width":s.width,"height":s.height,"dpr":s.dpr,"rss_sum_mib":if s.execution.is_none() {Some(memory_mib(s.child.id().unwrap_or(0)))} else {None}})).collect::<Vec<_>>(),"vault_exists":self.root.join("credentials.enc").exists()}),
         )
     }
+    /// Open the owner's existing browser without navigating away from its page.
+    /// The runtime containing this browser is already scoped to one account.
+    pub async fn open_view(&self, requested: Option<&str>) -> Result<Value> {
+        let name = {
+            let sessions = self.sessions.lock().await;
+            let mut profiles = self.profiles.lock().await;
+            let name = requested.map(str::to_owned).unwrap_or_else(|| {
+                sessions
+                    .keys()
+                    .find(|name| profiles.contains_key(*name) && !name.starts_with("integration-"))
+                    .cloned()
+                    .or_else(|| profiles.contains_key("personal").then(|| "personal".into()))
+                    .or_else(|| {
+                        profiles
+                            .keys()
+                            .find(|name| !name.starts_with("integration-"))
+                            .cloned()
+                    })
+                    .unwrap_or_else(|| "personal".into())
+            });
+            identifier(&name)?;
+            if name.starts_with("test-") || name.starts_with("integration-") {
+                bail!("Use a personal browser profile");
+            }
+            if !profiles.contains_key(&name) {
+                if requested.is_some() || profiles.len() >= 30 {
+                    bail!("Unknown personal browser profile");
+                }
+                let mut updated = profiles.clone();
+                updated.insert(
+                    name.clone(),
+                    Profile {
+                        name: name.clone(),
+                        allow_agent: false,
+                    },
+                );
+                write_json(
+                    &self.root.join("profiles.json"),
+                    &serde_json::to_value(&updated)?,
+                )?;
+                *profiles = updated;
+            }
+            name
+        };
+        // Listing starts/resumes the owner's browser but never replays navigation
+        // or changes the explicit permission to let the agent use this profile.
+        let mut result = self
+            .execute(
+                "browser_tabs",
+                &json!({"profile":name}),
+                true,
+                "owner",
+                &CancellationToken::new(),
+            )
+            .await?;
+        result["profile"] = json!(name);
+        Ok(result)
+    }
     pub async fn profile(&self, name: &str, allow_agent: bool) -> Result<Value> {
         if name == whatsapp::PROFILE {
             let _guard = self.integration_lock.lock().await;
@@ -376,7 +436,10 @@ impl Browser {
             let _starting = tokio::select! {biased; _ = cancel.cancelled()=>bail!("Browser startup cancelled"), guard=self.starting.lock()=>guard};
             sessions = self.sessions.lock().await;
             if !sessions.contains_key(profile) {
-                if name != "browser_open" && !self.saved_path(profile).exists() {
+                if name != "browser_open"
+                    && !(owner && name == "browser_tabs" && text(args, "action", "list") == "list")
+                    && !self.saved_path(profile).exists()
+                {
                     bail!("Open this browser profile first");
                 }
                 if sessions.values().filter(|s| !s.suspended).count() >= self.config.max_sessions {
@@ -431,6 +494,7 @@ impl Browser {
         }
         s.finished = false;
         if s.needs_observation
+            && !owner
             && !matches!(name, "browser_observe" | "browser_inspect" | "browser_tabs")
         {
             return Ok(
@@ -440,7 +504,7 @@ impl Browser {
         }
         s.last = Instant::now();
         // Do not automatically repeat a partially executed action on timeout.
-        let result = tokio::select! {biased; _ = cancel.cancelled()=>Err(anyhow::anyhow!("Browser operation cancelled; inspect before repeating an action")),r=self.operation(s,profile,name,args)=>r};
+        let result = tokio::select! {biased; _ = cancel.cancelled()=>Err(anyhow::anyhow!("Browser operation cancelled; inspect before repeating an action")),r=self.operation(s,profile,name,args,owner)=>r};
         s.last = Instant::now();
         if result.is_ok() && name == "browser_observe" {
             s.needs_observation = false;
@@ -671,6 +735,7 @@ impl Browser {
         profile: &str,
         name: &str,
         args: &Value,
+        owner: bool,
     ) -> Result<Value> {
         if s.active.is_empty() {
             let r = s
@@ -754,7 +819,8 @@ impl Browser {
                         continue;
                     }
                     self.attach(s, id).await?;
-                    tabs.push(json!({"tab":id,"title":target["title"],"url":clean_url(target["url"].as_str().unwrap_or(""))}));
+                    let url = target["url"].as_str().unwrap_or("");
+                    tabs.push(json!({"tab":id,"title":target["title"],"url":if owner { url.to_owned() } else { clean_url(url) }}));
                 }
                 let ids = tabs
                     .iter()
@@ -854,14 +920,14 @@ impl Browser {
             }
             "browser_act" => {
                 if text(args, "action", "") == "dialog" {
-                    self.act(s, &session, frame, args).await
+                    self.act(s, &session, frame, args, owner).await
                 } else {
                     // Native input may not acknowledge until a modal closes. Release the
                     // browser lock promptly so the next command can handle that modal.
                     tokio::select! {
                         biased;
                         dialog = s.cdp.wait_dialog(&session) => Ok(json!({"performed":false,"interrupted_by_dialog":true,"dialog":dialog,"next":"Handle the dialog, then inspect; do not repeat the action automatically"})),
-                        result = self.act(s, &session, frame, args) => result,
+                        result = self.act(s, &session, frame, args, owner) => result,
                     }
                 }
             }
@@ -1013,6 +1079,14 @@ impl Browser {
         )
     }
     pub async fn screenshot(&self, profile: &str, tab: Option<&str>) -> Result<Vec<u8>> {
+        self.view_frame(profile, tab, false).await
+    }
+    pub async fn view_frame(
+        &self,
+        profile: &str,
+        tab: Option<&str>,
+        jpeg: bool,
+    ) -> Result<Vec<u8>> {
         let mut sessions = self.sessions.lock().await;
         let s = sessions
             .get_mut(profile)
@@ -1023,7 +1097,27 @@ impl Browser {
         s.last = Instant::now();
         let tab = tab.unwrap_or(&s.active);
         let session = s.tabs.get(tab).context("Unknown tab")?;
-        self.image(s, session, false).await
+        if !jpeg {
+            return self.image(s, session, false).await;
+        }
+        if s.width as f64 * s.height as f64 * s.dpr * s.dpr > 16_000_000. {
+            bail!("Browser frame exceeds 16 megapixels");
+        }
+        let result = s
+            .cdp
+            .call(
+                Some(session),
+                "Page.captureScreenshot",
+                json!({"format":"jpeg", "quality":75,"captureBeyondViewport":false}),
+            )
+            .await?;
+        let data = result["data"]
+            .as_str()
+            .context("Browser returned no frame")?;
+        if data.len() > 12 * 1024 * 1024 {
+            bail!("Browser frame exceeds size budget");
+        }
+        Ok(STANDARD.decode(data)?)
     }
     pub fn artifact(&self, profile: &str, name: &str) -> Result<Vec<u8>> {
         identifier(profile)?;

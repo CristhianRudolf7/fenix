@@ -167,13 +167,13 @@ fn base_catalog() -> Vec<ToolDefinition> {
         ),
         definition(
             "design_templates",
-            "Browse visual templates (20 metadata results per page) or load one by id. Covers web, diagrams, slides, charts, documents, tables, images and video. Returns saved brand settings. Templates contain sample data, not user facts.",
+            "Browse visual templates (20 metadata results per page) or load one by id. Covers web, diagrams, slides, charts, documents, tables, images and video. Metadata includes kind, tags, palette theme and composition; the result also lists the user's favorite template IDs and saved brand settings. Templates contain sample data, not user facts.",
             json!({"query":string,"offset":integer,"id":string}),
             &[],
         ),
         definition(
             "design_present",
-            "Show 1–8 selected template cards in the user's web chat, preserving their order for textual choice (first, second...). Does not create a finished design. Use design_templates to discover real IDs.",
+            "Show 1–8 selected design proposals in the user's web chat as a carousel of real preview images, preserving their order for textual choice (first, second...). The user opens a preview and chooses there or replies in text. Does not create a finished design or open a side panel. Use design_templates to discover real IDs.",
             json!({"template_ids":{"type":"array","items":{"type":"string"}}}),
             &["template_ids"],
         ),

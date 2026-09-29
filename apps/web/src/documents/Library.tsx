@@ -1,3 +1,4 @@
+import { serviceError } from "../components/service-error";
 import {
   openTarget,
   registerAdapter,
@@ -91,7 +92,7 @@ export async function libraryApi<T>(
     throw new Error("Session expired");
   }
   const data = await r.json();
-  if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+  if (!r.ok) throw new Error(serviceError(data.error || `HTTP ${r.status}`));
   return data as T;
 }
 const accept = ".pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json,.png,.jpg,.jpeg";
@@ -467,11 +468,7 @@ function ChatSources() {
 function Library() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [docs, setDocs] = useState<Doc[]>([]),
-    [projects, setProjects] = useState<Project[]>([]),
-    [project, setProject] = useState(""),
-    [collection, setCollection] = useState(""),
     [query, setQuery] = useState(""),
-    [hits, setHits] = useState<Hit[] | null>(null),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
     [settings, setSettings] = useState<Settings | null>(null),
@@ -480,25 +477,27 @@ function Library() {
     [editing, setEditing] = useState<Doc | null>(null),
     [name, setName] = useState(""),
     [tags, setTags] = useState(""),
-    [newCollection, setNewCollection] = useState(""),
-    [key, setKey] = useState("");
+    [newCollection, setNewCollection] = useState("");
   const alive = useRef(true);
-  const scope = useRef(project);
-  scope.current = project;
+  const scope = useRef(`${query}:${format}`);
+  scope.current = `${query}:${format}`;
   const refreshGeneration = useRef(0);
   async function refresh(offset = 0, polling = false) {
     const generation = ++refreshGeneration.current;
-    const p = new URLSearchParams({ offset: String(offset) });
-    if (project !== "*") {
-      if (project) p.set("project_id", project);
-    } else p.set("all", "true");
+    const currentScope = scope.current;
+    const p = new URLSearchParams({
+      offset: String(offset),
+      all: "true",
+      name: query.trim(),
+      format,
+    });
     const r = await libraryApi<{
       documents: Doc[];
       next_offset: number | null;
     }>(`?${p}`);
     if (
       alive.current &&
-      scope.current === project &&
+      scope.current === currentScope &&
       generation === refreshGeneration.current
     ) {
       setDocs((old) => {
@@ -522,12 +521,6 @@ function Library() {
   }, []);
   useEffect(() => {
     let active = true;
-    void fetch("/api/projects")
-      .then((r) => r.json())
-      .then((v) => {
-        if (active) setProjects(v);
-      })
-      .catch((e) => setError(message(e)));
     void libraryApi<Settings>("/settings")
       .then((v) => {
         if (active) setSettings(v);
@@ -538,15 +531,23 @@ function Library() {
     };
   }, []);
   useEffect(() => {
-    setHits(null);
     setError("");
     setInitialLoading(true);
-    void refresh()
-      .catch((e) => setError(message(e)))
-      .finally(() => {
-        if (alive.current) setInitialLoading(false);
-      });
-  }, [project]);
+    let active = true;
+    const timer = setTimeout(() => {
+      void refresh()
+        .catch((e) => {
+          if (active) setError(message(e));
+        })
+        .finally(() => {
+          if (active && alive.current) setInitialLoading(false);
+        });
+    }, 200);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [query, format]);
   useEffect(() => {
     if (
       !docs.some(
@@ -563,12 +564,8 @@ function Library() {
         void refresh(0, true).catch((e) => setError(message(e)));
     }, 3500);
     return () => clearInterval(timer);
-  }, [docs, project, settings]);
-  const visible = docs.filter(
-    (d) =>
-      (!collection || d.collection === collection) &&
-      (!format || d.format === format),
-  );
+  }, [docs, query, format, settings]);
+  const visible = initialLoading ? [] : docs;
   async function action(fn: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -580,22 +577,10 @@ function Library() {
       setBusy(false);
     }
   }
-  if (initialLoading) return <Loading />;
   return (
     <main className="library-page">
       <header className="library-heading">
-        <div>
-          <div className="eyebrow">
-            {tr("YOUR SOURCES, CONNECTED", "TUS FUENTES, CONECTADAS")}
-          </div>
-          <h1>{tr("Document library", "Biblioteca de documentos")}</h1>
-          <p>
-            {tr(
-              "Keep your sources together. Ask, compare and follow every answer back to its evidence.",
-              "Reúne tus fuentes. Pregunta, compara y encuentra la evidencia de cada respuesta.",
-            )}
-          </p>
-        </div>
+        <h1>{tr("Library", "Biblioteca")}</h1>
         <label className="design-upload primary">
           <Icon name="documents" />
           {busy
@@ -606,257 +591,156 @@ function Library() {
             multiple
             accept={accept}
             aria-label={tr("Upload documents", "Subir documentos")}
-            disabled={busy || project === "*"}
+            disabled={busy}
             onChange={(e) => {
               const files = Array.from(e.target.files || []);
               e.target.value = "";
               void action(async () => {
-                for (const f of files)
-                  await upload(f, project || null, collection);
+                for (const f of files) await upload(f, null, "");
                 await refresh();
               });
             }}
           />
         </label>
       </header>
-      <div className="library-toolbar">
-        <label>
-          {tr("Project", "Proyecto")}
+      <div className="library-filters">
+        <label className="library-filter-field library-name-filter">
+          <Icon name="search" />
+          <input
+            aria-label={tr("Search by name", "Buscar por nombre")}
+            placeholder={tr("Search by name…", "Buscar por nombre…")}
+            value={query}
+            maxLength={240}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
+        <label className="library-filter-field library-type-filter">
+          <Icon name="documents" />
           <select
-            disabled={busy}
-            aria-label={tr("Library project", "Proyecto de biblioteca")}
-            value={project}
-            onChange={(e) => setProject(e.target.value)}
+            aria-label={tr("File type", "Tipo de archivo")}
+            value={format}
+            onChange={(e) => setFormat(e.target.value)}
           >
-            <option value="">General</option>
-            <option value="*">
-              {tr("All projects · browse", "Todos los proyectos · explorar")}
-            </option>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
+            <option value="">{tr("All file types", "Todos los tipos")}</option>
+            {[
+              "pdf",
+              "docx",
+              "xlsx",
+              "pptx",
+              "txt",
+              "md",
+              "csv",
+              "json",
+              "png",
+              "jpg",
+              "jpeg",
+            ].map((type) => (
+              <option key={type} value={type}>
+                {type.toUpperCase()}
               </option>
             ))}
           </select>
-        </label>
-        <label>
-          {tr("Collection", "Colección")}
-          <select
-            value={collection}
-            onChange={(e) => setCollection(e.target.value)}
-          >
-            <option value="">
-              {tr("All collections", "Todas las colecciones")}
-            </option>
-            {[...new Set(docs.map((d) => d.collection).filter(Boolean))].map(
-              (c) => (
-                <option key={c}>{c}</option>
-              ),
-            )}
-          </select>
-        </label>
-        <label>
-          {tr("Format", "Formato")}
-          <select value={format} onChange={(e) => setFormat(e.target.value)}>
-            <option value="">{tr("All formats", "Todos los formatos")}</option>
-            {[...new Set(docs.map((d) => d.format))].map((f) => (
-              <option key={f}>{f}</option>
-            ))}
-          </select>
+          <span className="library-filter-chevron">
+            <Icon name="chevron" />
+          </span>
         </label>
       </div>
-      <form
-        className="library-search"
-        onSubmit={(e) => {
-          e.preventDefault();
-          void action(async () => {
-            const r = await libraryApi<{
-              results: Hit[];
-              degraded_reason: string | null;
-            }>("/search", "POST", {
-              query,
-              project_id: project || null,
-              collection: collection || null,
-              limit: 20,
-            });
-            setHits(r.results);
-            if (r.degraded_reason)
-              setError(
-                tr("Lexical results only: ", "Solo resultados léxicos: ") +
-                  r.degraded_reason,
-              );
-          });
-        }}
-      >
-        <Icon name="memory" />
-        <input
-          aria-label={tr(
-            "Search document content",
-            "Buscar contenido de documentos",
-          )}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={tr(
-            "Search an idea, a name, a condition…",
-            "Busca una idea, un nombre, una condición…",
-          )}
-          required
-          maxLength={2400}
-        />
-        <button type="submit" disabled={busy || project === "*"}>
-          {tr("Search", "Buscar")}
-        </button>
-        {hits && (
-          <button type="button" onClick={() => setHits(null)}>
-            {tr("Clear", "Limpiar")}
-          </button>
-        )}
-      </form>
-      {project === "*" && (
-        <p className="muted">
-          {tr(
-            "Choose a project to upload or search its contents.",
-            "Elige un proyecto para subir archivos o buscar en su contenido.",
-          )}
-        </p>
-      )}
       {error && (
         <p role="alert" className="library-error">
           {error}
         </p>
       )}
-      {hits !== null ? (
-        <section
-          className="library-hits"
-          aria-label={tr("Search results", "Resultados de búsqueda")}
-        >
-          {hits.map((h) => (
-            <button
-              className="library-hit"
-              key={h.id}
-              onClick={() => openDocument(h.document_id, h.revision, h.id)}
-            >
-              <strong>{h.title}</strong>
-              <small>
-                {locationLabel(h)} · v{h.revision}
-              </small>
-              <p>{h.text}</p>
-              <span>{h.branches.join(" + ")}</span>
-            </button>
-          ))}
-          {!hits.length && (
-            <p>
-              {tr(
-                "No matching evidence. Try another expression or check processing status.",
-                "No encontramos evidencia. Prueba otra expresión o revisa el estado de procesamiento.",
-              )}
-            </p>
-          )}
-        </section>
-      ) : (
-        <section
-          className="library-list"
-          aria-label={tr("Documents", "Documentos")}
-        >
-          {!visible.length && (
-            <div className="library-empty">
-              <Icon name="documents" />
-              <h2>
-                {tr(
-                  "A home for your knowledge",
-                  "Un lugar para tu conocimiento",
-                )}
-              </h2>
+      <section
+        className="library-list"
+        aria-label={tr("Documents", "Documentos")}
+      >
+        {initialLoading && <Loading />}
+        {!initialLoading && !visible.length && (
+          <div className="library-empty">
+            <Icon name="documents" />
+            <h2>
+              {query || format
+                ? tr("No matching documents", "No hay documentos que coincidan")
+                : tr("No documents yet", "Aún no hay documentos")}
+            </h2>
+          </div>
+        )}
+        {visible.map((d) => (
+          <article className="library-card" key={d.id}>
+            <span className="library-format">{d.format.toUpperCase()}</span>
+            <div className="library-card-body">
+              <button
+                className="library-title"
+                onClick={() => openDocument(d.id)}
+              >
+                {d.title}
+              </button>
               <p>
-                {tr(
-                  "Add your first document and continue the conversation with sources at hand.",
-                  "Añade tu primer documento y continúa la conversación con tus fuentes a mano.",
-                )}
+                {d.collection || tr("Unsorted", "Sin colección")} · v
+                {d.revision} · {(d.bytes / 1024).toFixed(1)} KB
               </p>
-            </div>
-          )}
-          {visible.map((d) => (
-            <article className="library-card" key={d.id}>
-              <span className="library-format">{d.format.toUpperCase()}</span>
-              <div className="library-card-body">
-                <button
-                  className="library-title"
-                  onClick={() => openDocument(d.id)}
-                >
-                  {d.title}
-                </button>
-                <p>
-                  {d.collection || tr("Unsorted", "Sin colección")} · v
-                  {d.revision} · {(d.bytes / 1024).toFixed(1)} KB
-                </p>
-                <div className="library-card-tags">
-                  {d.tags.map((t) => (
-                    <span key={t}>{t}</span>
-                  ))}
-                  <Badge doc={d} />
-                  {!d.enabled && (
-                    <span>
-                      {tr("Excluded from search", "Fuera de búsqueda")}
-                    </span>
-                  )}
-                </div>
-                <small>
-                  {d.embedding_status === "ready"
+              <div className="library-card-tags">
+                {d.tags.map((t) => (
+                  <span key={t}>{t}</span>
+                ))}
+                <Badge doc={d} />
+                {!d.enabled && (
+                  <span>{tr("Excluded from search", "Fuera de búsqueda")}</span>
+                )}
+              </div>
+              <small>
+                {d.embedding_status === "ready"
+                  ? tr("Semantic search ready", "Búsqueda semántica disponible")
+                  : d.embedding_status === "failed"
                     ? tr(
-                        "Semantic search ready",
-                        "Búsqueda semántica disponible",
+                        "Search processing needs attention",
+                        "La preparación para búsqueda requiere atención",
                       )
-                    : d.embedding_status === "failed"
-                      ? tr(
-                          "Embeddings need attention",
-                          "Embeddings requieren atención",
-                        )
-                      : tr("Embeddings pending", "Embeddings pendientes")}
-                </small>
-              </div>
-              <div className="library-card-actions">
-                <button
-                  disabled={!d.enabled}
-                  onClick={() => {
-                    setSources([d]);
-                    window.dispatchEvent(
-                      new CustomEvent("fenix:design-chat", {
-                        detail: {
-                          text:
-                            tr(
-                              "Help me with this document: ",
-                              "Ayúdame con este documento: ",
-                            ) + d.title,
-                        },
-                      }),
-                    );
-                  }}
-                >
-                  {tr("Ask Fénix", "Preguntar a Fénix")}
-                </button>
-                <button
-                  onClick={() => {
-                    setEditing(d);
-                    setName(d.title);
-                    setNewCollection(d.collection);
-                    setTags(d.tags.join(", "));
-                  }}
-                >
-                  {tr("Manage", "Gestionar")}
-                </button>
-              </div>
-            </article>
-          ))}
-          {next !== null && (
-            <button
-              disabled={busy}
-              onClick={() => void action(() => refresh(next))}
-            >
-              {tr("Load more", "Cargar más")}
-            </button>
-          )}
-        </section>
-      )}
+                    : tr("Preparing search", "Preparando búsqueda")}
+              </small>
+            </div>
+            <div className="library-card-actions">
+              <button
+                disabled={!d.enabled}
+                onClick={() => {
+                  setSources([d]);
+                  window.dispatchEvent(
+                    new CustomEvent("fenix:design-chat", {
+                      detail: {
+                        text:
+                          tr(
+                            "Help me with this document: ",
+                            "Ayúdame con este documento: ",
+                          ) + d.title,
+                      },
+                    }),
+                  );
+                }}
+              >
+                {tr("Ask Fénix", "Preguntar a Fénix")}
+              </button>
+              <button
+                onClick={() => {
+                  setEditing(d);
+                  setName(d.title);
+                  setNewCollection(d.collection);
+                  setTags(d.tags.join(", "));
+                }}
+              >
+                {tr("Manage", "Gestionar")}
+              </button>
+            </div>
+          </article>
+        ))}
+        {next !== null && (
+          <button
+            disabled={busy}
+            onClick={() => void action(() => refresh(next))}
+          >
+            {tr("Load more", "Cargar más")}
+          </button>
+        )}
+      </section>
       {editing && (
         <section className="library-manage card">
           <h2>{tr("Manage document", "Gestionar documento")}</h2>
@@ -988,83 +872,6 @@ function Library() {
             </button>
           </div>
         </section>
-      )}
-      {settings && (
-        <details className="library-settings">
-          <summary>
-            {tr("Document processing", "Procesamiento de documentos")} ·{" "}
-            {settings.model}
-          </summary>
-          <p>
-            {tr(
-              "OpenAI receives the extracted text for embeddings. Originals and indexes remain in your Fénix account. Conversation answers have separate model costs.",
-              "OpenAI recibe el texto extraído para crear embeddings. Los originales y los índices quedan en tu cuenta de Fénix. Las respuestas del chat tienen un coste aparte.",
-            )}
-          </p>
-          <p>
-            {settings.configured
-              ? tr(
-                  "Using your configured OpenAI key.",
-                  "Usando tu clave de OpenAI configurada.",
-                )
-              : tr(
-                  "An OpenAI key is needed for semantic search. Lexical search is available.",
-                  "Falta una clave de OpenAI para búsqueda semántica. La búsqueda léxica está disponible.",
-                )}
-          </p>
-          <label>
-            <input
-              type="checkbox"
-              checked={settings.enabled}
-              onChange={(e) =>
-                void action(async () =>
-                  setSettings(
-                    await libraryApi("/settings", "PUT", {
-                      enabled: e.target.checked,
-                    }),
-                  ),
-                )
-              }
-            />
-            {tr("Enable embeddings", "Activar embeddings")}
-          </label>
-          <label>
-            {tr(
-              "Optional OpenAI key override",
-              "Clave OpenAI alternativa (opcional)",
-            )}
-            <input
-              type="password"
-              autoComplete="new-password"
-              value={key}
-              onChange={(e) => setKey(e.target.value)}
-            />
-          </label>
-          <button
-            disabled={!key || busy}
-            onClick={() =>
-              void action(async () => {
-                setSettings(
-                  await libraryApi("/settings", "PUT", {
-                    enabled: true,
-                    api_key: key,
-                  }),
-                );
-                setKey("");
-              })
-            }
-          >
-            {tr("Save key", "Guardar clave")}
-          </button>
-          {!settings.execution_available && (
-            <p>
-              {tr(
-                "PDF/scans require the isolated OCR execution image. Text and Office documents can be indexed now.",
-                "PDF y escaneos requieren la imagen de ejecución OCR aislada. Ya puedes indexar texto y documentos Office.",
-              )}
-            </p>
-          )}
-        </details>
       )}
     </main>
   );
@@ -1219,7 +1026,7 @@ function SourcePanel() {
         )}
         {d?.error && (
           <p role="status" className="library-error">
-            {d.error}
+            {serviceError(d.error)}
           </p>
         )}
         {d && tab === "source" && d.format === "pdf" && (

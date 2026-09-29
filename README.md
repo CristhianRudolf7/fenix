@@ -169,6 +169,7 @@ no demuestran acceso real a las 17 cuentas.
 - [Arquitectura](docs/es/architecture.md)
 - [Instalación y uso local](docs/es/local-operation.md)
 - [Login y aislamiento por usuario](docs/es/user-isolation.md)
+- [Acceso y registro con Google](docs/es/google-sign-in.md)
 - [Seguridad de ejecución, integraciones y copias cifradas](docs/es/execution-isolation.md)
 - [Espacios propios con gVisor, sin KVM](docs/es/self-hosted-gvisor.md)
 - [MicroVMs propias y entornos persistentes de herramientas](docs/es/self-hosted-microvms.md)

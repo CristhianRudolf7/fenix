@@ -16,7 +16,8 @@ fn publication_category_comes_from_source_and_survives_reopening() {
     assert_eq!(publication.category, "office");
     drop(store);
     let db = rusqlite::Connection::open(&path).unwrap();
-    db.execute("UPDATE publications SET category='productivity'", []).unwrap();
+    db.execute("UPDATE publications SET category='productivity'", [])
+        .unwrap();
     drop(db);
     let store = store::Store::open(&path).unwrap();
     let restored = store.get("alice", &publication.id).unwrap();

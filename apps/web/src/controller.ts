@@ -1,10 +1,7 @@
+import { serviceError } from "./components/service-error";
 import { ensureWorkspace } from "./workspace/Workspace";
 import { configureWorkspace, openTarget } from "./workspace/store";
-import {
-  openDesignCreation,
-  finishDesignCreation,
-  type CreationRequest,
-} from "./design/creation";
+import type { DesignChoice } from "./design/types";
 import {
   renderLibrary,
   renderChatLibrary,
@@ -28,15 +25,18 @@ import {
   renderSetupMarkup,
 } from "./components/layout";
 import {
-  renderDesign,
   renderChatDesigns,
   stopDesignViews,
   refreshDesigns,
+  openTemplatePreview,
+  legacyTemplate,
 } from "./design/app";
 import { currentPage, onPageChange, navigateTo } from "./components/routing";
 import { Loading } from "./components/loading";
 import { renderToStaticMarkup } from "react-dom/server";
 import { flameMarkup, iconMarkup } from "./components/icons";
+// The former Design page now lives in chat; its template links open a preview there.
+let pendingTemplate = legacyTemplate(new URL(location.href));
 const state: any = {
   page: currentPage(),
   status: null,
@@ -92,7 +92,6 @@ const providerNames = {
 const names = () => ({
   chat: t("Conversation", "Conversación"),
   skills: "Skills",
-  design: "Design",
   documents: t("Library", "Biblioteca"),
   browser: t("Browser", "Navegador"),
   integrations: t("Integrations", "Integraciones"),
@@ -151,7 +150,8 @@ async function api(path: string, options: any = {}) {
       ),
     );
   }
-  if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`);
+  if (!response.ok)
+    throw new Error(serviceError(result.error || `HTTP ${response.status}`));
   return result;
 }
 
@@ -186,6 +186,8 @@ function input(id, label, value: string | number = "", extra = "") {
 }
 
 function modelForm(setup = false) {
+  if (setup)
+    return `<section class="card setup-form"><h2>${t("We are preparing your assistant", "Estamos preparando tu asistente")}</h2><p>${t("Your account is waiting for service configuration. Please contact support if it remains unavailable.", "Tu cuenta está pendiente de la configuración del servicio. Contacta con soporte si sigue sin estar disponible.")}</p></section>`;
   const config = state.status.settings || state.status.default_settings;
   return `<form id="model-form" class="card ${setup ? "setup-form" : ""}">
     <h2>${t("Connect your model", "Conecta tu modelo")}</h2><p class="muted">${t("Choose a provider. We will verify it with a real request.", "Elige un proveedor. Lo verificaremos con una llamada real.")}</p>
@@ -205,12 +207,10 @@ function modelForm(setup = false) {
         )
         .join("")}</select>`,
     )}</div>
-    ${input("api_key", "API key", "", `type="password" autocomplete="new-password" ${setup ? "required" : ""} placeholder="${setup ? t("Paste your API key", "Pega tu API key") : t("Leave blank to keep the saved key", "Vacío para conservar la clave guardada")}"`)}
     <details id="advanced-settings"><summary class="muted">${t("Advanced and local settings", "Opciones avanzadas y locales")}</summary><div class="divider"></div>
     <div id="endpoint-field">${input("base_url", t("API base URL", "URL base de la API"), config.base_url || "", 'type="url" autocomplete="off"')}</div>
     <div id="project-header-field">${input("provider_project", t("Provider project / workspace (optional)", "Proyecto / workspace del proveedor (opcional)"), config.provider_project || "")}</div>
     <div id="organization-field">${input("organization", t("Organization (optional)", "Organización (opcional)"), config.organization || "")}</div>
-    ${input("project", t("Credential project scope (optional)", "Ámbito de proyecto para la clave (opcional)"), config.project || "", 'pattern="[A-Za-z0-9_.-]{1,128}"')}
     ${input("workspace", t("File workspace", "Carpeta de archivos"), config.workspace, "required")}
     ${field(`<label for="command_policy">${t("Command permissions", "Permisos para comandos")}</label>`, policySelect("command_policy", config.command_policy))}
     ${field(`<label for="file_write_policy">${t("File changes", "Cambios en archivos")}</label>`, policySelect("file_write_policy", config.file_write_policy))}
@@ -240,9 +240,9 @@ function policySelect(id, value) {
 }
 function setupView() {
   renderSetupMarkup(
-    `<div class="setup-shell"><header class="setup-top">${brand()}<div class="row">${preferences()}<span id="account-controls"></span></div></header><main class="setup-main"><section class="setup-copy"><div class="eyebrow">${t("Your assistant. Your space.", "Tu asistente. Tu espacio.")}</div><h1>${t("A little less to do.<br>A little more possible.", "Menos pendientes.<br>Más posibilidades.")}</h1><p>${t("Meet your personal assistant, running on your computer and ready to help with everyday work.", "Tu asistente personal, en tu computadora y listo para ayudarte con el trabajo de cada día.")}</p><div class="features"><div class="feature"><span>◻</span><div><strong>${t("One continuous conversation", "Una conversación continua")}</strong><p>${t("Pick up where you left off, here or on Telegram.", "Continúa donde lo dejaste, aquí o en Telegram.")}</p></div></div><div class="feature"><span>▤</span><div><strong>${t("Memory you control", "Memoria que tú controlas")}</strong><p>${t("Keep the details you explicitly choose to remember.", "Conserva los detalles que elijas recordar.")}</p></div></div><div class="feature"><span>◇</span><div><strong>${t("Built around your work", "Se adapta a tu trabajo")}</strong><p>${t("Local tools, manual skills and timely reminders.", "Herramientas locales, skills y recordatorios.")}</p></div></div></div></section>${modelForm(true)}</main><footer class="setup-footer">${t("Runs locally · Telegram is optional · Your key stays in the backend", "Ejecución local · Telegram es opcional · Tu clave permanece en el backend")}</footer></div>`,
+    `<div class="setup-shell"><header class="setup-top">${brand()}<div class="row">${preferences()}<span id="account-controls"></span></div></header><main class="setup-main"><section class="setup-copy"><div class="eyebrow">${t("Your assistant. Your space.", "Tu asistente. Tu espacio.")}</div><h1>${t("A little less to do.<br>A little more possible.", "Menos pendientes.<br>Más posibilidades.")}</h1><p>${t("Meet your personal assistant, running on your computer and ready to help with everyday work.", "Tu asistente personal, en tu computadora y listo para ayudarte con el trabajo de cada día.")}</p><div class="features"><div class="feature"><span>◻</span><div><strong>${t("One continuous conversation", "Una conversación continua")}</strong><p>${t("Pick up where you left off, here or on Telegram.", "Continúa donde lo dejaste, aquí o en Telegram.")}</p></div></div><div class="feature"><span>▤</span><div><strong>${t("Memory you control", "Memoria que tú controlas")}</strong><p>${t("Keep the details you explicitly choose to remember.", "Conserva los detalles que elijas recordar.")}</p></div></div><div class="feature"><span>◇</span><div><strong>${t("Built around your work", "Se adapta a tu trabajo")}</strong><p>${t("Local tools, manual skills and timely reminders.", "Herramientas locales, skills y recordatorios.")}</p></div></div></div></section>${modelForm(true)}</main><footer class="setup-footer">${t("One account · Your own space", "Una cuenta · Tu propio espacio")}</footer></div>`,
   );
-  updateProviderFields(false);
+  if ($("#provider")) updateProviderFields(false);
 }
 
 async function render() {
@@ -279,7 +279,6 @@ async function render() {
   }
   const views = {
     chat: renderChat,
-    design: () => renderDesign(state.language),
     documents: () => renderLibrary(state.language),
     skills: renderSkills,
     browser: () => renderBrowser(state.language),
@@ -300,8 +299,13 @@ async function renderChat() {
   renderChatLibrary(state.language);
   const layout = $(".chat-layout");
   drawReplyReference();
+  drawTemplateContext();
   updateActivityStrip();
   drawLiveMessage();
+  if (pendingTemplate) {
+    openTemplatePreview(pendingTemplate);
+    pendingTemplate = null;
+  }
   try {
     await refreshMessages(true);
     await new Promise<void>((resolve) =>
@@ -326,16 +330,52 @@ async function renderChat() {
     }
   }
 }
-function chatRequest(): CreationRequest {
+let selectedTemplate: { id: string; title: string } | null = null;
+function drawTemplateContext() {
+  let node = document.getElementById("chat-template-context");
+  const form = document.getElementById("chat-form");
+  if (!form) return;
+  if (!node) {
+    node = document.createElement("div");
+    node.id = "chat-template-context";
+    node.className = "chat-template-context";
+    form.before(node);
+  }
+  node.hidden = !selectedTemplate;
+  if (!selectedTemplate) {
+    node.replaceChildren();
+    return;
+  }
+  node.innerHTML = `<span>${iconMarkup("design")}<span><small>${t("Chosen design", "Diseño elegido")}</small><strong>${escape(selectedTemplate.title)}</strong></span></span><button type="button" class="subtle icon-button" aria-label="${t("Remove chosen design", "Quitar diseño elegido")}">${iconMarkup("close")}</button>`;
+  node.querySelector("button")!.onclick = () => {
+    selectedTemplate = null;
+    drawTemplateContext();
+  };
+}
+type ChatRequest = {
+  text: string;
+  document_ids: string[];
+  reply_to_task_id: string | null;
+  design_choice?: DesignChoice;
+};
+function chatRequest(): ChatRequest {
   return {
     text: $("#chat-input")?.value.trim() || "",
     document_ids: selectedDocumentIds(),
     reply_to_task_id: state.replyTo?.taskId || null,
+    ...(selectedTemplate
+      ? {
+          design_choice: {
+            mode: "template" as const,
+            template_id: selectedTemplate.id,
+          },
+        }
+      : {}),
   };
 }
 let sendingMessage = false;
 const optimisticMessages = new Map<string, { text: string; after: number }>();
-async function sendChatRequest(request: CreationRequest) {
+async function sendChatRequest(request: ChatRequest) {
   if (sendingMessage) return;
   sendingMessage = true;
   window.dispatchEvent(new Event("fenix:stop-dictation"));
@@ -365,7 +405,13 @@ async function sendChatRequest(request: CreationRequest) {
   }
   try {
     await api("/messages", { method: "POST", body: request });
-    finishDesignCreation(request.text);
+    if (
+      request.design_choice?.mode === "template" &&
+      selectedTemplate?.id === request.design_choice.template_id
+    ) {
+      selectedTemplate = null;
+      drawTemplateContext();
+    }
     if ((state.replyTo?.taskId || null) === request.reply_to_task_id) {
       state.replyTo = null;
       drawReplyReference();
@@ -503,7 +549,7 @@ function drawMessages() {
                 minute: "2-digit",
               }).format(timestamp)
             : "";
-          return `${separator}<article class="message ${message.role}"><span class="avatar" aria-hidden="true">${message.role === "user" ? t("Y", "T") : flameMarkup}</span><div class="message-body"><div class="message-head">${message.role === "user" ? t("You", "Tú") : "Fénix"}${message.origin === "telegram" ? "<small>Telegram</small>" : ""}</div><div class="message-text markdown-content">${markdownHtml(message.role === "assistant" ? conversationText(message.text) : message.text)}</div><div class="message-footer">${message.task_id ? `<div class="message-meta">${projectBadge(message)} <button class="subtle reply-button" data-reply-task="${escape(message.task_id)}" data-reply-message="${escape(message.id)}">${t("Reply", "Responder")}</button></div>` : ""}<div class="message-actions"><time datetime="${escape(message.created_at)}">${escape(time)}</time><button type="button" class="subtle message-copy" data-copy-message="${escape(message.id)}" aria-label="${t("Copy message", "Copiar mensaje")}" title="${t("Copy message", "Copiar mensaje")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button><span class="sr-only" role="status"></span></div></div></div></article>`;
+          return `${separator}<article class="message ${message.role}" data-task-id="${escape(message.task_id || "")}" data-created-at="${escape(message.created_at)}"><span class="avatar" aria-hidden="true">${message.role === "user" ? t("Y", "T") : flameMarkup}</span><div class="message-body"><div class="message-head">${message.role === "user" ? t("You", "Tú") : "Fénix"}${message.origin === "telegram" ? "<small>Telegram</small>" : ""}</div><div class="message-text markdown-content">${markdownHtml(message.role === "assistant" ? conversationText(message.text) : message.text)}</div><div class="message-footer">${message.task_id ? `<div class="message-meta">${projectBadge(message)} <button class="subtle reply-button" data-reply-task="${escape(message.task_id)}" data-reply-message="${escape(message.id)}">${t("Reply", "Responder")}</button></div>` : ""}<div class="message-actions"><time datetime="${escape(message.created_at)}">${escape(time)}</time><button type="button" class="subtle message-copy" data-copy-message="${escape(message.id)}" aria-label="${t("Copy message", "Copiar mensaje")}" title="${t("Copy message", "Copiar mensaje")}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg></button><span class="sr-only" role="status"></span></div></div></div></article>`;
         })
         .join("")
     : `<div class="chat-welcome"><span class="welcome-mark">${flameMarkup}</span><div class="eyebrow">${t("YOUR PERSONAL SPACE", "TU ESPACIO PERSONAL")}</div><h1>${t("Your ideas, in motion.", "Tus ideas, en marcha.")}</h1><p>${t("A little less on your mind. A little more possible. Tell me what you would like to do today.", "Menos pendientes en tu cabeza. Más espacio para lo que importa. Cuéntame qué te gustaría hacer hoy.")}</p><div class="suggestions">${[
@@ -534,6 +580,8 @@ function drawMessages() {
             `<button class="suggestion" data-prompt="${escape(prompt)}"><span class="suggestion-icon">${iconMarkup(["memory", "projects", "schedules"][index])}</span><strong>${title}<span aria-hidden="true">↗</span></strong><span>${escape(prompt)}</span></button>`,
         )
         .join("")}</div></div>`;
+  // Design proposals attach to the reply that presented them.
+  window.dispatchEvent(new Event("fenix:messages-drawn"));
 }
 function progressLabel() {
   const progress = state.progress;
@@ -849,7 +897,6 @@ function updateProviderFields(changed) {
     $("#base_url").value = "";
     $("#provider_project").value = "";
     $("#organization").value = "";
-    $("#api_key").value = "";
     $("#reasoning_effort").value = id === "openai" ? "low" : "";
   }
 }
@@ -1102,10 +1149,8 @@ document.addEventListener("submit", async (event: any) => {
       fields.flex_processing =
         fields.provider === "openai" &&
         Boolean(state.status.settings?.flex_processing);
-      if (!fields.api_key) fields.api_key = null;
       if (fields.provider !== "openai") fields.reasoning_effort = null;
       const result = await api("/settings", { method: "POST", body: fields });
-      $("#api_key").value = "";
       state.status = await api("/status");
       await render();
       toast(
@@ -1180,8 +1225,7 @@ async function poll() {
       await refreshMessages(projectsChanged);
       updateActivityStrip();
     }
-    if (["chat", "design"].includes(state.page) && status.ready)
-      void refreshDesigns();
+    if (state.page === "chat" && status.ready) void refreshDesigns();
     if (state.page === "activity" && status.ready) drawTaskActivity();
     if ($("#connection-state"))
       $("#connection-state").textContent = t("Connected", "Conectado");
@@ -1227,13 +1271,6 @@ async function boot() {
   }
 }
 window.addEventListener("fenix:messages", () => refreshMessages());
-window.addEventListener("fenix:choose-design", () => {
-  openDesignCreation(chatRequest(), sendChatRequest);
-});
-window.addEventListener("fenix:design-draft", (event) => {
-  const input = $("#chat-input");
-  if (input) input.value = (event as CustomEvent<{ text: string }>).detail.text;
-});
 onPageChange((page) => {
   if (state.page === page) return;
   state.page = page;
@@ -1242,13 +1279,70 @@ onPageChange((page) => {
 await boot();
 
 window.addEventListener("fenix:design-chat", async (event) => {
-  const { text } = (event as CustomEvent<{ text: string }>).detail;
+  const { text, template } = (
+    event as CustomEvent<{
+      text?: string;
+      template?: { id: string; title: string };
+    }>
+  ).detail;
+  const draft =
+    document.querySelector<HTMLTextAreaElement>("#chat-input")?.value;
+  if (template) selectedTemplate = template;
   state.page = "chat";
   navigateTo("chat");
   await render();
   const input = document.querySelector<HTMLTextAreaElement>("#chat-input");
   if (input) {
-    input.value = text;
+    input.value = text ?? draft ?? "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
     input.focus();
+  }
+});
+
+// Choosing a proposal from its preview sends the choice, so the agent continues
+// with the request already in the conversation. When it cannot be sent now, the
+// choice stays attached to the composer for the next message.
+window.addEventListener("fenix:design-choose", async (event) => {
+  const { template } = (
+    event as CustomEvent<{ template: { id: string; title: string } }>
+  ).detail;
+  if (state.page !== "chat") {
+    state.page = "chat";
+    navigateTo("chat");
+    await render();
+  }
+  const keep = (message: string) => {
+    selectedTemplate = template;
+    drawTemplateContext();
+    $("#chat-input")?.focus();
+    toast(message);
+  };
+  if (sendingMessage) {
+    keep(
+      t(
+        "Your design is attached. Send a message when the current one finishes.",
+        "Tu diseño quedó adjunto. Envía un mensaje cuando termine el actual.",
+      ),
+    );
+    return;
+  }
+  try {
+    await sendChatRequest({
+      text: t(
+        `I choose the “${template.title}” design.`,
+        `Elijo el diseño «${template.title}».`,
+      ),
+      document_ids: [],
+      reply_to_task_id: null,
+      design_choice: { mode: "template", template_id: template.id },
+    });
+    if (selectedTemplate?.id === template.id) {
+      selectedTemplate = null;
+      drawTemplateContext();
+    }
+  } catch (error) {
+    keep(
+      `${errorMessage(error)} ${t("The design stays attached; send a message to continue.", "El diseño sigue adjunto; envía un mensaje para continuar.")}`,
+    );
   }
 });

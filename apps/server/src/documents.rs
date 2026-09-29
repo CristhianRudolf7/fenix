@@ -23,6 +23,8 @@ pub fn routes() -> Router<Arc<Runtime>> {
 }
 #[derive(Default, Deserialize)]
 struct Listing {
+    name: Option<String>,
+    format: Option<String>,
     project_id: Option<String>,
     all: Option<bool>,
     offset: Option<usize>,
@@ -31,9 +33,14 @@ struct Listing {
 }
 async fn list(State(rt): State<Arc<Runtime>>, Query(q): Query<Listing>) -> ApiResult<Value> {
     let offset = q.offset.unwrap_or(0);
-    let docs =
-        rt.store
-            .library_documents(q.project_id.as_deref(), q.all.unwrap_or(false), offset, 51)?;
+    let docs = rt.store.library_documents_filtered(
+        q.project_id.as_deref(),
+        q.all.unwrap_or(false),
+        offset,
+        51,
+        q.name.as_deref().unwrap_or(""),
+        q.format.as_deref().unwrap_or(""),
+    )?;
     let more = docs.len() > 50;
     Ok(Json(
         json!({"documents":docs.into_iter().take(50).collect::<Vec<_>>(),"next_offset":more.then_some(offset+50)}),

@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { test, expect } from "@playwright/test";
 import { preview } from "vite";
 let server, url;
@@ -12,229 +11,223 @@ test.afterAll(async () => {
     server.httpServer.closeAllConnections();
   });
 });
-
-test("private/public controls, review diffs and marketplace private installation", async ({
+test("private catalog opens cards without requesting publication services", async ({
   page,
 }) => {
-  let publication = null,
-    submissions = 0,
-    installed = null;
-  const bundle = {
-    name: "reports",
-    files: { "SKILL.md": "# Reports\n\n**Prepare** reports." },
-    executable: [],
-  };
-  bundle.files["SKILL.es.md"] = `---
-${JSON.stringify({ title: "Asistente de oficina", description: "Preparar informes de oficina", source_hash: "v1-es-" + createHash("sha256").update(bundle.files["SKILL.md"]).digest("hex") })}
----
-# Informes
-Preparar informes.`;
-  const publicSkill = {
-    id: "public-1",
-    name: "office-helper",
-    category: "office",
-    status: "approved",
-    public: true,
-    repaired: true,
-    source_hash: "original",
-    reviewed_hash: "corrected",
-  };
+  let enabled = true,
+    removed = false,
+    source =
+      "---\ndescription: Preparar informes\n---\n# Informes\n\nPreparar informes.",
+    revision = "original",
+    writes = 0,
+    failSave = false;
+  const exchanges = [];
   await page.route("**/api/**", async (route) => {
-    const request = route.request();
-    const pathname = new URL(request.url()).pathname;
-    let data = {};
-    if (pathname === "/api/auth/session")
+    const request = route.request(),
+      path = new URL(request.url()).pathname;
+    let data = [];
+    if (path.includes("skill-exchange")) exchanges.push(path);
+    if (path === "/api/auth/session")
       data = { email: "test@example.test", user_id: "owner" };
-    else if (pathname === "/api/status")
+    if (path === "/api/status")
       data = {
         ready: true,
-        settings: { model: "nemotron-test" },
+        settings: { model: "test" },
         projects: [],
         pending: [],
         pending_requests: [],
         tasks: [],
         active_tasks: [],
       };
-    else if (pathname === "/api/skills")
-      data = [
-        {
-          name: "reports",
-          description: "Prepare office reports",
-          version: "1.0",
-          category: "office",
-          enabled: true,
-        },
-      ];
-    else if (pathname === "/api/skill-categories")
-      data = [
-        { id: "office", labels: { en: "Office", es: "Oficina" }, aliases: [] },
-        {
-          id: "research",
-          labels: { en: "Research", es: "Investigación" },
-          aliases: [],
-        },
-      ];
-    else if (pathname === "/api/skill-localizations") {
-      const body = request.postDataJSON();
-      data = {
-        cards: (body.names || body.cards.map((c) => c.name)).map((name) => ({
-          name,
-          title: name === "reports" ? "Informes" : "Asistente de oficina",
-          description: "Preparar informes de oficina",
-        })),
-      };
-    } else if (pathname === "/api/skill-localizations/preview")
-      throw new Error("Opening a skill must not request live translation");
-    else if (pathname === "/api/skills/reports")
-      data = {
-        content:
-          new URL(request.url()).searchParams.get("language") === "es"
-            ? "# Informes\n\nPreparar informes."
-            : bundle.files["SKILL.md"],
-      };
-    else if (pathname === "/api/skills/reports/bundle") data = bundle;
-    else if (pathname === "/api/skills/install") {
-      installed = request.postDataJSON();
-      data = { private: true };
-    } else if (pathname === "/api/skill-exchange/status")
-      data = { configured: true };
-    else if (pathname === "/api/skill-exchange/mine")
-      data = { items: publication ? [publication] : [] };
-    else if (pathname === "/api/skill-exchange/catalog") {
-      const params = new URL(request.url()).searchParams;
-      data = {
-        items: params.get("category") === "research" ? [] : [publicSkill],
-      };
-    } else if (pathname === "/api/skill-exchange/publications") {
-      expect(request.postDataJSON()).not.toHaveProperty("category");
-      submissions++;
-      publication = {
-        ...publicSkill,
-        id: "mine-1",
-        name: "reports",
-        public: false,
-        status: "queued",
-      };
-      data = publication;
-    } else if (pathname.endsWith("/visibility")) {
-      publication = { ...publication, public: false, status: "cancelled" };
-      data = publication;
-    } else if (pathname.endsWith("/bundle"))
-      data = { ...bundle, name: "office-helper" };
-    else if (pathname === "/api/skill-exchange/publications/mine-1")
-      data = {
-        publication,
-        report: {
-          reason: "Original preserved",
-          repair: {
-            explanation: "Removed injected instruction",
-            edits: [
-              {
-                file: "SKILL.md",
-                before: "<script>window.stolen=true</script>",
-                after: "Prepare reports.",
-              },
-            ],
-          },
-        },
-      };
-    else if (["/api/live/settings", "/api/model-roles/fast"].includes(pathname))
-      data = {
-        configured: false,
-        settings: { provider: "openrouter", model: "nemotron-test" },
-      };
-    else if (["/api/events", "/api/progress"].includes(pathname)) {
+    if (path === "/api/session")
+      data = { id: "session", settings: { model: "test" } };
+    if (path === "/api/events" || path === "/api/progress") {
       await route.fulfill({
-        status: 200,
         contentType: "text/event-stream",
         body: ": connected\n\n",
       });
       return;
-    } else data = [];
-    await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify(data),
-    });
+    }
+    if (path === "/api/skills")
+      data = removed
+        ? []
+        : [
+            {
+              name: "reports",
+              description: "Prepare reports",
+              version: "1.0",
+              category: "office",
+              enabled,
+            },
+          ];
+    if (path === "/api/skill-categories")
+      data = [{ id: "office", labels: { en: "Office", es: "Oficina" } }];
+    if (path === "/api/skill-localizations")
+      data = {
+        cards: [
+          {
+            name: "reports",
+            title: "Informes",
+            description: "Preparar informes de oficina",
+          },
+        ],
+      };
+    if (path === "/api/skills/reports") {
+      if (request.method() === "PUT") {
+        enabled = request.postDataJSON().enabled;
+        data = { enabled };
+      } else data = { content: "# Informes\n\n**Preparar** informes." };
+    }
+    if (path === "/api/skills/reports/source") {
+      if (request.method() === "GET" && new URL(request.url()).search)
+        expect(new URL(request.url()).searchParams.get("language")).toBe("es");
+      if (request.method() === "PUT") {
+        if (failSave) {
+          await route.fulfill({
+            status: 409,
+            json: { error: "The skill changed. Reopen it before saving." },
+          });
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+        expect(request.postDataJSON().revision).toBe(revision);
+        expect(request.postDataJSON().language).toBe("es");
+        source = request.postDataJSON().content;
+        revision = `revision-${++writes}`;
+      }
+      if (request.method() === "DELETE") {
+        expect(request.postDataJSON().revision).toBe(revision);
+        removed = true;
+      }
+      data = { content: source, revision, language: "en" };
+    }
+    await route.fulfill({ json: data });
   });
-  await page.goto(`${url}skills`);
+  await page.goto(url + "skills");
   await expect(
     page.getByRole("heading", { name: "Informes", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("Publicar en", { exact: true })).toHaveCount(0);
-  expect(
-    (await page.getByLabel("Buscar skills", { exact: true }).boundingBox())
-      .width,
-  ).toBeGreaterThan(180);
+  await expect(page.getByRole("tab")).toHaveCount(0);
+  await expect(
+    page.getByText(/Marketplace|Publicaciones|Hacer público|Ver instrucciones/),
+  ).toHaveCount(0);
+  await page.locator(".skill-card").click();
+  const dialog = page.getByRole("dialog", { name: "Informes" });
+  await expect(dialog.locator("strong")).toHaveText("Preparar");
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "Activo" }).uncheck();
+  await expect.poll(() => enabled).toBe(false);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Ver instrucciones", exact: true })
-    .click();
-  await expect(page.getByRole("dialog")).toContainText("Preparar informes");
-  await page.getByRole("button", { name: "Cerrar", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Hacer público", exact: true })
-    .click();
+    .getByRole("button", { name: "Abrir Informes", exact: true })
+    .focus();
+  await page.keyboard.press("Enter");
+  await expect(dialog).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "En revisión…" }),
-  ).toBeDisabled();
-  expect(submissions).toBe(1);
-  await page
-    .getByRole("button", { name: "Mantener privado", exact: true })
-    .click();
-  await expect(
-    page.getByRole("button", { name: "Hacer público", exact: true }),
-  ).toBeEnabled();
-  await page.getByRole("tab", { name: "Publicaciones" }).click();
-  await page.getByRole("button", { name: "Ver revisión" }).click();
-  await expect(page.getByRole("dialog")).toContainText(
-    "<script>window.stolen=true</script>",
-  );
-  expect(await page.evaluate(() => window.stolen)).toBeUndefined();
-  await page.getByRole("button", { name: "Cerrar", exact: true }).click();
-  await page.getByRole("tab", { name: "Marketplace", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Asistente de oficina", exact: true }),
-  ).toBeVisible();
-  await page.getByLabel("Categoría", { exact: true }).selectOption("research");
-  await expect(
-    page.getByText("Todavía no hay publicaciones revisadas"),
-  ).toBeVisible();
-  await page.getByLabel("Categoría", { exact: true }).selectOption("office");
-  await page.getByRole("button", { name: "Instalar", exact: true }).click();
-  await page.getByLabel("Nombre del skill privado").fill("my-office-helper");
-  await page
-    .getByRole("button", { name: "Instalar copia", exact: true })
-    .click();
-  await expect(
-    page
-      .locator(".skill-exchange [role=status]")
-      .filter({ hasText: "Copia privada instalada" }),
-  ).toContainText("Copia privada instalada");
-  expect(installed.name).toBe("my-office-helper");
-  expect(installed.bundle.files).toEqual(bundle.files);
-  await page
-    .getByRole("button", { name: "Cambiar idioma", exact: true })
-    .click();
-  await page.getByRole("tab", { name: "Marketplace", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "office helper", exact: true }),
+    dialog
+      .locator(".skill-dialog-header")
+      .getByRole("button", { name: "Editar", exact: true }),
   ).toBeVisible();
   await expect(
-    page
-      .getByLabel("Category", { exact: true })
-      .locator('option[value="office"]'),
-  ).toHaveText("Office");
-  await page
-    .getByRole("button", { name: "Change language", exact: true })
-    .click();
-  await page.getByRole("tab", { name: "Marketplace", exact: true }).click();
+    dialog
+      .locator(".skill-reader")
+      .getByRole("button", { name: "Editar", exact: true }),
+  ).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Cerrar", exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
+  const editBounds = await page
+    .locator(".skill-card")
+    .getByRole("button", { name: "Editar", exact: true })
+    .boundingBox();
+  const deleteBounds = await page
+    .locator(".skill-card")
+    .getByRole("button", { name: "Eliminar", exact: true })
+    .boundingBox();
+  expect(Math.abs(editBounds.y - deleteBounds.y)).toBeLessThan(2);
+  expect(editBounds.x + editBounds.width).toBeLessThanOrEqual(deleteBounds.x);
+  await page.screenshot({ path: "/tmp/fenix-skills-actions-mobile.png" });
+  await page
+    .locator(".skill-card")
+    .getByRole("button", { name: "Editar", exact: true })
+    .click();
+  const editor = page.getByRole("textbox", {
+    name: "Instrucciones del skill",
+    exact: true,
+  });
+  await expect(editor).toHaveValue(source);
+  await editor.fill(source + "\n\nWrite a concise summary.");
+  await expect(editor).toBeFocused();
+  await page.waitForTimeout(1300);
+  expect(writes).toBe(0);
+  await dialog.getByRole("button", { name: "Cerrar", exact: true }).click();
+  const warning = page.getByRole("alertdialog", {
+    name: "¿Salir sin guardar?",
+  });
+  await expect(warning).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(warning).toHaveCount(0);
+  await expect(editor).toHaveValue(source + "\n\nWrite a concise summary.");
+  await dialog.getByRole("button", { name: "Cerrar", exact: true }).click();
+  await warning
+    .getByRole("button", { name: "Seguir editando", exact: true })
+    .click();
+  const save = dialog.getByRole("button", {
+    name: "Guardar cambios",
+    exact: true,
+  });
+  await expect(save).toHaveText("");
+  await expect(save.locator("svg")).toHaveCount(1);
+  await page.screenshot({ path: "/tmp/fenix-skills-editor-mobile.png" });
+  failSave = true;
+  await save.click();
+  await expect(dialog.getByRole("alert")).toContainText("The skill changed");
+  expect(writes).toBe(0);
+  await expect(editor).toHaveValue(source + "\n\nWrite a concise summary.");
+  failSave = false;
+  await save.dblclick();
+  await expect.poll(() => writes).toBe(1);
+  await expect(save).toBeDisabled();
   await expect(
-    page.getByRole("heading", { name: "Asistente de oficina", exact: true }),
+    page.getByText("Todos los cambios guardados", { exact: true }),
   ).toBeVisible();
+  await editor.fill(source + "\nUnsaved draft");
+  await page.keyboard.press("Escape");
+  await expect(warning).toBeVisible();
+  await warning
+    .getByRole("button", { name: "Descartar cambios", exact: true })
+    .click();
+  await expect(dialog).toHaveCount(0);
+  expect(writes).toBe(1);
+  await page
+    .locator(".skill-card")
+    .getByRole("button", { name: "Editar", exact: true })
+    .click();
+  await expect(editor).toHaveValue(source);
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cerrar", exact: true })
+    .click();
+  await page
+    .locator(".skill-card")
+    .getByRole("button", { name: "Eliminar", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Cancelar", exact: true }).click();
+  expect(removed).toBe(false);
+  await page
+    .locator(".skill-card")
+    .getByRole("button", { name: "Eliminar", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Eliminar skill", exact: true })
+    .click();
+  await expect(page.locator(".skill-card")).toHaveCount(0);
+  expect(removed).toBe(true);
+  expect(exchanges).toEqual([]);
+  await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
+      () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
 });

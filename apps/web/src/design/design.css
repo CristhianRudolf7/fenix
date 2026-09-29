@@ -1,80 +1,3 @@
-.design-page {
-  max-width: 1500px;
-  margin: auto;
-  padding: 38px 40px 70px;
-}
-.design-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 32px;
-}
-.design-heading small {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  color: var(--muted);
-}
-.design-heading h1 {
-  font-size: clamp(25px, 3vw, 38px);
-  letter-spacing: -0.045em;
-  margin: 10px 0;
-}
-.design-heading p {
-  max-width: 620px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-.design-upload {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  white-space: nowrap;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  padding: 10px 15px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.design-upload input {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  width: 100%;
-  cursor: pointer;
-}
-.design-tabs {
-  display: flex;
-  gap: 20px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 24px;
-  overflow: auto;
-}
-.design-tabs button {
-  border: 0;
-  background: none;
-  padding: 13px 0;
-  border-radius: 0;
-  color: var(--muted);
-  white-space: nowrap;
-  border-bottom: 2px solid transparent;
-}
-.design-tabs button[aria-current="page"] {
-  color: var(--fg);
-  border-bottom-color: var(--fg);
-}
-.design-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 26px;
-}
-.design-filters input {
-  flex: 1;
-  min-width: 160px;
-}
-.design-page input,
-.design-page select,
 .design-panel select,
 .data-grid input {
   background: var(--bg);
@@ -85,35 +8,6 @@
   font: inherit;
   font-size: 13px;
   max-width: 100%;
-}
-.design-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 22px;
-}
-.design-card {
-  position: relative;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--bg);
-  transition:
-    box-shadow 0.15s,
-    transform 0.15s;
-}
-.design-card:hover {
-  box-shadow: var(--shadow);
-  transform: translateY(-2px);
-}
-.design-card-open {
-  display: block !important;
-  width: 100%;
-  padding: 0 !important;
-  border: 0 !important;
-  background: none !important;
-  text-align: left;
-  color: var(--fg);
-  cursor: pointer;
 }
 .design-thumbnail {
   display: block;
@@ -129,24 +23,6 @@
   width: 100%;
   height: 100%;
 }
-.design-card-title {
-  padding: 16px 18px 20px;
-}
-.design-card-title small {
-  font-size: 10px;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.design-card-title h2 {
-  font-size: 16px;
-  margin: 7px 0;
-  letter-spacing: -0.02em;
-}
-.design-card-title span {
-  font-size: 12px;
-  color: var(--muted);
-}
 .design-star {
   position: absolute;
   right: 10px;
@@ -160,18 +36,8 @@
   padding: 0 !important;
   font-size: 20px;
 }
-.design-load {
-  display: block;
-  margin: 28px auto;
-}
-.design-empty {
-  text-align: center;
-  padding: 55px 20px;
-  color: var(--muted);
-}
-.design-empty h2 {
-  font-size: 20px;
-  color: var(--fg);
+.design-star[aria-disabled="true"] {
+  cursor: progress;
 }
 .design-error {
   background: #ffeded;
@@ -435,68 +301,10 @@
 .chat-design-results small {
   color: var(--muted);
 }
-.brand-editor {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 45px;
-  max-width: 1050px;
-}
-.brand-editor h2 {
-  font-size: 23px;
-}
-.brand-editor p {
-  font-size: 14px;
-  line-height: 1.6;
-  color: var(--muted);
-}
-.brand-editor label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  margin: 18px 0;
-  font-size: 13px;
-}
-.brand-editor input[type="color"] {
-  width: 70px;
-  height: 40px;
-  padding: 4px;
-}
-.brand-sample {
-  align-self: start;
-  padding: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  min-height: 330px;
-}
-.brand-sample small {
-  letter-spacing: 0.12em;
-}
-.brand-sample h2 {
-  font-size: 36px;
-}
-.brand-sample span {
-  display: inline-block;
-  padding: 10px 20px;
-  border-radius: 6px;
-  margin-top: 20px;
-}
 .design-panel :focus-visible,
-.design-page :focus-visible {
+.design-offer :focus-visible {
   outline: 2px solid #648570;
   outline-offset: 3px;
-}
-@media (max-width: 1100px) {
-  .design-page {
-    padding: 25px;
-  }
-  .design-preview-open .design-grid {
-    grid-template-columns: 1fr;
-  }
-  .brand-editor {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
 }
 @media (max-width: 900px) {
   .design-panel {
@@ -512,20 +320,6 @@
   .design-preview-open {
     overflow: hidden;
   }
-  .design-heading {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .design-page {
-    padding: 22px 16px;
-  }
-  .design-grid {
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: 14px;
-  }
-  .design-tabs {
-    gap: 17px;
-  }
   .design-panel-head {
     padding: 14px;
   }
@@ -536,30 +330,344 @@
     min-height: 70dvh;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .design-card {
-    transition: none;
-    transform: none !important;
-  }
+
+/* Generated files stay in one horizontally scrollable row. Hiding keeps the file. */
+.chat-design-results {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
 }
-.brand-logo {
-  display: block;
-  max-width: 150px;
-  max-height: 80px;
-  object-fit: contain;
-  margin-bottom: 20px;
+.chat-file-chip {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  max-width: 280px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
 }
-.chat-design-results .chat-template-choice {
-  width: 155px;
-  padding: 0 0 8px;
-  white-space: normal;
+.chat-design-results .chat-file-chip > button {
+  border: 0;
+  background: transparent;
+  min-width: 0;
+}
+.chat-design-results .chat-file-chip > button:first-child {
+  flex: 1 1 auto;
   text-align: left;
 }
-.chat-template-choice .design-thumbnail {
-  height: 70px;
-  aspect-ratio: auto;
-  margin-bottom: 7px;
+.chat-design-results .chat-file-dismiss {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 32px;
+  padding: 7px;
+  color: var(--muted);
 }
-.chat-template-choice {
-  font-size: 11px !important;
+.chat-design-results .chat-file-dismiss:hover {
+  color: var(--fg);
+  background: var(--line);
+}
+.chat-file-dismiss svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Template proposals preview in a centered modal; the side panel shows finished results. */
+.design-modal-open {
+  overflow: hidden;
+}
+.design-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 4vw, 48px);
+  background: color-mix(in srgb, #181815 48%, transparent);
+  backdrop-filter: blur(3px);
+  overscroll-behavior: contain;
+  animation: design-modal-fade 0.16s ease-out;
+}
+.design-modal-backdrop .design-panel.design-modal {
+  position: relative;
+  inset: auto;
+  z-index: auto;
+  width: min(1180px, 100%);
+  height: min(880px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 30px 100px #0004;
+  overflow: hidden;
+  animation: design-modal-enter 0.18s ease-out;
+}
+.design-modal-head {
+  flex-shrink: 0;
+  padding: 16px 16px 16px 24px;
+}
+.design-modal-head h2 {
+  margin: 4px 0 0;
+}
+.design-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.design-modal-head .design-toolbar {
+  padding: 0;
+  border: 0;
+  flex-wrap: nowrap;
+}
+.design-modal .design-note {
+  margin: 0;
+  padding: 10px 24px;
+}
+.design-modal .design-panel-foot {
+  padding-inline: 24px;
+}
+.design-modal-actions .icon-button {
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+}
+@keyframes design-modal-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes design-modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+}
+@media (max-width: 700px) {
+  .design-modal-backdrop {
+    padding: 0;
+  }
+  .design-modal-backdrop .design-panel.design-modal {
+    width: 100%;
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+  .design-modal-head {
+    padding: 10px 10px 10px 16px;
+  }
+  .design-modal .design-note {
+    padding-inline: 16px;
+  }
+  .design-modal .design-panel-foot {
+    padding-inline: 16px;
+  }
+  .design-modal-head .design-toolbar select {
+    max-width: 130px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .design-modal-backdrop,
+  .design-modal-backdrop .design-panel.design-modal {
+    animation: none;
+  }
+}
+
+.chat-template-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--accent-soft);
+  color: var(--text);
+  min-width: 0;
+}
+.chat-template-context[hidden] {
+  display: none;
+}
+.chat-template-context > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.chat-template-context > span > span {
+  display: grid;
+  min-width: 0;
+}
+.chat-template-context small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.chat-template-context strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+.chat-template-context svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Choosing a proposal happens in the preview modal; its footer explains the step. */
+.design-choice-foot {
+  justify-content: space-between;
+}
+.design-choice-foot p {
+  flex: 1 1 260px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Design proposals: a compact carousel of real template covers inside a reply. */
+.design-offer-slot {
+  min-width: 0;
+  max-width: 100%;
+}
+.design-offer-slot.is-pending {
+  margin: -12px 0 24px 48px;
+}
+.design-offer {
+  min-width: 0;
+  margin: 12px 0 4px;
+}
+.design-offer-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.design-offer-head h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.design-offer-head p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.design-offer-nav {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.design-offer-nav .icon-button {
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--bg);
+}
+.design-offer-nav .icon-button:disabled {
+  opacity: 0.4;
+}
+.design-offer-previous svg {
+  transform: scaleX(-1);
+}
+.design-offer-track {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 2px 2px 10px;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  scrollbar-width: thin;
+}
+.design-offer-card {
+  position: relative;
+  flex: 0 0 clamp(168px, 30%, 216px);
+  scroll-snap-align: start;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.design-offer-card:hover,
+.design-offer-card:focus-within {
+  border-color: var(--accent, var(--fg));
+  box-shadow: var(--shadow);
+}
+.design-offer-open {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+}
+.design-offer-open .design-thumbnail {
+  aspect-ratio: 8 / 5;
+}
+.design-offer-meta {
+  display: grid;
+  gap: 3px;
+  padding: 9px 11px 11px;
+}
+.design-offer-meta small {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.design-offer-meta strong {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.design-offer-card .design-star {
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  font-size: 17px;
+  line-height: 1;
+}
+.design-offer-status:empty {
+  display: none;
+}
+.design-offer-status {
+  margin: 4px 0 0;
+  color: var(--danger, #8d2424);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .design-offer-slot.is-pending {
+    margin-left: 0;
+  }
+  .design-offer-card {
+    flex-basis: min(72vw, 220px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .design-offer-card {
+    transition: none;
+  }
 }

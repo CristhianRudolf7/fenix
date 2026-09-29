@@ -85,11 +85,26 @@ impl Store {
         offset: usize,
         limit: usize,
     ) -> Result<Vec<LibraryDocument>> {
+        self.library_documents_filtered(project, all, offset, limit, "", "")
+    }
+    pub fn library_documents_filtered(
+        &self,
+        project: Option<&str>,
+        all: bool,
+        offset: usize,
+        limit: usize,
+        name: &str,
+        format: &str,
+    ) -> Result<Vec<LibraryDocument>> {
         let db = self.db()?;
-        let mut q=db.prepare("SELECT data FROM library_documents WHERE (?2 OR project_id IS ?1) ORDER BY json_extract(data,'$.updated_at') DESC,id LIMIT ?3 OFFSET ?4")?;
-        q.query_map(params![project, all, limit.min(101), offset], |r| {
-            r.get::<_, String>(0)
-        })?
+        let mut q=db.prepare("SELECT data FROM library_documents WHERE (?2 OR project_id IS ?1)
+            AND (?5 = '' OR instr(lower(json_extract(data,'$.title')), lower(?5)) > 0 OR instr(lower(json_extract(data,'$.filename')), lower(?5)) > 0)
+            AND (?6 = '' OR json_extract(data,'$.format') = ?6)
+            ORDER BY json_extract(data,'$.updated_at') DESC,id LIMIT ?3 OFFSET ?4")?;
+        q.query_map(
+            params![project, all, limit.min(101), offset, name, format],
+            |r| r.get::<_, String>(0),
+        )?
         .map(|r| Ok(serde_json::from_str(&r?)?))
         .collect()
     }

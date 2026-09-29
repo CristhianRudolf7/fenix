@@ -6,7 +6,7 @@ The current multi-user implementation separates controllers from task execution.
 
 ## Account administration
 
-There is a login screen, but **no registration screen or account-creation HTTP endpoint**. Provision accounts locally:
+Password accounts are provisioned locally. [Google sign-in and registration](google-sign-in.md) can claim a fresh, prepared tenant after verified Google consent; there is no public password-registration endpoint. Provision accounts locally:
 
 ```sh
 # The password is read from stdin, never from shell arguments.

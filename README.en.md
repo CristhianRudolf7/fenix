@@ -202,3 +202,5 @@ See [procedural skills and recovery](docs/en/harness-recovery.md) for demand-loa
 [Library of 171 original skills](docs/en/skill-library.md): catalog, common structure, connection boundaries and source review.
 
 [Design: templates, visual results and the chat preview panel](docs/en/design.md).
+
+- [Google sign-in and registration](docs/en/google-sign-in.md)

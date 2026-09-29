@@ -7,8 +7,26 @@ impl Browser {
         session: &str,
         frame: Option<&str>,
         args: &Value,
+        owner: bool,
     ) -> Result<Value> {
         let action = text(args, "action", "");
+        if owner
+            && action == "type"
+            && frame.is_none()
+            && args.get("ref").is_none()
+            && args.get("selector").is_none()
+        {
+            // Human typing follows Chromium's focused control, including iframe
+            // inputs. Do not refocus the parent document or inspect field values.
+            let value = text(args, "text", "");
+            if value.len() > 16000 {
+                bail!("Input text exceeds 16000 bytes");
+            }
+            s.cdp
+                .call(Some(session), "Input.insertText", json!({"text":value}))
+                .await?;
+            return Ok(json!({"performed":true,"action":"type"}));
+        }
         if matches!(action, "back" | "forward") {
             let h = s
                 .cdp
@@ -117,6 +135,13 @@ impl Browser {
                             _ => "left",
                         };
                         for count in 1..=if action == "double_click" { 2 } else { 1 } {
+                            // The owner UI forwards the native click sequence. A
+                            // double click must not replay two additional clicks.
+                            let count = if action == "click" {
+                                number(args, "click_count", 1.).clamp(1., 3.) as u32
+                            } else {
+                                count
+                            };
                             for kind in ["mousePressed", "mouseReleased"] {
                                 s.cdp
                                     .call(

@@ -56,6 +56,19 @@ async function fixture(page) {
       data = {
         catalog: [
           {
+            id: "web",
+            name: "Web search",
+            auth: "builtin",
+            category: "research",
+          },
+          { id: "pdf", name: "PDF", auth: "builtin", category: "documents" },
+          {
+            id: "office",
+            name: "Documents, spreadsheets and presentations",
+            auth: "builtin",
+            category: "documents",
+          },
+          {
             id: "google",
             name: "Google Workspace",
             category: "office",
@@ -231,11 +244,9 @@ test("WhatsApp shares the searchable catalog and opens a dismissible pairing dia
   page,
 }) => {
   await fixture(page);
-  const card = page
-    .locator(".connector-grid .connector-card")
-    .filter({
-      has: page.getByRole("heading", { name: "WhatsApp", exact: true }),
-    });
+  const card = page.locator(".connector-grid .connector-card").filter({
+    has: page.getByRole("heading", { name: "WhatsApp", exact: true }),
+  });
   await expect(card).toHaveCount(1);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByPlaceholder("Google Drive, GitHub, PDF…").fill("WhatsApp");
@@ -248,4 +259,61 @@ test("WhatsApp shares the searchable catalog and opens a dismissible pairing dia
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(card.getByRole("button")).toBeFocused();
+});
+
+test("connections exclude built-in web and document tools", async ({
+  page,
+}) => {
+  await fixture(page);
+  await page.goto(url + "integrations");
+  await expect(
+    page.getByRole("heading", { name: "Google Workspace", exact: true }),
+  ).toBeVisible();
+  for (const name of [
+    "Web search",
+    "PDF",
+    "Documents, spreadsheets and presentations",
+  ])
+    await expect(page.getByRole("heading", { name, exact: true })).toHaveCount(
+      0,
+    );
+});
+
+test("WhatsApp is the first connection card", async ({ page }) => {
+  await fixture(page);
+  await expect(page.locator(".connector-grid > :first-child")).toContainText(
+    "WhatsApp",
+  );
+});
+
+test("Google setup failures explain that the administrator must finish configuration", async ({
+  page,
+}) => {
+  await fixture(page);
+  await page.route("**/api/connectors", async (route) => {
+    if (route.request().method() === "POST")
+      await route.fulfill({ json: { id: "google-account" } });
+    else await route.fallback();
+  });
+  await page.route("**/api/connectors/google-account/oauth", (route) =>
+    route.fulfill({
+      status: 400,
+      json: {
+        error: "Configure the google OAuth application (client_id) first",
+      },
+    }),
+  );
+  const card = page
+    .locator(".connector-card")
+    .filter({
+      has: page.getByRole("heading", { name: "Google Workspace", exact: true }),
+    });
+  await card.getByRole("button", { name: /Conectar/ }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Conectar|Continuar/ })
+    .click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
+    "El administrador debe terminar de configurarla",
+  );
 });

@@ -112,7 +112,7 @@ impl Browser {
                 .and_then(|t| t["targetId"].as_str())
                 .unwrap_or("")
                 .to_owned();
-            self.operation(s, PROFILE, "browser_open", &json!({"url":url}))
+            self.operation(s, PROFILE, "browser_open", &json!({"url":url}), true)
                 .await?;
             s.active.clone()
         };

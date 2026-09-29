@@ -186,7 +186,7 @@ test.afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
-test("welcome validates inference, lists all providers and defaults to warm light even on a dark OS", async ({
+test("managed welcome hides service credentials and defaults to warm light even on a dark OS", async ({
   page,
 }, testInfo) => {
   await page.emulateMedia({ colorScheme: "dark" });
@@ -194,9 +194,9 @@ test("welcome validates inference, lists all providers and defaults to warm ligh
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Conecta tu modelo" }),
+    page.getByRole("heading", { name: "Estamos preparando tu asistente" }),
   ).toBeVisible();
-  await expect(page.locator("#provider option")).toHaveCount(17);
+  await expect(page.locator("#api_key, #provider")).toHaveCount(0);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.locator("body")).toHaveCSS(
     "background-color",
@@ -206,17 +206,20 @@ test("welcome validates inference, lists all providers and defaults to warm ligh
     path: testInfo.outputPath("welcome-light.png"),
     fullPage: true,
   });
-  await page.locator("#advanced-settings > summary").click();
-  await page.locator("#base_url").fill(modelURL);
-  await page.locator("#api_key").fill("bad-key");
-  await page.getByRole("button", { name: "Verificar y comenzar" }).click();
-  await expect(page.locator("#model-status")).toContainText("HTTP 401");
-  await expect(
-    page.getByRole("heading", { name: "Conecta tu modelo" }),
-  ).toBeVisible();
-  await page.locator("#api_key").fill("fake-browser-key");
-  await page.locator("#workspace").fill(directory);
-  await page.getByRole("button", { name: "Verificar y comenzar" }).click();
+  // Service credentials are provisioned by the operator, never through the UI.
+  const { default_settings: settings } = await (
+    await page.request.get("/api/status")
+  ).json();
+  const configured = await page.request.post("/api/settings", {
+    data: {
+      ...settings,
+      base_url: modelURL,
+      workspace: directory,
+      api_key: "fake-browser-key",
+    },
+  });
+  expect(configured.ok()).toBe(true);
+  await page.reload();
   await expect(page.locator("#chat-input")).toBeVisible();
   // Chat and Live share an interlocutor; the master alone no longer handles chat directly.
   const interlocutor = await page.request.post("/api/live/settings", {
@@ -345,13 +348,7 @@ test("section URLs survive reload and history with accessible loading", async ({
   ).toBe("none");
   release();
   await expect(page.locator(".loading-state")).toHaveCount(0);
-  for (const section of [
-    "schedules",
-    "activity",
-    "settings",
-    "design",
-    "chat",
-  ]) {
+  for (const section of ["schedules", "activity", "settings", "chat"]) {
     await page.goto("/" + section);
     await expect(page.locator(`[data-page="${section}"]`)).toHaveAttribute(
       "aria-current",
@@ -494,7 +491,7 @@ test("theme is an explicit persistent choice and the interface fits a phone", as
     await page.locator(".sidebar-toggle").click();
   await page.locator('[data-page="settings"]').click();
   await expect(page.locator("#telegram-form")).toBeVisible();
-  await expect(page.locator("#api_key")).toHaveValue("");
+  await expect(page.locator("#api_key")).toHaveCount(0);
   await page.locator(".sidebar-toggle").click();
   await page.locator('.mobile-brand [data-action="language"]').click();
   if (await page.locator(".mobile-menu-close").isVisible())
@@ -1146,8 +1143,9 @@ test("Live shares history, survives navigation, and hangup leaves master tasks i
   });
   await settings.locator('[name="provider"]').selectOption("openai");
   await settings.locator('[name="model"]').fill("voice-test");
-  await settings.locator('[name="base_url"]').fill(modelURL);
-  await settings.locator('[name="api_key"]').fill("voice-test-key");
+  await expect(
+    settings.locator('[name="base_url"], [name="api_key"]'),
+  ).toHaveCount(0);
   await settings.getByRole("button", { name: "Verificar y guardar" }).click();
   await expect(settings).toHaveCount(0);
   const before = (await (await page.request.get("/api/tasks")).json()).map(
@@ -1302,11 +1300,12 @@ test("agent-authored diagrams support exploration and preserve the last valid vi
   expect(
     JSON.parse(await readFile(archive, "utf8")).content.graph.nodes,
   ).toHaveLength(5);
-  await page.goto("/design");
-  await page.getByRole("button", { name: "Mis diseños", exact: true }).click();
+  // Finished results open from the chat in the right-hand panel.
+  await page.goto("/chat");
   await page
-    .locator(".design-card-open")
+    .locator(".chat-design-results button")
     .filter({ hasText: "Purchasing approval" })
+    .first()
     .click();
   const panel = page.getByRole("dialog", { name: "Vista del diseño" });
   const image = panel.locator(".diagram-viewport img");
@@ -1416,137 +1415,112 @@ test("agent-authored diagrams support exploration and preserve the last valid vi
   await expect(page.locator("#chat-input")).toHaveValue(new RegExp(diagram.id));
 });
 
-test("Design previews all eight formats, keeps favorites and versions, and fits a phone", async ({
+// Template previews open over the chat, the same way a saved choice link does.
+async function previewTemplate(page, id) {
+  await page.evaluate((id) => {
+    const link = document.createElement("a");
+    link.href = `/design?template=${id}`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+  }, id);
+  return page.locator(".design-modal");
+}
+
+test("template previews cover all eight formats in a centered modal over the chat", async ({
   page,
 }, testInfo) => {
   test.setTimeout(120_000);
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");
-  await page.locator('[data-page="design"]').click();
-  await expect(
-    page.getByRole("heading", { name: "Dale forma a tus ideas." }),
-  ).toBeVisible();
-  await expect(page.locator(".design-card")).toHaveCount(24);
-  await page
-    .getByRole("button", { name: "Favorito: Lanzamiento SaaS", exact: true })
-    .click();
-  await page.getByRole("button", { name: /^Favoritos/ }).click();
-  await expect(page.locator(".design-card")).toHaveCount(1);
-  await page.reload();
-  await page.locator('[data-page="design"]').click();
-  await page.getByRole("button", { name: /^Favoritos/ }).click();
-  await expect(page.locator(".design-card")).toHaveCount(1);
-  await page.getByRole("button", { name: "Plantillas", exact: true }).click();
+  await expect(page.locator('[data-page="design"]')).toHaveCount(0);
   const cases = [
-    ["diagram", "Flujo de decisiones", ".diagram-canvas img"],
-    ["web", "Lanzamiento SaaS", "iframe"],
-    ["presentation", "Resultados de investigación", ".slide"],
-    ["chart", "Ventas semanales", ".chart-view svg"],
-    ["document", "Informe ejecutivo", ".template-document"],
-    ["spreadsheet", "Presupuesto de proyecto", ".data-grid table"],
-    ["image", "Cartel de evento", ".image-preview"],
-    ["video", "Introducción animada", "video"],
+    ["decision-flow", "Flujo de decisiones", ".diagram-canvas img"],
+    ["saas-launch", "Lanzamiento SaaS", "iframe"],
+    ["research-deck", "Resultados de investigación", ".slide"],
+    ["weekly-sales", "Ventas semanales", ".chart-view svg"],
+    ["executive-report", "Informe ejecutivo", ".template-document"],
+    ["budget-sheet", "Presupuesto de proyecto", ".data-grid table"],
+    ["event-poster", "Cartel de evento", ".image-preview"],
+    ["motion-intro", "Introducción animada", "video"],
   ];
-  for (const [kind, title, selector] of cases) {
-    await page.getByLabel("Categoría de diseño").selectOption(kind);
-    await page
-      .locator(".design-card-open")
-      .filter({ has: page.getByRole("heading", { name: title, exact: true }) })
-      .click();
-    const panel = page.getByRole("dialog", { name: "Vista del diseño" });
-    await expect(panel.locator(selector)).toBeVisible({ timeout: 20000 });
-    await expect(page.locator(".sidebar")).toBeHidden();
-    expect((await page.locator(".main").boundingBox()).x).toBeLessThan(2);
-    if (kind === "diagram")
-      await expect(panel.locator("img")).toHaveJSProperty("complete", true);
-    if (kind === "web")
-      await expect(
-        panel.frameLocator("iframe").getByRole("heading", {
-          name: /A little less busy.*A lot more possible/,
-        }),
-      ).toBeVisible();
-    if (kind === "video")
+  for (const [id, title, selector] of cases) {
+    const modal = await previewTemplate(page, id);
+    await expect(
+      modal.getByRole("heading", { name: title, exact: true }),
+    ).toBeVisible();
+    await expect(modal.locator(selector)).toBeVisible({ timeout: 20_000 });
+    await expect(modal).toHaveAttribute("aria-modal", "true");
+    await expect(page.locator(".workspace-chrome")).toHaveCount(0);
+    if (id === "saas-launch") {
+      const box = await modal.boundingBox();
+      expect(Math.abs(box.x - (1280 - box.x - box.width))).toBeLessThan(2);
+      await page.screenshot({ path: testInfo.outputPath("design-modal.png") });
+    }
+    if (id === "motion-intro")
       await expect
-        .poll(() => panel.locator("video").evaluate((v) => v.readyState))
+        .poll(() => modal.locator("video").evaluate((v) => v.readyState))
         .toBeGreaterThan(0);
-
-    await page
-      .getByRole("button", { name: "Volver al chat / cerrar vista" })
-      .click();
+    await page.keyboard.press("Escape");
+    await expect(modal).toHaveCount(0);
   }
-  await expect(page.locator(".sidebar")).toBeVisible();
-  await page.getByLabel("Categoría de diseño").selectOption("diagram");
-  await page
-    .locator(".design-card-open")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "Flujo de decisiones",
-        exact: true,
-      }),
-    })
-    .click();
-  await page.getByRole("button", { name: "Usar esta plantilla" }).click();
-  await expect(
-    page.getByRole("button", { name: "Pedir cambios en el chat" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Contenido", exact: true }).click();
-  await expect(page.locator(".design-source")).toHaveAttribute("readonly", "");
-  await expect(
-    page.getByRole("button", { name: "Guardar una nueva versión" }),
-  ).toHaveCount(0);
-  await page.getByRole("button", { name: "Pedir cambios en el chat" }).click();
-  await expect(page.locator("#chat-input")).toHaveValue(/design_id:/);
-  await page
-    .locator(".chat-design-results button")
-    .filter({ hasText: "Decision flow" })
-    .first()
-    .click();
-  await expect(
-    page.getByRole("dialog", { name: "Vista del diseño" }),
-  ).toBeVisible();
-  await page.screenshot({
-    path: testInfo.outputPath("design-chat-desktop.png"),
-    fullPage: true,
-  });
   await page.setViewportSize({ width: 390, height: 844 });
-  const box = await page.locator(".design-panel").boundingBox();
-  expect(box.x).toBe(0);
-  expect(box.width).toBe(390);
-  await page.screenshot({
-    path: testInfo.outputPath("design-mobile.png"),
-    fullPage: true,
-  });
-  await page
-    .getByRole("button", { name: "Volver al chat / cerrar vista" })
-    .click();
-  await expect(page.locator("#chat-input")).toBeVisible();
+  const modal = await previewTemplate(page, "research-deck");
+  await expect
+    .poll(() => modal.boundingBox())
+    .toEqual({ x: 0, y: 0, width: 390, height: 844 });
+  await page.screenshot({ path: testInfo.outputPath("design-mobile.png") });
+  await page.keyboard.press("Escape");
   expect(errors).toEqual([]);
 });
 
-test("Design import and branding work and untrusted HTML cannot access the app", async ({
+test("choosing a template preview sends the choice through chat and results use the side panel", async ({
   page,
 }) => {
-  await page.goto("/");
-  await page.locator('[data-page="design"]').click();
-  await page
-    .getByRole("button", { name: "Identidad visual", exact: true })
-    .click();
-  await page.getByLabel("Nombre de marca").fill("Research Studio");
-  await page.getByRole("button", { name: "Guardar identidad" }).click();
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/design?template=saas-launch");
+  await expect(page).toHaveURL(/\/chat$/);
+  const modal = page.getByRole("dialog", { name: "Lanzamiento SaaS" });
   await expect(
-    page.getByRole("status").filter({ hasText: "Identidad guardada" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Mis diseños", exact: true }).click();
-  await page.locator(".design-upload input").setInputFiles({
-    name: "table.csv",
-    mimeType: "text/csv",
-    buffer: Buffer.from("Name,Value\nAlpha,10\nBeta,20\n"),
+    modal.frameLocator("iframe").getByRole("heading").first(),
+  ).toBeVisible({ timeout: 20_000 });
+  await expect(modal.getByRole("button", { name: "Descargar" })).toHaveCount(0);
+  const requests = [];
+  await page.route("**/api/messages", async (route) => {
+    if (route.request().method() !== "POST") return route.fallback();
+    requests.push(route.request().postDataJSON());
+    return route.fulfill({ json: {} });
   });
-  await expect(page.locator(".design-panel table")).toContainText("Alpha");
+  await modal.getByRole("button", { name: "Elegir este diseño" }).click();
+  await expect.poll(() => requests.length).toBe(1);
+  expect(requests[0].design_choice).toEqual({
+    mode: "template",
+    template_id: "saas-launch",
+  });
+  await expect(page.locator(".workspace-chrome")).toHaveCount(0);
+  await page.unroute("**/api/messages");
+  // A finished result, unlike a proposal, opens in the chat's right-hand panel.
+  const created = await (
+    await page.request.post("/api/design/templates/saas-launch/use", {
+      data: { project_id: null },
+    })
+  ).json();
+  await page.reload();
   await page
-    .getByRole("button", { name: "Volver al chat / cerrar vista" })
+    .locator(".chat-design-results button")
+    .filter({ hasText: created.title_es || created.title })
+    .first()
     .click();
+  const panel = page.getByRole("dialog", { name: "Vista del diseño" });
+  await expect(panel.locator("iframe")).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator(".workspace-chrome")).toBeVisible();
+  await expect(page.locator(".design-modal-backdrop")).toHaveCount(0);
+});
+
+test("untrusted HTML results cannot access the app", async ({ page }) => {
   const response = await page.request.post("/api/design/artifacts", {
     data: {
       title: "Isolation check",
@@ -1557,12 +1531,11 @@ test("Design import and branding work and untrusted HTML cannot access the app",
     },
   });
   expect(response.ok()).toBeTruthy();
-  await page.reload();
-  await page.locator('[data-page="design"]').click();
-  await page.getByRole("button", { name: "Mis diseños", exact: true }).click();
+  await page.goto("/chat");
   await page
-    .locator(".design-card-open")
+    .locator(".chat-design-results button")
     .filter({ hasText: "Isolation check" })
+    .first()
     .click();
   await expect(
     page
@@ -1582,7 +1555,6 @@ test("Design catalog renders every template and can regenerate real thumbnails",
 }, testInfo) => {
   test.setTimeout(720_000);
   await page.goto("/");
-  await page.locator('[data-page="design"]').click();
   let entries = [];
   let offset = 0;
   do {
@@ -1603,12 +1575,7 @@ test("Design catalog renders every template and can regenerate real thumbnails",
   for (const entry of entries.filter(
     (entry) => !selectedKinds.size || selectedKinds.has(entry.kind),
   )) {
-    await page.getByLabel("Buscar diseños", { exact: true }).fill(entry.title);
-    const card = page.locator(".design-card-open").filter({
-      has: page.getByRole("heading", { name: entry.title_es, exact: true }),
-    });
-    await card.click();
-    const panel = page.getByRole("dialog", { name: "Vista del diseño" });
+    const panel = await previewTemplate(page, entry.id);
     await expect(
       panel.getByRole("heading", { name: entry.title_es, exact: true }),
     ).toBeVisible();
@@ -1760,81 +1727,7 @@ test("Design catalog renders every template and can regenerate real thumbnails",
     });
     await framing.evaluate((node) => node.remove());
     await page.setViewportSize({ width: 1280, height: 720 });
-    await page
-      .getByRole("button", { name: "Volver al chat / cerrar vista" })
-      .click();
+    await page.keyboard.press("Escape");
+    await expect(panel).toHaveCount(0);
   }
-});
-
-test("Template gallery shows real covers on desktop and mobile", async ({
-  page,
-}, testInfo) => {
-  test.setTimeout(60_000);
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  await page.locator('[data-page="design"]').click();
-  await expect(page.locator(".design-card")).toHaveCount(24);
-  for (const thumbnail of await page
-    .locator(".design-card .design-thumbnail")
-    .all()) {
-    await thumbnail.scrollIntoViewIfNeeded();
-    await expect(thumbnail).toHaveJSProperty("naturalWidth", 960);
-    await expect(thumbnail).toHaveJSProperty("naturalHeight", 600);
-  }
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.locator(".design-heading").scrollIntoViewIfNeeded();
-  await page.screenshot({
-    path: testInfo.outputPath("templates-gallery-desktop.png"),
-    fullPage: true,
-  });
-  await page.getByLabel("Categoría de diseño").selectOption("chart");
-  await expect(page.locator(".design-card")).toHaveCount(8);
-  for (const thumbnail of await page.locator(".design-thumbnail").all()) {
-    await thumbnail.scrollIntoViewIfNeeded();
-    await expect(thumbnail).toHaveJSProperty("naturalWidth", 960);
-  }
-  await page.locator(".design-heading").scrollIntoViewIfNeeded();
-  await page.screenshot({
-    path: testInfo.outputPath("templates-charts-white.png"),
-    fullPage: true,
-  });
-  await page.getByLabel("Categoría de diseño").selectOption("presentation");
-  await expect(page.locator(".design-card")).toHaveCount(10);
-  for (const thumbnail of await page.locator(".design-thumbnail").all()) {
-    await thumbnail.scrollIntoViewIfNeeded();
-    await expect(thumbnail).toHaveJSProperty("naturalWidth", 960);
-  }
-  await page.locator(".design-heading").scrollIntoViewIfNeeded();
-  await page.screenshot({
-    path: testInfo.outputPath("templates-presentations.png"),
-    fullPage: true,
-  });
-  await page
-    .locator(".design-card-open")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "Presentación de proyecto",
-        exact: true,
-      }),
-    })
-    .click();
-  await expect(page.locator(".designed-slide")).toHaveCSS(
-    "background-color",
-    "rgb(24, 27, 48)",
-  );
-  await page.screenshot({
-    path: testInfo.outputPath("template-presentation-desktop.png"),
-  });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({
-    path: testInfo.outputPath("template-presentation-mobile.png"),
-  });
-  await page
-    .getByRole("button", { name: "Volver al chat / cerrar vista" })
-    .click();
-  await page.locator(".design-heading").scrollIntoViewIfNeeded();
-  await page.screenshot({
-    path: testInfo.outputPath("templates-gallery-mobile.png"),
-    fullPage: true,
-  });
 });

@@ -122,7 +122,7 @@ impl Runtime {
         );
         Ok(path)
     }
-    fn display_path(&self, source: &str) -> Result<std::path::PathBuf> {
+    pub(crate) fn display_path(&self, source: &str) -> Result<std::path::PathBuf> {
         let path = self.display_root()?.join(cache_key("es", source));
         std::fs::create_dir_all(&path)?;
         ensure!(
@@ -315,8 +315,104 @@ impl Runtime {
             serde_json::to_string(&header)?,
             content
         );
-        crate::write_private(&self.display_path(&source)?, &markdown)?;
+        {
+            use fs2::FileExt;
+            let root = crate::skills::bundle::directory(&self.skills_dir)?;
+            root.lock_exclusive()?;
+            ensure!(
+                self.read_skill(name)? == source,
+                "Skill changed during translation"
+            );
+            // A manual bilingual save may have completed while this worker translated.
+            if self.saved_skill_translation(&source)?.is_none() {
+                crate::write_private(&self.display_path(&source)?, &markdown)?;
+            }
+        }
         Ok(())
+    }
+    /// Translate only human-readable fields; executable metadata and code stay exact.
+    pub(crate) async fn translate_skill_document(
+        &self,
+        source: &str,
+        target: &str,
+    ) -> Result<String> {
+        language(target)?;
+        let meta = crate::skills::metadata(source)?;
+        let body = markdown_body(source);
+        let fragments = protected_code(body);
+        let mut protected = body.to_owned();
+        for (i, fragment) in fragments.iter().enumerate() {
+            protected = protected.replacen(fragment, &format!("FENIX_LITERAL_{i:04}_END"), 1);
+        }
+        let instruction = format!(
+            "Translate the COMPLETE document to {}. Return Markdown with a JSON frontmatter between --- lines containing translated title and description, followed by the full translated body. Preserve every FENIX_LITERAL_NNNN_END placeholder exactly once without wrapping it in code formatting. Preserve all URLs, instructions, warnings and sections. Do not summarize.",
+            if target == "en" { "English" } else { "Spanish" }
+        );
+        let value = self
+            .translate_skill_display(
+                json!({"language":target,"content":protected,
+            "title":crate::skills::string_field(&meta,"title").unwrap_or_default(),
+            "description":crate::skills::string_field(&meta,"description").unwrap_or_default()}),
+                &instruction,
+            )
+            .await?;
+        let raw = value["content"]
+            .as_str()
+            .context("Missing translated document")?
+            .trim();
+        let raw = ["```markdown\n", "```md\n", "```\n"]
+            .iter()
+            .find_map(|prefix| {
+                raw.strip_prefix(prefix)
+                    .and_then(|text| text.strip_suffix("```"))
+            })
+            .unwrap_or(raw)
+            .trim();
+        let translated_meta = crate::skills::metadata(raw)?;
+        let mut translated_body = markdown_body(raw).to_owned();
+        for (i, fragment) in fragments.iter().enumerate() {
+            let key = format!("FENIX_LITERAL_{i:04}_END");
+            ensure!(
+                translated_body.matches(&key).count() == 1,
+                "Translation lost a code fragment; changes were not saved"
+            );
+            translated_body = translated_body.replace(&key, fragment);
+        }
+        ensure!(
+            code_is_preserved(body, &translated_body),
+            "Translation changed code; changes were not saved"
+        );
+        let urls = regex::Regex::new(r"https?://[^\s<>\)\]]+")?;
+        let links = |text: &str| {
+            let mut links: Vec<_> = urls
+                .find_iter(text)
+                .map(|m| m.as_str().to_owned())
+                .collect();
+            links.sort();
+            links
+        };
+        ensure!(
+            links(body) == links(&translated_body),
+            "Translation changed links; changes were not saved"
+        );
+        let mut header = meta.as_mapping().cloned().unwrap_or_default();
+        for field in ["title", "description"] {
+            let text = crate::skills::string_field(&translated_meta, field)
+                .filter(|s| !s.trim().is_empty())
+                .context("Incomplete translation; changes were not saved")?;
+            header.insert(field.into(), text.into());
+        }
+        header.remove(serde_yaml_ng::Value::from("source_hash"));
+        header.remove(serde_yaml_ng::Value::from("language"));
+        ensure!(
+            !translated_body.trim().is_empty(),
+            "Empty translation; changes were not saved"
+        );
+        Ok(format!(
+            "---\n{}---\n\n{}\n",
+            serde_yaml_ng::to_string(&header)?,
+            translated_body
+        ))
     }
     pub fn start_skill_localizations(self: &std::sync::Arc<Self>) -> tokio::task::JoinHandle<()> {
         let rt = self.clone();
@@ -356,12 +452,23 @@ impl Runtime {
         })
     }
 }
-fn markdown_body(source: &str) -> &str {
-    source
+pub(crate) fn markdown_body(source: &str) -> &str {
+    let Some(rest) = source
         .strip_prefix("---\n")
-        .and_then(|s| s.split_once("\n---").map(|(_, body)| body.trim()))
-        .unwrap_or(source)
+        .or_else(|| source.strip_prefix("---\r\n"))
+    else {
+        return source;
+    };
+    let mut offset = 0;
+    for line in rest.split_inclusive('\n') {
+        offset += line.len();
+        if line.trim_end_matches(['\r', '\n']) == "---" {
+            return rest[offset..].trim();
+        }
+    }
+    source
 }
+
 fn card_from_document(name: &str, text: &str) -> Result<Card> {
     let meta = crate::skills::metadata(text)?;
     Ok(Card {
@@ -373,6 +480,100 @@ fn card_from_document(name: &str, text: &str) -> Result<Card> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[tokio::test]
+    async fn manual_bilingual_edits_preserve_metadata_and_reject_stale_saves() -> Result<()> {
+        use crate::{config::Settings, live::LiveSettings};
+        use fenix_core::ProviderId;
+        use fenix_credentials::ApiKey;
+        use std::sync::Arc;
+        use wiremock::{Mock, MockServer, ResponseTemplate, matchers::method};
+        let server = MockServer::start().await;
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        *rt.model.write().await = Some(Arc::new(rt.model_connection(
+            Settings::initial(dir.path().to_path_buf()),
+            ApiKey::new("fixture")?,
+        )?));
+        rt.store.put(
+            "live",
+            "settings",
+            &LiveSettings {
+                reasoning_effort: None,
+                provider: ProviderId::OpenRouter,
+                model: "fast-test".into(),
+                base_url: Some(server.uri()),
+            },
+        )?;
+        rt.store.put("credentials", "live", &"fixture")?;
+        let path = rt.skills_dir.join("manual-test");
+        std::fs::create_dir(&path)?;
+        let source = "---\nname: manual-test\ntitle: Files\ndescription: Read files\ncategory: office\n---\n# Files\nUse `file_read`.";
+        std::fs::write(path.join("SKILL.md"), source)?;
+        let en = rt.editable_skill_language("manual-test", "en")?;
+        Mock::given(method("POST")).respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "choices":[{"message":{"role":"assistant","content":"---\ntitle: Archivos\ndescription: Leer archivos\n---\n# Archivos\nUsa FENIX_LITERAL_0000_END."},"finish_reason":"stop"}]
+        }))).mount(&server).await;
+        rt.save_skill_language(
+            "manual-test",
+            en["revision"].as_str().unwrap(),
+            source,
+            "en",
+        )
+        .await?;
+        let es = rt.editable_skill_language("manual-test", "es")?;
+        assert!(es["content"].as_str().unwrap().contains("# Archivos"));
+        assert!(es["content"].as_str().unwrap().contains("category: office"));
+        assert_eq!(rt.skill_load("manual-test")?, source);
+        assert!(
+            rt.save_skill_language("manual-test", "stale", source, "en")
+                .await
+                .is_err()
+        );
+        server.reset().await;
+        Mock::given(method("POST")).respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "choices":[{"message":{"role":"assistant","content":"---\ntitle: Files\ndescription: Read files\n---\n# Updated files\nUse FENIX_LITERAL_0000_END."},"finish_reason":"stop"}]
+        }))).mount(&server).await;
+        let edited = es["content"]
+            .as_str()
+            .unwrap()
+            .replace("# Archivos", "# Archivos actualizados");
+        rt.save_skill_language(
+            "manual-test",
+            es["revision"].as_str().unwrap(),
+            &edited,
+            "es",
+        )
+        .await?;
+        assert!(rt.skill_load("manual-test")?.contains("# Updated files"));
+        assert!(
+            rt.editable_skill_language("manual-test", "es")?["content"]
+                .as_str()
+                .unwrap()
+                .contains("# Archivos actualizados")
+        );
+        server.reset().await;
+        let before = rt.skill_load("manual-test")?;
+        let current = rt.editable_skill_language("manual-test", "es")?;
+        Mock::given(method("POST")).respond_with(ResponseTemplate::new(200).set_body_json(json!({
+            "choices":[{"message":{"role":"assistant","content":"---\ntitle: Bad\ndescription: Bad\n---\nMissing code"},"finish_reason":"stop"}]
+        }))).mount(&server).await;
+        assert!(
+            rt.save_skill_language(
+                "manual-test",
+                current["revision"].as_str().unwrap(),
+                &edited,
+                "es"
+            )
+            .await
+            .is_err()
+        );
+        assert_eq!(rt.skill_load("manual-test")?, before);
+        assert_eq!(
+            rt.editable_skill_language("manual-test", "es")?["revision"],
+            current["revision"]
+        );
+        Ok(())
+    }
     #[test]
     fn translation_may_reorder_words_but_not_change_code() {
         assert!(!code_is_preserved(

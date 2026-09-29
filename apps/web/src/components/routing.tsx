@@ -10,7 +10,6 @@ import {
 export const pages = [
   "chat",
   "skills",
-  "design",
   "documents",
   "browser",
   "integrations",

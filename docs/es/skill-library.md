@@ -282,3 +282,11 @@ La revisión de gstack añade 26 casos de descubrimiento y comprobaciones de act
 [Resúmenes de YouTube y extracción de subtítulos](youtube-summary.md).
 
 [Comparación con ECC: cinco skills nuevas y trece mejoras](ecc-review.md).
+
+## Edición privada desde la interfaz web
+
+Skills muestra el catálogo privado de la cuenta. Al pulsar una tarjeta se abren sus instrucciones guardadas; **Editar** muestra el Markdown original completo en inglés como texto plano. Los cambios se guardan únicamente al pulsar el icono de Guardar cambios, comprobando el hash para no sobrescribir ediciones de otra pestaña. Al cerrar con cambios pendientes se pregunta si se desea seguir editando o descartarlos. Las acciones de editar y eliminar aparecen en barras de iconos separadas del Markdown. El proceso existente de traducción prepara el Markdown en español para la nueva versión. Si falla el guardado, el texto permanece en el editor para corregirlo o copiarlo.
+
+**Eliminar** pide confirmación y retira el skill y sus archivos auxiliares de la cuenta. Un registro privado evita que los skills incluidos o la migración antigua lo vuelvan a crear al reiniciar. Las publicaciones y las copias de otros usuarios no cambian. La API privada mantiene el aislamiento por cuenta y las comprobaciones de origen, acepta solo archivos contenidos en la carpeta de skills y rechaza documentos vacíos, excesivos o con cabecera mal formada.
+
+La edición manual abre el Markdown guardado en el idioma de la interfaz. Al guardar explícitamente, el modelo rápido traduce el otro idioma antes de publicar ambas versiones. El agente sigue usando inglés. Un fallo de traducción conserva el borrador y los documentos anteriores; los cambios concurrentes requieren reabrir el editor.

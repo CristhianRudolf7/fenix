@@ -122,6 +122,10 @@ export function ConnectorCatalog({
               },
             ]
         )
+          .filter((p) => p.auth !== "builtin")
+          .sort(
+            (a, b) => Number(b.id === "whatsapp") - Number(a.id === "whatsapp"),
+          )
           .filter((p) =>
             `${p.name} ${p.services?.join(" ") || ""}`
               .toLowerCase()
@@ -318,9 +322,7 @@ function ConnectDialog({
 }) {
   const t = tr(language),
     [name, setName] = useState(connection?.name || provider.name),
-    [mode, setMode] = useState(
-      provider.auth.startsWith("oauth") ? "oauth" : "token",
-    );
+    [mode] = useState(provider.auth.startsWith("oauth") ? "oauth" : "token");
   const [savedId, setSavedId] = useState(connection?.id);
   const [services, setServices] = useState<string[]>(
     connection?.settings?.services ||
@@ -328,10 +330,6 @@ function ConnectDialog({
         ? ["drive", "docs", "sheets", "slides", "gmail", "calendar"]
         : ["drive"]),
   );
-  const [token, setToken] = useState(""),
-    [clientId, setClientId] = useState(""),
-    [clientSecret, setClientSecret] = useState(""),
-    [scopes, setScopes] = useState(connection?.settings?.scopes || "");
   const [mailUser, setMailUser] = useState(""),
     [mailPassword, setMailPassword] = useState(""),
     [imapHost, setImapHost] = useState(connection?.settings?.imap_host || ""),
@@ -357,11 +355,7 @@ function ConnectDialog({
     try {
       const credentials: Record<string, string> = {},
         settings: Record<string, unknown> = {};
-      if (token) credentials.access_token = token;
-      if (clientId) credentials.client_id = clientId;
-      if (clientSecret) credentials.client_secret = clientSecret;
       if (database) credentials.url = database;
-      if (scopes) settings.scopes = scopes;
       if (provider.id === "google") settings.services = services;
       if (path) settings.path = path;
       if (mailUser) credentials.username = mailUser;
@@ -391,7 +385,17 @@ function ConnectDialog({
         await onSaved();
       }
     } catch (e) {
-      setError(String(e));
+      setError(
+        e instanceof Error &&
+          /^(Google connection is not available yet|La conexión con Google todavía no está disponible)/.test(
+            e.message,
+          )
+          ? e.message
+          : t(
+              "The connection could not be completed. Please try again or contact support.",
+              "No se pudo completar la conexión. Vuelve a intentarlo o contacta con soporte.",
+            ),
+      );
     } finally {
       setBusy(false);
     }
@@ -431,19 +435,6 @@ function ConnectDialog({
               onChange={(e) => setName(e.target.value)}
             />
           </label>
-          {provider.auth.startsWith("oauth") && (
-            <label>
-              {t("Connection method", "Método de conexión")}
-              <select value={mode} onChange={(e) => setMode(e.target.value)}>
-                <option value="oauth">
-                  {t("Authorize my account", "Autorizar mi cuenta")}
-                </option>
-                <option value="token">
-                  {t("Existing access token", "Token de acceso existente")}
-                </option>
-              </select>
-            </label>
-          )}
           {provider.id === "google" && (
             <fieldset className="connector-services">
               <legend>{t("Google services", "Servicios de Google")}</legend>
@@ -480,7 +471,7 @@ function ConnectDialog({
                   "Selecciona los servicios que necesitas. Los permisos nuevos requieren autorización de Google.",
                 )}
               </small>
-              {scopes.trim() && (
+              {connection?.settings?.scopes?.trim() && (
                 <small>
                   {t(
                     "Custom scopes override the suggested permissions. Selected services still limit Fénix operations.",
@@ -594,63 +585,19 @@ function ConnectDialog({
                   "Continúa al proveedor para elegir tu cuenta y autorizar el acceso. El administrador puede configurar la aplicación OAuth una vez para esta instalación.",
                 )}
               </p>
-              <details>
-                <summary>
-                  {t("Application settings", "Configuración de la aplicación")}
-                </summary>
-                <label>
-                  Client ID
-                  <input
-                    autoComplete="off"
-                    value={clientId}
-                    onChange={(e) => setClientId(e.target.value)}
-                  />
-                </label>
-                <label>
-                  Client secret
-                  <input
-                    type="password"
-                    autoComplete="new-password"
-                    value={clientSecret}
-                    onChange={(e) => setClientSecret(e.target.value)}
-                  />
-                </label>
-                <label>
-                  {t(
-                    "Requested permissions (scopes)",
-                    "Permisos solicitados (scopes)",
-                  )}
-                  <textarea
-                    value={scopes}
-                    onChange={(e) => setScopes(e.target.value)}
-                  />
-                </label>
-                <p className="muted">
-                  {t(
-                    "Register this redirect URL",
-                    "Registra esta URL de retorno",
-                  )}
-                  : <code>{location.origin}/api/connectors/oauth/callback</code>
-                </p>
-              </details>
             </>
           ) : (
-            <label>
-              {t("Access token", "Token de acceso")}
-              <input
-                type="password"
-                autoComplete="new-password"
-                required={!connection}
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-              />
-              <small>
-                {t(
-                  "Tokens with an expiration require reconnection. OAuth can renew access automatically.",
-                  "Los tokens que caducan requieren reconexión. OAuth puede renovar el acceso automáticamente.",
-                )}
-              </small>
-            </label>
+            <p className="muted">
+              {connection
+                ? t(
+                    "Your saved connection is ready.",
+                    "Tu conexión guardada está lista.",
+                  )
+                : t(
+                    "This connection is not available yet. Contact support to enable it.",
+                    "Esta conexión aún no está disponible. Contacta con soporte para habilitarla.",
+                  )}
+            </p>
           )}
           <label className="connector-permission">
             <input
@@ -677,7 +624,9 @@ function ConnectDialog({
           <button
             className="primary"
             disabled={
-              busy || (provider.id === "google" && services.length === 0)
+              busy ||
+              (provider.id === "google" && services.length === 0) ||
+              (provider.auth === "token" && !connection)
             }
           >
             {busy

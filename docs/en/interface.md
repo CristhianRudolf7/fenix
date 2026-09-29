@@ -29,7 +29,7 @@ Set `FENIX_TEST_BINARY` to test a saved server executable without another build 
 
 ## Section URLs and loading
 
-React Router manages `/chat`, `/projects`, `/memory`, `/skills`, `/design`, `/browser`, `/schedules`, `/activity` and `/settings`. Direct links, reloads and browser history retain the selected section; unauthenticated visitors sign in on the requested URL. The gateway and standalone server serve these explicit application routes without intercepting unknown API or asset paths.
+React Router manages `/chat`, `/projects`, `/memory`, `/skills`, `/browser`, `/schedules`, `/activity` and `/settings`. The former `/design` page redirects to `/chat`, and `/design?template=<id>` opens that template preview over the chat. Direct links, reloads and browser history retain the selected section; unauthenticated visitors sign in on the requested URL. The gateway and standalone server serve these explicit application routes without intercepting unknown API or asset paths.
 
 The Browser screen at `/browser` provides owner login, persistent profiles, agent handoff, tab selection, viewport sizes and the encrypted password vault. Direct owner input uses browser APIs without entering the agent conversation. Shared loading states use a flame, indeterminate progress and skeleton lines, with accessible status text and reduced-motion support.
 

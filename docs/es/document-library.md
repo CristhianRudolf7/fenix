@@ -1,6 +1,6 @@
 # Biblioteca de documentos
 
-Fénix guarda fuentes privadas y versionadas por separado de su memoria curada. En **Biblioteca** (`/documents`) puedes subir archivos, organizarlos por proyecto y colección, buscar en su contenido y seleccionarlos para la conversación existente. El agente puede resumirlos, compararlos, extraer información y crear documentos o diagramas derivados con sus herramientas.
+Fénix guarda fuentes privadas y versionadas por separado de su memoria curada. En **Biblioteca** (`/documents`) puedes subir archivos, filtrar los documentos de tu cuenta por nombre y tipo de archivo y seleccionarlos para la conversación existente. Los filtros se aplican antes de paginar. Las nuevas subidas quedan en el ámbito general; se conservan los metadatos y las asociaciones existentes a proyectos. El agente y las conversaciones sobre documentos mantienen la búsqueda de contenido. El agente puede resumirlos, compararlos, extraer información y crear documentos o diagramas derivados con sus herramientas.
 
 ## Archivos y procesamiento
 
@@ -16,7 +16,7 @@ Los límites de procesamiento son 64 MiB por archivo, 20.000 fragmentos indexado
 
 ## Embeddings y búsqueda
 
-Se utiliza `text-embedding-3-small` de OpenAI con 1.536 dimensiones. Se reutiliza la conexión oficial de OpenAI configurada o una clave específica de la biblioteca. Las claves de conexiones a otros proxies no se envían a OpenAI. Al habilitar esta función se envían a OpenAI fragmentos de texto y consultas; originales y vectores permanecen en el almacenamiento de la cuenta.
+Se utiliza `text-embedding-3-small` de OpenAI con 1.536 dimensiones. Se reutiliza la conexión oficial de OpenAI configurada o una credencial específica de la biblioteca configurada por el administrador del servicio. La interfaz del usuario no solicita ni muestra claves de proveedores. Las claves de conexiones a otros proxies no se envían a OpenAI. Al habilitar esta función se envían a OpenAI fragmentos de texto y consultas; originales y vectores permanecen en el almacenamiento de la cuenta.
 
 El texto sin cambios reutiliza sus embeddings entre versiones. Se procesan lotes de hasta 16 fragmentos. También se vectoriza la consulta. La tarifa de referencia es **USD 0,02 por millón de tokens de entrada**; consulta los [precios vigentes](https://platform.openai.com/docs/pricing). Se utiliza el endpoint normal, no Batch ni Flex, y se registra el consumo informado por la API en `library_usage`. OCR, almacenamiento y respuestas del agente tienen costes separados.
 

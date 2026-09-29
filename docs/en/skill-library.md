@@ -282,3 +282,11 @@ Security audit procedures now share the same catalog as all other skills and are
 [YouTube caption summaries and executable helper](youtube-summary.md).
 
 [ECC comparison: five new workflows and thirteen improvements](ecc-review.md).
+
+## Private editing in the web interface
+
+The Skills page shows the account's private catalog. Clicking a card opens its saved instructions; **Edit** opens the complete canonical English Markdown in a plain-text editor. Changes are saved only with the Save changes icon button, using a source hash to reject stale writes. Closing an edited skill asks whether to keep editing or discard the unsaved changes. Edit/delete actions live in icon toolbars, separate from the Markdown. The existing background localization worker prepares the Spanish Markdown for the new source. Errors leave the text in the editor for correction or copying.
+
+**Delete** requires confirmation and removes the account-local skill and its supporting files. A private deletion record prevents bundled defaults or legacy migration from recreating it on restart. Published snapshots and other accounts' copies are unaffected. The private source API accepts only contained regular skill files, applies the existing account/origin boundary, and rejects empty, oversized or malformed-frontmatter edits.
+
+Manual editing opens the saved Markdown in the interface language. Explicit saving translates the other language using the fast model before publishing both revisions. English remains canonical for agent execution. Translation errors preserve the draft and the previous documents; concurrent changes require reopening the editor.

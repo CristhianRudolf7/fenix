@@ -4,7 +4,12 @@ import { Icon } from "../components/icons";
 import { Loading } from "../components/loading";
 import "./profile.css";
 
-type ProfileData = { email: string; display_name: string };
+type ProfileData = {
+  email: string;
+  display_name: string;
+  google_connected?: boolean;
+  password_available?: boolean;
+};
 type Usage = {
   input_tokens: number;
   output_tokens: number;
@@ -56,6 +61,8 @@ function Profile({ language }: { language: string }) {
     }
   }
   const [tab, setTab] = useState("general");
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [googleError, setGoogleError] = useState("");
   const [profile, setProfile] = useState<ProfileData>();
   const [name, setName] = useState("");
   const [report, setReport] = useState<Report>();
@@ -129,6 +136,28 @@ function Profile({ language }: { language: string }) {
       );
     } finally {
       setSaving(false);
+    }
+  }
+  async function linkGoogle() {
+    setGoogleBusy(true);
+    setGoogleError("");
+    try {
+      const value = await api<{ url: string }>("/api/auth/google", {
+        method: "POST",
+        body: JSON.stringify({ register: false }),
+      });
+      const url = new URL(value.url);
+      if (url.origin !== "https://accounts.google.com")
+        throw Error("invalid_url");
+      location.assign(url.href);
+    } catch {
+      setGoogleError(
+        t(
+          "Google access is unavailable right now. Please try again later.",
+          "El acceso con Google no está disponible ahora. Vuelve a intentarlo más tarde.",
+        ),
+      );
+      setGoogleBusy(false);
     }
   }
   async function changePassword(event: FormEvent<HTMLFormElement>) {
@@ -545,10 +574,15 @@ function Profile({ language }: { language: string }) {
                 )}
               </h2>
               <p>
-                {t(
-                  "Change your password whenever you need to. We'll sign out all sessions so only your new password works.",
-                  "Cambia tu contraseña cuando lo necesites. Cerraremos todas las sesiones para que solo puedas entrar con la nueva.",
-                )}
+                {profile?.password_available === false
+                  ? t(
+                      "Your access is linked to Google. Manage your Google account security there.",
+                      "Tu acceso está vinculado a Google. Gestiona la seguridad de esa cuenta desde Google.",
+                    )
+                  : t(
+                      "Change your password whenever you need to. We'll sign out all sessions so only your new password works.",
+                      "Cambia tu contraseña cuando lo necesites. Cerraremos todas las sesiones para que solo puedas entrar con la nueva.",
+                    )}
               </p>
               <p className="profile-note">
                 {t(
@@ -557,79 +591,119 @@ function Profile({ language }: { language: string }) {
                 )}
               </p>
             </div>
-            <form
-              className="profile-card profile-form"
-              onSubmit={changePassword}
-            >
-              <h2>{t("Change password", "Cambiar contraseña")}</h2>
-              {passwordDone ? (
-                <div role="status">
-                  <p>
-                    {t(
-                      "Password updated. Sign in again to continue.",
-                      "Contraseña actualizada. Inicia sesión de nuevo para continuar.",
-                    )}
-                  </p>
-                  <button
-                    type="button"
-                    className="primary"
-                    onClick={() => location.reload()}
-                  >
-                    {t("Sign in", "Iniciar sesión")}
-                  </button>
-                </div>
+            <div className="profile-card profile-form">
+              <h2>{t("Google sign-in", "Acceso con Google")}</h2>
+              {profile?.google_connected ? (
+                <p>
+                  {t(
+                    "Your Google account is linked.",
+                    "Tu cuenta de Google está vinculada.",
+                  )}
+                </p>
               ) : (
-                <>
-                  <label>
-                    {t("Current password", "Contraseña actual")}
-                    <input
-                      required
-                      name="current_password"
-                      type="password"
-                      autoComplete="current-password"
-                      maxLength={1024}
-                    />
-                  </label>
-                  <label>
-                    {t("New password", "Nueva contraseña")}
-                    <input
-                      required
-                      name="new_password"
-                      aria-label={t("New password", "Nueva contraseña")}
-                      type="password"
-                      autoComplete="new-password"
-                      minLength={8}
-                      maxLength={1024}
-                    />
-                    <small>
+                <button
+                  className="login-google"
+                  type="button"
+                  disabled={googleBusy || !profile}
+                  onClick={linkGoogle}
+                >
+                  <img
+                    src="/assets/integrations/google.svg"
+                    width="20"
+                    height="20"
+                    alt=""
+                  />
+                  {t("Sign in with Google", "Iniciar sesión con Google")}
+                </button>
+              )}
+              {googleError && <p role="alert">{googleError}</p>}
+              {profile?.password_available === false && (
+                <p>
+                  {t(
+                    "You sign in with Google. Fénix does not store your Google password.",
+                    "Inicias sesión con Google. Fénix no guarda tu contraseña de Google.",
+                  )}
+                </p>
+              )}
+            </div>
+            {profile?.password_available !== false && (
+              <form
+                className="profile-card profile-form"
+                onSubmit={changePassword}
+              >
+                <h2>{t("Change password", "Cambiar contraseña")}</h2>
+                {passwordDone ? (
+                  <div role="status">
+                    <p>
                       {t(
-                        "At least 8 characters. Use a unique password.",
-                        "Al menos 8 caracteres. Usa una contraseña única.",
+                        "Password updated. Sign in again to continue.",
+                        "Contraseña actualizada. Inicia sesión de nuevo para continuar.",
                       )}
-                    </small>
-                  </label>
-                  <label>
-                    {t("Confirm new password", "Confirmar nueva contraseña")}
-                    <input
-                      required
-                      name="confirm_password"
-                      type="password"
-                      autoComplete="new-password"
-                      minLength={8}
-                      maxLength={1024}
-                    />
-                  </label>
-                  {passwordError && <p role="alert">{passwordError}</p>}
-                  <div className="profile-form-footer">
-                    <button className="primary" disabled={changing || !profile}>
-                      {changing
-                        ? t("Updating…", "Actualizando…")
-                        : t("Update password", "Actualizar contraseña")}
+                    </p>
+                    <button
+                      type="button"
+                      className="primary"
+                      onClick={() => location.reload()}
+                    >
+                      {t("Sign in", "Iniciar sesión")}
                     </button>
                   </div>
-                </>
-              )}
-            </form>
+                ) : (
+                  <>
+                    <label>
+                      {t("Current password", "Contraseña actual")}
+                      <input
+                        required
+                        name="current_password"
+                        type="password"
+                        autoComplete="current-password"
+                        maxLength={1024}
+                      />
+                    </label>
+                    <label>
+                      {t("New password", "Nueva contraseña")}
+                      <input
+                        required
+                        name="new_password"
+                        aria-label={t("New password", "Nueva contraseña")}
+                        type="password"
+                        autoComplete="new-password"
+                        minLength={8}
+                        maxLength={1024}
+                      />
+                      <small>
+                        {t(
+                          "At least 8 characters. Use a unique password.",
+                          "Al menos 8 caracteres. Usa una contraseña única.",
+                        )}
+                      </small>
+                    </label>
+                    <label>
+                      {t("Confirm new password", "Confirmar nueva contraseña")}
+                      <input
+                        required
+                        name="confirm_password"
+                        type="password"
+                        autoComplete="new-password"
+                        minLength={8}
+                        maxLength={1024}
+                      />
+                    </label>
+                    {passwordError && <p role="alert">{passwordError}</p>}
+                    <div className="profile-form-footer">
+                      <button
+                        className="primary"
+                        disabled={changing || !profile}
+                      >
+                        {changing
+                          ? t("Updating…", "Actualizando…")
+                          : t("Update password", "Actualizar contraseña")}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </form>
+            )}
           </div>
         )}
       </div>

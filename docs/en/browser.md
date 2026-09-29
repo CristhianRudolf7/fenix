@@ -11,12 +11,34 @@ through your operating system. Its sandbox remains enabled.
 
 ## Start and keep logins
 
-Start Fénix normally, then open **[Browser](/browser)**. Create a named profile such as `personal`,
-enter an HTTP(S) URL and click Open. Click the rendered screen and type normally;
-paste, wheel scrolling and navigation keys work too. Complete passwords, QR codes,
-MFA or CAPTCHA yourself when needed. The agent can also fill owner-provided passwords, type and press keys in password controls, and submit an authorized login without a manual handoff. Toggle **Allow agent access** when Fénix should use that
-profile. **Take control** disables subsequent agent commands for the profile; a command
-already being executed can finish. Manual interaction also disables agent access.
+Open **[Browser](/browser)** to enter your browser directly. Fénix selects an
+existing personal session or creates one automatically; it never navigates an
+already open tab just because you opened the view. Use the address bar, tabs,
+back/forward and reload controls, then click, type, paste or scroll directly in the
+page. Mouse dragging, context clicks, double clicks, Unicode/IME input and touch
+scrolling are supported. The viewport follows the available space automatically
+while you have control; watching the agent does not resize its browser.
+
+**Let Fenix continue** authorizes the agent to use this personal session.
+**Take control**, navigation and manual input revoke that access for subsequent
+commands; an operation already running can finish. Other agent tasks are unaffected.
+This reuses the same account-isolated Chromium process and persistent profile,
+not another browser. Existing sessions, downloads, site-dialog controls and the
+password vault are under **Saved sessions and options**.
+
+Direct input uses authenticated owner endpoints, without an LLM call or a chat/tool
+journal entry. Complete passwords and external MFA yourself when necessary. The
+agent can still perform an authorized login with credentials you explicitly supply.
+Some sites, including Google, may reject automated browsers; this view does not
+bypass their restrictions or guarantee sign-in.
+
+The view requests compressed JPEG frames sequentially (up to approximately five
+per second during interaction, one per second at rest). Metadata refreshes less
+frequently. This is a remote page view, not a full desktop/video stream. Hidden
+browser tabs and leaving this view stop polling and abort in-flight reads. They
+do not cancel agent tasks or close an in-use browser. The existing idle/checkpoint
+lifecycle saves eligible inactive browsers to disk; viewing alone does not create
+another Chromium instance. Frames are served with `Cache-Control: private, no-store`.
 
 Close the profile to release its processes. Cookies, local storage, IndexedDB and
 other Chromium profile state stay under `<data-dir>/browser/profiles/<name>`.

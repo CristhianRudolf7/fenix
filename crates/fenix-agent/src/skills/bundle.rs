@@ -92,7 +92,7 @@ fn validate_path(path: &str) -> Result<()> {
     );
     Ok(())
 }
-fn directory(path: &Path) -> Result<File> {
+pub(crate) fn directory(path: &Path) -> Result<File> {
     Ok(OpenOptions::new()
         .read(true)
         .custom_flags(nix::libc::O_NOFOLLOW | nix::libc::O_DIRECTORY)
@@ -206,6 +206,7 @@ impl crate::Runtime {
             nix::fcntl::RenameFlags::RENAME_NOREPLACE,
         )?;
         root.sync_all()?;
+        self.store.delete("deleted_skills", name)?;
         self.translation_notify.notify_one();
         Ok(())
     }

@@ -6,7 +6,7 @@ La implementación multiusuario separa el controlador de los comandos, terminale
 
 ## Administración de cuentas
 
-Existe login, pero **no hay interfaz ni endpoint público para crear cuentas**. La administración es local:
+Las cuentas con contraseña se aprovisionan localmente. El [acceso y registro con Google](google-sign-in.md) permite asignar un entorno nuevo y preparado después de verificar la identidad. No hay registro público mediante contraseña. La administración de entornos sigue siendo local:
 
 ```sh
 # La contraseña se lee desde stdin, nunca desde argumentos.

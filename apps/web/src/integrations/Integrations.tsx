@@ -1,3 +1,4 @@
+import { serviceError } from "../components/service-error";
 // Pairing stays in the owner UI; no QR or credentials enter the conversation.
 import { useEffect, useRef, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -27,7 +28,9 @@ async function request<T>(
   });
   const value = await response.json();
   if (!response.ok)
-    throw new Error(value?.error || `Request failed (${response.status})`);
+    throw new Error(
+      serviceError(value?.error || `Request failed (${response.status})`),
+    );
   return value as T;
 }
 function Integrations({ language }: { language: string }) {
