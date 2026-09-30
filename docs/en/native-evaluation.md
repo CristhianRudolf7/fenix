@@ -99,6 +99,27 @@ proxy. The model endpoint remains loopback HTTP; normal provider HTTPS validatio
 is unchanged. The tunnel closes before the verifier starts. Without a tunnel,
 use a normal HTTPS endpoint or an existing loopback proxy.
 
+### Fast and intelligent roles
+
+`settings` configures the intelligent role (master, workers and execution). The
+optional `fast` object uses the existing live-settings schema (`provider`, `model`,
+`base_url`, `reasoning_effort`) to configure the fast conversational role through
+the normal `configure_live` path, including its connection check before timing
+starts. It uses the same evaluation credential file and, with `proxy_upstream`,
+the same loopback tunnel; `{trial}` is replaced in both endpoints. The benchmark
+instruction still goes directly to the master, so chat routing is not exercised.
+The fast role is only called by existing features such as progress narration.
+`report.json` records `fast_settings`, `model_roles` (including `fast_exercised`)
+and separate `fast_*` response counts and tokens; the connection check is excluded
+and belongs in provider-side accounting. Omitting `fast` keeps the previous
+single-role behavior.
+
+`harbor/provider_proxy.py` records OpenAI-compatible chat traffic to RunInfra.
+Repeat `--model` for each permitted role (without it, only the original Nemotron
+audit model is accepted). `--key-env-file PATH --key-variable NAME` reads a host
+credential once instead of copying it into the run directory. Per-request metadata
+records the model and the provider's usage, including its reported cost.
+
 The evaluator starts the core workers but does not start background public web
 crawling. Explicit web tools remain available; their search corpus is fresh.
 Record this distinction when comparing with the interactive server.
@@ -207,6 +228,26 @@ recoveries per reason and eight total per task, inside existing step/time bounds
 Completed effects are not replayed by recovery. Completed tool batches are saved
 as execution context. This is in-turn recovery, not automatic resumption of shell
 side effects after restarting the application.
+
+Generations without an executable action are the exception to lifetime counting.
+They are output-length truncations and chat generations that end with plain
+reasoning but no text or tool call (`cause: empty_output`); a response with no
+reasoning, text or calls is still invalid. A later successfully executed tool
+result ends such an episode and restores its counter (`recovery_budget_restored`),
+so only consecutive no-action generations exhaust it. From the second consecutive
+one, the recovery message asks for one tool call for the smallest concrete step,
+such as a short computing script, instead of a complete design or manual
+calculation. When a chat provider returns the generation's reasoning or text as
+plain text, only the latest one is carried into the next request as unverified
+notes to continue from, and it is removed once the model produces an executable
+action; oversized action payloads are not carried and opaque or encrypted
+reasoning is never decoded (`recovery_strategy` records the size). Chat
+Completions replay (text, tool calls and plain reasoning) is unsigned, so
+credential-like text in it is masked like ordinary content instead of failing the
+request; signed or opaque replay, including chat `reasoning_details`, is still
+rejected unchanged. The output ceiling, reasoning effort and provider parameters
+are unchanged. Measured effect on 15 Terminal-Bench 4.0 tasks with GLM-5.3-Flash:
+[record](../benchmarks/terminal-bench-15-runinfra-2026-09-29.md).
 
 Original redacted evidence remains recoverable, but lossy summaries/excerpts do
 not guarantee that the model retrieves every relevant detail. Persisted contracts

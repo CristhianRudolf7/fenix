@@ -77,7 +77,7 @@ impl Runtime {
         task: &str,
         reason: &str,
         evidence: Value,
-    ) -> Result<()> {
+    ) -> Result<usize> {
         let mut state = self
             .store
             .get::<ExecutionState>("task_execution_state", task)?
@@ -96,6 +96,26 @@ impl Runtime {
         self.store
             .publish_event(Some(task), "task.recovering", &data)?;
         self.bus_wake.notify_waiters();
+        Ok(attempt)
+    }
+    /// A later executed action ends an output-truncation episode, so only
+    /// consecutive truncations exhaust that budget; other reasons keep lifetime counts.
+    pub(crate) fn clear_truncation_recoveries(&self, task: &str) -> Result<()> {
+        let Some(mut state) = self
+            .store
+            .get::<ExecutionState>("task_execution_state", task)?
+        else {
+            return Ok(());
+        };
+        let Some(cleared) = state.recoveries.remove("output_length").filter(|n| *n > 0) else {
+            return Ok(());
+        };
+        self.store.put("task_execution_state", task, &state)?;
+        self.store.event(
+            task,
+            "recovery_budget_restored",
+            &json!({"reason":"output_length","cleared":cleared,"cause":"executed_tool_result"}),
+        )?;
         Ok(())
     }
     pub(crate) fn task_contract(&self, task: &str) -> Result<Value> {

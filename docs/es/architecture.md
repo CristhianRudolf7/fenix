@@ -45,6 +45,12 @@ Los comandos y cambios de archivos piden aprobación por defecto. El motor la
 exige aunque el modelo no llame a `request_approval`. Cada aprobación autoriza una
 herramienta y argumentos exactos, una sola vez. Se responde `aprobar <id>` o
 `rechazar <id>`; un sí/no claro también resuelve la única aprobación pendiente.
+Los archivos y directorios nuevos del espacio de trabajo creados con `file_write`,
+`file_patch`, exportaciones de la biblioteca y restauraciones del historial siguen la
+umask del proceso como las herramientas habituales (normalmente 0644/0755), para que
+servicios, pruebas o verificadores de otro usuario local puedan leerlos. Editar
+conserva los permisos existentes. Los archivos internos y del navegador de Fénix
+siguen siendo privados.
 Las aclaraciones usan `responder <id> <respuesta>`. Otros mensajes pueden atenderse mientras se espera.
 `cancelar` exige que haya un único turno principal activo; `cancelar <task_id>` admite trabajos en cola o
 hijos. Varias solicitudes pueden estar pendientes simultáneamente, cada una con su

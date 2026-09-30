@@ -325,7 +325,7 @@ impl Runtime {
                     match (&now,&before) {
                         (Some(now),Some(before))=>fenix_execution::fs::replace(&path,now,before)?,
                         (Some(now),None)=>fenix_execution::fs::remove(&path,now)?,
-                        (None,Some(before))=>fenix_execution::fs::create_with_permissions(&path,before,permissions.map(fs::Permissions::from_mode))?,
+                        (None,Some(before))=>fenix_execution::fs::create_workspace(&path,before,permissions.map(fs::Permissions::from_mode))?,
                         _=>{},
                     }
                     restored.push(path);

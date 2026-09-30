@@ -8,7 +8,7 @@ These utilities run the real Rust Fenix runtime inside official Harbor task cont
 | --- | --- |
 | `fenix_agent.py` | Harbor setup, submission and artifact collection; diagnostic subclass changes only the recording route. |
 | `container_runner.py` | Start an isolated Fenix instance, configure it through its HTTP API, submit the original task and observe completion. |
-| `provider_proxy.py` | Forward and record Nemotron requests while keeping the real provider key on the host. |
+| `provider_proxy.py` | Forward and record RunInfra chat requests for explicitly permitted models (default: Nemotron only) while keeping the real provider key on the host. |
 | `recorded_terminus.py` | Assign a separate recording URL to each stock Terminus 2 trial. |
 | `run_audit.py` | Original sequential paired-task driver for this audit. |
 | `run_queue.py` | One-time continuation from task 8 with two occupied Harbor slots. Do not restart against an existing run. |

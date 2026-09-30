@@ -299,6 +299,34 @@ mod tests {
     }
 
     #[test]
+    fn plain_chat_replay_is_masked_but_signed_reasoning_details_are_not() {
+        let redactor = Redactor::default();
+        let mut message = crate::Message::user("Safe");
+        message.provider_data = Some(crate::ProviderData {
+            protocol: crate::Protocol::OpenAiChat,
+            data: serde_json::json!({"content":null,
+                "reasoning":"Send `Authorization: Bearer abc123` and retry with password=hunter2"}),
+        });
+        redactor.message(&mut message).unwrap();
+        let replay = message.provider_data.as_ref().unwrap().data.to_string();
+        assert!(!replay.contains("abc123") && !replay.contains("hunter2"));
+        assert!(replay.contains("[REDACTED]"));
+        // Unchanged replay stays byte-identical.
+        let original = message.clone();
+        redactor.message(&mut message).unwrap();
+        assert_eq!(message, original);
+        let mut signed = crate::Message::user("Safe");
+        signed.provider_data = Some(crate::ProviderData {
+            protocol: crate::Protocol::OpenAiChat,
+            data: serde_json::json!({"reasoning_details":[{"type":"reasoning.text",
+                "text":"password=hunter2","signature":"opaque"}]}),
+        });
+        let original = signed.clone();
+        assert!(redactor.message(&mut signed).is_err());
+        assert_eq!(signed, original);
+    }
+
+    #[test]
     fn opaque_replay_with_secrets_is_rejected_without_mutation() {
         let redactor = Redactor::default();
         let mut message = crate::Message::user("Safe");
@@ -335,13 +363,21 @@ impl Redactor {
     /// Redact a normalized message. Opaque replay is never silently changed:
     /// callers must reject replay containing secrets rather than corrupt signatures.
     pub fn message(&self, message: &mut crate::Message) -> Result<(), &'static str> {
-        if let Some(data) = &message.provider_data {
+        if let Some(data) = &mut message.provider_data {
             let mut checked = data.data.clone();
             self.value(&mut checked);
             if checked != data.data {
-                return Err(
-                    "Provider replay contains sensitive data; start from a safe checkpoint",
-                );
+                // Chat Completions replay is plain, unsigned JSON (text, tool calls,
+                // plain reasoning) and can be masked like content. Its reasoning
+                // details and every other protocol's replay may be signed.
+                let plain = data.protocol == crate::Protocol::OpenAiChat
+                    && checked.get("reasoning_details") == data.data.get("reasoning_details");
+                if !plain {
+                    return Err(
+                        "Provider replay contains sensitive data; start from a safe checkpoint",
+                    );
+                }
+                data.data = checked;
             }
         }
         for block in &mut message.content {

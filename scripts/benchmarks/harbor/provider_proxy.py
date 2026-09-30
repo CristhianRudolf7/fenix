@@ -1,4 +1,7 @@
-"""Record benchmark API traffic without exposing the provider key to containers."""
+"""Record benchmark API traffic without exposing the provider key to containers.
+
+Only explicitly permitted model IDs are forwarded (default: the original Nemotron audit).
+"""
 
 import argparse
 import json
@@ -10,8 +13,23 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 
-def serve(root, address, port, summary_output_cap=None):
-    key = (root / "provider.key").read_text().strip()
+DEFAULT_MODELS = ("nemotron-3-5-lightning-30b",)
+UPSTREAM = "https://api.runinfra.ai/v1/chat/completions"
+
+
+def read_key(root, env_file=None, variable=None):
+    """Read the provider key once on the host; never copy it into a run directory."""
+    if env_file is None:
+        return (root / "provider.key").read_text().strip()
+    for line in Path(env_file).read_text().splitlines():
+        name, _, value = line.strip().removeprefix("export ").partition("=")
+        if name.strip() == variable:
+            return value.strip().strip("\"'")
+    raise SystemExit(f"{variable} is not set in {env_file}")
+
+
+def build(root, address, port, summary_output_cap=None, models=DEFAULT_MODELS, key=None, upstream=UPSTREAM):
+    key = key or read_key(root)
     logs = root / "api"
     logs.mkdir(exist_ok=True)
 
@@ -33,12 +51,12 @@ def serve(root, address, port, summary_output_cap=None):
             call = folder / f"{time.time_ns()}-{uuid.uuid4().hex[:8]}"
             body = self.rfile.read(int(self.headers["Content-Length"]))
             payload = json.loads(body)
-            if payload.get("model") != "nemotron-3-5-lightning-30b":
-                self.send_error(400, "Only the selected audit model is permitted")
+            if payload.get("model") not in models:
+                self.send_error(400, "Only the selected evaluation models are permitted")
                 return
             call.with_suffix(".request.json").write_bytes(body)
             started = time.monotonic()
-            meta = {"started_at": time.time(), "stream": payload.get("stream", False)}
+            meta = {"started_at": time.time(), "stream": payload.get("stream", False), "model": payload["model"]}
             messages = payload.get("messages") or []
             if (summary_output_cap and trial.startswith("fenix-cap-")
                     and messages and messages[0].get("content") ==
@@ -51,7 +69,7 @@ def serve(root, address, port, summary_output_cap=None):
                 call.with_suffix(".forwarded.json").write_bytes(body)
             chunks = []
             try:
-                request = Request("https://api.runinfra.ai/v1/chat/completions", body,
+                request = Request(upstream, body,
                                   {"Authorization": "Bearer " + key, "Content-Type": "application/json"})
                 try:
                     response = urlopen(request, timeout=780)
@@ -61,6 +79,9 @@ def serve(root, address, port, summary_output_cap=None):
                 meta["headers_seconds"] = time.monotonic() - started
                 self.send_response(response.status)
                 self.send_header("Content-Type", response.headers.get("Content-Type", "application/json"))
+                for name, value in response.headers.items():
+                    if name.lower() == "retry-after" or name.lower().startswith("x-ratelimit-"):
+                        self.send_header(name, value)
                 self.send_header("Connection", "close")
                 self.end_headers()
                 for chunk in response:
@@ -90,7 +111,11 @@ def serve(root, address, port, summary_output_cap=None):
                 call.with_suffix(".metadata.json").write_text(json.dumps(meta, indent=2))
                 self.close_connection = True
 
-    ThreadingHTTPServer((address, port), Handler).serve_forever()
+    return ThreadingHTTPServer((address, port), Handler)
+
+
+def serve(*args, **kwargs):
+    build(*args, **kwargs).serve_forever()
 
 
 if __name__ == "__main__":
@@ -99,5 +124,9 @@ if __name__ == "__main__":
     parser.add_argument("--address", default="172.17.0.1")
     parser.add_argument("--port", type=int, default=48931)
     parser.add_argument("--summary-output-cap", type=int, choices=[16384])
+    parser.add_argument("--model", action="append", help="Permitted model; repeat for each evaluation role (default: Nemotron only)")
+    parser.add_argument("--key-env-file", type=Path, help="Host env file holding the key; default is ROOT/provider.key")
+    parser.add_argument("--key-variable", default="RUNINFRA_GATEWAY_KEY")
     args = parser.parse_args()
-    serve(args.root, args.address, args.port, args.summary_output_cap)
+    serve(args.root, args.address, args.port, args.summary_output_cap, tuple(args.model or DEFAULT_MODELS),
+          read_key(args.root, args.key_env_file, args.key_variable))

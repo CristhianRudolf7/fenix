@@ -33,6 +33,11 @@ pub struct EvaluationConfig {
     /// The benchmark owns grading and sends only user-visible notifications here.
     #[serde(default)]
     pub interaction_socket: Option<PathBuf>,
+    /// Optional fast (conversational) role, configured through the normal live
+    /// settings path with the same evaluation credential and tunnel. It is only
+    /// called by existing fast-role features; its absence keeps the master alone.
+    #[serde(default)]
+    pub fast: Option<crate::live::LiveSettings>,
 }
 fn waiting_seconds() -> u64 {
     15
@@ -73,8 +78,22 @@ pub struct EvaluationMetrics {
     pub tool_calls: u64,
     pub tool_errors: u64,
     pub recoveries: u64,
+    /// Fast-role responses recorded after configuration (its connection check is excluded).
+    pub fast_model_calls: u64,
+    pub fast_input_tokens: u64,
+    pub fast_output_tokens: u64,
+    pub fast_usage_missing: u64,
 }
 impl EvaluationMetrics {
+    pub fn observe_fast(&mut self, record: &Value) {
+        let usage = &record["usage"];
+        self.fast_model_calls += 1;
+        self.fast_input_tokens += usage["input_tokens"].as_u64().unwrap_or(0);
+        self.fast_output_tokens += usage["output_tokens"].as_u64().unwrap_or(0);
+        if usage["input_tokens"].as_u64().is_none() || usage["output_tokens"].as_u64().is_none() {
+            self.fast_usage_missing += 1;
+        }
+    }
     pub fn observe(&mut self, event: &Value) {
         match event["kind"].as_str().unwrap_or("") {
             "model_response" | "context_summary_response" => {
@@ -129,20 +148,11 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
     std::fs::create_dir(output).context("Evaluation output must be a new directory")?;
     let tunnel = if let Some(upstream) = config.proxy_upstream {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
-        let mut endpoint = reqwest::Url::parse(
-            config
-                .settings
-                .base_url
-                .as_deref()
-                .context("A proxy base_url is required")?,
-        )?;
-        if endpoint.scheme() != "http" || endpoint.host_str() != Some("127.0.0.1") {
-            bail!("The evaluation tunnel requires an http://127.0.0.1 base_url");
+        let port = listener.local_addr()?.port();
+        config.settings.base_url = Some(tunneled(config.settings.base_url.as_deref(), port)?);
+        if let Some(fast) = &mut config.fast {
+            fast.base_url = Some(tunneled(fast.base_url.as_deref(), port)?);
         }
-        endpoint
-            .set_port(Some(listener.local_addr()?.port()))
-            .map_err(|_| anyhow::anyhow!("Invalid proxy port"))?;
-        config.settings.base_url = Some(endpoint.to_string());
         Some(EvaluationTunnel(tokio::spawn(async move {
             let mut connections = tokio::task::JoinSet::new();
             loop {
@@ -181,6 +191,10 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
         .context("Cannot read evaluation credential")?;
     rt.configure(config.settings.clone(), Some(key.trim().into()))
         .await?;
+    if let Some(fast) = config.fast.clone() {
+        // Normal live configuration, including its connection check, before timing starts.
+        rt.configure_live(fast, Some(key.trim().into())).await?;
+    }
     if let Some(decisions) = config.decisions.clone() {
         let mut relay = reqwest::Url::parse(
             config
@@ -311,6 +325,17 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
     execution.map(|_| ())
 }
 
+fn tunneled(base_url: Option<&str>, port: u16) -> Result<String> {
+    let mut endpoint = reqwest::Url::parse(base_url.context("A proxy base_url is required")?)?;
+    if endpoint.scheme() != "http" || endpoint.host_str() != Some("127.0.0.1") {
+        bail!("The evaluation tunnel requires an http://127.0.0.1 base_url");
+    }
+    endpoint
+        .set_port(Some(port))
+        .map_err(|_| anyhow::anyhow!("Invalid proxy port"))?;
+    Ok(endpoint.to_string())
+}
+
 struct EvaluationTunnel(tokio::task::JoinHandle<()>);
 impl EvaluationTunnel {
     async fn close(mut self) {
@@ -353,10 +378,17 @@ async fn export(
         }
         traces.push(json!({"task":task,"events":events}));
     }
+    for record in rt.store.records::<Value>("live_usage")? {
+        metrics.observe_fast(&record);
+    }
+    let roles = json!({"intelligent":config.settings.model,
+        "fast":config.fast.as_ref().map(|fast| &fast.model),
+        "fast_exercised":metrics.fast_model_calls > 0});
     let mut report = json!({"schema_version":1,"fenix_version":env!("CARGO_PKG_VERSION"),"benchmark":config.benchmark,
         "dataset_revision":config.dataset_revision,"task_name":config.task_name,"settings":config.settings,
+        "fast_settings":config.fast,"model_roles":roles,
         "elapsed_seconds":elapsed.as_secs_f64(),"stop_reason":reason,"error":error,"metrics":metrics,
-        "usage_scope":"Recorded foreground and compaction responses only; provider-side accounting is required for total costs, caching, auxiliary calls and transport retries.",
+        "usage_scope":"Recorded foreground and compaction responses only; fast_* metrics count fast-role responses separately. Provider-side accounting is required for total costs, caching, connection checks, other auxiliary calls and transport retries.",
         "background_learning":{"enabled":false,"policy":"disabled_before_worker_start","reason":"isolated_reproducible_evaluation"},
         "cost_usd":null,"reward":null,"grading":"External official verifier only; completed is not a passing grade.",
         "traces":traces,"processes":rt.processes.list().await});
@@ -418,6 +450,7 @@ mod tests {
             proxy_upstream: Some(*server.address()),
             decisions: None,
             interaction_socket: None,
+            fast: None,
         };
         run(config(), &output, false).await.unwrap();
         let report = std::fs::read_to_string(output.join("report.json")).unwrap();
@@ -431,6 +464,65 @@ mod tests {
         assert!(output.join("ready.json").exists());
         assert!(run(config(), &output, false).await.is_err());
     }
+    #[tokio::test]
+    async fn fast_role_uses_the_evaluation_tunnel_and_is_reported_separately() {
+        use wiremock::{
+            Mock, MockServer, ResponseTemplate,
+            matchers::{body_partial_json, method, path},
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let server = MockServer::start().await;
+        Mock::given(method("POST")).and(path("/responses")).respond_with(ResponseTemplate::new(200).set_body_json(json!({"id":"fixture","status":"completed","output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Done"}]}],"usage":{"input_tokens":20,"output_tokens":5}}))).mount(&server).await;
+        Mock::given(method("POST"))
+            .and(path("/v1/chat/completions"))
+            .and(body_partial_json(json!({"model":"fast-fixture"})))
+            .respond_with(ResponseTemplate::new(200).set_body_json(json!({"id":"fast","choices":[{"index":0,"message":{"role":"assistant","content":"OK"},"finish_reason":"stop"}],"usage":{"prompt_tokens":3,"completion_tokens":1}})))
+            .expect(1)
+            .mount(&server)
+            .await;
+        let key = dir.path().join("key");
+        std::fs::write(&key, "private-evaluation-fixture").unwrap();
+        let mut settings = Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        let output = dir.path().join("trial");
+        run(
+            EvaluationConfig {
+                instruction: "Reply Done".into(),
+                settings,
+                api_key_file: key,
+                timeout_seconds: 15,
+                waiting_seconds: 1,
+                benchmark: "fixture".into(),
+                dataset_revision: "pinned-test".into(),
+                task_name: "reply".into(),
+                proxy_upstream: Some(*server.address()),
+                decisions: None,
+                interaction_socket: None,
+                // Port 9 is only reachable through the tunnel rewrite.
+                fast: Some(crate::live::LiveSettings {
+                    provider: fenix_core::ProviderId::OpenRouter,
+                    model: "fast-fixture".into(),
+                    base_url: Some("http://127.0.0.1:9/v1".into()),
+                    reasoning_effort: None,
+                }),
+            },
+            &output,
+            false,
+        )
+        .await
+        .unwrap();
+        let report = std::fs::read_to_string(output.join("report.json")).unwrap();
+        assert!(!report.contains("private-evaluation-fixture"));
+        let report: Value = serde_json::from_str(&report).unwrap();
+        assert_eq!(report["model_roles"]["fast"], "fast-fixture");
+        assert_eq!(
+            report["model_roles"]["intelligent"],
+            report["settings"]["model"]
+        );
+        // The connection check is setup, not task usage; a reply without tools needs no narration.
+        assert_eq!(report["model_roles"]["fast_exercised"], false);
+        assert_eq!(report["metrics"]["fast_model_calls"], 0);
+    }
     #[test]
     fn metrics_do_not_confuse_completion_with_reward_or_missing_usage_with_zero_cost() {
         let mut metrics = EvaluationMetrics::default();
@@ -439,6 +531,17 @@ mod tests {
         metrics.observe(&json!({"kind":"task_finished","data":{"status":"completed"}}));
         assert_eq!(metrics.recorded_model_calls, 2);
         assert_eq!(metrics.usage_missing, 1);
+        assert_eq!(metrics.input_tokens, 10);
+        metrics.observe_fast(&json!({"usage":{"input_tokens":7,"output_tokens":3}}));
+        metrics.observe_fast(&json!({"usage":null}));
+        assert_eq!(
+            (
+                metrics.fast_model_calls,
+                metrics.fast_input_tokens,
+                metrics.fast_usage_missing
+            ),
+            (2, 7, 1)
+        );
         assert_eq!(metrics.input_tokens, 10);
     }
 }

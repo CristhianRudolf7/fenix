@@ -67,7 +67,7 @@ impl Runtime {
                 true,
             )?;
             let bytes = self.library_original(&doc)?;
-            fenix_execution::fs::create(&path, &bytes)?;
+            fenix_execution::fs::create_workspace(&path, &bytes, None)?;
             return Ok(
                 json!({"path":path,"sha256":doc.sha256,"document_id":doc.id,"revision":doc.revision,"bytes":bytes.len(),"verified":true}),
             );
@@ -122,7 +122,7 @@ impl Runtime {
                 if content.len() > MAX_FILE_BYTES as usize {
                     bail!("File exceeds 1 MiB");
                 }
-                fenix_execution::fs::create(&path, content.as_bytes()).context(
+                fenix_execution::fs::create_workspace(&path, content.as_bytes(), None).context(
                     "File already exists or cannot be created; use file_edit for an existing file",
                 )?;
                 Ok(

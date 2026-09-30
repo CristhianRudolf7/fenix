@@ -528,3 +528,26 @@ fn responses_flex_is_explicit_and_opt_in() {
     let flex = encode(Protocol::OpenAiResponses, &request).unwrap();
     assert_eq!(flex["service_tier"], "flex");
 }
+
+#[test]
+fn reasoning_only_chat_stop_is_returned_but_empty_output_is_not() {
+    let body = |message: Value| {
+        json!({"id": "chatcmpl_fixture", "choices": [{"index": 0, "message": message,
+            "finish_reason": "stop"}], "usage": {"prompt_tokens": 17, "completion_tokens": 8}})
+    };
+    let response = decode(
+        Protocol::OpenAiChat,
+        body(json!({"role": "assistant", "content": null, "reasoning": "unfinished plan"})),
+    )
+    .unwrap();
+    assert!(response.message.content.is_empty());
+    assert_eq!(response.finish_reason, FinishReason::Stop);
+    assert_eq!(
+        decode(
+            Protocol::OpenAiChat,
+            body(json!({"role": "assistant", "content": null, "reasoning": "  "}))
+        )
+        .unwrap_err(),
+        CodecError::InvalidResponse("response contains no supported output")
+    );
+}

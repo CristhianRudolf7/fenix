@@ -64,6 +64,29 @@ async fn document_upload_queue_citations_versions_and_settings_use_private_route
     let (_, detail) = call(&app, "GET", &format!("{path}?chunk={chunk}"), Value::Null).await;
     assert_eq!(detail["document"]["revision"], 1);
     assert_eq!(detail["chunks"][1]["id"], chunk);
+    let mut partial = rt.store.library_document(id, None).unwrap();
+    partial.status = "partial".into();
+    rt.store.library_state(&partial).unwrap();
+    assert_eq!(
+        call(
+            &app,
+            "POST",
+            &format!("{path}/retry"),
+            json!({"expected_revision":1})
+        )
+        .await
+        .0,
+        StatusCode::OK
+    );
+    for _ in 0..200 {
+        if rt.store.library_document(id, None).unwrap().status == "ready" {
+            break;
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+    }
+    let (status, repeated) = call(&app, "GET", &format!("{path}?chunk={chunk}"), Value::Null).await;
+    assert_eq!(status, StatusCode::OK, "{repeated}");
+    assert_eq!(repeated["chunks"][1]["id"], chunk);
     let mut revision = upload(b"Cancellation requires sixty days notice.");
     revision["id"] = json!(id);
     revision["expected_revision"] = json!(1);

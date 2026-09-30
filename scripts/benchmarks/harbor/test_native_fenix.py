@@ -2,7 +2,7 @@
 import unittest
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
-from native_fenix import environment_workspace, wait_for_report
+from native_fenix import environment_workspace, trial_config, wait_for_report
 
 
 class EnvironmentWorkspaceTests(unittest.IsolatedAsyncioTestCase):
@@ -30,6 +30,17 @@ class EnvironmentWorkspaceTests(unittest.IsolatedAsyncioTestCase):
             environment = SimpleNamespace(exec=AsyncMock(return_value=SimpleNamespace(return_code=code, stdout=output)))
             with self.assertRaises(RuntimeError):
                 await environment_workspace(environment)
+
+
+    def test_binds_the_trial_endpoint_for_each_configured_role_only(self):
+        template = {"settings": {"base_url": "http://127.0.0.1/{trial}/v1"},
+                    "fast": {"model": "fast", "base_url": "http://127.0.0.1/{trial}/v1"}}
+        config = trial_config(template, "/app", "native-t1")
+        self.assertEqual(config["settings"]["base_url"], "http://127.0.0.1/native-t1/v1")
+        self.assertEqual(config["fast"]["base_url"], "http://127.0.0.1/native-t1/v1")
+        self.assertEqual(config["settings"]["workspace"], "/app")
+        self.assertEqual(template["fast"]["base_url"], "http://127.0.0.1/{trial}/v1")
+        self.assertNotIn("fast", trial_config({"settings": {}}, "/app", "native-t1"))
 
 
 if __name__ == "__main__":

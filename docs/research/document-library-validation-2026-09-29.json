@@ -1,0 +1,311 @@
+{
+  "date": "2026-09-29",
+  "scope": "Real public documents through the production library API and browser; citation fix validated in local Rust/HTTP tests, not deployed.",
+  "sources": [
+    {
+      "filename": "w3c.pdf",
+      "source": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+      "bytes": 13264,
+      "sha256": "3df79d34abbca99308e79cb94461c1893582604d68329a41fd4bec1885e6adb4"
+    },
+    {
+      "filename": "sample.docx",
+      "source": "https://raw.githubusercontent.com/python-openxml/python-docx/master/tests/test_files/test.docx",
+      "bytes": 31773,
+      "sha256": "fba1c76b66ff30982e5281941ca1111eaeaeb092abb6dfbe1730bed3774f40b6"
+    },
+    {
+      "filename": "cells.xlsx",
+      "source": "https://raw.githubusercontent.com/pandas-dev/pandas/main/pandas/tests/io/data/excel/test1.xlsx",
+      "bytes": 12074,
+      "sha256": "b6fe2d9ae5afd6d0bdfefbae9c0c1649d8bf883e183a153cb76f2a8a548cef11"
+    },
+    {
+      "filename": "iris.csv",
+      "source": "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv",
+      "bytes": 3858,
+      "sha256": "9cc1c345c71bcc9b486b74cbf6063fa66f4bb5e0f603a4b3c3471ec2e5e8e355"
+    },
+    {
+      "filename": "readme.md",
+      "source": "https://raw.githubusercontent.com/python-openxml/python-docx/master/README.md",
+      "bytes": 642,
+      "sha256": "10447f1839657020110fca80c630041cae09f1e9db9755cb25059846d39e2ef1"
+    },
+    {
+      "filename": "http-summary.txt",
+      "source": "https://www.rfc-editor.org/rfc/rfc1149.txt",
+      "bytes": 3215,
+      "sha256": "a8660fa4f47bd5e3db1cd5d5baad983d8b6f3f1e8a1a04b8552f3c2ce8f33c18"
+    },
+    {
+      "filename": "data.json",
+      "source": "https://raw.githubusercontent.com/vega/vega-datasets/main/data/barley.json",
+      "bytes": 8487,
+      "sha256": "800faf5a0524e2145822a72af7821e153b80ad3433631f4bd30100b24c9fa2bc"
+    },
+    {
+      "filename": "http-standard.pdf",
+      "source": "https://www.rfc-editor.org/rfc/rfc2616.pdf",
+      "bytes": 550558,
+      "sha256": "4b992042e3a18f1bb8cebbd0916c66b89b4ab179d75d552a85f48f83a222e631"
+    },
+    {
+      "filename": "slides.pptx",
+      "source": "https://raw.githubusercontent.com/scanny/python-pptx/master/tests/test_files/test.pptx",
+      "bytes": 37859,
+      "sha256": "8765677cdf43181ef41657cedf28485b5f2cbf166667218c217af07f8336c96f"
+    },
+    {
+      "filename": "ocr.png",
+      "source": "https://raw.githubusercontent.com/tesseract-ocr/test/main/testing/phototest.tif",
+      "conversion": "TIFF to PNG, no text changes",
+      "bytes": 5436,
+      "sha256": "05c86aff5392eb819ef27dbbb2270d44bf68570176f7b35c92312d5402051368"
+    },
+    {
+      "filename": "scanned.pdf",
+      "source": "https://raw.githubusercontent.com/tesseract-ocr/test/main/testing/phototest.tif",
+      "conversion": "Format conversion of the public OCR test scan",
+      "bytes": 56556,
+      "sha256": "937950936908a43869cc1881e072dc582e83abaa8bd2df5e24615cf43b170146"
+    },
+    {
+      "filename": "scan.jpg",
+      "source": "https://raw.githubusercontent.com/tesseract-ocr/test/main/testing/phototest.tif",
+      "conversion": "Format conversion of the public OCR test scan",
+      "bytes": 55664,
+      "sha256": "37b9201c2f4b6600a1ee0bd4aa3f3710e93e4bd99f047c99ad76dbf3c9993844"
+    }
+  ],
+  "documents": [
+    {
+      "filename": "scan.jpg",
+      "status": "partial",
+      "embedding_status": "ready",
+      "chunks": 8,
+      "pages": 1,
+      "warning_count": 1,
+      "error": null
+    },
+    {
+      "filename": "scanned.pdf",
+      "status": "partial",
+      "embedding_status": "ready",
+      "chunks": 8,
+      "pages": 1,
+      "warning_count": 1,
+      "error": null
+    },
+    {
+      "filename": "ocr.png",
+      "status": "partial",
+      "embedding_status": "ready",
+      "chunks": 8,
+      "pages": 1,
+      "warning_count": 1,
+      "error": null
+    },
+    {
+      "filename": "readme.md",
+      "status": "ready",
+      "embedding_status": "ready",
+      "chunks": 11,
+      "pages": 0,
+      "warning_count": 0,
+      "error": null
+    },
+    {
+      "filename": "w3c.pdf",
+      "status": "ready",
+      "embedding_status": "ready",
+      "chunks": 1,
+      "pages": 1,
+      "warning_count": 0,
+      "error": null
+    },
+    {
+      "filename": "slides.pptx",
+      "status": "partial",
+      "embedding_status": "ready",
+      "chunks": 2,
+      "pages": 0,
+      "warning_count": 1,
+      "error": null
+    },
+    {
+      "filename": "sample.docx",
+      "status": "partial",
+      "embedding_status": "ready",
+      "chunks": 2,
+      "pages": 0,
+      "warning_count": 1,
+      "error": null
+    },
+    {
+      "filename": "iris.csv",
+      "status": "ready",
+      "embedding_status": "ready",
+      "chunks": 151,
+      "pages": 0,
+      "warning_count": 0,
+      "error": null
+    },
+    {
+      "filename": "http-summary.txt",
+      "status": "ready",
+      "embedding_status": "ready",
+      "chunks": 21,
+      "pages": 0,
+      "warning_count": 0,
+      "error": null
+    },
+    {
+      "filename": "http-standard.pdf",
+      "status": "ready",
+      "embedding_status": "ready",
+      "chunks": 398,
+      "pages": 114,
+      "warning_count": 0,
+      "error": null
+    },
+    {
+      "filename": "data.json",
+      "status": "ready",
+      "embedding_status": "ready",
+      "chunks": 6,
+      "pages": 0,
+      "warning_count": 0,
+      "error": null
+    },
+    {
+      "filename": "cells.xlsx",
+      "status": "partial",
+      "embedding_status": "ready",
+      "chunks": 21,
+      "pages": 0,
+      "warning_count": 1,
+      "error": null
+    }
+  ],
+  "initial_api_checks": {
+    "total": 72,
+    "passed": 68,
+    "failures": {
+      "lexical_sample_docx": "Invalid test oracle requested absent word paragraph; independent XML inspection and query python-docx pass (2 results).",
+      "ocr_extract_and_search": "Initial isolated extraction failed; explicit retry succeeds. Root cause not established; production isolation was not modified.",
+      "citation_survives_retry": "Reproduced in production, fixed in source and covered by passing Rust and HTTP regression tests. Not deployed."
+    }
+  },
+  "real_embedding_checks": [
+    {
+      "check": "real hybrid readme.md",
+      "passed": true,
+      "details": {
+        "hits": 5,
+        "degraded": null
+      }
+    },
+    {
+      "check": "real hybrid iris.csv",
+      "passed": true,
+      "details": {
+        "hits": 8,
+        "degraded": null
+      }
+    },
+    {
+      "check": "real hybrid http-standard.pdf",
+      "passed": true,
+      "details": {
+        "hits": 8,
+        "degraded": null
+      }
+    },
+    {
+      "check": "real hybrid http-summary.txt",
+      "passed": true,
+      "details": {
+        "hits": 8,
+        "degraded": null
+      }
+    },
+    {
+      "check": "real hybrid data.json",
+      "passed": true,
+      "details": {
+        "hits": 6,
+        "degraded": null
+      }
+    },
+    {
+      "check": "vectors persisted",
+      "passed": true,
+      "details": {
+        "chunks": 612
+      }
+    },
+    {
+      "check": "new revision indexed",
+      "passed": true,
+      "details": null
+    },
+    {
+      "check": "unchanged real embeddings reused",
+      "passed": true,
+      "details": {
+        "reused": 10,
+        "new_chunks": 1
+      }
+    }
+  ],
+  "additional_scan_checks": [
+    {
+      "filename": "scan.jpg",
+      "passed": true
+    },
+    {
+      "filename": "scanned.pdf",
+      "passed": true
+    }
+  ],
+  "local_tests": {
+    "agent_library": {
+      "passed": 9,
+      "failed": 0
+    },
+    "server_documents": {
+      "passed": 1,
+      "failed": 0
+    },
+    "document_isolation_policy": {
+      "passed": 3,
+      "failed": 0
+    }
+  },
+  "ui": {
+    "errors": [],
+    "mobile": {
+      "x": 0,
+      "y": 56,
+      "width": 390,
+      "height": 788
+    }
+  },
+  "usage": {
+    "records": 57,
+    "tokens": 101332
+  },
+  "credentials": {
+    "first_key": "HTTP 429 credit_balance_exhausted / insufficient_quota",
+    "second_distinct_key": "HTTP 200, 1536 dimensions; configured for library only"
+  },
+  "limitations": [
+    "No 1000-page or load/stress test; longest public PDF had 114 pages, all covered.",
+    "Search assertions validate source retrieval, not end-to-end conversational answer accuracy.",
+    "Office layout, formulas recalculation and exact OCR accuracy are not guaranteed; partial warnings are retained.",
+    "PDF screenshot checks require canvas rendering, not DOM text; initial premature screenshot and DOM-text oracle were corrected.",
+    "Standalone OCR diagnostic without the production sandbox gate was not equivalent to production and is excluded; gated offline gVisor extraction succeeds.",
+    "Source citation fix is not deployed. No code deployment, service restart, model-role change, or isolation relaxation performed."
+  ]
+}

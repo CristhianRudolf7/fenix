@@ -6,7 +6,7 @@ Fénix guarda fuentes privadas y versionadas por separado de su memoria curada. 
 
 Se admiten TXT, Markdown, CSV y JSON en UTF-8; DOCX, XLSX y PPTX; PDF, PNG y JPEG. Los originales se guardan en `documents/<id>/v<versión>.<extensión>` dentro de los datos privados de cada cuenta, con un hash SHA-256. Un archivo idéntico en el mismo proyecto reutiliza el documento existente. Una nueva versión conserva los originales y las citas anteriores y comprueba que no se esté sobrescribiendo una versión más reciente.
 
-Una cola persistente extrae e indexa el contenido en segundo plano. Después de un reinicio vuelve a intentar las extracciones interrumpidas. La interfaz distingue documentos pendientes, en proceso, disponibles, parciales y fallidos; los embeddings tienen su propio estado. Si falla OpenAI, sigue disponible la búsqueda por texto. Los errores transitorios tienen hasta tres intentos; después se requiere reintentar desde la biblioteca. Reintentar un documento parcial repite su extracción.
+Una cola persistente extrae e indexa el contenido en segundo plano. Después de un reinicio vuelve a intentar las extracciones interrumpidas. La interfaz distingue documentos pendientes, en proceso, disponibles, parciales y fallidos; los embeddings tienen su propio estado. Si falla OpenAI, sigue disponible la búsqueda por texto. Las solicitudes de embeddings tienen hasta tres intentos ante errores de transporte, HTTP 429 o errores del servidor; después se requiere reintentar desde la biblioteca. Una extracción fallida requiere un reintento explícito. Reintentar un documento parcial repite su extracción y conserva los identificadores de las citas cuyo texto, ubicación y posición no cambiaron dentro de la misma versión.
 
 La extracción de Office usa Rust. Excel conserva las referencias y agrupa celdas por fila; CSV respeta campos entre comillas y saltos de línea internos. No se supone automáticamente que la primera fila contenga encabezados. Las fórmulas conservan sus valores almacenados: **no se recalculan**. La extracción no reproduce el diseño visual ni transcribe imágenes incrustadas; esa limitación aparece en la interfaz.
 
@@ -33,3 +33,5 @@ El agente dispone de `library_list`, `library_search`, `library_read`, `library_
 ## Verificación y operación
 
 Las pruebas utilizan datos temporales y respuestas simuladas de OpenAI para comprobar aislamiento, versiones, citas, búsqueda híbrida, reutilización de embeddings y manejo de errores. No constituyen un benchmark de calidad con la API real. El despliegue y la instalación del servicio OCR se realizan por separado. La [documentación en inglés](../en/document-library.md) incluye los detalles técnicos.
+
+La [auditoría con documentos reales del 29 de septiembre](audits/document-library-2026-09-29.md) también comprueba archivos públicos, extracción en producción y embeddings reales. Distingue los cambios de código del comportamiento desplegado y registra fallos y límites de cobertura.

@@ -48,7 +48,22 @@ pub fn decode(protocol: Protocol, body: Value) -> Result<ChatResponse, CodecErro
         Protocol::Gemini => gemini::decode(body),
         Protocol::Bedrock => bedrock::decode(body),
     }?;
+    // A chat generation may end after plain reasoning without text or calls; the
+    // caller decides how to recover instead of failing the whole response.
+    let reasoning_only = response
+        .message
+        .provider_data
+        .as_ref()
+        .is_some_and(|replay| {
+            replay.protocol == Protocol::OpenAiChat
+                && ["reasoning", "reasoning_content"].iter().any(|key| {
+                    replay.data[key]
+                        .as_str()
+                        .is_some_and(|s| !s.trim().is_empty())
+                })
+        });
     if response.message.content.is_empty()
+        && !reasoning_only
         && !matches!(
             response.finish_reason,
             FinishReason::Length | FinishReason::ContentFilter

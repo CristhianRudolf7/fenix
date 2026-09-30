@@ -10,6 +10,7 @@ import json
 import re
 import tarfile
 import tempfile
+import urllib.parse
 import urllib.request
 from pathlib import Path, PurePosixPath
 
@@ -70,7 +71,12 @@ def prepare(benchmark, revision, output, index=0, split='execution'):
                 if item['type'] == 'blob' and item['path'].startswith(prefix):
                     target = stage / str(safe_path(item['path']))
                     target.parent.mkdir(parents=True, exist_ok=True)
-                    target.write_bytes(fetch(base + item['path']))
+                    target.write_bytes(fetch(base + urllib.parse.quote(item['path'])))  # Official names may contain spaces.
+                    # Docker COPY keeps host modes: restore Git's modes regardless of the caller's umask.
+                    target.chmod(0o755 if item.get('mode') == '100755' else 0o644)
+            for directory in (stage / 'tasks', stage / prefix, *(stage / prefix).rglob('*')):
+                if directory.is_dir():
+                    directory.chmod(0o755)
             manifest.update(task_id=prefix.split('/')[1], path=prefix.rstrip('/'), ordering='lexicographic task directory', dataset_size=len(paths), source=base)
         else:
             if split not in ('execution', 'search', 'ambiguity', 'adaptability', 'time'):

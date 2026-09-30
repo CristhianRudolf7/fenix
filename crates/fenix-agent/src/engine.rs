@@ -82,6 +82,179 @@ mod operational_tests {
     }
 
     #[tokio::test]
+    async fn executed_actions_end_truncation_episodes_but_not_other_recovery_budgets() -> Result<()>
+    {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue("Long investigation", "web", None)?;
+        let truncate = || rt.recover_execution(&task.id, "output_length", json!({}));
+        for _ in 0..3 {
+            truncate()?;
+        }
+        // A failed action is not a completed generation episode.
+        rt.record_tool_outcome(
+            &task.id,
+            "bad",
+            "file_read",
+            &json!({}),
+            Err(anyhow::anyhow!("missing")),
+        )?;
+        assert!(truncate().is_err());
+        rt.record_tool_outcome(
+            &task.id,
+            "probe",
+            "command_run",
+            &json!({}),
+            Ok(json!({"exit_code":1})),
+        )?;
+        for _ in 0..3 {
+            truncate()?;
+        }
+        assert!(
+            truncate()
+                .unwrap_err()
+                .to_string()
+                .contains("output_length")
+        );
+        for _ in 0..3 {
+            rt.recover_execution(&task.id, "no_progress", json!({}))?;
+        }
+        rt.record_tool_outcome(
+            &task.id,
+            "read",
+            "file_read",
+            &json!({}),
+            Ok(json!({"content":"x"})),
+        )?;
+        assert!(
+            rt.recover_execution(&task.id, "no_progress", json!({}))
+                .is_err()
+        );
+        let events = rt.store.events(&task.id, 0, 200)?;
+        assert_eq!(
+            events
+                .iter()
+                .filter(|e| e["kind"] == "recovery_budget_restored")
+                .count(),
+            2
+        );
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn consecutive_truncations_escalate_to_a_single_small_action() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue("Rewrite the evaluator", "web", None)?;
+        rt.store.set_task_status(&task.id, "running", None)?;
+        let server = MockServer::start().await;
+        let count = AtomicUsize::new(0);
+        Mock::given(method("POST")).and(path("/responses")).respond_with(move |_: &wiremock::Request| {
+            let status = if count.fetch_add(1, Ordering::SeqCst) < 2 { "incomplete" } else { "completed" };
+            ResponseTemplate::new(200).set_body_json(json!({"id":"response","status":status,
+                "incomplete_details":{"reason":"max_output_tokens"},
+                "output":[{"type":"message","role":"assistant","content":[{"type":"output_text","text":"Planned."}]}],
+                "usage":{"input_tokens":10,"output_tokens":10,"total_tokens":20}}))
+        }).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.base_url = Some(server.uri());
+        let model = rt.model_connection(settings, ApiKey::new("test-truncation")?)?;
+        let mut messages = vec![Message::user(task.request.clone())];
+        tokio::time::timeout(
+            Duration::from_secs(10),
+            rt.run_loop(&task, &model, &mut messages, &CancellationToken::new()),
+        )
+        .await??;
+        let bodies = server
+            .received_requests()
+            .await
+            .unwrap()
+            .iter()
+            .map(|r| String::from_utf8_lossy(&r.body).into_owned())
+            .collect::<Vec<_>>();
+        assert_eq!(bodies.len(), 3);
+        assert!(
+            bodies[1].contains("No large action payload")
+                && !bodies[1].contains("Consecutive generations")
+        );
+        assert!(bodies[2].contains("Consecutive generations exhausted the output allowance"));
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn truncated_reasoning_is_continued_as_the_latest_unverified_note() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
+        let task = rt.store.enqueue_bound(
+            "Prove the lemma",
+            "web",
+            None,
+            &fenix_storage::TaskBinding::default(),
+        )?;
+        rt.store.set_task_status(&task.id, "running", None)?;
+        let server = MockServer::start().await;
+        let count = AtomicUsize::new(0);
+        let call = |name: &str, arguments: Value| {
+            json!({"role":"assistant","content":null,"tool_calls":[
+            {"id":name,"type":"function","function":{"name":name,"arguments":arguments.to_string()}}]})
+        };
+        Mock::given(method("POST")).and(path("/chat/completions")).respond_with(move |_: &wiremock::Request| {
+            let (finish, message) = match count.fetch_add(1, Ordering::SeqCst) {
+                0 => ("length", json!({"role":"assistant","content":null,"reasoning":"PLAN-ALPHA induction on n"})),
+                // Reasoning that stops without text or calls is recovered the same way.
+                1 => ("stop", json!({"role":"assistant","content":null,"reasoning":"PLAN-BETA strengthen the invariant"})),
+                2 => ("tool_calls", call("files_list", json!({"path":"."}))),
+                _ => ("tool_calls", call("task_finish", json!({"status":"completed","summary":"Done.","evidence":"Listed the workspace."}))),
+            };
+            ResponseTemplate::new(200).set_body_json(json!({"id":"chat","choices":[{"index":0,"message":message,"finish_reason":finish}],
+                "usage":{"prompt_tokens":10,"completion_tokens":10,"total_tokens":20}}))
+        }).mount(&server).await;
+        let mut settings = crate::config::Settings::initial(dir.path().into());
+        settings.provider = fenix_core::ProviderId::OpenRouter;
+        settings.base_url = Some(server.uri());
+        let model = rt.model_connection(settings, ApiKey::new("test-truncation-notes")?)?;
+        let mut messages = vec![Message::user(task.request.clone())];
+        tokio::time::timeout(
+            Duration::from_secs(10),
+            rt.run_loop(&task, &model, &mut messages, &CancellationToken::new()),
+        )
+        .await??;
+        let bodies = server
+            .received_requests()
+            .await
+            .unwrap()
+            .iter()
+            .map(|r| String::from_utf8_lossy(&r.body).into_owned())
+            .collect::<Vec<_>>();
+        assert_eq!(bodies.len(), 4);
+        assert!(bodies[1].contains("PLAN-ALPHA induction on n"));
+        assert!(bodies[2].contains("PLAN-BETA strengthen the invariant"));
+        assert!(bodies[2].contains("Consecutive generations"));
+        assert!(!bodies[2].contains("PLAN-ALPHA"));
+        assert_eq!(bodies[2].matches("cut off before acting").count(), 1);
+        // Once an action is produced, carried notes leave the context.
+        assert!(!bodies[3].contains("cut off before acting"));
+        let causes = rt
+            .store
+            .events(&task.id, 0, 100)?
+            .into_iter()
+            .filter(|e| e["kind"] == "truncated_response")
+            .map(|e| e["data"]["cause"].clone())
+            .collect::<Vec<_>>();
+        assert_eq!(causes, [json!("length"), json!("empty_output")]);
+        let empty = Message {
+            role: Role::Assistant,
+            content: vec![],
+            provider_data: None,
+        };
+        assert_eq!(truncation_notes(&empty), None);
+        rt.shutdown().await?;
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn command_run_preserves_missing_dependency_diagnosis() -> Result<()> {
         let dir = tempfile::tempdir()?;
         let rt = Runtime::open(&dir.path().join("state"), Some(&dir.path().join("skills"))).await?;
@@ -606,6 +779,24 @@ mod operational_tests {
     }
 }
 
+/// Only the latest carried note is kept; it already continues earlier ones.
+const TRUNCATION_NOTES: &str = "Your previous generation was cut off before acting. Its discarded reasoning follows as your own unverified notes (may be incomplete or wrong). Continue from them instead of restarting the analysis:";
+
+/// Plain-text reasoning or visible text of an unexecuted, truncated generation.
+/// Opaque or encrypted provider reasoning is never decoded or carried.
+fn truncation_notes(message: &Message) -> Option<String> {
+    let data = message.provider_data.as_ref().map(|p| &p.data);
+    let reasoning = data
+        .and_then(|d| d["reasoning"].as_str().or(d["reasoning_content"].as_str()))
+        .unwrap_or_default();
+    let notes = [reasoning.trim(), message.text_content().trim()]
+        .into_iter()
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n\n");
+    (!notes.is_empty()).then_some(notes)
+}
+
 impl Runtime {
     pub(crate) fn record_tool_outcome(
         &self,
@@ -677,6 +868,9 @@ impl Runtime {
         // its first write. Tool-free conversation and active handoffs still end
         // normally; a tool-backed answer uses the same explicit outcome as edits.
         self.store.put("explicit_execution_outcome", task, &true)?;
+        if !is_error {
+            self.clear_truncation_recoveries(task)?;
+        }
         self.record_completion_check(task, call_id, name, args, &output, is_error)?;
         self.record_stop_observation(task, call_id, name, args, &output, is_error)?;
         if name != "task_contract" {
@@ -1157,16 +1351,27 @@ impl Runtime {
             if response.finish_reason == FinishReason::ContentFilter {
                 bail!("The provider filtered the response; no proposed tool calls were executed");
             }
-            if response.finish_reason == FinishReason::Length {
+            // Reasoning that ends without text or calls is also a generation without
+            // an action; it shares the truncation recovery and its consecutive budget.
+            let empty_output = response.finish_reason != FinishReason::Length
+                && calls.is_empty()
+                && text.trim().is_empty()
+                && truncation_notes(&message).is_some();
+            if response.finish_reason == FinishReason::Length || empty_output {
+                let cause = if empty_output {
+                    "empty_output"
+                } else {
+                    "length"
+                };
                 self.store.event(
                     &task.id,
                     "truncated_response",
-                    &json!({"message":message,"executed":false}),
+                    &json!({"message":message,"executed":false,"cause":cause}),
                 )?;
-                self.recover_execution(
+                let attempt = self.recover_execution(
                     &task.id,
                     "output_length",
-                    json!({"step":step+1,"output_ceiling":request.max_output_tokens}),
+                    json!({"step":step+1,"output_ceiling":request.max_output_tokens,"cause":cause}),
                 )?;
                 // Never execute partial calls or leave unmatched pairs in active context.
                 let oversized_action = calls
@@ -1174,11 +1379,26 @@ impl Runtime {
                     .any(|(_, _, args)| args.to_string().len() > 8000);
                 let strategy = if oversized_action {
                     "An action payload was large. Split it into small edits; send only the next complete tool call."
+                } else if empty_output && attempt == 1 {
+                    "The previous generation ended after reasoning without an action or answer. Choose one concrete executable probe, script or small implementation, then test its observed behavior before further reasoning."
+                } else if attempt > 1 {
+                    // Identical context and advice tend to reproduce the same exhausted plan.
+                    "Consecutive generations exhausted the output allowance before any action executed. Do not design the complete solution or calculate and enumerate results by hand. Your next response must be one tool call for the smallest concrete step, such as running a short script that computes or probes what you need, or writing or editing one small part; continue from its observed result."
                 } else {
-                    "No large action payload was observed; reasoning or response generation exhausted the output allowance. Stop speculative analysis. Choose one concrete executable probe or small implementation, then test its observed behavior before further reasoning."
+                    "No large action payload was observed; reasoning or response generation exhausted the output allowance. Stop speculative analysis and manual calculation. Choose one concrete executable probe, script or small implementation, then test its observed behavior before further reasoning."
                 };
-                self.store.event(&task.id, "recovery_strategy", &json!({"reason":"output_length","strategy":strategy,"classification":"observed_payload_heuristic_not_provider_reasoning_count"}))?;
+                // Restarting from scratch reproduces the exhausted analysis; continue it instead.
+                let notes = (!oversized_action)
+                    .then(|| truncation_notes(&message))
+                    .flatten();
+                self.store.event(&task.id, "recovery_strategy", &json!({"reason":"output_length","strategy":strategy,"classification":"observed_payload_heuristic_not_provider_reasoning_count","notes_carried_chars":notes.as_ref().map(String::len)}))?;
+                messages.retain(|m| !m.text_content().starts_with(TRUNCATION_NOTES));
                 messages.push(Message::user(format!("The previous generation was NOT executed. {strategy} Preserve completed work and inspect existing evidence.")));
+                if let Some(notes) = notes {
+                    messages.push(Message::user(format!(
+                        "{TRUNCATION_NOTES}\n<<<\n{notes}\n>>>"
+                    )));
+                }
                 continue;
             }
             if calls.is_empty() && self.processes.has_running(&task.id).await {
@@ -1293,6 +1513,8 @@ impl Runtime {
             if calls.len() > 16 {
                 bail!("Too many tool calls in one response");
             }
+            // Carried notes served the next action; keep them out of later requests.
+            messages.retain(|m| !m.text_content().starts_with(TRUNCATION_NOTES));
             let call_count = calls.len();
             let tool_byte_budget = budget.tool_bytes(call_count);
             self.execution_stage(&task.id, "executing_tools")?;

@@ -238,7 +238,7 @@ impl Runtime {
                         } else {
                             None
                         };
-                        fenix_execution::fs::create_with_permissions(
+                        fenix_execution::fs::create_workspace(
                             &edit.destination,
                             after.as_bytes(),
                             permissions,

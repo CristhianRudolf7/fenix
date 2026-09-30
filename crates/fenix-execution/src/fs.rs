@@ -14,7 +14,8 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-fn parent(path: &Path, create: bool) -> Result<(OwnedFd, OsString)> {
+/// `create` gives the mode for missing directories (before the process umask).
+fn parent(path: &Path, create: Option<Mode>) -> Result<(OwnedFd, OsString)> {
     let path: PathBuf = if path.is_absolute() {
         path.into()
     } else {
@@ -30,8 +31,8 @@ fn parent(path: &Path, create: bool) -> Result<(OwnedFd, OsString)> {
         match part {
             Component::RootDir | Component::CurDir => continue,
             Component::Normal(part) => {
-                if create {
-                    match mkdirat(&fd, Path::new(part), Mode::from_bits_truncate(0o700)) {
+                if let Some(mode) = create {
+                    match mkdirat(&fd, Path::new(part), mode) {
                         Ok(()) | Err(nix::errno::Errno::EEXIST) => {}
                         Err(error) => return Err(error.into()),
                     }
@@ -59,7 +60,7 @@ fn regular(file: &File) -> Result<()> {
 }
 
 pub fn open(path: &Path) -> Result<File> {
-    let (parent, name) = parent(path, false)?;
+    let (parent, name) = parent(path, None)?;
     let file = File::from(openat(
         &parent,
         Path::new(&name),
@@ -95,7 +96,7 @@ pub fn write(path: &Path, bytes: &[u8]) -> Result<()> {
 }
 
 pub fn remove(path: &Path, expected: &[u8]) -> Result<()> {
-    let (parent, name) = parent(path, false)?;
+    let (parent, name) = parent(path, None)?;
     let file = File::from(openat(
         &parent,
         Path::new(&name),
@@ -113,7 +114,7 @@ pub fn remove(path: &Path, expected: &[u8]) -> Result<()> {
 }
 
 pub fn directory(path: &Path) -> Result<File> {
-    let (parent, name) = parent(path, false)?;
+    let (parent, name) = parent(path, None)?;
     Ok(File::from(openat(
         &parent,
         Path::new(&name),
@@ -131,12 +132,33 @@ pub fn create_with_permissions(
     bytes: &[u8],
     permissions: Option<std::fs::Permissions>,
 ) -> Result<()> {
-    let (parent, name) = parent(path, true)?;
+    create_mode(path, bytes, permissions, 0o700, 0o600)
+}
+
+/// Workspace files follow the process umask like ordinary tools, so other local
+/// users and services (for example a verifier or web server) can read them when
+/// the umask allows. Private runtime files keep using `create`.
+pub fn create_workspace(
+    path: &Path,
+    bytes: &[u8],
+    permissions: Option<std::fs::Permissions>,
+) -> Result<()> {
+    create_mode(path, bytes, permissions, 0o777, 0o666)
+}
+
+fn create_mode(
+    path: &Path,
+    bytes: &[u8],
+    permissions: Option<std::fs::Permissions>,
+    directory_mode: u32,
+    file_mode: u32,
+) -> Result<()> {
+    let (parent, name) = parent(path, Some(Mode::from_bits_truncate(directory_mode)))?;
     let mut file = File::from(openat(
         &parent,
         Path::new(&name),
         OFlag::O_WRONLY | OFlag::O_CREAT | OFlag::O_EXCL | OFlag::O_NOFOLLOW | OFlag::O_CLOEXEC,
-        Mode::from_bits_truncate(0o600),
+        Mode::from_bits_truncate(file_mode),
     )?);
     file.write_all(bytes)?;
     if let Some(permissions) = permissions {
@@ -148,7 +170,7 @@ pub fn create_with_permissions(
 }
 
 pub fn replace(path: &Path, expected: &[u8], bytes: &[u8]) -> Result<()> {
-    let (parent, name) = parent(path, false)?;
+    let (parent, name) = parent(path, None)?;
     let file = File::from(openat(
         &parent,
         Path::new(&name),
@@ -207,6 +229,27 @@ mod tests {
         std::os::unix::fs::symlink(dir.path(), &escape).unwrap();
         assert!(create(&escape.join("new"), b"bad").is_err());
         assert!(!dir.path().join("new").exists());
+    }
+    #[test]
+    fn workspace_files_follow_umask_but_private_files_stay_owner_only() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let previous = nix::sys::stat::umask(Mode::from_bits_truncate(0o022));
+        let result = create_workspace(&dir.path().join("shared/module.py"), b"x", None)
+            .and_then(|()| create(&dir.path().join("private/state"), b"y"));
+        nix::sys::stat::umask(previous);
+        result.unwrap();
+        let mode = |path: &str| {
+            std::fs::metadata(dir.path().join(path))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o777
+        };
+        assert_eq!(mode("shared/module.py"), 0o644);
+        assert_eq!(mode("shared"), 0o755);
+        assert_eq!(mode("private/state"), 0o600);
+        assert_eq!(mode("private"), 0o700);
     }
     #[test]
     fn create_and_compare_before_replace_work_without_overwriting_new_files() {

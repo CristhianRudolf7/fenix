@@ -35,6 +35,16 @@ async def wait_for_report(environment):
         await asyncio.sleep(0.5)
 
 
+def trial_config(template, workspace, trial):
+    """Copy the template, binding the workspace and each role's `{trial}` endpoint."""
+    config = json.loads(json.dumps(template))
+    config["settings"]["workspace"] = workspace
+    for role in (config["settings"], config.get("fast") or {}):
+        if role.get("base_url"):
+            role["base_url"] = role["base_url"].replace("{trial}", trial)
+    return config
+
+
 class NativeFenixAgent(BaseAgent):
     @staticmethod
     def name():
@@ -57,11 +67,7 @@ class NativeFenixAgent(BaseAgent):
         key.unlink()
 
     async def run(self, instruction, environment, context: AgentContext):
-        config = json.loads(json.dumps(self.config))
-        config["settings"]["workspace"] = self.workspace
-        endpoint = config["settings"].get("base_url")
-        if endpoint:
-            config["settings"]["base_url"] = endpoint.replace("{trial}", "native-" + self.logs_dir.parent.name)
+        config = trial_config(self.config, self.workspace, "native-" + self.logs_dir.parent.name)
         config.update(instruction=contextualize(instruction), api_key_file="/opt/fenix-eval/proxy-key",
                       task_name=self.logs_dir.parent.name)
         source = self.logs_dir / "native-config.json"

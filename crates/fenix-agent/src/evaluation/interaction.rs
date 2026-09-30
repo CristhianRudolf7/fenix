@@ -238,6 +238,7 @@ mod tests {
             proxy_upstream: Some(*server.address()),
             decisions: None,
             interaction_socket: Some(socket),
+            fast: None,
         };
         let output_copy = output.clone();
         let handle = tokio::spawn(async move { run(config, &output_copy, false).await });

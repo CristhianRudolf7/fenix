@@ -86,6 +86,104 @@ fn embedding_responses_are_ordered_and_validated() {
     duplicate["data"][0]["index"] = json!(0);
     assert!(embeddings::decode(&duplicate, 2).is_err());
 }
+
+#[tokio::test]
+async fn interrupted_extraction_resumes_after_reopening_the_library() {
+    let root = tempfile::tempdir().unwrap();
+    let skills = root.path().join("skills");
+    let id = {
+        let rt = Runtime::open(root.path(), Some(&skills)).await.unwrap();
+        let mut doc = rt
+            .library_import(
+                "recovery.txt",
+                b"Durable recovery evidence.",
+                ImportOptions::default(),
+            )
+            .await
+            .unwrap();
+        doc.status = "processing".into();
+        rt.store.library_state(&doc).unwrap();
+        doc.id
+    };
+    let rt = Runtime::open(root.path(), Some(&skills)).await.unwrap();
+    let worker = tokio::spawn(rt.clone().library_worker());
+    for _ in 0..100 {
+        if rt.store.library_document(&id, None).unwrap().status == "ready" {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    let doc = rt.store.library_document(&id, None).unwrap();
+    rt.stop.cancel();
+    worker.await.unwrap();
+    assert_eq!(doc.status, "ready");
+    assert_eq!(
+        rt.library_original(&doc).unwrap(),
+        b"Durable recovery evidence."
+    );
+    assert_eq!(
+        rt.store
+            .library_search("recovery", None, &[], None, None, 8)
+            .unwrap()
+            .len(),
+        1
+    );
+}
+
+#[tokio::test]
+async fn reextracting_unchanged_evidence_preserves_citations_and_embeddings() {
+    let root = tempfile::tempdir().unwrap();
+    let rt = Runtime::open(root.path(), Some(&root.path().join("skills")))
+        .await
+        .unwrap();
+    let mut doc = rt
+        .library_import(
+            "reference.txt",
+            b"A stable source passage.",
+            ImportOptions::default(),
+        )
+        .await
+        .unwrap();
+    let (first, _) = rt.library_extract(&doc).await.unwrap();
+    rt.store.library_store_chunks(&doc, &first).unwrap();
+    rt.store
+        .library_embeddings(
+            &first,
+            embeddings::IDENTITY,
+            &[vec![0.5; embeddings::DIMENSIONS]],
+            5,
+        )
+        .unwrap();
+    doc.status = "partial".into();
+    rt.store.library_state(&doc).unwrap();
+    rt.library_retry(&doc.id, 1).await.unwrap();
+    let (second, _) = rt.library_extract(&doc).await.unwrap();
+    assert_ne!(first[0].id, second[0].id);
+    rt.store.library_store_chunks(&doc, &second).unwrap();
+    let preserved = rt.store.library_chunk(&first[0].id).unwrap();
+    assert_eq!(preserved.text, first[0].text);
+    assert_eq!(preserved.location, first[0].location);
+    assert_eq!(rt.store.library_chunks(&doc.id, 1, 0, 20).unwrap().len(), 1);
+    assert!(
+        rt.store
+            .library_pending_embeddings(&doc.id, 1, embeddings::IDENTITY)
+            .unwrap()
+            .is_empty()
+    );
+    doc.status = "ready".into();
+    rt.store.library_state(&doc).unwrap();
+    let hits = rt
+        .store
+        .library_search("stable", None, &[], None, None, 8)
+        .unwrap();
+    assert_eq!(hits.len(), 1);
+    assert_eq!(hits[0].chunk.id, first[0].id);
+    // A changed source location must not inherit a citation to different evidence.
+    let mut changed = second;
+    changed[0].location["line_start"] = json!(42);
+    rt.store.library_store_chunks(&doc, &changed).unwrap();
+    assert!(rt.store.library_chunk(&first[0].id).is_err());
+}
 #[test]
 fn chunks_preserve_unicode_and_source_locations() {
     let blocks =

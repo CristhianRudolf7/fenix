@@ -1,0 +1,1028 @@
+{
+  "benchmark": "terminal-bench-4.0",
+  "dataset_revision": "452bf305c6daa62fc59061d22133a7cbc7c1572e",
+  "dataset_tag": "v4.0.0",
+  "harness": "Harbor 0.23.0 + native fenix eval (scripts/benchmarks/harbor/run_native.py)",
+  "selection_rule": "first 15 lexicographic tasks with <=2 CPU, <=4096 MiB, no GPU; FreeCAD tasks 16-18 ungradable (official verifier image fails to build) and replaced by 38-40, declared before replacement outcomes",
+  "ungradable": [
+    {
+      "index": 16,
+      "task_id": "freecad-impeller"
+    },
+    {
+      "index": 17,
+      "task_id": "freecad-platform-drawing"
+    },
+    {
+      "index": 18,
+      "task_id": "freecad-spring-clip"
+    }
+  ],
+  "replacements": [
+    "music-harmony",
+    "mvcc-lsm-compaction",
+    "nextjs-performance"
+  ],
+  "models": {
+    "intelligent": "glm-5-3-flash",
+    "fast": "nemotron-3-5-lightning-30b",
+    "endpoint": "https://api.runinfra.ai/v1",
+    "reasoning_effort": null,
+    "context_window_tokens": 200000,
+    "compact_at_tokens": 160000,
+    "max_output_tokens": 16384
+  },
+  "bundles": {
+    "original": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+    "postchange_2": "00a3b277fcc7f33317a0d474105851a51cc2bf0a2761b0acdd781941beead119",
+    "postchange_3_final": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05"
+  },
+  "valid_original": {
+    "totals": {
+      "trials": 15,
+      "passed": 1,
+      "native_seconds": 7197,
+      "wall_seconds": 11539,
+      "glm": {
+        "requests": 432,
+        "prompt_tokens": 23274210,
+        "completion_tokens": 1305121,
+        "cached_tokens": 20849152,
+        "cost_usd": 1.479535,
+        "usage_missing": 0,
+        "non_200": 0
+      },
+      "nemotron": {
+        "requests": 208,
+        "prompt_tokens": 298830,
+        "completion_tokens": 43572,
+        "cached_tokens": 0,
+        "cost_usd": 0.021477,
+        "usage_missing": 0,
+        "non_200": 0
+      },
+      "cost_usd": 1.501012
+    },
+    "tasks": [
+      {
+        "index": 0,
+        "task_id": "atrx-vep-crispr",
+        "reward": 0,
+        "checks": "12/16",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 1300,
+        "wall_seconds": 1664,
+        "truncations": 3,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 80,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 81,
+          "prompt_tokens": 6042586,
+          "cached_tokens": 5429888,
+          "completion_tokens": 276942,
+          "cost_usd": 0.35491732000000004
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 47,
+          "prompt_tokens": 99825,
+          "cached_tokens": 0,
+          "completion_tokens": 8843,
+          "cost_usd": 0.0063177
+        }
+      },
+      {
+        "index": 1,
+        "task_id": "batched-eval-parity",
+        "reward": 0.0,
+        "checks": "0/5",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 302,
+        "wall_seconds": 535,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 35,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 23,
+          "prompt_tokens": 754782,
+          "cached_tokens": 707840,
+          "completion_tokens": 67133,
+          "cost_usd": 0.05660867
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 5,
+          "prompt_tokens": 7520,
+          "cached_tokens": 0,
+          "completion_tokens": 1068,
+          "cost_usd": 0.0005361999999999999
+        }
+      },
+      {
+        "index": 3,
+        "task_id": "bun-sourcemap-leak",
+        "reward": 0.0,
+        "checks": "31/36",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 349,
+        "wall_seconds": 504,
+        "truncations": 3,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 36,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 27,
+          "prompt_tokens": 931672,
+          "cached_tokens": 834944,
+          "completion_tokens": 80675,
+          "cost_usd": 0.07199215000000002
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 11,
+          "prompt_tokens": 16747,
+          "cached_tokens": 0,
+          "completion_tokens": 1795,
+          "cost_usd": 0.0011066
+        }
+      },
+      {
+        "index": 5,
+        "task_id": "cargo-flight-dispatch",
+        "reward": 0.0,
+        "checks": "9/27",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 226,
+        "wall_seconds": 343,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 13,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 10,
+          "prompt_tokens": 210972,
+          "cached_tokens": 179712,
+          "completion_tokens": 66015,
+          "cost_usd": 0.03853671
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 3,
+          "prompt_tokens": 3049,
+          "cached_tokens": 0,
+          "completion_tokens": 285,
+          "cost_usd": 0.00019520000000000003
+        }
+      },
+      {
+        "index": 6,
+        "task_id": "coq-block-bound",
+        "reward": 0.0,
+        "checks": "2/3",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 219,
+        "wall_seconds": 425,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 2,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 6,
+          "prompt_tokens": 77865,
+          "cached_tokens": 61184,
+          "completion_tokens": 65717,
+          "cost_usd": 0.033243079999999994
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 2,
+          "prompt_tokens": 1173,
+          "cached_tokens": 0,
+          "completion_tokens": 198,
+          "cost_usd": 8.835e-05
+        }
+      },
+      {
+        "index": 11,
+        "task_id": "embedding-drift-monitor",
+        "reward": 0.0,
+        "checks": "10/11",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 632,
+        "wall_seconds": 885,
+        "truncations": 2,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 24,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 20,
+          "prompt_tokens": 791127,
+          "cached_tokens": 702208,
+          "completion_tokens": 83287,
+          "cost_usd": 0.06832648
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 13,
+          "prompt_tokens": 14818,
+          "cached_tokens": 0,
+          "completion_tokens": 2549,
+          "cost_usd": 0.0011232500000000001
+        }
+      },
+      {
+        "index": 12,
+        "task_id": "fin-saccr-rwa",
+        "reward": 0.0,
+        "checks": "0/24",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 219,
+        "wall_seconds": 372,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 9,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 10,
+          "prompt_tokens": 111033,
+          "cached_tokens": 100992,
+          "completion_tokens": 69732,
+          "cost_usd": 0.03551367
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 3,
+          "prompt_tokens": 3960,
+          "cached_tokens": 0,
+          "completion_tokens": 337,
+          "cost_usd": 0.00024855
+        }
+      },
+      {
+        "index": 13,
+        "task_id": "foodstuff-beta-activity",
+        "reward": 0.0,
+        "checks": "0/13",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 230,
+        "wall_seconds": 373,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 8,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 10,
+          "prompt_tokens": 166933,
+          "cached_tokens": 138240,
+          "completion_tokens": 67509,
+          "cost_usd": 0.03768248
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 4,
+          "prompt_tokens": 3979,
+          "cached_tokens": 0,
+          "completion_tokens": 531,
+          "cost_usd": 0.0002786
+        }
+      },
+      {
+        "index": 19,
+        "task_id": "freight-dispatch-shift",
+        "reward": 0.0,
+        "checks": "1/1",
+        "classification": "harness: chat replay rejected by redactor",
+        "flag": null,
+        "native_seconds": 140,
+        "wall_seconds": 384,
+        "truncations": 0,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 29,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 22,
+          "prompt_tokens": 708980,
+          "cached_tokens": 545280,
+          "completion_tokens": 24287,
+          "cost_usd": 0.04529455
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 6,
+          "prompt_tokens": 6979,
+          "cached_tokens": 0,
+          "completion_tokens": 656,
+          "cost_usd": 0.00044735
+        }
+      },
+      {
+        "index": 20,
+        "task_id": "glycan-ms2-elucidation",
+        "reward": 0.0,
+        "checks": "2/12",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 486,
+        "wall_seconds": 658,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 23,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 26,
+          "prompt_tokens": 1318579,
+          "cached_tokens": 1074432,
+          "completion_tokens": 127611,
+          "cost_usd": 0.11651407999999998
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 13,
+          "prompt_tokens": 18824,
+          "cached_tokens": 0,
+          "completion_tokens": 1351,
+          "cost_usd": 0.00114385
+        }
+      },
+      {
+        "index": 22,
+        "task_id": "heat-pump-warranty",
+        "reward": 0.0,
+        "checks": null,
+        "classification": "harness: chat replay rejected by redactor",
+        "flag": null,
+        "native_seconds": 665,
+        "wall_seconds": 888,
+        "truncations": 0,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 61,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 51,
+          "prompt_tokens": 2860904,
+          "cached_tokens": 2576256,
+          "completion_tokens": 32514,
+          "cost_usd": 0.12323026
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 20,
+          "prompt_tokens": 22750,
+          "cached_tokens": 0,
+          "completion_tokens": 4387,
+          "cost_usd": 0.0017955499999999997
+        }
+      },
+      {
+        "index": 29,
+        "task_id": "kv-live-surgery",
+        "reward": 0.0,
+        "checks": "0/1",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 742,
+        "wall_seconds": 1150,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 31,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 34,
+          "prompt_tokens": 2680508,
+          "cached_tokens": 2547456,
+          "completion_tokens": 126953,
+          "cost_usd": 0.14818825
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 24,
+          "prompt_tokens": 29975,
+          "cached_tokens": 0,
+          "completion_tokens": 5201,
+          "cost_usd": 0.0022788999999999995
+        }
+      },
+      {
+        "index": 38,
+        "task_id": "music-harmony",
+        "reward": 0.0,
+        "checks": null,
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 291,
+        "wall_seconds": 436,
+        "truncations": 4,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 13,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 16,
+          "prompt_tokens": 379360,
+          "cached_tokens": 305152,
+          "completion_tokens": 69660,
+          "cost_usd": 0.04866444
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 6,
+          "prompt_tokens": 6034,
+          "cached_tokens": 0,
+          "completion_tokens": 1897,
+          "cost_usd": 0.00058625
+        }
+      },
+      {
+        "index": 39,
+        "task_id": "mvcc-lsm-compaction",
+        "reward": 1.0,
+        "checks": "15/15",
+        "classification": "pass",
+        "flag": null,
+        "native_seconds": 345,
+        "wall_seconds": 1435,
+        "truncations": 3,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 26,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 17,
+          "prompt_tokens": 421924,
+          "cached_tokens": 348160,
+          "completion_tokens": 68364,
+          "cost_usd": 0.04932264
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 7,
+          "prompt_tokens": 7351,
+          "cached_tokens": 0,
+          "completion_tokens": 1055,
+          "cost_usd": 0.0005258
+        }
+      },
+      {
+        "index": 40,
+        "task_id": "nextjs-performance",
+        "reward": 0.0,
+        "checks": "1/5",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 1051,
+        "wall_seconds": 1487,
+        "truncations": 0,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 97,
+        "fast_exercised": true,
+        "binary_sha256": "72b4fb177074b33144e4910c31b3ae0d4a502b7567c2218c7fa43b56f5d0e9c1",
+        "glm-5-3-flash": {
+          "requests": 79,
+          "prompt_tokens": 5816985,
+          "cached_tokens": 5297408,
+          "completion_tokens": 78722,
+          "cost_usd": 0.25150061
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 44,
+          "prompt_tokens": 55846,
+          "cached_tokens": 0,
+          "completion_tokens": 13419,
+          "cost_usd": 0.0048051499999999985
+        }
+      }
+    ]
+  },
+  "latest_postchange": {
+    "totals": {
+      "trials": 15,
+      "passed": 5,
+      "native_seconds": 14948,
+      "wall_seconds": 19204,
+      "glm": {
+        "requests": 932,
+        "prompt_tokens": 69565818,
+        "completion_tokens": 2651688,
+        "cached_tokens": 59314688,
+        "cost_usd": 4.100325,
+        "usage_missing": 4,
+        "non_200": 4
+      },
+      "nemotron": {
+        "requests": 495,
+        "prompt_tokens": 718044,
+        "completion_tokens": 111450,
+        "cached_tokens": 0,
+        "cost_usd": 0.05262,
+        "usage_missing": 1,
+        "non_200": 1
+      },
+      "cost_usd": 4.152945
+    },
+    "tasks": [
+      {
+        "index": 0,
+        "task_id": "atrx-vep-crispr",
+        "reward": 1,
+        "checks": "16/16",
+        "classification": "pass",
+        "flag": null,
+        "native_seconds": 588,
+        "wall_seconds": 962,
+        "truncations": 3,
+        "budget_restorations": 3,
+        "notes_carried": 3,
+        "tool_calls": 45,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 37,
+          "prompt_tokens": 3091375,
+          "cached_tokens": 2872576,
+          "completion_tokens": 147262,
+          "cost_usd": 0.17651307000000002
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 21,
+          "prompt_tokens": 43004,
+          "cached_tokens": 0,
+          "completion_tokens": 4231,
+          "cost_usd": 0.0027848499999999997
+        }
+      },
+      {
+        "index": 1,
+        "task_id": "batched-eval-parity",
+        "reward": 1.0,
+        "checks": "5/5",
+        "classification": "pass",
+        "flag": null,
+        "native_seconds": 1141,
+        "wall_seconds": 1452,
+        "truncations": 7,
+        "budget_restorations": 6,
+        "notes_carried": 7,
+        "tool_calls": 138,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 112,
+          "prompt_tokens": 8897369,
+          "cached_tokens": 8076160,
+          "completion_tokens": 188178,
+          "cost_usd": 0.41729789000000006
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 51,
+          "prompt_tokens": 97627,
+          "cached_tokens": 0,
+          "completion_tokens": 13117,
+          "cost_usd": 0.0068489000000000015
+        }
+      },
+      {
+        "index": 3,
+        "task_id": "bun-sourcemap-leak",
+        "reward": 0.0,
+        "checks": "27/36",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 391,
+        "wall_seconds": 569,
+        "truncations": 5,
+        "budget_restorations": 4,
+        "notes_carried": 5,
+        "tool_calls": 38,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 30,
+          "prompt_tokens": 903381,
+          "cached_tokens": 720896,
+          "completion_tokens": 102424,
+          "cost_usd": 0.08779102999999998
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 12,
+          "prompt_tokens": 17594,
+          "cached_tokens": 0,
+          "completion_tokens": 2889,
+          "cost_usd": 0.00131305
+        }
+      },
+      {
+        "index": 5,
+        "task_id": "cargo-flight-dispatch",
+        "reward": 0.0,
+        "checks": "22/27",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 449,
+        "wall_seconds": 555,
+        "truncations": 1,
+        "budget_restorations": 1,
+        "notes_carried": 1,
+        "tool_calls": 64,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 50,
+          "prompt_tokens": 3493957,
+          "cached_tokens": 2967552,
+          "completion_tokens": 95756,
+          "cost_usd": 0.19002131000000003
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 19,
+          "prompt_tokens": 29586,
+          "cached_tokens": 0,
+          "completion_tokens": 2912,
+          "cost_usd": 0.0019161
+        }
+      },
+      {
+        "index": 6,
+        "task_id": "coq-block-bound",
+        "reward": 0.0,
+        "checks": "2/3",
+        "classification": "harness: output_length recovery cap",
+        "flag": null,
+        "native_seconds": 2048,
+        "wall_seconds": 2193,
+        "truncations": 19,
+        "budget_restorations": 12,
+        "notes_carried": 18,
+        "tool_calls": 30,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 52,
+          "prompt_tokens": 3422919,
+          "cached_tokens": 2910080,
+          "completion_tokens": 452396,
+          "cost_usd": 0.34729289
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 32,
+          "prompt_tokens": 39646,
+          "cached_tokens": 0,
+          "completion_tokens": 3539,
+          "cost_usd": 0.00251315
+        }
+      },
+      {
+        "index": 11,
+        "task_id": "embedding-drift-monitor",
+        "reward": 1.0,
+        "checks": "11/11",
+        "classification": "pass",
+        "flag": null,
+        "native_seconds": 315,
+        "wall_seconds": 500,
+        "truncations": 1,
+        "budget_restorations": 1,
+        "notes_carried": 1,
+        "tool_calls": 30,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 16,
+          "prompt_tokens": 539592,
+          "cached_tokens": 472192,
+          "completion_tokens": 46251,
+          "cost_usd": 0.04239271
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 10,
+          "prompt_tokens": 10976,
+          "cached_tokens": 0,
+          "completion_tokens": 1994,
+          "cost_usd": 0.0008479000000000001
+        }
+      },
+      {
+        "index": 12,
+        "task_id": "fin-saccr-rwa",
+        "reward": 1.0,
+        "checks": "24/24",
+        "classification": "pass",
+        "flag": null,
+        "native_seconds": 574,
+        "wall_seconds": 711,
+        "truncations": 3,
+        "budget_restorations": 3,
+        "notes_carried": 3,
+        "tool_calls": 56,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 45,
+          "prompt_tokens": 2933017,
+          "cached_tokens": 2710016,
+          "completion_tokens": 128659,
+          "cost_usd": 0.16372714
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 23,
+          "prompt_tokens": 44391,
+          "cached_tokens": 0,
+          "completion_tokens": 4126,
+          "cost_usd": 0.00283845
+        }
+      },
+      {
+        "index": 13,
+        "task_id": "foodstuff-beta-activity",
+        "reward": 0.0,
+        "checks": "10/13",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 463,
+        "wall_seconds": 597,
+        "truncations": 2,
+        "budget_restorations": 1,
+        "notes_carried": 2,
+        "tool_calls": 31,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 27,
+          "prompt_tokens": 1914716,
+          "cached_tokens": 1382400,
+          "completion_tokens": 118981,
+          "cost_usd": 0.15356821
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 16,
+          "prompt_tokens": 21533,
+          "cached_tokens": 0,
+          "completion_tokens": 3508,
+          "cost_usd": 0.00160285
+        }
+      },
+      {
+        "index": 19,
+        "task_id": "freight-dispatch-shift",
+        "reward": 0.0,
+        "checks": "1/1",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 740,
+        "wall_seconds": 1062,
+        "truncations": 4,
+        "budget_restorations": 3,
+        "notes_carried": 4,
+        "tool_calls": 86,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 90,
+          "prompt_tokens": 7337452,
+          "cached_tokens": 6622080,
+          "completion_tokens": 130920,
+          "cost_usd": 0.33626731999999987
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 31,
+          "prompt_tokens": 43570,
+          "cached_tokens": 0,
+          "completion_tokens": 3760,
+          "cost_usd": 0.0027425000000000006
+        }
+      },
+      {
+        "index": 20,
+        "task_id": "glycan-ms2-elucidation",
+        "reward": 0.0,
+        "checks": "11/12",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 786,
+        "wall_seconds": 936,
+        "truncations": 6,
+        "budget_restorations": 4,
+        "notes_carried": 6,
+        "tool_calls": 43,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 46,
+          "prompt_tokens": 3226440,
+          "cached_tokens": 2585984,
+          "completion_tokens": 195457,
+          "cost_usd": 0.23598533
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 22,
+          "prompt_tokens": 34463,
+          "cached_tokens": 0,
+          "completion_tokens": 2806,
+          "cost_usd": 0.0021440499999999998
+        }
+      },
+      {
+        "index": 22,
+        "task_id": "heat-pump-warranty",
+        "reward": 0.0,
+        "checks": null,
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 1386,
+        "wall_seconds": 1563,
+        "truncations": 7,
+        "budget_restorations": 6,
+        "notes_carried": 7,
+        "tool_calls": 70,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 77,
+          "prompt_tokens": 6384414,
+          "cached_tokens": 5473536,
+          "completion_tokens": 207887,
+          "cost_usd": 0.35795181000000004
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 41,
+          "prompt_tokens": 47645,
+          "cached_tokens": 0,
+          "completion_tokens": 8582,
+          "cost_usd": 0.0036695499999999997
+        }
+      },
+      {
+        "index": 29,
+        "task_id": "kv-live-surgery",
+        "reward": 0.0,
+        "checks": "2/6",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 3450,
+        "wall_seconds": 3843,
+        "truncations": 6,
+        "budget_restorations": 4,
+        "notes_carried": 6,
+        "tool_calls": 210,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 174,
+          "prompt_tokens": 14930551,
+          "cached_tokens": 12578176,
+          "completion_tokens": 513076,
+          "cost_usd": 0.8669907299999996
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 117,
+          "prompt_tokens": 165903,
+          "cached_tokens": 0,
+          "completion_tokens": 27994,
+          "cost_usd": 0.012494249999999997
+        }
+      },
+      {
+        "index": 38,
+        "task_id": "music-harmony",
+        "reward": 0.0,
+        "checks": null,
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 988,
+        "wall_seconds": 1161,
+        "truncations": 6,
+        "budget_restorations": 6,
+        "notes_carried": 6,
+        "tool_calls": 46,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 52,
+          "prompt_tokens": 4787297,
+          "cached_tokens": 3489280,
+          "completion_tokens": 207883,
+          "cost_usd": 0.34100762
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 32,
+          "prompt_tokens": 37983,
+          "cached_tokens": 0,
+          "completion_tokens": 14208,
+          "cost_usd": 0.004030349999999999
+        }
+      },
+      {
+        "index": 39,
+        "task_id": "mvcc-lsm-compaction",
+        "reward": 1.0,
+        "checks": "15/15",
+        "classification": "pass",
+        "flag": null,
+        "native_seconds": 635,
+        "wall_seconds": 1710,
+        "truncations": 1,
+        "budget_restorations": 1,
+        "notes_carried": 1,
+        "tool_calls": 60,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 48,
+          "prompt_tokens": 2682778,
+          "cached_tokens": 2271872,
+          "completion_tokens": 62954,
+          "cost_usd": 0.14168512
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 27,
+          "prompt_tokens": 33189,
+          "cached_tokens": 0,
+          "completion_tokens": 5487,
+          "cost_usd": 0.0024825000000000003
+        }
+      },
+      {
+        "index": 40,
+        "task_id": "nextjs-performance",
+        "reward": 0.0,
+        "checks": "1/5",
+        "classification": "model/task failure (agent finished or stopped without a harness error)",
+        "flag": null,
+        "native_seconds": 994,
+        "wall_seconds": 1390,
+        "truncations": 0,
+        "budget_restorations": 0,
+        "notes_carried": 0,
+        "tool_calls": 100,
+        "fast_exercised": true,
+        "binary_sha256": "806fa5bafa675b417cfea9df9d253bf3900acb44c9846f5188b134c6340a0b05",
+        "glm-5-3-flash": {
+          "requests": 76,
+          "prompt_tokens": 5020560,
+          "cached_tokens": 4181888,
+          "completion_tokens": 53604,
+          "cost_usd": 0.24183236
+        },
+        "nemotron-3-5-lightning-30b": {
+          "requests": 41,
+          "prompt_tokens": 50934,
+          "cached_tokens": 0,
+          "completion_tokens": 12297,
+          "cost_usd": 0.004391249999999999
+        }
+      }
+    ]
+  },
+  "all_trials_totals": {
+    "trials": 37,
+    "passed": 7,
+    "native_seconds": 27070,
+    "wall_seconds": 38006,
+    "glm": {
+      "requests": 1613,
+      "prompt_tokens": 106624208,
+      "completion_tokens": 4842968,
+      "cached_tokens": 91554432,
+      "cost_usd": 6.583644,
+      "usage_missing": 4,
+      "non_200": 4
+    },
+    "nemotron": {
+      "requests": 835,
+      "prompt_tokens": 1221866,
+      "completion_tokens": 184594,
+      "cached_tokens": 0,
+      "cost_usd": 0.088782,
+      "usage_missing": 1,
+      "non_200": 1
+    },
+    "cost_usd": 6.672426
+  },
+  "notes": [
+    "Rewards come only from the official verifiers; check counts are partial diagnostics.",
+    "Post-change results are labeled repeat attempts of the same tasks and never replace original results.",
+    "Costs are RunInfra per-response usage.cost; replay experiments and preflight probes are excluded."
+  ]
+}

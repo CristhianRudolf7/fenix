@@ -154,21 +154,27 @@ async fn provider_boundary_redacts_prompts_but_preserves_authentication() {
 }
 
 #[tokio::test]
-async fn secret_bearing_provider_replay_is_never_returned_or_silently_rewritten() {
+async fn secret_bearing_chat_replay_is_never_returned_and_is_masked_like_content() {
+    // Unsigned Chat Completions replay can be masked; signed or opaque replay is
+    // still rejected unchanged (see fenix-core safety tests).
     let provider = ProviderId::Groq;
     let server = MockServer::start().await;
     let mut body = fixture(provider);
     body["choices"][0]["message"]["content"] = json!("Password: synthetic-response-secret");
+    body["choices"][0]["message"]["reasoning"] =
+        json!("Try Authorization: Bearer synthetic-response-secret");
     Mock::given(method("POST"))
         .respond_with(ResponseTemplate::new(200).set_body_json(body))
         .mount(&server)
         .await;
-    let error = client(provider)
+    let response = client(provider)
         .complete(&config(provider, &server), None, &request())
         .await
-        .unwrap_err();
-    assert!(!error.to_string().contains("synthetic-response-secret"));
-    assert!(error.to_string().contains("replay contains sensitive data"));
+        .unwrap();
+    let returned = serde_json::to_string(&response.message).unwrap();
+    assert!(!returned.contains("synthetic-response-secret"));
+    assert!(response.message.text_content().contains("[REDACTED]"));
+    assert!(returned.contains("Authorization: [REDACTED]"));
 }
 
 #[tokio::test]

@@ -120,6 +120,12 @@ those effects even if the model omits `request_approval`. An explicit grant matc
 the exact tool and argument object and is consumed once. Changing arguments needs
 another approval. A denial is returned as an unexecuted action.
 
+New workspace files and directories created by `file_write`, `file_patch`, library
+exports and file-history restores follow the process umask like ordinary tools
+(typically 0644/0755), so services, tests or verifiers running as another local user
+can read them. Editing preserves existing modes. Fénix's own runtime and browser
+files remain owner-only.
+
 The owner replies with `aprobar <request_id>` / `rechazar <request_id>` or their
 English equivalents. A clear yes/no also resolves the sole pending approval.
 Clarifications use `responder <request_id> <answer>` or `reply ...`; unrelated text

@@ -283,6 +283,14 @@ impl Store {
             );
             // Reuse exact text in this or an older version of the same private document.
             let cached:Option<(String,String)>=tx.query_row("SELECT embedding,model FROM library_chunks WHERE document_id=?1 AND hash=?2 AND text=?3 AND embedding IS NOT NULL LIMIT 1",params![doc.id,c.hash,c.text],|r|Ok((r.get(0)?,r.get(1)?))).optional()?;
+            // Reprocessing a partial extraction must not invalidate citations to
+            // unchanged evidence in the same revision.
+            let existing_id: Option<String> = tx.query_row(
+                "SELECT id FROM library_chunks WHERE document_id=?1 AND revision=?2 AND ordinal=?3 AND hash=?4 AND text=?5 AND location=?6",
+                params![doc.id, doc.revision, c.ordinal, c.hash, c.text, c.location.to_string()],
+                |r| r.get(0),
+            ).optional()?;
+            let chunk_id = existing_id.as_deref().unwrap_or(&c.id);
             tx.execute(
                 "DELETE FROM library_chunks WHERE document_id=?1 AND revision=?2 AND ordinal=?3",
                 params![doc.id, doc.revision, c.ordinal],
@@ -290,7 +298,7 @@ impl Store {
             tx.execute(
                 "INSERT INTO library_chunks VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9)",
                 params![
-                    c.id,
+                    chunk_id,
                     c.document_id,
                     c.revision,
                     c.ordinal,
@@ -303,7 +311,7 @@ impl Store {
             )?;
             tx.execute(
                 "INSERT INTO library_fts VALUES (?1,?2,?3)",
-                params![c.id, doc.title, c.text],
+                params![chunk_id, doc.title, c.text],
             )?;
         }
         tx.execute(

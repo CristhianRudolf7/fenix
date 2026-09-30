@@ -107,6 +107,29 @@ en el endpoint se sustituye por el identificador del intento. El campo opcional
 `proxy_upstream` abre un túnel TCP nativo en Rust hacia el proxy del host; mantiene
 HTTP limitado a loopback y se cierra antes del verificador.
 
+### Roles rápido e inteligente
+
+`settings` configura el rol inteligente (maestro, trabajadores y ejecución). El
+objeto opcional `fast` usa el esquema existente de ajustes en vivo (`provider`,
+`model`, `base_url`, `reasoning_effort`) para configurar el rol conversacional
+rápido mediante la ruta normal `configure_live`, incluida su comprobación de
+conexión antes de empezar a medir el tiempo. Usa el mismo archivo de credencial de
+evaluación y, con `proxy_upstream`, el mismo túnel local; `{trial}` se sustituye en
+ambos endpoints. La instrucción del benchmark sigue llegando directamente al
+maestro, por lo que no se ejercita el enrutamiento del chat. El rol rápido solo lo
+llaman funciones existentes, como la narración del progreso. `report.json` registra
+`fast_settings`, `model_roles` (incluido `fast_exercised`) y conteos y tokens
+`fast_*` separados; la comprobación de conexión se excluye y debe consultarse en la
+contabilidad del proveedor. Sin `fast` se conserva el comportamiento anterior de un
+solo rol.
+
+`harbor/provider_proxy.py` registra tráfico de chat compatible con OpenAI hacia
+RunInfra. Repite `--model` para cada rol permitido (sin esa opción solo acepta el
+modelo Nemotron de la auditoría original). `--key-env-file RUTA --key-variable
+NOMBRE` lee una credencial del host una sola vez, sin copiarla al directorio de la
+ejecución. Los metadatos de cada solicitud registran el modelo y el uso informado
+por el proveedor, incluido su costo.
+
 Con `--keep-services`, el proceso Rust conserva los servicios persistentes
 cuando el intento llega a un estado terminal, pero detiene los trabajadores de
 inferencia antes del verificador. Después se termina con SIGTERM o eliminando
@@ -152,6 +175,29 @@ Se permiten tres recuperaciones por causa y ocho en total por tarea, dentro de
 sus límites generales. Se mantienen los identificadores y no se repiten efectos
 ya completados. La recuperación ocurre durante la ejecución; no reanuda
 automáticamente efectos del sistema después de reiniciar la aplicación.
+
+Las generaciones sin una acción ejecutable son la excepción al conteo de por vida.
+Son los cortes por límite de salida y las generaciones de chat que terminan con
+razonamiento en texto plano pero sin texto ni llamadas de herramientas
+(`cause: empty_output`); una respuesta sin razonamiento, texto ni llamadas sigue
+siendo inválida. Un resultado de herramienta ejecutado correctamente después cierra
+ese episodio y restablece su contador (`recovery_budget_restored`), de modo que solo
+las generaciones consecutivas sin acción agotan el presupuesto. Desde la segunda
+consecutiva, el mensaje de recuperación pide una sola llamada de herramienta para
+el paso concreto más pequeño, como un script breve que calcule, en lugar de un
+diseño completo o de cálculos a mano. Si un proveedor de chat devuelve como texto
+plano el razonamiento o el texto de esa generación, solo el más reciente se
+incorpora a la siguiente solicitud como notas no verificadas desde las que
+continuar, y se retira cuando el modelo produce una acción ejecutable; no se
+incorporan cargas de acciones demasiado grandes y nunca se descifra un
+razonamiento opaco o cifrado (`recovery_strategy` registra su tamaño). La
+repetición de Chat Completions (texto, llamadas de herramientas y razonamiento en
+texto plano) no está firmada, así que el texto con forma de credencial se enmascara
+como el contenido normal en lugar de hacer fallar la solicitud; la repetición
+firmada u opaca, incluido `reasoning_details` del chat, sigue rechazándose sin
+cambios. No cambian el límite de salida, el esfuerzo de razonamiento ni los
+parámetros del proveedor. Efecto medido en 15 tareas de Terminal-Bench 4.0 con
+GLM-5.3-Flash: [registro](../benchmarks/terminal-bench-15-runinfra-2026-09-29.es.md).
 
 Los extractos y resúmenes pueden omitir información, aunque los originales
 redactados sigan recuperables. Si las instrucciones y el contrato por sí solos
