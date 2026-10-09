@@ -3,7 +3,12 @@
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "scripts": { "build": "node build.mjs", "preview": "python3 -m http.server 4180 --directory dist --bind 127.0.0.1" },
-  "dependencies": { "marked": "16.4.2" },
+  "scripts": {
+    "build": "node build.mjs",
+    "preview": "python3 -m http.server 4180 --directory dist --bind 127.0.0.1"
+  },
+  "dependencies": {
+    "marked": "16.4.2"
+  },
   "packageManager": "pnpm@10.34.5"
 }
