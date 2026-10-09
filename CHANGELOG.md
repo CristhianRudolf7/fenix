@@ -1,61 +1,45 @@
-# Changelog / Historial de cambios
+# Historial de cambios
 
-## Unreleased / Sin publicar
+## Sin publicar
 
-- Refine coding instructions and skills to reuse visible tools, batch independent preparation, apply coherent edits, and diagnose test-fixture failures. Upgrade only untouched bundled skill versions. [Evaluation](docs/en/audits/luna-low-skill-efficiency.md). / Mejora las instrucciones y skills de programación para reutilizar herramientas, agrupar preparación independiente, coordinar ediciones y diagnosticar fallos de preparación de pruebas. Actualiza únicamente skills originales sin personalizaciones. [Evaluación](docs/es/audits/luna-low-skill-efficiency.md).
+- Añadir una web pública de documentación con guías, búsqueda local, navegación responsiva, temas y animaciones suaves; conservar el acceso móvil existente en su ruta. Destacar el enlace en los README.
 
-- Serve production frontend files through a separate Caddy/systemd service; Rust no longer embeds web assets. Publish UI updates atomically without recompiling or restarting the agent. [Deployment](docs/en/frontend-deployment.md). / Frontend separado con Caddy/systemd; Rust ya no incluye los archivos web. Publicación de interfaz sin recompilar ni reiniciar el agente. [Despliegue](docs/es/frontend-deployment.md).
+- Mejora las instrucciones y skills de programación para reutilizar herramientas, agrupar preparación independiente, coordinar ediciones y diagnosticar fallos de preparación de pruebas. Actualiza únicamente skills originales sin personalizaciones. [Evaluación](docs/es/audits/luna-low-skill-efficiency.md).
 
-- Keep mobile navigation in a dismissible left drawer and make the chat composer compact, preserving desktop routes and keyboard navigation. / Mantiene la navegación móvil en un panel lateral izquierdo y reduce la altura del cuadro de mensaje, conservando las rutas y la navegación por teclado.
+- Frontend separado con Caddy/systemd; Rust ya no incluye los archivos web. Publicación de interfaz sin recompilar ni reiniciar el agente. [Despliegue](docs/es/frontend-deployment.md).
 
-- Deployed on 2026-09-22: improve short-command waits, explicit execution modes, exact process references, project environment diagnostics, essential coding tools and dependency-safe read batches. [Details](docs/en/coding-harness-reliability.md). / Desplegado el 22 de septiembre de 2026: mejora la espera de comandos cortos, modos de ejecución explícitos, referencias de procesos, diagnóstico del entorno, herramientas básicas y lecturas agrupadas respetando dependencias. [Detalles](docs/es/coding-harness-reliability.md).
+- Mantiene la navegación móvil en un panel lateral izquierdo y reduce la altura del cuadro de mensaje, conservando las rutas y la navegación por teclado.
 
-- Automatically activate reviewed learned skills without approval, retain recoverable revisions, protect manual edits, find related procedures before drafting, and archive unused unprotected learned skills. / Activa skills aprendidos revisados sin aprobación, conserva revisiones recuperables, protege ediciones manuales, busca procedimientos relacionados y archiva los aprendidos sin uso que no estén protegidos.
+- Desplegado el 22 de septiembre de 2026: mejora la espera de comandos cortos, modos de ejecución explícitos, referencias de procesos, diagnóstico del entorno, herramientas básicas y lecturas agrupadas respetando dependencias. [Detalles](docs/es/coding-harness-reliability.md).
 
-- Add provider-usage context anchors, declarative tool programs, safe-boundary restart recovery, private file versions/restoration and selective skill learning with reviewed candidates. See [behavior and limits](docs/en/harness-continuity.md). / Añade contexto basado en consumo, programas declarativos de herramientas, recuperación desde puntos seguros, versiones/restauración de archivos y aprendizaje selectivo mediante candidatos revisados. Véanse [funcionamiento y límites](docs/es/harness-continuity.md).
+- Activa skills aprendidos revisados sin aprobación, conserva revisiones recuperables, protege ediciones manuales, busca procedimientos relacionados y archiva los aprendidos sin uso que no estén protegidos.
 
-- Add scoped relational memory retrieval, match evidence, kind-aware recency, revision-bound contradiction proposals, non-destructive health checks and a reproducible retrieval evaluator. / Añade recuperación relacional por ámbito, evidencia de coincidencias, vigencia por tipo, propuestas de contradicciones ligadas a revisiones, diagnóstico no destructivo y evaluación reproducible de recuperación.
+- Añade contexto basado en consumo, programas declarativos de herramientas, recuperación desde puntos seguros, versiones/restauración de archivos y aprendizaje selectivo mediante candidatos revisados. Véanse [funcionamiento y límites](docs/es/harness-continuity.md).
 
-- **Pending deployment verification:** validate the firewall on the actual infrastructure, including allowed/blocked destinations, DNS restrictions and execution termination when protection is lost. Local tests have passed, but this live check has not been performed. See [validation limits](docs/en/security-boundaries.md). / **Pendiente de comprobar en el despliegue:** verificar el firewall en la infraestructura real, incluidos destinos permitidos/bloqueados, restricciones de DNS y detención de ejecuciones al perder la protección. Las pruebas locales pasaron, pero esta comprobación real todavía no se ha realizado. Véanse los [límites de validación](docs/es/security-boundaries.md).
+- Añade recuperación relacional por ámbito, evidencia de coincidencias, vigencia por tipo, propuestas de contradicciones ligadas a revisiones, diagnóstico no destructivo y evaluación reproducible de recuperación.
 
-- Add native Rust benchmark execution, isolated reports and a Harbor transport adapter. / Evaluación nativa en Rust, informes aislados y adaptador para Harbor.
-- Reserve response capacity, bound tool batches and recover from context-summary failures and truncated generations without replaying effects. / Reserva de contexto, salidas acotadas y recuperación sin repetir efectos.
-- Supervise background services, wait for dependent commands, detect loops using observed progress and persist task contracts and explicit answers. / Supervisión de servicios, espera de comandos, detección de bucles según progreso y contratos con respuestas persistentes.
+- **Pendiente de comprobar en el despliegue:** verificar el firewall en la infraestructura real, incluidos destinos permitidos/bloqueados, restricciones de DNS y detención de ejecuciones al perder la protección. Las pruebas locales pasaron, pero esta comprobación real todavía no se ha realizado. Véanse los [límites de validación](docs/es/security-boundaries.md).
 
-- Add scoped adaptive memory with provenance, candidate review, validity, withdrawal and revision history. / Memoria adaptable por ámbito con procedencia, candidatos, vigencia, retirada e historial.
-- Add entities, aliases, versioned relation schemas, bounded graph traversal and context packs. / Entidades, alias, esquemas de relaciones versionados, recorridos acotados y paquetes de contexto.
-- Add durable background capture, overlap review, optional semantic retrieval and web memory controls. / Captura durable en segundo plano, revisión de solapamientos, búsqueda semántica opcional y controles web.
+- Evaluación nativa en Rust, informes aislados y adaptador para Harbor.
+- Reserva de contexto, salidas acotadas y recuperación sin repetir efectos.
+- Supervisión de servicios, espera de comandos, detección de bucles según progreso y contratos con respuestas persistentes.
+
+- Memoria adaptable por ámbito con procedencia, candidatos, vigencia, retirada e historial.
+- Entidades, alias, esquemas de relaciones versionados, recorridos acotados y paquetes de contexto.
+- Captura durable en segundo plano, revisión de solapamientos, búsqueda semántica opcional y controles web.
+
+- Incorporar skills de programación seleccionados, recuperación por campos y diagnóstico útil de esquemas de herramientas.
+- Permitir escrituras independientes junto a comandos de solo lectura protegidos por Linux y aclarar la duración de servicios supervisados.
+- Retirar observaciones del contexto conservando checkpoints y procedencia de ejecución.
+- Añadir recuperación específica según fallos y grupos reproducibles de cinco tareas de evaluación nativa.
+- Conservar la respuesta más reciente de memoria cuando solicitudes concurrentes terminan fuera de orden.
+- Liberar bloqueos de lectura antes de esperar configuración o inferencia en segundo plano, evitando inversión del orden de bloqueos.
+- Ignorar cargas tardías después de navegar para que ajustes en segundo plano no sustituyan la página actual.
+- Recuperar generaciones interrumpidas con un contador de fallos consecutivos, conservar notas incompletas como no verificadas y reforzar la transición de diagnóstico a acción.
+- Conservar identificadores de citas y embeddings cuando una nueva extracción no cambia texto, ubicación y posición del fragmento.
+- Actualizar los Markdown de la raíz en español, mantener `README.en.md` como versión inglesa y distinguir requisitos implementados, propuestas y evidencia histórica. Las instrucciones internas y fixtures conservan su idioma operativo.
 
 ## 0.3.0 — 2026-09-15
-
-### English
-
-This release builds on the background subagents and project-scoped context shipped
-in 0.2.0 on September 14, and packages the subsequent September 14–15 work.
-
-- Editable asynchronous plans with milestones, dependencies, tracked questions,
-  durable events and updates routed to the original channel.
-- Adaptive plan review, specialist reviewers and evidence-based resolution of
-  objections, using the configured model.
-- Repository-aware coding: regex/glob search, multi-file patches, scoped
-  `AGENTS.md` instructions and owner-configured LSP servers.
-- Active-task compaction with durable checkpoints and recoverable source context.
-- Interactive terminal input, persistent services, incremental redacted logs,
-  paginated output recovery and configurable execution limits.
-- Follow-up messages to existing subagents, preserving their context and IDs,
-  with one delegation level and bounded retry counters.
-- Deterministic on-demand tool discovery over the authorized catalog.
-- Independent public web search with a background crawler, SQLite FTS5 index,
-  concurrent HTTP reading and source links.
-- A local Chromium browser controlled from Rust, persistent profiles, manual
-  controls, an encrypted password vault, responsive viewports and a browser skill.
-- Versioned English/Spanish documentation and matching 0.3.0 package metadata.
-
-The browser model receives DOM text and geometry rather than screenshots.
-Search coverage depends on the local corpus. Voice, autonomous memory learning
-and automatic resumption after a crash remain future work.
-
-### Español
 
 Esta versión continúa los subagentes en segundo plano y el contexto por proyecto
 publicados en 0.2.0 el 14 de septiembre, e incorpora el trabajo posterior del 14–15.
@@ -78,16 +62,6 @@ publicados en 0.2.0 el 14 de septiembre, e incorpora el trabajo posterior del 14
   manual, bóveda de contraseñas cifrada, vistas responsivas y un skill de navegación.
 - Documentación en español e inglés y versiones de paquetes unificadas en 0.3.0.
 
-El modelo recibe texto y geometría del DOM, no capturas de pantalla. La cobertura
+Estado histórico de la entrega del 15 de septiembre: el modelo recibe texto y geometría del DOM, no capturas de pantalla. La cobertura
 de búsqueda depende del índice local. Voz, aprendizaje autónomo de memoria y
-reanudación automática tras caídas siguen como trabajo futuro.
-
-## Unreleased
-
-- Add curated coding skills, field-aware skill retrieval and actionable tool-schema recovery.
-- Allow independent writes alongside Linux-enforced read-only commands; clarify supervised service lifetimes.
-- Prefer checkpoint-backed observation masking and preserve execution provenance during compaction.
-- Add bounded failure-specific recovery and reproducible five-task native benchmark cohorts.
-- Preserve the latest memory-list response when concurrent requests finish out of order.
-- Release model read guards before background workers wait for configuration or inference, preventing configuration lock inversion.
-- Ignore late view loads after navigation so background settings updates cannot replace the owner's current page.
+reanudación automática tras caídas se describían como trabajo futuro en aquella entrega. Consulta `REQUIREMENTS.md` para el contrato actual y sus límites.

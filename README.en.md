@@ -1,29 +1,36 @@
 # Fénix
 
-Frontend and backend deploy independently under systemd. [Deployment guide](docs/en/frontend-deployment.md).
+[**Documentation → fenix.crehlabs.com**](https://fenix.crehlabs.com) · [Leer en español](README.md)
 
-[Español](README.md)
+**Declared package version: 0.3.0.** An AI assistant with a continuous conversation, background execution, and coding, document, and browser tools. The code supports individual operation and a shared deployment with accounts and isolated user environments. Capabilities depend on configured services and credentials; historical evaluations do not guarantee success on arbitrary tasks.
 
-**Current version: 0.3.0**
+## Capabilities
 
-Runtime improvements include provider-anchored context accounting, tool programs, conservative restart recovery, private file history and procedural skill candidates. See [behavior and limits](docs/en/harness-continuity.md).
+- Persistent chat, scoped projects, concurrent tasks, and configurable fast conversational and intelligent execution roles; optional Telegram and separately configured connections.
+- Purpose-specific background subagents, one delegation level, follow-up messages, and an available master agent.
+- Editable plans, milestones, dependencies, questions, durable asynchronous events, conversational autonomy, and requirement/risk-based verification.
+- File tools, interactive terminals, persistent processes, regex/glob search, multi-file patches, configurable LSP, and Git worktrees.
+- Scoped memory with provenance, entities, relations, revisions, retrieval, durable context checkpoints, and saved-result search.
+- On-demand skill discovery, private explicit-save editing, persisted translations, and selective reviewed learning with recoverable revisions. Publication remains in the backend; the current UI exposes personal skills.
+- Chromium profiles, sessions, owner control, idle shutdown, capacity admission, and disk hibernation when a compatible execution service is configured.
+- Independent web search using a local index and crawler, plus lightweight HTTP reading; coverage depends on the indexed corpus.
+- Private document versions, extraction, chunks, citations, and hybrid search with optional embeddings. Native DOCX/XLSX/PPTX tools and separately provisioned PDF/OCR components.
+- Inline design suggestions, modal previews, a right-hand results panel, diagrams, documents, multimedia, and a user-scoped file explorer.
+- Cron, reminders, scheduled workflows, connectors, and browser actions.
+- Account profiles, recorded token usage, seven-day sessions, password authentication, and Google OAuth support requiring configuration and reserved account capacity.
+- Native evaluation and benchmark adapters with recorded outcomes, time, and usage.
 
-A local personal AI assistant for Linux. A Rust service provides a web interface
-and optional Telegram with **one continuous conversation**, local tools, explicit
-memory, manual skills, reminders and scheduled work. No Node server is needed at
-runtime.
+## Architecture
 
-**Pending deployment verification:** validate the firewall on the actual
-infrastructure: allowed and blocked destinations, DNS restrictions, and execution
-termination if protection is lost. Local tests do not replace this check; it has
-not been performed yet. See [network protection and validation limits](docs/en/security-boundaries.md).
+Rust/Axum runs the backend. Vite, React, TypeScript, Tailwind, and pnpm power the frontend. Static production deployments use Caddy/systemd independently of the backend, so UI updates do not require rebuilding Rust.
 
-- [Account profile and usage](docs/en/account-profile.md): display name, password changes and account-scoped recorded token charts.
+`apps/` contains applications, `crates/` reusable Rust components, `resources/` runtime instructions and assets, `scripts/` operational tooling, `packaging/linux/` deployment templates, and `tests/` cross-component checks.
 
-## Run locally
+Root Markdown documentation is Spanish except for this English README. Existing guides under `docs/es/` and `docs/en/` retain their language versions. Runtime skills, prompts, and fixtures retain their operational language.
 
-Install Rust using [rustup](https://rust-lang.org/tools/install/), Node 22.12+ and
-pnpm 10.34.5, then run from this repository:
+## Development and individual operation
+
+Install the Rust toolchain pinned in `rust-toolchain.toml`, a Vite-compatible Node version, and pnpm **10.34.5**:
 
 ```sh
 pnpm --dir apps/web install --frozen-lockfile
@@ -31,176 +38,32 @@ pnpm --dir apps/web build
 cargo run --locked -p fenix-server --bin fenix
 ```
 
-Open **http://127.0.0.1:4173**. The welcome screen requires a provider API key and
-verifies a real inference before enabling chat. Telegram is optional. The current
-default is **OpenAI `gpt-5.6-luna`, low reasoning**. Any of the 17 integrated
-providers can be configured; choose a model supporting tool calls.
+The individual server defaults to `127.0.0.1:4173`, with runtime data in `.fenix/`. It accepts `--data-dir`, `--skills-dir`, and `--port`. Provider and conversational role configuration belongs to the installation; source defaults do not imply provider access or dictate shared-service configuration.
 
-For a desktop launcher and a background user service on Linux with systemd:
+For frontend development, `pnpm --dir apps/web dev` serves Vite on port 5173 and proxies `/api` to the individual backend. The shared UI requires the account gateway; individual operation is not a complete multi-user deployment.
 
-```sh
-bash scripts/install-local.sh
-```
+`scripts/install-local.sh` retains an individual systemd installation mode. For separate frontend/backend deployment and isolated accounts, follow the Spanish [deployment guide](docs/es/frontend-deployment.md) and [isolation guide](docs/es/user-isolation.md).
 
-This installs under your home directory without `sudo`. Open **Fénix** from your
-application menu afterward. Closing a browser tab does not stop the agent. Your
-computer and service must stay on for Telegram and scheduled work.
+## Documentation and checks
 
-## Available features
-
-- [Coding harness](docs/en/coding-harness.md): regex/glob search, multi-file patches, repository `AGENTS.md` guidance, configurable LSP and active-task compaction with recoverable checkpoints.
-
-- Bilingual web with chat, projects, provider setup, Telegram, memory, skills, schedules and
-  task traces. Warm light mode is the default; an explicit dark-mode choice persists.
-  [Visual identity and interface](docs/en/interface.md).
-- [Browser dictation and Live](docs/en/live.md): React, TypeScript, Vite and Tailwind frontend;
-  independent conversational model with browser STT/TTS, grouped progress updates and
-  explicit user delegation. Hanging up leaves the master and subagents running.
-- Concurrent conversation turns, background subagents and editable plans with
-  milestones and dependencies. Questions and planning do not hold the chat.
-  [Planning, revisions and pub/sub](docs/en/planning.md) preserve work and channel destinations.
-- [Adaptive plan review](docs/en/plan-reviews.md): initial review of complex plans,
-  specialists on demand and evidence-backed resolution, using the same configured
-  model. The chat stays available and correction rounds are bounded.
-- Master tools cover local work, memory, projects and delegation. Children have
-  a restricted catalog without conversation history or delegation, plus a required
-  finish report; they inspect their own task and explicitly scoped plan evidence.
-  Commands may use any OS-accessible directory; dedicated file tools stay within the configured workspace.
-- Backend-enforced, single-action textual approvals for commands and file changes
-  by default. Local settings can explicitly allow those actions.
-- SQLite history, task/event IDs, source references, token usage, bounded outputs
-  and recoverable output pages. Basic context summaries preserve original history
-  and complete tool-call/result groups.
-- Projects with names, aliases, briefs and optional workspaces within the same
-  chat. Routing precedes memory retrieval; general conversation has its own scope
-  and executions retain their project bindings when the foreground topic changes.
-- [Adaptive project memory](docs/en/adaptive-memory.md): sourced facts, candidates, validity and revisions; entities, aliases and versioned relation schemas. Lexical/temporal retrieval, context packs, background extraction and optional embeddings.
-- [Independent web search and source reading](docs/en/web-search.md): a background
-  crawler, disk-backed public index and HTTP reading of results. No external
-  search provider; coverage starts small and grows from discovered links.
-- [Local interactive browser](docs/en/browser.md): Rust controls local Chromium,
-  persistent personal logins, encrypted password vault, manual controls and responsive tests.
-- Five versioned manual skills: `memory-and-reminders`, `local-file-work`,
-  `conversation-recap`, `local-troubleshooting`, `browser-navigation`.
-- One-time, interval and cron schedules in `America/Lima`. Reminders deliver text;
-  scheduled agent tasks join the same queue. Identical active schedules and
-  overlapping executions of one schedule are checked.
-- Optional Telegram pairing for one owner, private text messages only.
-- Static and project-scoped credentials for 17 providers and five protocols.
-
-Runtime data lives in ignored `.fenix/` by default. Model provider credentials are stored in a
-private local SQLite database, without a separate encryption master key. Known
-keys are redacted from agent output and never returned by settings endpoints.
-The service binds to loopback and rejects foreign browser origins and hosts.
-
-Heartbeat, action
-restoration and automatic task recovery remain in [ROADMAP.md](ROADMAP.md).
-Interrupted tasks are recorded, not replayed. The web previews OpenAI Responses text as it arrives and shows live tool activity.
-Other provider adapters retain complete responses; Telegram delivers complete messages.
-Reconnecting the browser restores the current preview without repeating inference.
-
-## Background work and shared skills
-
-Every subagent receives a precise purpose and expected output, with optional
-context and constraints; there is no mandatory “information needed” field. The
-engine enforces one delegation level, four concurrent child inference requests, at most three
-total attempts for retryable failures, and configurable defaults of 128 model
-steps per task and one hour per attempt.
-Retries preserve the child transcript and completed tool results rather than
-replaying tool actions. Blocked, cancelled and non-retryable work can stop early.
-Restarting interrupts unfinished children; it does not automatically resume them.
-
-The **Tasks** view shows purpose, expected output, state, IDs, attempts and results.
-Answer in the conversation with `aprobar <request_id>`, `rechazar <request_id>` or
-`responder <request_id> <answer>`; cancel with `cancelar <task_id>`. Each pending
-request has its own ID, so a waiting child does not block the master. Model and
-permission settings cannot change while a task is active. Child history remains
-outside the main conversation; explicit memory is still available through tools.
-The runtime serializes file/memory/schedule mutations and managed command lifetimes
-within its process. Commands retain Linux user access and are not sandboxed.
-
-Skills live in **`~/.fenix/skills/<skill-name>/SKILL.md`**, shared across runtime
-data directories. `--skills-dir PATH` overrides this location; `--data-dir` only
-changes runtime data. Master and children see the complete compact metadata
-catalog, including enabled state; only `skill_load` loads enabled instructions.
-Disabled skills stay visible but cannot be loaded. The five defaults are templates,
-not a limit on how many skills can be installed.
-
-On startup, legacy `<data-dir>/skills` resources are copied into the selected
-library before defaults are installed. Existing destination files are never
-replaced, symbolic links are skipped and the originals remain intact. Automatic
-migration is limited to 32 MiB per file, 512 MiB total, 10,000 entries and 16 levels;
-if exceeded, select the old directory with `--skills-dir` or copy resources manually.
-
-## Repository layout
-
-```text
-apps/server/             Rust executable and loopback HTTP API
-apps/web/                Independent browser UI built with Vite
-crates/fenix-core/       Provider-independent conversation contracts
-crates/fenix-credentials/ Secret handling and exact project credential resolution
-crates/fenix-providers/  Provider catalog, HTTP clients and protocol codecs
-crates/fenix-storage/    SQLite migrations, conversation, journal and lexical memory
-crates/fenix-agent/      Agent loop, context, permissions, tools and channel adapters
-resources/              Runtime instructions and default skill templates
-packaging/linux/        Desktop launcher and systemd user unit
-scripts/                Local installer and opt-in live verification
-docs/en/                Primary documentation
-docs/es/                Spanish documentation
-config/                 Provider-library configuration examples
-```
-
-## Verification
+See [requirements](REQUIREMENTS.md), [roadmap](ROADMAP.md), [changelog](CHANGELOG.md), [architecture](docs/es/architecture.md), [coding](docs/es/coding-harness.md), [memory](docs/es/adaptive-memory.md), [documents](docs/es/document-library.md), [browser lifecycle](docs/es/browser-lifecycle.md), and [native evaluation](docs/es/native-evaluation.md).
 
 ```sh
-pnpm --dir apps/web install --frozen-lockfile
-pnpm --dir apps/web build
 cargo fmt --all --check
-cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo test --workspace --locked
-cargo build --locked -p fenix-server
-cd apps/web
-pnpm exec playwright install chromium
-pnpm test
+cargo test --workspace --all-targets --locked
+cargo test --workspace --doc --locked
+pnpm --dir apps/web check
+pnpm --dir apps/web test
 ```
 
-Default tests use local HTTP endpoints and fake credentials. Browser tests start
-the real Rust service with isolated data. Node and Playwright are development
-dependencies only. For an opt-in billable Luna check, with `OPENAI_API_KEY` already
-set in the environment, run `python3 scripts/smoke-live.py` from the repository
-root. It uses temporary data and writes a secret-free report under ignored
-`target/`. Mock coverage of all 17 providers does not establish live access to all
-17 accounts; see the verification record.
+Browser, OCR, infrastructure, and benchmark tests have additional dependencies. Mock-provider tests are not model quality measurements or complete production validation.
 
-- [Projects in one conversation](docs/en/projects.md)
-- [Architecture](docs/en/architecture.md)
-- [Local installation and operation](docs/en/local-operation.md)
-- [Login and per-user isolation](docs/en/user-isolation.md)
-- [Execution security, credential broker and encrypted checkpoints](docs/en/execution-isolation.md)
-- [Self-hosted gVisor workspaces without KVM](docs/en/self-hosted-gvisor.md)
-- [Self-hosted microVMs and persistent tool environments](docs/en/self-hosted-microvms.md)
-- [Verification record](docs/en/verification.md)
-- [Provider library usage](docs/en/development.md)
-- [Provider endpoints and authentication](docs/en/provider-reference.md)
-- [Current requirements](REQUIREMENTS.md)
-- [Future work](ROADMAP.md)
+**Pending:** validate the firewall on actual deployment infrastructure, including allowed/blocked destinations, DNS restrictions, and execution termination when protection is lost. See [security boundaries](docs/es/security-boundaries.md).
 
-Interactive terminal sessions, persistent services, incremental logs, configurable execution limits, subagent follow-ups and on-demand tools are described in the [execution harness guide](docs/en/execution-harness.md).
+The initial engine context capacity is 200,000 tokens with compaction at 160,000; it does not increase provider capacity or rate limits. File restoration cannot undo arbitrary external effects. Browser and document compatibility have documented limits. Keep credentials, databases, sessions, and personal artifacts out of Git.
 
-[Local browser / Navegador local — sessions, controls and responsive tests](docs/en/browser.md)
+## Documentation website
 
-[Local integrations — WhatsApp QR and saved sessions](docs/en/integrations.md)
+The public documentation is available at **[fenix.crehlabs.com](https://fenix.crehlabs.com)**. The static site provides local search, responsive navigation, light/dark themes, current guides, and clearly labeled historical references. Build it with `pnpm --dir apps/docs install --frozen-lockfile` and `pnpm --dir apps/docs build`; preview it with `pnpm --dir apps/docs preview`.
 
-[Native evaluation and execution recovery](docs/en/native-evaluation.md): Terminal-Bench 4.0, TerminalWorld and the official Gaia2-CLI variant, with pinned datasets and grading outside the agent.
-
-See [procedural skills and recovery](docs/en/harness-recovery.md) for demand-loaded coding procedures, enforced read-only commands and reproducible evaluation.
-
-[Skill marketplace and Fénix Sentinel](docs/en/skill-marketplace.md): private/public publication, reviews with the configured fast model, corrections on copies, and request-abuse protection.
-
-[Scalable skills and native Fénix Documents](docs/en/skills-and-documents.md): on-demand discovery and local DOCX/XLSX/PPTX tools.
-
-[Library of 171 original skills](docs/en/skill-library.md): catalog, common structure, connection boundaries and source review.
-
-[Design: templates, visual results and the chat preview panel](docs/en/design.md).
-
-- [Google sign-in and registration](docs/en/google-sign-in.md)
+`scripts/publish-docs.sh` atomically publishes built files. Adapt `packaging/linux/Caddyfile.docs` to the host before installing it. Caddy serves documentation at `/` and `/docs/`; the existing remote mobile view remains at `/movil.html`. No model calls or API keys are needed to build or search the documentation. A public one-command installer is still planned.

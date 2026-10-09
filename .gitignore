@@ -13,3 +13,5 @@ test-results/
 __pycache__/
 
 /apps/web/dist/
+
+/apps/docs/dist/

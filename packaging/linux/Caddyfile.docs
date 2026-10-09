@@ -1,0 +1,28 @@
+{
+	admin off
+	auto_https off
+}
+:{$FENIX_WEB_PORT:4173} {
+	bind 127.0.0.1
+	encode gzip
+	@documentation path / /docs /docs/* /docs-assets/* /robots.txt /sitemap.xml
+	handle @documentation {
+		root * {$FENIX_DOCS_ROOT:/home/Rudy/.local/share/fenix-docs/current}
+		header X-Content-Type-Options nosniff
+		header Referrer-Policy strict-origin-when-cross-origin
+		header X-Frame-Options DENY
+		header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+		header Cache-Control "no-cache"
+		file_server {
+			index index.html
+		}
+	}
+	handle /movil.html {
+		root * /home/Rudy/.local/share/fenix-mobile
+		header Cache-Control "no-store"
+		file_server
+	}
+	handle {
+		reverse_proxy 127.0.0.1:6080
+	}
+}

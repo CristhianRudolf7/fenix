@@ -1,30 +1,46 @@
 # Fénix
 
-Frontend y backend se despliegan por separado con systemd. [Guía de despliegue](docs/es/frontend-deployment.md).
+[**Documentación y guías → fenix.crehlabs.com**](https://fenix.crehlabs.com) · [Leer en inglés](README.en.md)
 
-[English](README.en.md)
+**Versión declarada: 0.3.0.** Asistente de inteligencia artificial con conversación continua, ejecución en segundo plano y herramientas de programación, documentos y navegador. El código incluye ejecución individual y una arquitectura compartida con cuentas y entornos aislados. La disponibilidad depende de los servicios y credenciales configurados; los resultados históricos no garantizan éxito en cualquier tarea.
 
-**Versión actual: 0.3.0**
+## Capacidades
 
-Las mejoras del motor incluyen contexto basado en consumo reportado, programas de herramientas, recuperación conservadora tras reinicios, historial privado de archivos y candidatos de aprendizaje de skills. Véanse [funcionamiento y límites](docs/es/harness-continuity.md).
+- Chat persistente, proyectos y tareas concurrentes; interlocutor rápido y modelo ejecutor configurables. Telegram opcional y conexiones adicionales según su configuración.
+- Subagentes con objetivo específico, un nivel de delegación, seguimiento y maestro disponible durante su ejecución.
+- Planes editables, hitos, dependencias, preguntas y entregas asíncronas. Autonomía elegida por texto y verificaciones según requisitos y riesgos.
+- Herramientas de archivos y terminal interactiva, procesos persistentes, búsqueda regex/glob, parches, LSP configurable y worktrees de Git.
+- Memoria por ámbito con procedencia, entidades, relaciones, revisiones y recuperación; compactación con checkpoints y búsqueda de resultados conservados.
+- Catálogo de skills bajo demanda, edición personal con guardado explícito, traducciones persistidas y aprendizaje selectivo con revisiones recuperables. El backend conserva publicación de skills; la interfaz actual muestra el catálogo personal.
+- Navegador Chromium con perfiles, sesiones, control del propietario y gestión de inactividad/capacidad. Hibernación en disco cuando el ejecutor compatible está configurado.
+- Búsqueda propia con índice local, rastreador y lectura ligera; no ofrece cobertura ilimitada de internet.
+- Biblioteca privada, extracción, fragmentos, citas y búsqueda híbrida con embeddings opcionales. Herramientas nativas para DOCX, XLSX y PPTX; PDF/OCR mediante componentes separados.
+- Propuestas visuales en carrusel del chat, modales y panel de resultados con diagramas, documentos y multimedia. Explorador de archivos limitado a la cuenta.
+- Cron, recordatorios y flujos programados con conectores y navegador.
+- Perfil, consumo registrado, sesiones de siete días, acceso con contraseña y soporte de Google OAuth sujeto a configuración y capacidad reservada.
+- Evaluación nativa y adaptadores de benchmarks con informes de tareas, tiempos, consumo y resultados verificables.
 
-Asistente personal local para Linux. Un servicio Rust ofrece una web y Telegram
-opcional con **una sola conversación continua**, herramientas locales, memoria
-explícita, skills manuales, recordatorios y tareas programadas. No necesita un
-servidor Node durante el uso habitual.
+## Tecnología y organización
 
-**Pendiente de comprobar en el despliegue:** verificar el firewall en la
-infraestructura real: destinos permitidos y bloqueados, restricciones de DNS y
-detención de ejecuciones si se pierde la protección. Las pruebas locales no
-sustituyen esta comprobación; todavía no está realizada. Véase
-[protección de red y límites de validación](docs/es/security-boundaries.md).
+El backend utiliza Rust y Axum. El frontend utiliza Vite, React, TypeScript, Tailwind y pnpm. En el despliegue estático, Caddy/systemd sirve la interfaz y reenvía las APIs al backend; actualizar la interfaz no exige recompilar Rust.
 
-- [Perfil y consumo](docs/es/account-profile.md): nombre visible, cambio de contraseña y gráfico de tokens registrados por cuenta.
+| Carpeta | Función |
+|---|---|
+| `apps/server` | Servidor local, gateway, autenticación y APIs. |
+| `apps/web` | Interfaz y pruebas de navegador. |
+| `apps/docs` | Sitio público de documentación estática, búsqueda local y guías. |
+| `crates` | Componentes Rust del motor, proveedores, almacenamiento, navegador y documentos. |
+| `resources` | Instrucciones internas, skills y recursos visuales. |
+| `scripts` | Instalación, infraestructura, generación y evaluación. |
+| `packaging/linux` | Unidades systemd, contenedores y ejemplos del despliegue. |
+| `docs/es` | Guías en español; las versiones inglesas existentes se conservan en `docs/en`. |
+| `tests` | Pruebas transversales, herramientas y aislamiento. |
 
-## Iniciar
+Las instrucciones internas, skills y fixtures mantienen su idioma operativo. Los Markdown de la raíz se escriben en español; este archivo tiene su versión inglesa en `README.en.md`. La documentación de otras carpetas conserva sus versiones actuales.
 
-Instala Rust mediante [rustup](https://rust-lang.org/tools/install/) y ejecuta desde
-el repositorio (Node 22.12+ y pnpm 10.34.5 para compilar la interfaz):
+## Desarrollo y ejecución individual
+
+Instala el Rust fijado en `rust-toolchain.toml`, Node compatible con Vite y pnpm **10.34.5**. Desde el repositorio:
 
 ```sh
 pnpm --dir apps/web install --frozen-lockfile
@@ -32,167 +48,47 @@ pnpm --dir apps/web build
 cargo run --locked -p fenix-server --bin fenix
 ```
 
-Abre **http://127.0.0.1:4173**. La bienvenida pide una API key y comprueba una llamada
-real antes de habilitar el chat. El valor actual es **OpenAI `gpt-5.6-luna`,
-pensamiento bajo**. Puedes elegir cualquiera de los 17 proveedores con un modelo
-compatible con herramientas. Telegram es opcional y se puede configurar después.
+El servidor individual escucha por defecto en `127.0.0.1:4173`. Los datos se guardan en `.fenix/`; admite `--data-dir`, `--skills-dir` y `--port`. La configuración de proveedores y del interlocutor pertenece a esa instalación. El valor inicial del código no impone un modelo al servicio compartido ni confirma acceso real al proveedor.
 
-Para instalar un acceso en el menú de aplicaciones y un servicio de usuario en
-Linux con systemd:
+Para desarrollo del frontend puede ejecutarse `pnpm --dir apps/web dev`: Vite utiliza el puerto 5173 y reenvía `/api` al servidor local. La interfaz del servicio compartido requiere gateway y autenticación; no asumir que un servidor individual replica ese despliegue completo.
 
-```sh
-bash scripts/install-local.sh
-```
+El instalador `scripts/install-local.sh` conserva una modalidad individual con systemd. Para frontend/backend separados y cuentas, seguir [despliegue](docs/es/frontend-deployment.md) y [aislamiento](docs/es/user-isolation.md); no sustituir las políticas del servidor compartido con el instalador individual.
 
-Se instala en tu carpeta personal, sin `sudo`. Después abre **Fénix** desde el menú.
-Cerrar la pestaña no detiene el servicio. La computadora y el servicio deben estar
-encendidos para atender Telegram y ejecutar programaciones.
+## Documentación
 
-## Funcionalidades disponibles
+- [Requisitos actuales](REQUIREMENTS.md), [hoja de ruta](ROADMAP.md) e [historial de cambios](CHANGELOG.md).
+- [Arquitectura](docs/es/architecture.md), [desarrollo](docs/es/development.md) y [uso local](docs/es/local-operation.md).
+- [Planificación](docs/es/planning.md), [autonomía](docs/es/conversational-autonomy.md) y [arnés de programación](docs/es/coding-harness.md).
+- [Memoria](docs/es/adaptive-memory.md), [continuidad](docs/es/harness-continuity.md) y [skills](docs/es/skills-and-documents.md).
+- [Navegador](docs/es/browser.md), [ciclo de vida](docs/es/browser-lifecycle.md) y [búsqueda](docs/es/web-search.md).
+- [Biblioteca de documentos](docs/es/document-library.md), [resultados visuales](docs/es/design.md) y [archivos](docs/es/workspace-viewer.md).
+- [Conexiones y flujos](docs/es/workflows-and-connectors.md), [Live](docs/es/live.md), [perfil](docs/es/account-profile.md) y [Google](docs/es/google-sign-in.md).
+- [Evaluación](docs/es/native-evaluation.md) e [informes históricos](docs/benchmarks/).
 
-- [Arnés de programación](docs/es/coding-harness.md): búsqueda regex/glob, parches de varios archivos, reglas `AGENTS.md` del repositorio, LSP configurable y compactación de tareas activas con checkpoints recuperables.
-
-- Web en español e inglés con bienvenida, chat, proyectos, proveedores, Telegram, memoria,
-  skills, programaciones, actividad y trazas. Fondo marfil por defecto y modo
-  oscuro activado manualmente. [Identidad visual e interfaz](docs/es/interface.md).
-- Turnos de conversación concurrentes, subagentes y planes editables con hitos y
-  dependencias. Las preguntas y la planificación no retienen el chat.
-  [Planes, revisiones y pub/sub](docs/es/planning.md) conservan avances y canales de entrega.
-- [Revisión adaptativa de planes](docs/es/plan-reviews.md): revisión inicial de planes
-  complejos, especialistas bajo demanda y resolución con evidencia. Usa el mismo modelo
-  configurado; el chat permanece disponible y las rondas de corrección están acotadas.
-- Herramientas del principal para trabajo local, memoria, proyectos y delegación.
-  Los hijos tienen un catálogo restringido, sin historial de la conversación ni
-  delegación, con informe de cierre obligatorio e inspección de su tarea y evidencia de plan autorizada.
-- Comandos desde cualquier directorio accesible al usuario de Linux. Las
-  herramientas específicas de archivos conservan la carpeta configurada.
-- Aprobaciones por texto para acciones concretas, comprobadas por el ejecutor.
-  La configuración permite autorizar comandos o cambios en archivos.
-- Historial y tareas en SQLite, IDs, procedencia, consumo de tokens, resultados
-  acotados y salidas recuperables por páginas. Compactación básica con resumen,
-  historial original conservado y parejas de llamadas/resultados completas.
-- Proyectos con nombres, alias, contexto y carpeta opcional, sin abrir nuevos
-  chats. Enrutamiento antes de recuperar memoria, conversación general separada
-  y contexto fijo por ejecución; los informes tardíos no cambian el proyecto activo.
-- [Memoria adaptable por proyecto](docs/es/adaptive-memory.md): hechos con procedencia, candidatos, vigencia e historial; entidades, alias y relaciones con esquemas versionados. Recuperación léxica/temporal, contexto seleccionado, extracción en segundo plano y embeddings opcionales.
-- [Búsqueda web propia y lectura de fuentes](docs/es/web-search.md): rastreador en
-  segundo plano, índice público en disco y lectura HTTP de resultados. Sin
-  proveedor externo de búsqueda; cobertura inicial pequeña que crece con enlaces.
-- [Navegador interactivo local](docs/es/browser.md): control en Rust de Chromium,
-  perfiles persistentes, contraseñas cifradas, control manual y pruebas responsivas.
-- Cinco skills manuales: `memory-and-reminders`, `local-file-work`,
-  `conversation-recap`, `local-troubleshooting` y `browser-navigation`.
-- Recordatorios únicos, intervalos y cron en `America/Lima`. Los recordatorios
-  entregan texto; las tareas programadas ingresan a la misma cola. Se comprueban
-  programaciones activas idénticas y ejecuciones solapadas de una programación.
-- Telegram opcional: vinculación de un propietario y mensajes privados de texto.
-- Integración de 17 proveedores con claves estáticas y credenciales por proyecto.
-
-Los datos están en `.fenix/`, excluido de Git. Las claves de proveedores de modelos se guardan en una base de
-datos local con permisos privados, sin una clave maestra de cifrado independiente.
-La configuración nunca las devuelve a la web y las claves conocidas se redactan
-en las salidas del agente. El servidor sólo escucha en loopback y rechaza otros
-orígenes y hosts del navegador.
-
-Las tareas interrumpidas quedan registradas y no se reanudan automáticamente.
-La web muestra texto progresivo con OpenAI Responses y la actividad de las
-herramientas. Los demás adaptadores y Telegram conservan respuestas completas.
-El [dictado y Live del navegador](docs/es/live.md) usan una interfaz con React,
-TypeScript, Vite y Tailwind. Live conversa mediante un modelo independiente, resume
-el progreso y transmite instrucciones explícitas al maestro. Colgar no detiene las tareas.
-Al reconectar el navegador se recupera la vista provisional sin repetir la inferencia. Heartbeat y
-restauración de acciones permanecen en [ROADMAP.md](ROADMAP.md).
-
-## Trabajo en segundo plano y skills compartidas
-
-Cada subagente recibe propósito preciso y resultado esperado, con contexto y
-restricciones opcionales; no existe un campo obligatorio de “información
-necesaria”. El motor limita la delegación a un nivel, cuatro inferencias simultáneas de hijos,
-tres intentos totales ante fallos reintentables y límites configurables de 128
-pasos de modelo por tarea y una hora por intento, de forma predeterminada.
-Los reintentos conservan el contexto del hijo y los resultados previos,
-sin volver a ejecutar acciones ya completadas. Los bloqueos, cancelaciones y
-fallos no reintentables pueden detenerse antes. Un reinicio interrumpe las tareas
-inconclusas; no las reanuda automáticamente.
-
-**Tareas** muestra propósito, entrega esperada, estado, IDs, intentos y resultados.
-Responde en la conversación con `aprobar <request_id>`, `rechazar <request_id>` o
-`responder <request_id> <respuesta>`; cancela con `cancelar <task_id>`. Cada pendiente
-tiene su ID y la espera de un hijo no bloquea al principal. No se puede cambiar el
-modelo ni los permisos mientras haya tareas activas. El historial del hijo queda
-fuera de la conversación principal; la memoria explícita sigue accesible mediante
-herramientas. El programa serializa cambios de archivos, memoria y programaciones,
-y la duración completa de sus comandos, dentro del mismo proceso. Los comandos
-conservan los permisos del usuario de Linux; no están aislados en un sandbox.
-
-Las skills se guardan en **`~/.fenix/skills/<skill-name>/SKILL.md`**, compartidas
-entre directorios de ejecución. `--skills-dir PATH` permite elegir otra ruta;
-`--data-dir` sólo cambia los datos de ejecución. Principal e hijos ven el catálogo
-completo de metadatos breves y el estado de habilitación; las instrucciones sólo
-se cargan mediante `skill_load`. Las deshabilitadas siguen visibles pero no se
-pueden cargar. Las cuatro predeterminadas son plantillas, no un máximo de skills.
-
-Al iniciar, se copian los recursos de `<data-dir>/skills` a la biblioteca elegida
-antes de instalar los defaults. No se sustituyen destinos existentes, se omiten
-enlaces simbólicos y se conservan los originales. La migración automática admite
-32 MiB por archivo, 512 MiB en total, 10.000 entradas y 16 niveles; si excede esos
-límites, selecciona la carpeta anterior con `--skills-dir` o copia manualmente.
-
-## Organización y comprobaciones
-
-`apps/server` contiene el ejecutable y la API; `apps/web`, la interfaz. Los crates
-separan contratos, credenciales, proveedores, persistencia y motor del agente. Las
-plantillas están en `resources/skills/`; cada instalación usa sus copias personales.
-La documentación principal se mantiene en inglés con versión en español.
+## Verificación y límites
 
 ```sh
-pnpm --dir apps/web install --frozen-lockfile
-pnpm --dir apps/web build
 cargo fmt --all --check
-cargo clippy --workspace --all-targets --locked -- -D warnings
-cargo test --workspace --locked
-cargo build --locked -p fenix-server
-cd apps/web
-pnpm exec playwright install chromium
-pnpm test
+cargo test --workspace --all-targets --locked
+cargo test --workspace --doc --locked
+pnpm --dir apps/web check
+pnpm --dir apps/web test
 ```
 
-Las pruebas habituales usan claves ficticias y servidores HTTP locales. Las del
-navegador levantan el servidor Rust real en un directorio temporal. Node y
-Playwright sólo se necesitan para desarrollo. La prueba real opcional se ejecuta
-con `python3 scripts/smoke-live.py`, desde la raíz y con `OPENAI_API_KEY` definido
-en el entorno. Realiza llamadas facturables a Luna, elimina sus datos temporales y
-guarda un informe sin secretos en `target/`. Las pruebas simuladas de 17 proveedores
-no demuestran acceso real a las 17 cuentas.
+Las pruebas de navegador, OCR, infraestructura y benchmarks necesitan sus dependencias específicas. Algunas usan proveedores simulados: no constituyen mediciones de calidad de los modelos ni pruebas completas de producción.
 
-- [Proyectos en una conversación](docs/es/projects.md)
-- [Arquitectura](docs/es/architecture.md)
-- [Instalación y uso local](docs/es/local-operation.md)
-- [Login y aislamiento por usuario](docs/es/user-isolation.md)
-- [Acceso y registro con Google](docs/es/google-sign-in.md)
-- [Seguridad de ejecución, integraciones y copias cifradas](docs/es/execution-isolation.md)
-- [Espacios propios con gVisor, sin KVM](docs/es/self-hosted-gvisor.md)
-- [MicroVMs propias y entornos persistentes de herramientas](docs/es/self-hosted-microvms.md)
-- [Registro de verificación](docs/es/verification.md)
-- [Uso de las bibliotecas](docs/es/development.md)
-- [Proveedores y autenticación](docs/es/provider-reference.md)
-- [Requisitos actuales](REQUIREMENTS.md)
-- [Trabajo futuro](ROADMAP.md)
+**Pendiente:** verificar el firewall en la infraestructura real, incluidos destinos permitidos/bloqueados, DNS y detención al perder protección. Véanse [fronteras y validación](docs/es/security-boundaries.md).
 
-Las sesiones de terminal interactivas, servicios persistentes, registros incrementales, límites configurables, seguimiento de subagentes y herramientas bajo demanda se describen en la [guía del motor de ejecución](docs/es/execution-harness.md).
+La ventana inicial del motor es 200.000 tokens con compactación a 160.000; no amplía la capacidad ni las cuotas del proveedor. La restauración de archivos no revierte cualquier efecto externo. El navegador y los formatos de documentos tienen límites de compatibilidad documentados. Mantén claves, bases de datos, sesiones y artefactos personales fuera de Git.
 
-[Local browser / Navegador local — sessions, controls and responsive tests](docs/es/browser.md)
+## Sitio de documentación
 
-[Integraciones locales — QR de WhatsApp y sesiones guardadas](docs/es/integrations.md)
+La documentación pública está en **[fenix.crehlabs.com](https://fenix.crehlabs.com)**. Tiene búsqueda local, navegación por guías, referencias técnicas, modo claro/oscuro y diseño responsivo. Se construye desde los requisitos, la hoja de ruta, el registro de cambios y las guías españolas existentes. Las referencias históricas conservan su alcance; los requisitos vigentes prevalecen.
 
-[Evaluación nativa y recuperación del motor](docs/es/native-evaluation.md): Terminal-Bench 4.0, TerminalWorld y la variante oficial Gaia2-CLI, con versiones fijadas y verificadores externos al agente.
+```sh
+pnpm --dir apps/docs install --frozen-lockfile
+pnpm --dir apps/docs build
+pnpm --dir apps/docs preview
+```
 
-Consulta [skills y recuperación](docs/es/harness-recovery.md) para procedimientos bajo demanda, comandos restringidos a lectura y evaluación reproducible.
-
-[Marketplace de skills y Fénix Sentinel](docs/es/skill-marketplace.md): publicación privada/pública, revisión con el modelo rápido configurado, correcciones en copias y protección contra solicitudes repetidas.
-
-[Skills escalables y Fénix Documents](docs/es/skills-and-documents.md): búsqueda bajo demanda y herramientas locales para DOCX/XLSX/PPTX.
-
-[Biblioteca de 171 skills propias](docs/es/skill-library.md): catálogo, estructura común, límites de conexiones y revisión de fuentes.
-
-[Design: plantillas, resultados visuales y panel del chat](docs/es/design.md).
+La publicación usa `scripts/publish-docs.sh` y el ejemplo `packaging/linux/Caddyfile.docs`, adaptado al despliegue actual. Caddy sirve archivos estáticos mediante systemd; construir esta web no llama a modelos ni requiere API keys. La documentación ocupa la raíz del dominio y las rutas `/docs/`. El acceso móvil existente se conserva en `/movil.html`. El instalador público de un solo comando sigue pendiente.
