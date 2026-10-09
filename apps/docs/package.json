@@ -4,11 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node build.mjs",
-    "preview": "python3 -m http.server 4180 --directory dist --bind 127.0.0.1"
+    "dev": "node scripts/prepare-content.mjs && astro dev --host 127.0.0.1 --port 4180",
+    "check": "node scripts/prepare-content.mjs && astro check",
+    "build": "node scripts/prepare-content.mjs && astro check && astro build && node scripts/finalize-csp.mjs",
+    "preview": "astro preview --host 127.0.0.1 --port 4180"
   },
   "dependencies": {
-    "marked": "16.4.2"
+    "@astrojs/starlight": "^0.42.6",
+    "astro": "^7.3.8"
   },
-  "packageManager": "pnpm@10.34.5"
+  "packageManager": "pnpm@10.34.5",
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^1.1.1",
+    "typescript": "^6.0.3"
+  }
 }

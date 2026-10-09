@@ -1,0 +1,152 @@
+---
+import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
+import PhoenixMark from "../components/PhoenixMark.astro";
+import "../styles/home.css";
+const github = "https://github.com/CristhianRudolf7/fenix";
+---
+
+<StarlightPage
+  frontmatter={{
+    title: "Conversa. Crea. Avanza.",
+    description:
+      "Documentación de Fénix: conversación continua, herramientas y trabajo en segundo plano.",
+    template: "splash",
+    tableOfContents: false,
+    editUrl: false,
+  }}
+>
+  <div class="landing">
+    <section class="hero">
+      <div class="hero-copy reveal">
+        <div class="pill">
+          <span></span> ASISTENTE DE IA · CÓDIGO PÚBLICO
+        </div>
+        <h1>
+          Conversa.
+          <br />
+          Crea. <em>Avanza.</em>
+        </h1>
+        <p>
+          Un espacio para tus ideas, tus proyectos y el trabajo que quieres
+          resolver. Conoce cómo funciona Fénix y construye con él.
+        </p>
+        <div class="hero-actions">
+          <a class="button primary" href="/docs/inicio/">
+            Explorar documentación <span>↗</span>
+          </a>
+          <a class="button secondary" href={github}>
+            Ver en GitHub <span>→</span>
+          </a>
+        </div>
+        <div class="hero-detail">
+          <span>Rust en el motor</span>
+          <i></i>
+          <span>Tu contexto, conectado</span>
+          <i></i>
+          <span>Versión 0.3.0</span>
+        </div>
+      </div>
+      <div
+        class="hero-visual reveal"
+        aria-label="Conversación, planificación y documentos conectados"
+      >
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="core">
+          <PhoenixMark />
+          <span>FÉNIX</span>
+        </div>
+        <div class="float-card card-chat">
+          <div class="card-icon">↗</div>
+          <span>UNA CONVERSACIÓN</span>
+          <strong>De la idea a la acción</strong>
+          <div class="lines">
+            <b></b>
+            <b></b>
+          </div>
+        </div>
+        <div class="float-card card-plan">
+          <div class="card-icon green">✓</div>
+          <span>TRABAJO EN SEGUNDO PLANO</span>
+          <strong>Tu proyecto sigue avanzando</strong>
+          <div class="steps">
+            <i></i>
+            <i></i>
+            <i></i>
+            <i></i>
+          </div>
+        </div>
+        <div class="float-card card-doc">
+          <div class="card-icon">▤</div>
+          <span>TU ESPACIO</span>
+          <strong>Documentos y conocimiento</strong>
+          <div class="mini-tags">
+            <span>Archivos</span>
+            <span>Memoria</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="start-section">
+      <div class="section-heading reveal">
+        <div>
+          <span class="eyebrow">EMPIEZA POR AQUÍ</span>
+          <h2>
+            Menos vueltas.
+            <br />
+            Más posibilidades.
+          </h2>
+        </div>
+        <p>Guías claras para instalar, entender y ampliar tu asistente.</p>
+      </div>
+      <div class="guide-cards">
+        <a class="guide-card reveal" href="/docs/instalacion/">
+          <span class="guide-number">01 / EMPEZAR</span>
+          <div class="guide-symbol">↳</div>
+          <h3>Hazlo tuyo</h3>
+          <p>Instalación actual, requisitos y configuración de tu entorno.</p>
+          <span class="guide-link">Instalar Fénix ↗</span>
+        </a>
+        <a class="guide-card reveal" href="/docs/capacidades/">
+          <span class="guide-number">02 / DESCUBRIR</span>
+          <div class="guide-symbol">✳</div>
+          <h3>Todo, conectado</h3>
+          <p>Conversación, subagentes, documentos, navegador y programación.</p>
+          <span class="guide-link">Explorar capacidades ↗</span>
+        </a>
+        <a class="guide-card reveal" href="/docs/arquitectura/">
+          <span class="guide-number">03 / CONSTRUIR</span>
+          <div class="guide-symbol">⌘</div>
+          <h3>Una base abierta</h3>
+          <p>Entiende el motor, los límites y cómo se organiza el proyecto.</p>
+          <span class="guide-link">Conocer la arquitectura ↗</span>
+        </a>
+      </div>
+    </section>
+    <section class="closing reveal">
+      <div>
+        <span class="eyebrow">CONSTRUIMOS EN ABIERTO</span>
+        <h2>
+          Lo siguiente empieza
+          <br />
+          con una buena idea.
+        </h2>
+        <p>
+          Explora las propuestas y validaciones pendientes. El futuro también se
+          documenta.
+        </p>
+      </div>
+      <a class="button secondary" href="/docs/hoja-de-ruta/">
+        Ver la hoja de ruta ↗
+      </a>
+    </section>
+    <footer class="site-footer">
+      <a class="brand" href="/">
+        <PhoenixMark />
+        <span>Fénix</span>
+      </a>
+      <span>Un proyecto de CREH Labs</span>
+      <a href={github}>Código en GitHub ↗</a>
+    </footer>
+  </div>
+</StarlightPage>

@@ -1,0 +1,16 @@
+---
+import DefaultThemeProvider from "@astrojs/starlight/components/ThemeProvider.astro";
+---
+
+<script is:inline>
+  try {
+    if (!localStorage.getItem("starlight-theme")) {
+      const previous = localStorage.getItem("fenix-docs-theme");
+      localStorage.setItem(
+        "starlight-theme",
+        previous === "dark" ? "dark" : "light",
+      );
+    }
+  } catch {}
+</script>
+<DefaultThemeProvider />

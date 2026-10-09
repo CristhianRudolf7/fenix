@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /docs/
+Allow: /$
+Disallow: /api/
+Disallow: /movil.html
+Sitemap: https://fenix.crehlabs.com/sitemap-index.xml

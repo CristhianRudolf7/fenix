@@ -64,6 +64,6 @@ The initial engine context capacity is 200,000 tokens with compaction at 160,000
 
 ## Documentation website
 
-The public documentation is available at **[fenix.crehlabs.com](https://fenix.crehlabs.com)**. The static site provides local search, responsive navigation, light/dark themes, current guides, and clearly labeled historical references. Build it with `pnpm --dir apps/docs install --frozen-lockfile` and `pnpm --dir apps/docs build`; preview it with `pnpm --dir apps/docs preview`.
+The public documentation is available at **[fenix.crehlabs.com](https://fenix.crehlabs.com)**. The Astro + Starlight + TypeScript site provides local Pagefind search, responsive navigation, syntax highlighting, light/dark themes, current guides, and clearly labeled historical references. Build it with `pnpm --dir apps/docs install --frozen-lockfile` and `pnpm --dir apps/docs build`; preview it with `pnpm --dir apps/docs preview`.
 
 `scripts/publish-docs.sh` atomically publishes built files. Adapt `packaging/linux/Caddyfile.docs` to the host before installing it. Caddy serves documentation at `/` and `/docs/`; the existing remote mobile view remains at `/movil.html`. No model calls or API keys are needed to build or search the documentation. A public one-command installer is still planned.

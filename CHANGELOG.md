@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Migrar la documentación a Astro, Starlight y TypeScript, conservando la portada y las rutas; sustituir la búsqueda propia por Pagefind e incorporar navegación y resaltado de código de Starlight.
+
 - Añadir una web pública de documentación con guías, búsqueda local, navegación responsiva, temas y animaciones suaves; conservar el acceso móvil existente en su ruta. Destacar el enlace en los README.
 
 - Mejora las instrucciones y skills de programación para reutilizar herramientas, agrupar preparación independiente, coordinar ediciones y diagnosticar fallos de preparación de pruebas. Actualiza únicamente skills originales sin personalizaciones. [Evaluación](docs/es/audits/luna-low-skill-efficiency.md).

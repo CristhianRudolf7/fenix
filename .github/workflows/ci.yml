@@ -64,3 +64,20 @@ jobs:
       - name: Run browser integration tests
         working-directory: apps/web
         run: pnpm test
+
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.34.5'
+      - name: Install and build documentation
+        run: |
+          pnpm --dir apps/docs install --frozen-lockfile
+          pnpm --dir apps/docs build

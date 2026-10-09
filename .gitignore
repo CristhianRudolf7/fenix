@@ -15,3 +15,5 @@ __pycache__/
 /apps/web/dist/
 
 /apps/docs/dist/
+/apps/docs/.astro/
+/apps/docs/src/content/docs/

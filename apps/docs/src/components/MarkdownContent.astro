@@ -1,0 +1,13 @@
+---
+import DefaultMarkdownContent from "@astrojs/starlight/components/MarkdownContent.astro";
+---
+
+{Astro.url.pathname === "/" ? (
+  <div class="home-content">
+    <slot />
+  </div>
+) : (
+  <DefaultMarkdownContent>
+    <slot />
+  </DefaultMarkdownContent>
+)}

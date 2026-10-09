@@ -28,7 +28,7 @@ El backend utiliza Rust y Axum. El frontend utiliza Vite, React, TypeScript, Tai
 |---|---|
 | `apps/server` | Servidor local, gateway, autenticación y APIs. |
 | `apps/web` | Interfaz y pruebas de navegador. |
-| `apps/docs` | Sitio público de documentación estática, búsqueda local y guías. |
+| `apps/docs` | Documentación Astro + Starlight + TypeScript, búsqueda local y guías. |
 | `crates` | Componentes Rust del motor, proveedores, almacenamiento, navegador y documentos. |
 | `resources` | Instrucciones internas, skills y recursos visuales. |
 | `scripts` | Instalación, infraestructura, generación y evaluación. |
@@ -83,7 +83,7 @@ La ventana inicial del motor es 200.000 tokens con compactación a 160.000; no a
 
 ## Sitio de documentación
 
-La documentación pública está en **[fenix.crehlabs.com](https://fenix.crehlabs.com)**. Tiene búsqueda local, navegación por guías, referencias técnicas, modo claro/oscuro y diseño responsivo. Se construye desde los requisitos, la hoja de ruta, el registro de cambios y las guías españolas existentes. Las referencias históricas conservan su alcance; los requisitos vigentes prevalecen.
+La documentación pública está en **[fenix.crehlabs.com](https://fenix.crehlabs.com)**. Usa **Astro + Starlight + TypeScript + pnpm**, con búsqueda local Pagefind, navegación por guías, referencias técnicas, resaltado de código, modo claro/oscuro y diseño responsivo. Se construye desde los requisitos, la hoja de ruta, el registro de cambios y las guías españolas existentes. Las referencias históricas conservan su alcance; los requisitos vigentes prevalecen.
 
 ```sh
 pnpm --dir apps/docs install --frozen-lockfile
