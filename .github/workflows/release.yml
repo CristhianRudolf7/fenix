@@ -1,0 +1,57 @@
+name: Publish Linux installation bundle
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag to build and publish
+        required: true
+        type: string
+permissions:
+  contents: write
+jobs:
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '10.34.5'
+      - name: Validate installer contracts
+        run: python3 -m unittest discover -s tests/installer -v
+      - name: Build from the tagged source
+        run: |
+          rustup show
+          pnpm --dir apps/web install --frozen-lockfile
+          pnpm --dir apps/web build
+          cargo build --release --locked -p fenix-server --bin fenix
+          target/release/fenix --help
+          bash scripts/package-release.sh release-assets
+      - name: Test the packaged application
+        run: |
+          mkdir /tmp/fenix-release-smoke
+          tar -xzf release-assets/fenix-linux-x86_64.tar.gz -C /tmp/fenix-release-smoke
+          FENIX_WEB_DIST=/tmp/fenix-release-smoke/web /tmp/fenix-release-smoke/fenix --port 4199 --data-dir /tmp/fenix-release-smoke/data > /tmp/fenix-release-smoke/server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..60}; do
+            if curl -fsS http://127.0.0.1:4199/ -o /tmp/fenix-release-smoke/response.html; then break; fi
+            sleep 1
+          done
+          cmp /tmp/fenix-release-smoke/web/index.html /tmp/fenix-release-smoke/response.html
+      - name: Publish verified assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --verify-tag --generate-notes
+          fi
+          gh release upload "$RELEASE_TAG" release-assets/* --clobber

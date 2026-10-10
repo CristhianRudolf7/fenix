@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Añadir instalador público para Linux x86_64, empaquetado de releases y publicación por GitHub Actions; validar seis contratos de instalación con descargas y systemd simulados. Pendiente publicar el primer paquete y realizar la instalación real.
+
 - Migrar la documentación a Astro, Starlight y TypeScript, conservando la portada y las rutas; sustituir la búsqueda propia por Pagefind e incorporar navegación y resaltado de código de Starlight.
 
 - Añadir una web pública de documentación con guías, búsqueda local, navegación responsiva, temas y animaciones suaves; conservar el acceso móvil existente en su ruta. Destacar el enlace en los README.

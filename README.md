@@ -38,6 +38,18 @@ El backend utiliza Rust y Axum. El frontend utiliza Vite, React, TypeScript, Tai
 
 Las instrucciones internas, skills y fixtures mantienen su idioma operativo. Los Markdown de la raíz se escriben en español; este archivo tiene su versión inglesa en `README.en.md`. La documentación de otras carpetas conserva sus versiones actuales.
 
+## Instalación pública
+
+El instalador `scripts/install.sh` instala una aplicación individual para Linux x86_64, glibc ≥ 2.35 y una sesión systemd de usuario, sin Cargo, Node ni pnpm. Separa la aplicación de los datos y no modifica los servicios del despliegue alojado.
+
+**Pendiente de activación:** publicar los paquetes compilados de la primera release y comprobar una instalación real. El script y su proceso de publicación ya existen, pero la release actual no contiene los archivos necesarios. Cuando se publiquen:
+
+```sh
+curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | bash
+```
+
+Para fijar una versión: `curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | FENIX_VERSION=v0.3.1 bash`. No hay que ejecutar con sudo. Usa `FENIX_PORT` si el puerto 4173 está ocupado. Las dependencias opcionales del navegador, documentos y aislamiento requieren preparación adicional.
+
 ## Desarrollo y ejecución individual
 
 Instala el Rust fijado en `rust-toolchain.toml`, Node compatible con Vite y pnpm **10.34.5**. Desde el repositorio:
@@ -91,4 +103,4 @@ pnpm --dir apps/docs build
 pnpm --dir apps/docs preview
 ```
 
-La publicación usa `scripts/publish-docs.sh` y el ejemplo `packaging/linux/Caddyfile.docs`, adaptado al despliegue actual. Caddy sirve archivos estáticos mediante systemd; construir esta web no llama a modelos ni requiere API keys. La documentación ocupa la raíz del dominio y las rutas `/docs/`. El acceso móvil existente se conserva en `/movil.html`. El instalador público de un solo comando sigue pendiente.
+La publicación usa `scripts/publish-docs.sh` y el ejemplo `packaging/linux/Caddyfile.docs`, adaptado al despliegue actual. Caddy sirve archivos estáticos mediante systemd; construir esta web no llama a modelos ni requiere API keys. La documentación ocupa la raíz del dominio y las rutas `/docs/`. El acceso móvil existente se conserva en `/movil.html`. El instalador público está implementado; sigue pendiente publicar y validar su primer paquete compilado.

@@ -12,7 +12,7 @@ Revisión documental: 9 de octubre de 2026, hora de Perú. Esta hoja distingue a
 
 ## Instalación con un solo comando y configuración inicial
 
-Propuesta pendiente: un instalador público que detecte sistema y arquitectura, descargue una versión publicada del binario Rust y del frontend ya compilado, verifique su integridad y configure los servicios systemd correspondientes. La instalación normal no debería exigir clonar el repositorio ni instalar Cargo, Node o pnpm; la compilación desde código quedaría como alternativa para desarrolladores. El script actual `scripts/install-local.sh` requiere esas dependencias y compila desde el clon: no equivale todavía a esta distribución simplificada.
+Implementado en `scripts/install.sh`: instalador público para Linux x86_64 con glibc 2.35 o posterior y systemd de usuario. Descarga binario y frontend precompilados, verifica SHA-256, conserva datos y restaura la instalación anterior si falla el arranque. `scripts/package-release.sh` y `.github/workflows/release.yml` preparan la distribución. **Pendiente:** publicar la primera release con esos paquetes y validar una instalación real desde ella; la release actual no los contiene. El instalador individual no sustituye el despliegue multiusuario ni instala las dependencias opcionales de aislamiento y navegador.
 
 - Separar archivos de aplicación, configuración, secretos y datos personales. Reinstalar o actualizar no debe borrar usuarios, archivos, memoria, sesiones ni credenciales existentes.
 - Abrir la bienvenida en el navegador local al finalizar; si no hay entorno gráfico, mostrar la dirección y explicar cómo acceder desde otro equipo mediante un canal autenticado.
@@ -70,6 +70,7 @@ Existe cola durable, deduplicación, contratos y recuperación conservadora. Las
 - Extender historial de eventos, identificadores por intento, versiones de contrato y explicación de lo que puede restaurarse. El historial privado actual no equivale a deshacer cualquier acción.
 - Evaluar revisión de hitos y finalización según riesgo, evitando auditorías adicionales en todas las acciones simples. Medir desacuerdos entre revisores, correcciones perjudiciales y costo de revisión.
 - Mantener autonomía elegida por el usuario, aclaraciones de requisitos indispensables y un modo explícito de evaluación sin interlocutor.
+- Investigar metodologías para descomponer tareas grandes y ejecutar la mayor cantidad posible de agentes en paralelo, con el objetivo de terminarlas en menos tiempo. Evaluar dependencias, coordinación, conflictos y recursos disponibles para aumentar el paralelismo sin perjudicar la calidad del resultado.
 
 ## Heartbeat y recordatorios proactivos
 

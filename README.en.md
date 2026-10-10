@@ -28,6 +28,18 @@ Rust/Axum runs the backend. Vite, React, TypeScript, Tailwind, and pnpm power th
 
 Root Markdown documentation is Spanish except for this English README. Existing guides under `docs/es/` and `docs/en/` retain their language versions. Runtime skills, prompts, and fixtures retain their operational language.
 
+## Public installation
+
+`scripts/install.sh` installs the personal application on Linux x86_64 with glibc ≥ 2.35 and a systemd user session, without Cargo, Node or pnpm. It preserves personal data and does not replace hosted deployment services.
+
+**Not activated yet:** the first prebuilt release assets and a real installation check are pending. The existing release does not contain the required assets. Once published:
+
+```sh
+curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | bash
+```
+
+Use `FENIX_VERSION=v0.3.1` to select a published version and `FENIX_PORT` to choose another local port. Do not run with sudo. Optional browser, document and isolation dependencies need additional setup.
+
 ## Development and individual operation
 
 Install the Rust toolchain pinned in `rust-toolchain.toml`, a Vite-compatible Node version, and pnpm **10.34.5**:

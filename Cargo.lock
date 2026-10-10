@@ -755,7 +755,7 @@ checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 
 [[package]]
 name = "fenix-agent"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -796,7 +796,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-browser"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "aes-gcm",
  "anyhow",
@@ -821,7 +821,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-connectors"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "aes-gcm",
  "anyhow",
@@ -846,7 +846,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-core"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "base64 0.22.1",
  "regex",
@@ -856,7 +856,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-credentials"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "fenix-core",
  "thiserror",
@@ -865,7 +865,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-documents"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "roxmltree",
@@ -878,7 +878,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-execution"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "nix",
@@ -892,7 +892,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-providers"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "fenix-core",
  "fenix-credentials",
@@ -907,7 +907,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-server"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "argon2",
@@ -940,7 +940,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-storage"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -954,7 +954,7 @@ dependencies = [
 
 [[package]]
 name = "fenix-web"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "chrono",

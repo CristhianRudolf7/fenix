@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, readdir, rm } from "node:fs/promises";
+import { readFile, writeFile, mkdir, readdir, rm, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,6 +7,7 @@ const repository = path.resolve(directory, "../../..");
 const output = path.resolve(directory, "../src/content/docs");
 const origin = "https://fenix.crehlabs.com";
 const github = "https://github.com/CristhianRudolf7/fenix";
+await copyFile(path.join(repository, "scripts/install.sh"), path.resolve(directory, "../public/docs-assets/install.sh"));
 const pages = [];
 function add(id, title, body, description, reference = false) {
   pages.push({ id, title, body, description, reference });
@@ -27,7 +28,7 @@ El interlocutor interpreta tus mensajes y comunica el progreso observable. El ag
 - Navegador, terminal y herramientas de documentos.
 
 ## Elige cómo empezar
-[Instala desde el código](/docs/instalacion/) o [explora las capacidades actuales](/docs/capacidades/). La instalación pública con un solo comando está en la hoja de ruta; todavía no se distribuye un instalador en esta web.
+[Instala desde el código](/docs/instalacion/) o [explora las capacidades actuales](/docs/capacidades/). El instalador público está implementado; la publicación y validación del primer paquete compilado siguen pendientes.
 
 ## Un proyecto en evolución
 La versión declarada es **0.3.0**. Tener una capacidad implementada no garantiza que resuelva cualquier tarea. Las guías, evaluaciones y limitaciones permiten distinguir lo disponible de lo que falta comprobar.`,
@@ -53,8 +54,10 @@ Abre [http://127.0.0.1:4173](http://127.0.0.1:4173). La ejecución individual y 
 ## Instalación local con systemd
 Desde el clon, \`bash scripts/install-local.sh\` compila e instala para el usuario actual. Requiere Cargo, pnpm, systemd, xdg-open y una sesión de systemd de usuario. Comprueba el script y evita ejecutarlo sobre otra instalación sin revisar sus rutas y su unidad \`fenix.service\`.
 
-## Próximamente: un solo comando
-La propuesta es descargar el binario Rust y el frontend ya compilados, comprobar su integridad, preparar dependencias y servicios y abrir una bienvenida web. **No hay todavía un comando público de instalación listo para copiar.**
+## Instalador público
+El script descarga una release precompilada, verifica SHA-256 y configura un servicio systemd individual conservando datos. Linux x86_64, glibc ≥ 2.35 y systemd de usuario son necesarios. **Pendiente: publicar y validar la primera release con sus paquetes.** No instala automáticamente las dependencias opcionales ni el despliegue multiusuario.
+
+Cuando los paquetes estén publicados: \`curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | bash\`.
 
 El modelo rápido y el inteligente, las credenciales y los canales se configurarían desde esa bienvenida. Consulta [la hoja de ruta](/docs/hoja-de-ruta/).`,
   "Instalación actual desde el repositorio y distribución prevista.",

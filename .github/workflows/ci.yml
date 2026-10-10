@@ -27,6 +27,10 @@ jobs:
           pnpm --dir apps/web build
       - name: Install the pinned Rust toolchain
         run: rustup show
+      - name: Check public installer contracts
+        run: |
+          bash -n scripts/install.sh scripts/package-release.sh
+          python3 -m unittest discover -s tests/installer -v
       - name: Check formatting
         run: cargo fmt --all --check
       - name: Check compiler lints
