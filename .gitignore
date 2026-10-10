@@ -18,5 +18,5 @@ __pycache__/
 /apps/docs/.astro/
 /apps/docs/src/content/docs/
 
-/apps/docs/public/docs-assets/install.sh
+/apps/docs/public/install.sh
 /release-assets/

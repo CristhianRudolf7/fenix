@@ -2,7 +2,7 @@
 
 ## Sin publicar
 
-- Añadir instalador público para Linux x86_64, empaquetado de releases y publicación por GitHub Actions; validar seis contratos de instalación con descargas y systemd simulados. Pendiente publicar el primer paquete y realizar la instalación real.
+- Incorporar instalador público para Linux x86_64 (glibc ≥ 2.39), empaquetado de releases y proceso de publicación por GitHub Actions. La cuenta de GitHub tiene Actions bloqueado por facturación; la release inicial se compila y publica manualmente.
 
 - Migrar la documentación a Astro, Starlight y TypeScript, conservando la portada y las rutas; sustituir la búsqueda propia por Pagefind e incorporar navegación y resaltado de código de Starlight.
 
@@ -69,3 +69,10 @@ publicados en 0.2.0 el 14 de septiembre, e incorpora el trabajo posterior del 14
 Estado histórico de la entrega del 15 de septiembre: el modelo recibe texto y geometría del DOM, no capturas de pantalla. La cobertura
 de búsqueda depende del índice local. Voz, aprendizaje autónomo de memoria y
 reanudación automática tras caídas se describían como trabajo futuro en aquella entrega. Consulta `REQUIREMENTS.md` para el contrato actual y sus límites.
+
+## 0.3.1 — 10 de octubre de 2026
+
+- Distribuir binario y frontend compilados mediante el instalador público en `https://fenix.crehlabs.com/install.sh`.
+- Mantener datos y skills de la instalación personal separados de los servicios alojados; verificar SHA-256 y restaurar la instalación anterior si falla el arranque.
+- Permitir configurar proveedor, modelo y clave en la bienvenida del modo personal. Mantener sin cambios la bienvenida del servicio alojado.
+- Validar seis contratos con pruebas controladas. La validación real de descarga, servicio y bienvenida se documenta al completar la publicación.

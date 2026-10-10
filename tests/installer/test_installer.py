@@ -21,7 +21,7 @@ class InstallerTests(unittest.TestCase):
             mocks.mkdir()
             asset = root / 'fenix-linux-x86_64.tar.gz'
             with tarfile.open(asset, 'w:gz') as archive:
-                for name, content in [('fenix', b'#!/bin/sh\nexit 0\n'), ('web/index.html', b'<html>Fenix</html>')]:
+                for name, content in [('fenix', b'#!/bin/sh\nexit 0\n'), ('web/index.html', b'<html>Fenix</html>'), ('VERSION', b'0.3.1\n')]:
                     entry = tarfile.TarInfo(name)
                     entry.size = len(content)
                     entry.mode = 0o755 if name == 'fenix' else 0o644
@@ -36,7 +36,7 @@ class InstallerTests(unittest.TestCase):
             checksum.write_text(f'{digest}  {asset.name}\n')
             scripts = {
                 'curl': '#!/bin/bash\nfor arg in "$@"; do [[ $arg == http://127.0.0.1:* ]] && exit 0; done\nwhile (($#)); do if [[ $1 == -o ]]; then dest=$2; shift 2; else url=$1; shift; fi; done\nif [[ $url == *.sha256 ]]; then cp "$MOCK_CHECKSUM" "$dest"; else cp "$MOCK_ASSET" "$dest"; fi\n',
-                'systemctl': '#!/bin/bash\nif [[ "$*" == *is-active* ]]; then exit 1; fi\nif [[ "$*" == *restart* && ${MOCK_RESTART_FAILURE:-0} == 1 ]]; then exit 1; fi\nexit 0\n',
+                'systemctl': '#!/bin/bash\nif [[ "$*" == *is-active* || "$*" == *is-enabled* ]]; then exit 1; fi\nif [[ "$*" == *restart* && ${MOCK_RESTART_FAILURE:-0} == 1 ]]; then exit 1; fi\nexit 0\n',
                 'ss': '#!/bin/sh\n[ "${MOCK_OCCUPIED:-0}" = 1 ] && echo LISTEN\nexit 0\n',
             }
             for name, content in scripts.items():

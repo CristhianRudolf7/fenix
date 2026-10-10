@@ -186,12 +186,14 @@ function input(id, label, value: string | number = "", extra = "") {
 }
 
 function modelForm(setup = false) {
-  if (setup)
+  const personal = document.documentElement.dataset.installation === "personal";
+  if (setup && !personal)
     return `<section class="card setup-form"><h2>${t("We are preparing your assistant", "Estamos preparando tu asistente")}</h2><p>${t("Your account is waiting for service configuration. Please contact support if it remains unavailable.", "Tu cuenta está pendiente de la configuración del servicio. Contacta con soporte si sigue sin estar disponible.")}</p></section>`;
   const config = state.status.settings || state.status.default_settings;
   return `<form id="model-form" class="card ${setup ? "setup-form" : ""}">
     <h2>${t("Connect your model", "Conecta tu modelo")}</h2><p class="muted">${t("Choose a provider. We will verify it with a real request.", "Elige un proveedor. Lo verificaremos con una llamada real.")}</p>
     ${field(`<label for="provider">${t("Provider", "Proveedor")}</label>`, `<select id="provider" name="provider">${state.providers.map((p) => `<option value="${p.id}" ${p.id === config.provider ? "selected" : ""}>${providerNames[p.id] || p.id}</option>`).join("")}</select>`)}
+    ${personal ? input("api_key", t("API key", "Clave de API"), "", `type="password" autocomplete="off" ${setup ? "required" : ""}`) : ""}
     ${input("model", t("Model", "Modelo"), config.model, 'required autocomplete="off" placeholder="Model ID" list="model-options"')}<datalist id="model-options"><option value="gpt-5.6-luna"></option></datalist>
     <div id="reasoning-field">${field(
       `<label for="reasoning_effort">${t("Reasoning effort", "Nivel de pensamiento")}</label>`,

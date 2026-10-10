@@ -30,15 +30,15 @@ Root Markdown documentation is Spanish except for this English README. Existing 
 
 ## Public installation
 
-`scripts/install.sh` installs the personal application on Linux x86_64 with glibc ≥ 2.35 and a systemd user session, without Cargo, Node or pnpm. It preserves personal data and does not replace hosted deployment services.
+`scripts/install.sh` installs the personal application on Linux x86_64 with glibc ≥ 2.39 and a systemd user session, without Cargo, Node or pnpm. It preserves personal data and does not replace hosted deployment services.
 
-**Not activated yet:** the first prebuilt release assets and a real installation check are pending. The existing release does not contain the required assets. Once published:
+Release **0.3.1** provides the prebuilt application and frontend. On Ubuntu 24.04 or newer (x86_64) with a systemd user session:
 
 ```sh
-curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | bash
+curl -fsSL https://fenix.crehlabs.com/install.sh | bash
 ```
 
-Use `FENIX_VERSION=v0.3.1` to select a published version and `FENIX_PORT` to choose another local port. Do not run with sudo. Optional browser, document and isolation dependencies need additional setup.
+Use `FENIX_VERSION=v0.3.1` to select a published version and `FENIX_PORT` to choose another local port. Do not run with sudo. Open `http://127.0.0.1:4173` to configure your provider, model and API key. OpenSSL 3, zlib and zstd runtime libraries are required. Personal data and skills remain under `~/.local/share/fenix-personal/`; `systemctl --user disable --now fenix-personal.service` stops the application without deleting data. Optional browser, document and isolation dependencies need additional setup.
 
 ## Development and individual operation
 

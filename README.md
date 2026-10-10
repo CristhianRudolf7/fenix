@@ -40,15 +40,17 @@ Las instrucciones internas, skills y fixtures mantienen su idioma operativo. Los
 
 ## Instalación pública
 
-El instalador `scripts/install.sh` instala una aplicación individual para Linux x86_64, glibc ≥ 2.35 y una sesión systemd de usuario, sin Cargo, Node ni pnpm. Separa la aplicación de los datos y no modifica los servicios del despliegue alojado.
+El instalador `scripts/install.sh` instala una aplicación individual para Linux x86_64, glibc ≥ 2.39 y una sesión systemd de usuario, sin Cargo, Node ni pnpm. Separa la aplicación de los datos y no modifica los servicios del despliegue alojado.
 
-**Pendiente de activación:** publicar los paquetes compilados de la primera release y comprobar una instalación real. El script y su proceso de publicación ya existen, pero la release actual no contiene los archivos necesarios. Cuando se publiquen:
+La release **0.3.1** distribuye el binario y la interfaz compilados. En Ubuntu 24.04 o posterior (x86_64), con una sesión systemd de usuario:
 
 ```sh
-curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | bash
+curl -fsSL https://fenix.crehlabs.com/install.sh | bash
 ```
 
-Para fijar una versión: `curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | FENIX_VERSION=v0.3.1 bash`. No hay que ejecutar con sudo. Usa `FENIX_PORT` si el puerto 4173 está ocupado. Las dependencias opcionales del navegador, documentos y aislamiento requieren preparación adicional.
+Para comprobar el servicio: `systemctl --user status fenix-personal.service`. Para detenerlo sin borrar datos: `systemctl --user disable --now fenix-personal.service`. Los datos y skills propios se conservan en `~/.local/share/fenix-personal/`.
+
+Para fijar una versión: `curl -fsSL https://fenix.crehlabs.com/install.sh | FENIX_VERSION=v0.3.1 bash`. No hay que ejecutar con sudo. Al terminar abre `http://127.0.0.1:4173` para elegir proveedor, modelo y clave. Las bibliotecas de ejecución OpenSSL 3, zlib y zstd deben estar instaladas (normalmente lo están en una instalación de escritorio). Usa `FENIX_PORT` si el puerto 4173 está ocupado. Las dependencias opcionales del navegador, documentos y aislamiento requieren preparación adicional.
 
 ## Desarrollo y ejecución individual
 
@@ -103,4 +105,4 @@ pnpm --dir apps/docs build
 pnpm --dir apps/docs preview
 ```
 
-La publicación usa `scripts/publish-docs.sh` y el ejemplo `packaging/linux/Caddyfile.docs`, adaptado al despliegue actual. Caddy sirve archivos estáticos mediante systemd; construir esta web no llama a modelos ni requiere API keys. La documentación ocupa la raíz del dominio y las rutas `/docs/`. El acceso móvil existente se conserva en `/movil.html`. El instalador público está implementado; sigue pendiente publicar y validar su primer paquete compilado.
+La publicación usa `scripts/publish-docs.sh` y el ejemplo `packaging/linux/Caddyfile.docs`, adaptado al despliegue actual. Caddy sirve archivos estáticos mediante systemd; construir esta web no llama a modelos ni requiere API keys. La documentación ocupa la raíz del dominio y las rutas `/docs/`. El acceso móvil existente se conserva en `/movil.html`. El instalador público descarga la release compilada desde GitHub; la documentación incluye el comando de instalación.

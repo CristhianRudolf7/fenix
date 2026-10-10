@@ -10,5 +10,6 @@ work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
 install -m 755 "$repository/target/release/fenix" "$work/fenix"
 cp -a "$repository/apps/web/dist" "$work/web"
-tar -czf "$output/fenix-linux-x86_64.tar.gz" -C "$work" fenix web
+sed -n 's/^version = "\([^"]*\)"$/\1/p' "$repository/Cargo.toml" | head -1 > "$work/VERSION"
+tar -czf "$output/fenix-linux-x86_64.tar.gz" -C "$work" fenix web VERSION
 (cd "$output" && sha256sum fenix-linux-x86_64.tar.gz > fenix-linux-x86_64.tar.gz.sha256)

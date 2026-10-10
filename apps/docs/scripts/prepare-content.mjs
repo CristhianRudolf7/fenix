@@ -7,7 +7,7 @@ const repository = path.resolve(directory, "../../..");
 const output = path.resolve(directory, "../src/content/docs");
 const origin = "https://fenix.crehlabs.com";
 const github = "https://github.com/CristhianRudolf7/fenix";
-await copyFile(path.join(repository, "scripts/install.sh"), path.resolve(directory, "../public/docs-assets/install.sh"));
+await copyFile(path.join(repository, "scripts/install.sh"), path.resolve(directory, "../public/install.sh"));
 const pages = [];
 function add(id, title, body, description, reference = false) {
   pages.push({ id, title, body, description, reference });
@@ -28,7 +28,7 @@ El interlocutor interpreta tus mensajes y comunica el progreso observable. El ag
 - Navegador, terminal y herramientas de documentos.
 
 ## Elige cómo empezar
-[Instala desde el código](/docs/instalacion/) o [explora las capacidades actuales](/docs/capacidades/). El instalador público está implementado; la publicación y validación del primer paquete compilado siguen pendientes.
+[Instala desde el código](/docs/instalacion/) o [explora las capacidades actuales](/docs/capacidades/). Instala la versión personal con un solo comando desde [la guía de instalación](/docs/instalacion/).
 
 ## Un proyecto en evolución
 La versión declarada es **0.3.0**. Tener una capacidad implementada no garantiza que resuelva cualquier tarea. Las guías, evaluaciones y limitaciones permiten distinguir lo disponible de lo que falta comprobar.`,
@@ -37,8 +37,15 @@ La versión declarada es **0.3.0**. Tener una capacidad implementada no garantiz
 add(
   "instalacion",
   "Instala Fénix",
-  `## Requisitos para desarrollar
-Por ahora la instalación disponible parte del repositorio. Necesitas Linux, el Rust fijado en \`rust-toolchain.toml\`, una versión de Node compatible con Vite y pnpm 10.34.5.
+  `## Instalador público
+El script descarga una release precompilada, verifica SHA-256 y configura un servicio systemd individual conservando datos. Linux x86_64, glibc ≥ 2.39 y systemd de usuario son necesarios. La release 0.3.1 incluye los paquetes compilados. No instala automáticamente las dependencias opcionales ni el despliegue multiusuario.
+
+Ejecuta sin sudo: \`curl -fsSL https://fenix.crehlabs.com/install.sh | bash\`.
+
+Al terminar abre http://127.0.0.1:4173 y configura tu proveedor, modelo y clave desde la bienvenida. Las bibliotecas OpenSSL 3, zlib y zstd deben estar disponibles. El servicio es \`fenix-personal.service\`; puedes detenerlo con \`systemctl --user disable --now fenix-personal.service\` sin borrar los datos de \`~/.local/share/fenix-personal/\`. El acceso queda limitado a localhost; esta instalación no publica un servidor multiusuario. Consulta [la hoja de ruta](/docs/hoja-de-ruta/).
+
+## Requisitos para desarrollar
+La alternativa para desarrolladores parte del repositorio. Necesitas Linux, el Rust fijado en \`rust-toolchain.toml\`, una versión de Node compatible con Vite y pnpm 10.34.5.
 
 ## Obtén el código
 \`\`\`sh
@@ -53,14 +60,8 @@ Abre [http://127.0.0.1:4173](http://127.0.0.1:4173). La ejecución individual y 
 
 ## Instalación local con systemd
 Desde el clon, \`bash scripts/install-local.sh\` compila e instala para el usuario actual. Requiere Cargo, pnpm, systemd, xdg-open y una sesión de systemd de usuario. Comprueba el script y evita ejecutarlo sobre otra instalación sin revisar sus rutas y su unidad \`fenix.service\`.
-
-## Instalador público
-El script descarga una release precompilada, verifica SHA-256 y configura un servicio systemd individual conservando datos. Linux x86_64, glibc ≥ 2.35 y systemd de usuario son necesarios. **Pendiente: publicar y validar la primera release con sus paquetes.** No instala automáticamente las dependencias opcionales ni el despliegue multiusuario.
-
-Cuando los paquetes estén publicados: \`curl -fsSL https://fenix.crehlabs.com/docs-assets/install.sh | bash\`.
-
-El modelo rápido y el inteligente, las credenciales y los canales se configurarían desde esa bienvenida. Consulta [la hoja de ruta](/docs/hoja-de-ruta/).`,
-  "Instalación actual desde el repositorio y distribución prevista.",
+`,
+  "Instalación pública con paquetes compilados y alternativa desde el repositorio.",
 );
 add(
   "configuracion",

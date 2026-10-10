@@ -169,7 +169,7 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
         <div className="sidebar-bottom">
           <div id="account-controls" />
           <div className="row">
-            <small className="grow sidebar-version">Fénix · v0.3.0</small>
+            <small className="grow sidebar-version">Fénix · v0.3.1</small>
           </div>
         </div>
       </aside>

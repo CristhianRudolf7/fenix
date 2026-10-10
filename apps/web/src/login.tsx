@@ -362,7 +362,10 @@ function Login() {
 export async function authenticate(): Promise<boolean> {
   const response = await fetch("/api/auth/session");
   // Standalone local/evaluation runtimes intentionally retain their existing UI.
-  if (response.status === 404) return true;
+  if (response.status === 404) {
+    document.documentElement.dataset.installation = "personal";
+    return true;
+  }
   if (response.status === 401) {
     createRoot(document.getElementById("app")!).render(<Login />);
     return false;
