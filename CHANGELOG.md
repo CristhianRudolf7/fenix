@@ -75,4 +75,4 @@ reanudación automática tras caídas se describían como trabajo futuro en aque
 - Distribuir binario y frontend compilados mediante el instalador público en `https://fenix.crehlabs.com/install.sh`.
 - Mantener datos y skills de la instalación personal separados de los servicios alojados; verificar SHA-256 y restaurar la instalación anterior si falla el arranque.
 - Permitir configurar proveedor, modelo y clave en la bienvenida del modo personal. Mantener sin cambios la bienvenida del servicio alojado.
-- Validar seis contratos con pruebas controladas. La validación real de descarga, servicio y bienvenida se documenta al completar la publicación.
+- Validar seis contratos con pruebas controladas. Validar la descarga pública, el arranque con systemd, la bienvenida en navegador y una reinstalación conservando datos. La prueba del modo alojado usa una respuesta de sesión controlada, no una sesión de producción. [Detalle](docs/es/public-installation.md).
