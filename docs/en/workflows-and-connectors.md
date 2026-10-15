@@ -40,7 +40,6 @@ The catalog follows `/home/Rudy/proyectos/repo/Conexiones.md`. **Integrations** 
 | Slack | OAuth or token; channels, history, messages and native API requests. |
 | GitHub | Personal access token; repositories, issues and native REST requests. |
 | Email | IMAP over verified TLS on 993; SMTP over verified TLS on 465 or required STARTTLS on 587; list/read/send. Gmail and Outlook also support their OAuth connectors. |
-| PostgreSQL | Verified TLS, prepared statements, scalar parameters, read-only transaction unless write access is enabled. |
 | SQLite | Existing workspace database, parameterized statements, no attach/detach/pragma escape or symlink paths. |
 | Telegram | Reuses the existing owner-specific bot/channel settings. |
 | WhatsApp | Reuses the existing WhatsApp Web pairing and Fénix browser session. |

@@ -25,7 +25,7 @@ These portfolio descriptions establish category precedent and overlap, not Féni
 
 | Family / Familia | Scope and limits / Alcance y límites | Evidence / Evidencia |
 | --- | --- | --- |
-| Conversation / Conversación | Continuous chat, projects, task traces, bilingual UI, optional owner Telegram and browser dictation/Live. Live observes and forwards owner requests; it is not an unrestricted execution agent. | [Source](../../crates/fenix-agent/src/conversation.rs) · [Guide](../en/live.md) |
+| Conversation / Conversación | Continuous chat, projects, task traces, bilingual UI, optional owner Telegram and browser dictation/Live. Live observes and forwards owner requests; it is not an unrestricted execution agent. | [Source](../../crates/fenix-agent/src/conversation.rs) · [Guide](../en/dictation.md) |
 | Projects / Proyectos | Fixed per-task project bindings, aliases, briefs, scoped context, requirements with stable IDs and versioned amendments. | [Source](../../crates/fenix-agent/src/project_specs.rs) · [Guide](../en/project-contracts.md) |
 | Autonomy / Autonomía | Owner-sourced task/project/account preferences; autonomous implementation choices preserve requirement clarification and actual permission boundaries. | [Source](../../crates/fenix-agent/src/autonomy.rs) · [Guide](../en/conversational-autonomy.md) |
 | Plans and delegation / Planes y delegación | Background workers, dependency milestones, revisions, steering, bounded retries, independent plan reviews and completion audits. | [Source](../../crates/fenix-agent/src/planning.rs) · [Guide](../en/planning.md) |

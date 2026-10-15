@@ -14,7 +14,7 @@ Las pruebas locales comprueban respuestas sin crear tareas duplicadas, negativas
 
 Con el interlocutor configurado, los borradores y comentarios de herramientas del maestro quedan en el registro interno. Un proceso independiente agrupa los avances por tarea y pide al interlocutor mensajes breves y sencillos. Se guardan en la conversación, llegan al canal correspondiente y permanecen al recargar. La narración tiene una frecuencia limitada por tarea; sus errores no detienen la ejecución. Los resultados finales y las preguntas conservan su mecanismo de entrega y las instrucciones compartidas de lenguaje natural.
 
-Live lee los mismos avisos guardados, sin otra llamada al modelo ni duplicarlos. Cerrar la llamada no detiene el trabajo ni la narración. Las copias visibles ocultan UUID; los argumentos y evidencias originales se conservan. La interfaz deja de pedir identificadores y reconoce la reconexión del progreso.
+Las copias visibles ocultan UUID; los argumentos y evidencias originales se conservan. La interfaz deja de pedir identificadores y reconoce la reconexión del progreso.
 
 Cancelar ejecuta una acción real: primero se confirma que se solicitó detener el trabajo y se cierran sus preguntas pendientes; el motor confirma después que se detuvo. Una solicitud breve e inequívoca de cancelación no se interpreta como una respuesta a una aclaración. Si hay varios trabajos y no está claro cuál cancelar, se pide aclaración. Esta implementación no modifica el historial de producción ni supone desplegar los cambios.
 

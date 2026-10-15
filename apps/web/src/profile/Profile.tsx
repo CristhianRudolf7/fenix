@@ -8,6 +8,7 @@ type ProfileData = {
   email: string;
   display_name: string;
   google_connected?: boolean;
+  google_sign_in_available?: boolean;
   password_available?: boolean;
 };
 type Usage = {
@@ -61,8 +62,6 @@ function Profile({ language }: { language: string }) {
     }
   }
   const [tab, setTab] = useState("general");
-  const [googleBusy, setGoogleBusy] = useState(false);
-  const [googleError, setGoogleError] = useState("");
   const [profile, setProfile] = useState<ProfileData>();
   const [name, setName] = useState("");
   const [report, setReport] = useState<Report>();
@@ -136,28 +135,6 @@ function Profile({ language }: { language: string }) {
       );
     } finally {
       setSaving(false);
-    }
-  }
-  async function linkGoogle() {
-    setGoogleBusy(true);
-    setGoogleError("");
-    try {
-      const value = await api<{ url: string }>("/api/auth/google", {
-        method: "POST",
-        body: JSON.stringify({ register: false }),
-      });
-      const url = new URL(value.url);
-      if (url.origin !== "https://accounts.google.com")
-        throw Error("invalid_url");
-      location.assign(url.href);
-    } catch {
-      setGoogleError(
-        t(
-          "Google access is unavailable right now. Please try again later.",
-          "El acceso con Google no está disponible ahora. Vuelve a intentarlo más tarde.",
-        ),
-      );
-      setGoogleBusy(false);
     }
   }
   async function changePassword(event: FormEvent<HTMLFormElement>) {
@@ -590,41 +567,6 @@ function Profile({ language }: { language: string }) {
                   "Cada inicio de sesión dura exactamente siete días. Tus tareas en segundo plano continúan aunque cierres sesión.",
                 )}
               </p>
-            </div>
-            <div className="profile-card profile-form">
-              <h2>{t("Google sign-in", "Acceso con Google")}</h2>
-              {profile?.google_connected ? (
-                <p>
-                  {t(
-                    "Your Google account is linked.",
-                    "Tu cuenta de Google está vinculada.",
-                  )}
-                </p>
-              ) : (
-                <button
-                  className="login-google"
-                  type="button"
-                  disabled={googleBusy || !profile}
-                  onClick={linkGoogle}
-                >
-                  <img
-                    src="/assets/integrations/google.svg"
-                    width="20"
-                    height="20"
-                    alt=""
-                  />
-                  {t("Sign in with Google", "Iniciar sesión con Google")}
-                </button>
-              )}
-              {googleError && <p role="alert">{googleError}</p>}
-              {profile?.password_available === false && (
-                <p>
-                  {t(
-                    "You sign in with Google. Fénix does not store your Google password.",
-                    "Inicias sesión con Google. Fénix no guarda tu contraseña de Google.",
-                  )}
-                </p>
-              )}
             </div>
             {profile?.password_available !== false && (
               <form

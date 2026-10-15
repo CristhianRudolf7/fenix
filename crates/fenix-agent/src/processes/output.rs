@@ -15,6 +15,7 @@ pub(super) async fn capture(
     loop {
         let count = match reader.read(&mut buffer).await {
             Ok(count) => count,
+            #[cfg(unix)]
             Err(error) if error.raw_os_error() == Some(nix::libc::EIO) => 0, // PTY EOF
             Err(error) => {
                 process.output_failure(&error.to_string()).await;

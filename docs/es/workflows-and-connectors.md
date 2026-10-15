@@ -16,7 +16,7 @@ La programación conserva **America/Lima**, fecha única, intervalo y cron. No r
 
 ## Integraciones disponibles
 
-- **Google Workspace:** OAuth con renovación; Drive, Docs, Sheets, Slides, Gmail y Calendar mediante sus API autorizadas.
+- **Google Workspace:** OAuth con renovación; Docs, Sheets, Slides, Gmail y Calendar mediante sus API autorizadas.
 - **Microsoft 365:** OAuth con renovación; OneDrive/SharePoint, Outlook, calendario y Excel mediante Microsoft Graph.
 - **Slack:** OAuth o token; canales, historial y mensajes.
 - **GitHub:** token personal; repositorios, incidencias y API REST.

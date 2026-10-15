@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { api } from "../live/api";
+import { api } from "../lib/api";
 import { snapshot, subscribe } from "../workspace/store";
 import { FlowView } from "./FlowView";
 import type { Flow } from "./types";

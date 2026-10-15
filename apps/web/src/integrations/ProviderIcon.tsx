@@ -7,7 +7,6 @@ const brands = new Set([
   "github",
   "telegram",
   "whatsapp",
-  "postgresql",
   "sqlite",
 ]);
 const capabilities: Record<string, string> = {

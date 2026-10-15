@@ -1,3 +1,5 @@
+> Historical document: the multi-account gateway and Google account registration/sign-in have been removed. See [personal access](remote-access.md) for the current development version.
+
 # Accounts and isolated user runtimes
 
 The shared gateway authenticates users and selects their account controller from a protected local registry. A client cannot select another tenant through a URL parameter, request header, tool call or model response. Each account has its own controller database, conversations, projects, skills, Telegram identity and schedules.

@@ -42,7 +42,7 @@ y comprueba que corresponda al original revisado.
 Hay dos roles reutilizables: modelo inteligente para las tareas y modelo rápido
 (normalmente GPT-6 Luna con pensamiento bajo) para conversación y traducción. Se reutilizan las credenciales
 existentes. `/api/model-roles` muestra ambos y `/api/model-roles/fast` configura el
-rápido; `/api/live/settings` sigue funcionando como alias. El auditor de publicaciones
+rápido. El modo de llamada y sus rutas se han eliminado. El auditor de publicaciones
 conserva su configuración del operador para que un usuario no pueda sustituirlo.
 
 La conexión rápida guarda `reasoning_effort` sin modificar el modelo inteligente. La revisión pública usa la configuración privada de Sentinel del operador, con `provider` y `reasoning_effort` explícitos.

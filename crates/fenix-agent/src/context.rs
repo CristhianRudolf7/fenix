@@ -293,7 +293,7 @@ impl Runtime {
         let assigned_workspace = self.task_workspace(&job.id, &model.settings.workspace)?;
         let workspace = assigned_workspace.as_path();
         if let Some(worktree) = self.worktree(&job.id)? {
-            instructions.push_str(&format!("\nIsolated Git workspace: {} on branch {}. Work only here; never write the source checkout, merge, push, switch branches, or edit Git internals. The engine integrates changes after successful completion; conflicts block completion and preserve your branch. Git metadata may be unavailable inside isolated command containers; native worktree_manage/get reports status.\n", worktree.path.display(), worktree.branch));
+            instructions.push_str(&format!("\nIsolated Git workspace: {} on branch {}. Work only here; never write the source checkout, merge, push, switch branches, or edit Git internals. The engine integrates changes after successful completion; conflicts block completion and preserve your branch. Native worktree_manage/get reports Git status.\n", worktree.path.display(), worktree.branch));
         }
         instructions.push_str(&format!(
             "\nDelegated subagent task. You are a worker, not the master.\nTask ID: {}\nParent task ID: {}\nSession ID: {}\nWorkspace: {}\nCurrent time in Peru: {}\n",

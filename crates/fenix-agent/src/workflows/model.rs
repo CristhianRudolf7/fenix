@@ -353,7 +353,6 @@ pub(crate) fn read_only(node: &Node) -> bool {
             node.arguments["operation"].as_str(),
             Some(
                 "test"
-                    | "drive_search"
                     | "mail_list"
                     | "calendar_list"
                     | "files_search"

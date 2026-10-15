@@ -54,10 +54,20 @@ impl Connection {
         } else {
             &self.state
         };
+        let mut settings = self.settings.clone();
+        let mut service_checks = self.service_checks.clone();
+        if self.provider == "google" {
+            if let Some(checks) = service_checks.as_object_mut() {
+                checks.remove("drive");
+            }
+            if let Some(services) = settings["services"].as_array_mut() {
+                services.retain(|service| service != "drive");
+            }
+        }
         json!({"id":self.id,"provider":self.provider,"name":self.name,
             "allow_write":self.allow_write,"state":state,"checked_at":self.checked_at,
-            "service_checks":self.service_checks,"granted_scopes":self.credentials["granted_scopes"],
-            "settings":{"services":self.settings["services"],"path":self.settings["path"],"scopes":self.settings["scopes"],"imap_host":self.settings["imap_host"],"smtp_host":self.settings["smtp_host"],"smtp_starttls":self.settings["smtp_starttls"]}})
+            "service_checks":service_checks,"granted_scopes":self.credentials["granted_scopes"],
+            "settings":{"services":settings["services"],"path":self.settings["path"],"scopes":self.settings["scopes"],"imap_host":self.settings["imap_host"],"smtp_host":self.settings["smtp_host"],"smtp_starttls":self.settings["smtp_starttls"]}})
     }
 }
 
@@ -74,11 +84,10 @@ pub struct Connectors {
 
 pub fn catalog() -> Value {
     json!([
-        {"id":"google","name":"Google Workspace","category":"office","auth":"oauth","services":["Drive","Docs","Sheets","Slides","Gmail","Calendar","Tasks","Contacts","Forms","Chat","Meet"],"service_options":google::service_options(),"operations":["workspace_schema","request","drive_search","drive_download","drive_export","drive_upload","mail_list","mail_read","mail_send","mail_compose","calendar_list","test"]},
+        {"id":"google","name":"Google Workspace","category":"office","auth":"oauth","services":["Docs","Sheets","Slides","Gmail","Calendar","Tasks","Contacts","Forms","Chat","Meet"],"service_options":google::service_options(),"operations":["workspace_schema","request","mail_list","mail_read","mail_send","mail_compose","calendar_list","test"]},
         {"id":"microsoft","name":"Microsoft 365","category":"office","auth":"oauth","services":["OneDrive","SharePoint","Outlook","Calendar","Excel"],"operations":["request","files_search","file_download","mail_list","mail_send","calendar_list"]},
         {"id":"slack","name":"Slack","category":"communication","auth":"oauth_or_token","operations":["request","channels","history","send"]},
         {"id":"github","name":"GitHub","category":"development","auth":"token","operations":["request","repositories","issues","create_issue"]},
-        {"id":"postgresql","name":"PostgreSQL","category":"data","auth":"database","operations":["query"]},
         {"id":"sqlite","name":"SQLite","category":"data","auth":"local","operations":["query"]},
         {"id":"email","name":"Email · IMAP / SMTP","category":"communication","auth":"mail","services":["IMAP TLS","SMTP TLS","STARTTLS"],"operations":["mail_list","mail_read","mail_send"]},
         {"id":"telegram","name":"Telegram","category":"communication","auth":"existing","route":"/settings","tools":["notify_user"]},
@@ -92,9 +101,7 @@ pub fn catalog() -> Value {
 impl Connectors {
     pub fn open(root: &Path) -> Result<Self> {
         let root = root.join("connectors");
-        std::fs::create_dir_all(&root)?;
-        use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(&root, std::fs::Permissions::from_mode(0o700))?;
+        let root = fenix_execution::fs::private::create_private_dir(&root)?;
         let key = vault::key(&root)?;
         Ok(Self {
             root,
@@ -120,6 +127,7 @@ impl Connectors {
         Ok(json!(
             self.read_all()?
                 .iter()
+                .filter(|c| c.provider != "postgresql")
                 .map(Connection::view)
                 .collect::<Vec<_>>()
         ))
@@ -133,19 +141,13 @@ impl Connectors {
             }
             "mail_compose" if c.provider == "google" => google::mail_inputs(),
             "request" => {
-                json!({"service":"Google service ID from service_options","method":"GET|POST|PUT|PATCH|DELETE","path":"API-relative path, for example /files or /me/events","query":"Optional JSON object with query parameters","body":"Optional provider JSON body","dry_run":"Google only: optional boolean to preview locally without authentication or an API request","page_all":"Google GET only: bounded nextPageToken pagination","page_limit":"1–10 pages, default 5"})
+                json!({"service":"Google service ID from service_options","method":"GET|POST|PUT|PATCH|DELETE","path":"API-relative path, for example /users/me/messages or /me/events","query":"Optional JSON object with query parameters","body":"Optional provider JSON body","dry_run":"Google only: optional boolean to preview locally without authentication or an API request","page_all":"Google GET only: bounded nextPageToken pagination","page_limit":"1–10 pages, default 5"})
             }
-            "drive_search" => {
-                json!({"q":"Drive v3 query; include trashed = false and explicit folder/name criteria","limit":"1–100, default 25","page_token":"optional nextPageToken","page_all":"Optional bounded pagination","page_limit":"1–10 pages"})
-            }
-            "drive_upload" if c.provider == "google" => {
-                json!({"source":"Existing workspace-relative file, at most 25 MiB","name":"Optional destination name; default source filename","folder_id":"Optional destination folder ID","mime_type":"Optional MIME type; default application/octet-stream","dry_run":"Preview metadata locally without uploading"})
-            }
-            "drive_download" | "drive_export" | "file_download" => {
-                json!({"file_id":"ID from a previous search","destination":"New relative file path inside this task's workspace","mime_type":"For drive_export, default application/pdf"})
+            "file_download" => {
+                json!({"file_id":"ID from a previous search","destination":"New relative file path inside this task's workspace"})
             }
             "query" => {
-                json!({"sql":"One SQL statement","parameters":"Optional array of bound scalar parameters; use ?1 for SQLite and $1 for PostgreSQL"})
+                json!({"sql":"One SQL statement","parameters":"Optional array of bound scalar parameters; use ?1 for SQLite"})
             }
             "mail_list" => {
                 json!({"q":"Gmail search expression","folder":"IMAP mailbox, default INBOX","limit":"Google: 1–100, default 25","page_token":"Google: nextPageToken","page_all":"Google: bounded pagination","page_limit":"1–10 pages"})
@@ -191,16 +193,12 @@ impl Connectors {
         if c.provider == "google" && (operation == "workspace_schema" || args["dry_run"] == true) {
             return Ok("read");
         }
-        if matches!(
-            operation,
-            "drive_download" | "drive_export" | "file_download"
-        ) {
+        if matches!(operation, "file_download") {
             return Ok("file_write");
         }
         if matches!(
             operation,
             "test"
-                | "drive_search"
                 | "files_search"
                 | "mail_list"
                 | "mail_read"
@@ -232,7 +230,6 @@ impl Connectors {
                 "microsoft",
                 "slack",
                 "github",
-                "postgresql",
                 "sqlite",
                 "email"
             ]
@@ -294,7 +291,7 @@ impl Connectors {
                 if let Some(services) = previous.as_ref().and_then(|c| c.settings.get("services")) {
                     input.settings["services"] = services.clone();
                 } else if previous.is_none() {
-                    input.settings["services"] = json!(["drive"]);
+                    input.settings["services"] = json!(["gmail"]);
                 }
             }
             google::validate_settings(&input.settings)?;
@@ -360,7 +357,7 @@ impl Connectors {
             .map_err(|_| anyhow::anyhow!("Connector vault unavailable"))?;
         self.read_all()?
             .into_iter()
-            .find(|c| c.id == id)
+            .find(|c| c.id == id && c.provider != "postgresql")
             .context("Connection not found in this account")
     }
 
@@ -421,7 +418,7 @@ impl Connectors {
         if c.provider == "email" {
             return email::execute(c, operation, args.clone()).await;
         }
-        if matches!(c.provider.as_str(), "sqlite" | "postgresql") {
+        if c.provider == "sqlite" {
             return database::execute(c, operation, args.clone(), workspace.to_owned()).await;
         }
         self.http_call(c, operation, args, workspace).await

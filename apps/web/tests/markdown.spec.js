@@ -28,6 +28,13 @@ test("chat and progressive responses render safe Markdown on desktop and mobile"
     else if (path === "/api/status")
       body = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         settings: { model: "test" },
         projects: [],
         pending_requests: [],
@@ -57,7 +64,7 @@ test("chat and progressive responses render safe Markdown on desktop and mobile"
         body: ": connected\n\n",
       });
       return;
-    } else if (path === "/api/live/settings")
+    } else if (path === "/api/model-roles/fast")
       body = { configured: false, settings: {} };
     else if (path.startsWith("/api/design/"))
       body = { designs: [], templates: [], total: 0, next_offset: null };

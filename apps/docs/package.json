@@ -1,12 +1,12 @@
 {
   "name": "@fenix/docs",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/prepare-content.mjs && astro dev --host 127.0.0.1 --port 4180",
-    "check": "node scripts/prepare-content.mjs && astro check",
-    "build": "node scripts/prepare-content.mjs && astro check && astro build && node scripts/finalize-csp.mjs",
+    "dev": "node scripts/prepare-atlas.mjs && node scripts/prepare-content.mjs && astro dev --host 127.0.0.1 --port 4180",
+    "check": "node scripts/prepare-atlas.mjs && node scripts/prepare-content.mjs && astro check",
+    "build": "node scripts/prepare-atlas.mjs && node scripts/prepare-content.mjs && astro check && astro build && node scripts/finalize-csp.mjs",
     "preview": "astro preview --host 127.0.0.1 --port 4180"
   },
   "dependencies": {

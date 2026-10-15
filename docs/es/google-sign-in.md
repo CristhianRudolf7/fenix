@@ -1,3 +1,5 @@
+> Documento histórico: el gateway multiusuario y el registro/acceso con Google se retiraron. Para la versión personal actual, consulta [acceso remoto](remote-access.md).
+
 # Inicio de sesión y registro con Google
 
 Fénix permite entrar y crear una cuenta con Google. El acceso solo solicita

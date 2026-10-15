@@ -179,10 +179,6 @@ impl Runtime {
             };
             return Ok((chunks(doc, blocks)?, warnings));
         }
-        let executor = self
-            .execution
-            .as_ref()
-            .context("PDF/images need the isolated OCR execution image; install it and retry")?;
         let settings = self
             .settings()?
             .context("Configure the agent workspace before extracting PDF/images")?;
@@ -210,12 +206,9 @@ impl Runtime {
                 ensure!(!self.stop.is_cancelled(),"Extraction interrupted");
                 ensure!(self.store.library_document(&doc.id,None)?.revision==doc.revision,"Document superseded during extraction");
                 let req=json!({"path":path,"sha256":doc.sha256,"mode":"auto","start_page":start,"page_count":20,"dpi":200});
-                let argv=vec!["/opt/fenix-ocr/bin/python".into(),"-I".into(),"-u".into(),"/usr/local/lib/fenix-ocr/worker.py".into(),req.to_string()];
-                let mut spec=fenix_execution::Specification::new(&format!("library:{}",doc.id),"document",argv,&workspace,&workspace,300);
-                spec.read_paths=vec![path.clone()];
-                let lease=executor.create(spec).await?;
-                let mut command=lease.command()?;command.stdout(Stdio::piped()).stderr(Stdio::piped()).kill_on_drop(true);
-                let mut child=command.spawn()?;
+                let mut command=crate::documents::local_extraction_command(&self.data_dir.join("processes"), &req)?;
+                command.current_dir(&workspace).stdout(Stdio::piped()).stderr(Stdio::piped()).kill_on_drop(true);
+                let (mut child,_tree)=fenix_process::spawn_program(command)?;
                 let stdout=child.stdout.take().context("Missing extractor stdout")?;
                 let stderr=child.stderr.take().context("Missing extractor stderr")?;
                 let read=async {
@@ -227,11 +220,10 @@ impl Runtime {
                     let stderr=async {let mut buf=vec![];stderr.take(65537).read_to_end(&mut buf).await?;ensure!(buf.len()<=65536,"Extractor diagnostics exceeded limit");Ok::<_,anyhow::Error>(())};
                     let (events,_)=tokio::try_join!(stdout,stderr)?;
                     let code=child.wait().await?;
-                    ensure!(code.success() || code.code()==Some(2),"Document extractor failed; verify its image and input");
+                    ensure!(code.success() || code.code()==Some(2),"Document extractor failed; verify local Python dependencies and input");
                     Ok::<_,anyhow::Error>(events)
                 };
                 let events=tokio::select!{_=self.stop.cancelled()=>anyhow::bail!("Extraction interrupted"),v=tokio::time::timeout(Duration::from_secs(320),read)=>v.context("Extractor timed out")??};
-                drop(lease);
                 let mut summary=None;
                 for event in events {
                     match event["event"].as_str() {

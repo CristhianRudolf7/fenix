@@ -44,6 +44,13 @@ async function fixture(page, waitForTab = async () => {}, options = {}) {
     else if (path === "/api/status")
       data = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         settings: { model: "test" },
         projects: [],
         pending: [],

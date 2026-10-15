@@ -22,7 +22,9 @@ impl Runtime {
     }
 
     pub(crate) fn has_interlocutor(&self) -> bool {
-        self.live_status().is_ok_and(|s| s["configured"] == true) || self.live_connected()
+        self.fast_model_status()
+            .is_ok_and(|s| s["configured"] == true)
+            || self.fast_connected()
     }
 
     pub(crate) fn queue_narration(&self, task: &str, text: &str) -> Result<()> {
@@ -140,7 +142,7 @@ impl Runtime {
                 self.store.delete("conversation_pending", task_id)?;
                 continue;
             }
-            if !self.live_connected() {
+            if !self.fast_connected() {
                 self.ensure_interlocutor().await?;
             }
             let connection = self.interlocutor_connection().await?;
@@ -159,7 +161,7 @@ impl Runtime {
             let text = match result {
                 Ok(Ok(response)) => {
                     self.store.put(
-                        "live_usage",
+                        "fast_usage",
                         &fenix_storage::id(),
                         &json!({"usage":response.usage,"model":connection.settings.model}),
                     )?;

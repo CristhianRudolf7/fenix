@@ -80,7 +80,7 @@ impl Runtime {
             )
             .await
             .context("Translation took too long; try again")??;
-            self.store.put("live_usage", &fenix_storage::id(), &json!({"usage":response.usage,"model":model.settings.model,"purpose":"skill_translation"}))?;
+            self.store.put("fast_usage", &fenix_storage::id(), &json!({"usage":response.usage,"model":model.settings.model,"purpose":"skill_translation"}))?;
             if response.finish_reason != fenix_core::FinishReason::Stop {
                 continue;
             }
@@ -115,7 +115,7 @@ impl Runtime {
 
     fn display_root(&self) -> Result<std::path::PathBuf> {
         let path = self.data_dir.join("skill-localizations");
-        std::fs::create_dir_all(&path)?;
+        fenix_files::private::create_private_dir(&path)?;
         ensure!(
             std::fs::symlink_metadata(&path)?.is_dir(),
             "Invalid localization directory"
@@ -124,7 +124,7 @@ impl Runtime {
     }
     pub(crate) fn display_path(&self, source: &str) -> Result<std::path::PathBuf> {
         let path = self.display_root()?.join(cache_key("es", source));
-        std::fs::create_dir_all(&path)?;
+        fenix_files::private::create_private_dir(&path)?;
         ensure!(
             std::fs::symlink_metadata(&path)?.is_dir(),
             "Invalid localization revision"
@@ -316,9 +316,8 @@ impl Runtime {
             content
         );
         {
-            use fs2::FileExt;
-            let root = crate::skills::bundle::directory(&self.skills_dir)?;
-            root.lock_exclusive()?;
+            let library = fenix_skills::Library::open(&self.skills_dir)?;
+            let _lock = library.lock()?;
             ensure!(
                 self.read_skill(name)? == source,
                 "Skill changed during translation"
@@ -421,7 +420,7 @@ impl Runtime {
             loop {
                 if rt.model.read().await.is_some()
                     && rt
-                        .live_status()
+                        .fast_model_status()
                         .ok()
                         .is_some_and(|s| s["configured"] == true)
                 {
@@ -482,7 +481,7 @@ mod tests {
     use super::*;
     #[tokio::test]
     async fn manual_bilingual_edits_preserve_metadata_and_reject_stale_saves() -> Result<()> {
-        use crate::{config::Settings, live::LiveSettings};
+        use crate::{config::Settings, interlocutor::FastModelSettings};
         use fenix_core::ProviderId;
         use fenix_credentials::ApiKey;
         use std::sync::Arc;
@@ -495,16 +494,16 @@ mod tests {
             ApiKey::new("fixture")?,
         )?));
         rt.store.put(
-            "live",
-            "settings",
-            &LiveSettings {
+            "model_roles",
+            "fast",
+            &FastModelSettings {
                 reasoning_effort: None,
                 provider: ProviderId::OpenRouter,
                 model: "fast-test".into(),
                 base_url: Some(server.uri()),
             },
         )?;
-        rt.store.put("credentials", "live", &"fixture")?;
+        rt.store.put("credentials", "fast", &"fixture")?;
         let path = rt.skills_dir.join("manual-test");
         std::fs::create_dir(&path)?;
         let source = "---\nname: manual-test\ntitle: Files\ndescription: Read files\ncategory: office\n---\n# Files\nUse `file_read`.";
@@ -593,7 +592,7 @@ mod tests {
     }
     #[tokio::test]
     async fn views_are_read_only_and_saved_revisions_follow_edits() -> Result<()> {
-        use crate::{config::Settings, live::LiveSettings};
+        use crate::{config::Settings, interlocutor::FastModelSettings};
         use fenix_core::ProviderId;
         use fenix_credentials::ApiKey;
         use std::sync::Arc;
@@ -606,9 +605,9 @@ mod tests {
             ApiKey::new("fixture-translation-credential")?,
         )?));
         rt.store.put(
-            "live",
-            "settings",
-            &LiveSettings {
+            "model_roles",
+            "fast",
+            &FastModelSettings {
                 reasoning_effort: None,
                 provider: ProviderId::OpenRouter,
                 model: "fast-test".into(),
@@ -616,7 +615,7 @@ mod tests {
             },
         )?;
         rt.store
-            .put("credentials", "live", &"fixture-translation-credential")?;
+            .put("credentials", "fast", &"fixture-translation-credential")?;
         let path = rt.skills_dir.join("test-locale");
         std::fs::create_dir(&path)?;
         let source =

@@ -3,51 +3,14 @@ use anyhow::{Context, Result, bail};
 use serde_json::{Value, json};
 use std::{
     io::Read,
-    path::{Component, Path, PathBuf},
+    path::{Path, PathBuf},
 };
 
 pub(crate) const MAX_FILE_BYTES: u64 = 1_048_576;
 
 impl Runtime {
     pub(crate) fn file_path(&self, workspace: &Path, path: &str, create: bool) -> Result<PathBuf> {
-        let requested = Path::new(path);
-        if requested
-            .components()
-            .any(|p| matches!(p, Component::ParentDir))
-        {
-            bail!("Parent traversal is not allowed in file tools");
-        }
-        let joined = if requested.is_absolute() {
-            requested.to_owned()
-        } else {
-            workspace.join(requested)
-        };
-        let mut existing = joined.as_path();
-        let mut tail = vec![];
-        while !existing.exists() && create {
-            tail.push(existing.file_name().context("Invalid path")?.to_owned());
-            existing = existing.parent().context("Invalid parent directory")?;
-        }
-        let mut resolved = std::fs::canonicalize(existing)?;
-        for name in tail.into_iter().rev() {
-            resolved.push(name);
-        }
-        if !resolved.starts_with(workspace) || resolved.starts_with(&self.data_dir) {
-            bail!(
-                "File tool path is outside the configured file workspace or inside private runtime data"
-            );
-        }
-        if resolved.components().any(|part| {
-            let text = part.as_os_str().to_string_lossy();
-            text == ".git"
-                || text == ".env"
-                || text.starts_with(".env.")
-                || matches!(text.as_ref(), "credentials" | "secrets")
-                || text.ends_with(".pem")
-        }) {
-            bail!("File tools do not access credential files or Git internals");
-        }
-        Ok(resolved)
+        fenix_execution::fs::resolve(workspace, Path::new(path), create)
     }
 
     pub(crate) fn files_execute(
@@ -87,11 +50,8 @@ impl Runtime {
         match name {
             "files_list" => {
                 let mut entries = vec![];
-                use std::os::fd::AsRawFd;
                 let directory = fenix_execution::fs::directory(&path)?;
-                for entry in
-                    std::fs::read_dir(format!("/proc/self/fd/{}", directory.as_raw_fd()))?.take(200)
-                {
+                for entry in fenix_execution::fs::entries(&directory)?.take(200) {
                     let entry = entry?;
                     let kind = entry.file_type()?;
                     entries.push(json!({"name":entry.file_name().to_string_lossy(),"kind":if kind.is_dir(){"directory"}else if kind.is_symlink(){"symlink"}else{"file"}}));
@@ -149,7 +109,7 @@ impl Runtime {
                 if read_text(&path)? != before {
                     bail!("File changed before editing; inspect it again");
                 }
-                fenix_execution::fs::replace(&path, before.as_bytes(), after.as_bytes())?;
+                fenix_execution::fs::replace_user_file(&path, before.as_bytes(), after.as_bytes())?;
                 Ok(
                     json!({"path":path,"bytes":after.len(),"before_sha256":fenix_documents::sha256(before.as_bytes()),"sha256":fenix_documents::sha256(after.as_bytes()),"verified":read_text(&path)?==after}),
                 )
@@ -159,7 +119,7 @@ impl Runtime {
     }
 }
 pub(crate) fn read_text(path: &Path) -> Result<String> {
-    let file = fenix_execution::fs::open(path)?;
+    let file = fenix_execution::fs::open_user_file(path)?;
     let metadata = file.metadata()?;
     if !metadata.is_file() || metadata.len() > MAX_FILE_BYTES {
         bail!("Only regular UTF-8 files up to 1 MiB are supported");
@@ -176,7 +136,7 @@ pub(crate) fn read_text(path: &Path) -> Result<String> {
 mod tests {
     use super::*;
     #[tokio::test]
-    async fn file_tools_reject_escapes_and_verify_expected_content() {
+    async fn file_tools_allow_external_paths_and_verify_expected_content() {
         let dir = tempfile::tempdir().unwrap();
         let workspace = dir.path().join("workspace");
         std::fs::create_dir(&workspace).unwrap();
@@ -193,8 +153,71 @@ mod tests {
             ".env",
             ".git/config",
         ] {
-            assert!(runtime.file_path(&workspace, path, true).is_err());
+            assert!(runtime.file_path(&workspace, path, true).is_ok());
         }
+        let external = dir.path().join("external/note.txt");
+        runtime
+            .files_execute(
+                &workspace,
+                "file_write",
+                &json!({"path":"../external/note.txt","content":"outside marker"}),
+            )
+            .unwrap();
+        assert_eq!(
+            std::fs::read_to_string(&external).unwrap(),
+            "outside marker"
+        );
+        runtime
+            .files_execute(
+                &workspace,
+                "file_edit",
+                &json!({"path":external,"expected":"outside","replacement":"external"}),
+            )
+            .unwrap();
+        let found = runtime
+            .files_execute(
+                &workspace,
+                "files_search",
+                &json!({"path":"../external","query":"marker"}),
+            )
+            .unwrap();
+        assert!(found.to_string().contains("external marker"));
+        runtime
+            .files_execute(
+                &workspace,
+                "file_patch",
+                &json!({"patch":
+            "*** Begin Patch\n*** Add File: ../external/patch.txt\n+patched\n*** End Patch"}),
+            )
+            .unwrap();
+        assert_eq!(
+            read_text(&dir.path().join("external/patch.txt")).unwrap(),
+            "patched\n"
+        );
+        assert!(
+            runtime
+                .repository_instructions(&workspace, &external)
+                .unwrap()
+                .is_empty()
+        );
+        let protected = dir.path().join("protected.txt");
+        std::fs::write(&protected, "private").unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        let permissions = std::fs::metadata(&protected).unwrap().permissions();
+        std::fs::set_permissions(&protected, std::fs::Permissions::from_mode(0)).unwrap();
+        assert!(read_text(&protected).is_err());
+        std::fs::set_permissions(&protected, permissions).unwrap();
+        let linked = dir.path().join("linked.txt");
+        std::fs::hard_link(&external, &linked).unwrap();
+        assert_eq!(read_text(&linked).unwrap(), "external marker");
+        runtime
+            .files_execute(
+                &workspace,
+                "file_edit",
+                &json!({"path":linked,"expected":"external","replacement":"updated"}),
+            )
+            .unwrap();
+        assert_eq!(read_text(&linked).unwrap(), "updated marker");
         runtime
             .files_execute(
                 &workspace,

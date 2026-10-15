@@ -12,7 +12,7 @@ impl Runtime {
         path: &Path,
     ) -> Result<Vec<Value>> {
         if !path.starts_with(workspace) {
-            bail!("Rules path is outside the project");
+            return Ok(Vec::new());
         }
         let directory = if path.is_dir() {
             path
@@ -32,6 +32,10 @@ impl Runtime {
                 continue;
             }
             let candidate = self.file_path(workspace, &candidate.to_string_lossy(), false)?;
+            // Access is unrestricted, but automatic guidance stays project-scoped.
+            if !candidate.starts_with(workspace) {
+                continue;
+            }
             let original = read_text(&candidate)?;
             let content = fenix_core::content_trust::instruction_view(&original);
             size += original.len();
@@ -199,8 +203,10 @@ mod tests {
         std::fs::remove_file(ws.join("src/AGENTS.md")).unwrap();
         std::os::unix::fs::symlink(dir.path().join("AGENTS.md"), ws.join("src/AGENTS.md")).unwrap();
         assert!(
-            rt.repository_instructions(&ws, &ws.join("src/new.rs"))
-                .is_err()
+            !rt.repository_instructions(&ws, &ws.join("src/new.rs"))
+                .unwrap()
+                .iter()
+                .any(|rule| rule.to_string().contains("outside project"))
         );
     }
 }

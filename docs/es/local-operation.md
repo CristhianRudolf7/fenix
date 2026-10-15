@@ -1,3 +1,5 @@
+> La versión en desarrollo usa un único propietario y login en el propio servidor. Configúralo antes del primer arranque siguiendo [acceso personal](remote-access.md).
+
 # Uso local
 
 [Ejecución interactiva, límites actualizados y herramientas bajo demanda](execution-harness.md)
@@ -8,7 +10,7 @@
 
 Primero instala Node 22.12+ y pnpm 10.34.5, y compila la interfaz con
 `pnpm --dir apps/web install --frozen-lockfile` y `pnpm --dir apps/web build`.
-Consulta [voz del navegador y Live](live.md) para desarrollo y configuración de voz.
+Consulta [dictado y conversación escrita](dictation.md) para el micrófono del navegador y la configuración del modelo rápido.
 
 Ejecuta `cargo run --locked -p fenix-server --bin fenix` desde el clon y abre
 http://127.0.0.1:4173. Los datos se guardan en `.fenix/`, relativa al directorio de

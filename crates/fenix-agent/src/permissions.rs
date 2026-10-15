@@ -74,7 +74,7 @@ impl Runtime {
         self.store.save_question(&json!(view))?;
         self.bus_wake.notify_waiters();
         let instruction = if kind == "approval" {
-            "Puedes confirmar o rechazar esta acción con tus propias palabras."
+            "Responde sí para continuar o no para cancelar esta acción."
         } else {
             "Puedes responder aquí con tus propias palabras."
         };
@@ -148,14 +148,15 @@ impl Runtime {
         action: Value,
         cancel: &CancellationToken,
     ) -> Result<bool> {
+        let reason = crate::command_safety::risk_reason(
+            action["tool"].as_str().unwrap_or_default(),
+            &action["arguments"],
+        );
+        let question = reason
+            .map(|reason| format!("Antes de continuar: {reason}. ¿Quieres que lo ejecute?"))
+            .unwrap_or_else(|| "¿Me das permiso para hacer lo siguiente?".into());
         let answer = self
-            .ask(
-                task,
-                "approval",
-                "¿Me das permiso para hacer lo siguiente?",
-                Some(action),
-                cancel,
-            )
+            .ask(task, "approval", &question, Some(action), cancel)
             .await?;
         Ok(answer == "approved")
     }

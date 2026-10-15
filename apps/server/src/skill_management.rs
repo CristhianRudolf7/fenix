@@ -1,4 +1,4 @@
-//! Private skill management; publication snapshots are never modified here.
+//! Personal skill management: view, edit and delete the owner’s skills.
 use super::*;
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]

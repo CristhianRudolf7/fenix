@@ -110,17 +110,7 @@ impl Runtime {
         let delegated = origin == "subagent";
         let binding = self.store.task_binding(task)?;
         let mut catalog = tools::catalog_for(delegated);
-        if self.execution.is_none() {
-            catalog.retain(|t| {
-                !matches!(
-                    t.name.as_str(),
-                    "execution_status"
-                        | "workspace_checkpoint"
-                        | "integration_call"
-                        | "document_extract"
-                )
-            });
-        }
+        catalog.retain(|tool| tool.name != "execution_status");
         if matches!(binding.mode.as_str(), "coordination" | "clarification")
             || origin == "subagent_report"
         {
@@ -171,7 +161,6 @@ impl Runtime {
                 !matches!(
                     t.name.as_str(),
                     "document_create"
-                        | "document_extract"
                         | "design_present"
                         | "diagram_edit"
                         | "library_export"

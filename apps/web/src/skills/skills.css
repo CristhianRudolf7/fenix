@@ -55,7 +55,7 @@
 .skill-card .actions {
   margin-top: 0.5rem;
 }
-.skill-exchange .actions {
+.personal-skills .actions {
   flex-wrap: wrap;
 }
 .skill-modal {
@@ -88,10 +88,7 @@
 .skill-modal .skill-after {
   background: #398d631a;
 }
-.skill-exchange [data-status="needs_review"],
-.skill-exchange [data-status="failed"] {
-  background: #ba75151c;
-}
+
 @media (max-width: 640px) {
   .skills-filters {
     flex-direction: column;

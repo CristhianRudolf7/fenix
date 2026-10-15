@@ -64,22 +64,6 @@ test.beforeAll(async () => {
       );
       return;
     }
-    if (body.model === "voice-test") {
-      response.end(
-        JSON.stringify(
-          completion(
-            body.input.length > 1
-              ? JSON.stringify({
-                  reply: "Estoy aquí. El maestro sigue disponible.",
-                  action: "observe",
-                  task_id: null,
-                })
-              : "OK",
-          ),
-        ),
-      );
-      return;
-    }
     if (body.model !== "gpt-5.6-luna" || body.reasoning?.effort !== "low") {
       response.statusCode = 400;
       response.end(JSON.stringify({ error: "Wrong model configuration" }));
@@ -144,6 +128,26 @@ test.beforeAll(async () => {
   });
   await new Promise((resolve) => modelServer.listen(0, "127.0.0.1", resolve));
   modelURL = `http://127.0.0.1:${modelServer.address().port}`;
+  const executable =
+    process.env.FENIX_TEST_BINARY || resolve("../../target/debug/fenix");
+  const provision = spawn(
+    executable,
+    [
+      "owner",
+      "test@example.test",
+      "--password-stdin",
+      "--data-dir",
+      join(directory, "data"),
+    ],
+    { stdio: ["pipe", "pipe", "pipe"] },
+  );
+  provision.stdin.end("fixture-browser-password\n");
+  await new Promise((resolve, reject) => {
+    provision.once("error", reject);
+    provision.once("exit", (code) =>
+      code === 0 ? resolve() : reject(new Error("Owner provisioning failed")),
+    );
+  });
   service = spawn(
     process.env.FENIX_TEST_BINARY || resolve("../../target/debug/fenix"),
     [
@@ -168,14 +172,20 @@ test.beforeAll(async () => {
       async () => {
         if (service.exitCode !== null) throw new Error(logs);
         try {
-          return (await fetch(`${appURL}/api/status`)).status;
+          return (await fetch(`${appURL}/api/auth/session`)).status;
         } catch {
           return 0;
         }
       },
       { timeout: 15_000 },
     )
-    .toBe(200);
+    .toBe(401);
+});
+test.beforeEach(async ({ page }) => {
+  const response = await page.request.post("/api/auth/login", {
+    data: { email: "test@example.test", password: "fixture-browser-password" },
+  });
+  expect(response.ok()).toBe(true);
 });
 test.afterAll(async () => {
   if (service?.exitCode === null) {
@@ -186,7 +196,7 @@ test.afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
-test("managed welcome hides service credentials and defaults to warm light even on a dark OS", async ({
+test("personal welcome configures the model after owner login and defaults to warm light", async ({
   page,
 }, testInfo) => {
   await page.emulateMedia({ colorScheme: "dark" });
@@ -194,9 +204,9 @@ test("managed welcome hides service credentials and defaults to warm light even 
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Estamos preparando tu asistente" }),
+    page.getByRole("heading", { name: "Conecta tu modelo" }),
   ).toBeVisible();
-  await expect(page.locator("#api_key, #provider")).toHaveCount(0);
+  await expect(page.locator("#api_key")).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
   await expect(page.locator("body")).toHaveCSS(
     "background-color",
@@ -221,8 +231,8 @@ test("managed welcome hides service credentials and defaults to warm light even 
   expect(configured.ok()).toBe(true);
   await page.reload();
   await expect(page.locator("#chat-input")).toBeVisible();
-  // Chat and Live share an interlocutor; the master alone no longer handles chat directly.
-  const interlocutor = await page.request.post("/api/live/settings", {
+  // Chat uses its own interlocutor; the master executes delegated tasks.
+  const interlocutor = await page.request.post("/api/model-roles/fast", {
     data: {
       provider: "openai",
       model: "chat-test",
@@ -251,14 +261,14 @@ test("navigation can collapse without losing routes or preferences", async ({
     .click();
   await expect(page.locator(".shell")).toHaveClass(/is-collapsed/);
   await page.locator('[data-page="skills"]').click();
-  await expect(page.locator(".skill-exchange")).toBeVisible();
+  await expect(page.locator(".personal-skills")).toBeVisible();
   await page.reload();
   await expect(page.locator(".shell")).toHaveClass(/is-collapsed/);
   await page
     .getByRole("button", { name: "Expandir menú", exact: true })
     .click();
   await expect(page.locator(".shell")).not.toHaveClass(/is-collapsed/);
-  await expect(page.locator(".skill-exchange")).toBeVisible();
+  await expect(page.locator(".personal-skills")).toBeVisible();
   await expect(page).toHaveURL(/\/skills$/);
 });
 
@@ -1043,8 +1053,6 @@ test("a late skill update does not replace the page selected by the owner", asyn
 
 async function mockSpeech(page) {
   await page.addInitScript(() => {
-    window.__stoppedTracks = 0;
-    window.__cancelledSpeech = 0;
     class Recognition {
       start() {
         window.__recognition = this;
@@ -1054,55 +1062,6 @@ async function mockSpeech(page) {
       }
     }
     window.SpeechRecognition = Recognition;
-    Object.defineProperty(navigator.mediaDevices, "getUserMedia", {
-      value: async () => {
-        if (window.__denyMicrophone)
-          throw new DOMException(
-            "Microphone permission denied",
-            "NotAllowedError",
-          );
-        return {
-          getTracks: () => [
-            {
-              stop() {
-                window.__stoppedTracks++;
-              },
-            },
-          ],
-        };
-      },
-    });
-    window.AudioContext = class {
-      async resume() {}
-      async close() {}
-      createMediaStreamSource() {
-        return { connect() {}, disconnect() {} };
-      }
-      createAnalyser() {
-        return {
-          fftSize: 1024,
-          getFloatTimeDomainData(values) {
-            values.fill(0);
-          },
-        };
-      }
-    };
-    window.SpeechSynthesisUtterance = class {
-      constructor(text) {
-        this.text = text;
-      }
-    };
-    Object.defineProperty(window, "speechSynthesis", {
-      value: {
-        getVoices: () => [],
-        cancel() {
-          window.__cancelledSpeech++;
-        },
-        speak(utterance) {
-          setTimeout(() => utterance.onend?.(), 20);
-        },
-      },
-    });
   });
 }
 
@@ -1130,76 +1089,6 @@ test("dictation fills the draft and never submits it automatically", async ({
     .click();
 });
 
-test("Live shares history, survives navigation, and hangup leaves master tasks intact", async ({
-  page,
-}, testInfo) => {
-  await mockSpeech(page);
-  await page.goto("/");
-  await page
-    .getByRole("button", { name: "Configuración de conversación", exact: true })
-    .click();
-  const settings = page.getByRole("dialog", {
-    name: "Configuración de conversación",
-  });
-  await settings.locator('[name="provider"]').selectOption("openai");
-  await settings.locator('[name="model"]').fill("voice-test");
-  await expect(
-    settings.locator('[name="base_url"], [name="api_key"]'),
-  ).toHaveCount(0);
-  await settings.getByRole("button", { name: "Verificar y guardar" }).click();
-  await expect(settings).toHaveCount(0);
-  const before = (await (await page.request.get("/api/tasks")).json()).map(
-    (t) => t.id,
-  );
-  await page.getByRole("button", { name: "Iniciar o cerrar Live" }).click();
-  await expect(
-    page.getByRole("region", { name: "Llamada Live" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Silenciar", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("region", { name: "Llamada Live" }).getByRole("status"),
-  ).toContainText("Escuchando");
-  await page.evaluate(() =>
-    window.__recognition.onresult({
-      resultIndex: 0,
-      results: [{ isFinal: true, 0: { transcript: "Hola, ¿cómo estás?" } }],
-    }),
-  );
-  await expect(page.locator(".voice-caption")).toContainText(
-    "El maestro sigue disponible",
-  );
-  await page.getByRole("button", { name: "Silenciar", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Activar micrófono", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await page
-    .getByRole("button", { name: "Activar micrófono", exact: true })
-    .click();
-  await page.screenshot({
-    path: testInfo.outputPath("live-call.png"),
-    fullPage: true,
-  });
-  await page.locator('[data-page="memory"]').click();
-  await expect(
-    page.getByRole("region", { name: "Llamada Live" }),
-  ).toBeVisible();
-  await page.locator('[data-page="chat"]').click();
-  await expect(page.locator("#message-list")).toContainText(
-    "Hola, ¿cómo estás?",
-  );
-  await page.getByRole("button", { name: "Colgar", exact: true }).click();
-  await expect(page.getByRole("region", { name: "Llamada Live" })).toHaveCount(
-    0,
-  );
-  await expect.poll(() => page.evaluate(() => window.__stoppedTracks)).toBe(1);
-  const after = (await (await page.request.get("/api/tasks")).json()).map(
-    (t) => t.id,
-  );
-  expect(after).toEqual(before);
-});
-
 test("missing browser recognition leaves text chat usable", async ({
   page,
 }) => {
@@ -1209,30 +1098,31 @@ test("missing browser recognition leaves text chat usable", async ({
   });
   await page.goto("/");
   await expect(
-    page.getByRole("button", { name: "Iniciar o cerrar Live" }),
+    page.getByRole("button", { name: "Dictar mensaje" }),
   ).toBeDisabled();
   await expect(page.locator("#chat-input")).toBeEnabled();
   await expect(
     page.getByText(
-      "La voz no está disponible en este navegador. Puedes usar el chat escrito.",
+      "El dictado no está disponible en este navegador. Puedes escribir tu mensaje.",
     ),
   ).toBeVisible();
 });
 
-test("denied microphone permission is visible and leaves chat available", async ({
+test("denied dictation permission leaves text chat available", async ({
   page,
 }) => {
   await mockSpeech(page);
-  await page.goto("/");
-  await page.evaluate(() => {
-    window.__denyMicrophone = true;
+  await page.addInitScript(() => {
+    window.SpeechRecognition.prototype.start = function () {
+      this.onerror?.({ error: "not-allowed" });
+    };
   });
-  await page.getByRole("button", { name: "Iniciar o cerrar Live" }).click();
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Dictar mensaje", exact: true })
+    .click();
   await expect(page.getByRole("alert")).toContainText(
-    "Microphone permission denied",
-  );
-  await expect(page.getByRole("region", { name: "Llamada Live" })).toHaveCount(
-    0,
+    "Permite el acceso al micrófono",
   );
   await expect(page.locator("#chat-input")).toBeEnabled();
   await page

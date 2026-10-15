@@ -1,4 +1,9 @@
+> Documento histórico: el gateway multiusuario y el registro/acceso con Google se retiraron. Para la versión personal actual, consulta [acceso remoto](remote-access.md).
+
 # Aislamiento de ejecución y seguridad de cuentas
+
+> Documento histórico del despliegue compartido anterior a 0.3.2. El sandbox y sus scripts se retiraron de la distribución personal. Véase [ejecución local actual](local-execution.md); las políticas aquí descritas no están activas en 0.3.2.
+
 
 El backend predeterminado ahora es [gVisor con systrap](self-hosted-gvisor.md), con herramientas persistentes y cuotas mensuales, sin KVM ni virtualización anidada. OCI y Kata requieren selección explícita. Se comprueba la identidad del runtime antes de liberar el comando.
 

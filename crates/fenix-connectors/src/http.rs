@@ -62,74 +62,17 @@ impl Connectors {
         args: &Value,
         workspace: &Path,
     ) -> Result<Value> {
-        let mut service = args["service"].as_str().unwrap_or("drive").to_owned();
+        let mut service = args["service"].as_str().unwrap_or("gmail").to_owned();
         let mut method = "GET".to_owned();
         let mut query = args["query"].clone();
         let mut body = args["body"].clone();
         let mut download = false;
-        let mut upload = None;
         let path = match (c.provider.as_str(), operation) {
-            ("google", "test") => {
-                service = "drive".into();
-                query = json!({"fields":"user(displayName,emailAddress)"});
-                "/about".into()
-            }
             ("microsoft", "test") => "/me".into(),
             ("github", "test") => "/user".into(),
             ("slack", "test") => {
                 method = "POST".into();
                 "/auth.test".into()
-            }
-            ("google", "drive_search") => {
-                service = "drive".into();
-                query = json!({"q":args["q"].as_str().unwrap_or("trashed = false"),"pageSize":args["limit"].as_u64().unwrap_or(25).clamp(1,100),"fields":"nextPageToken,files(id,name,mimeType,modifiedTime,size,webViewLink)","supportsAllDrives":true,"includeItemsFromAllDrives":true});
-                if let Some(page) = args.get("page_token") {
-                    query["pageToken"] = page.clone();
-                }
-                "/files".into()
-            }
-            ("google", "drive_download") => {
-                download = true;
-                service = "drive".into();
-                query = json!({"alt":"media","supportsAllDrives":true});
-                format!("/files/{}", segment(args, "file_id")?)
-            }
-            ("google", "drive_export") => {
-                download = true;
-                service = "drive".into();
-                query = json!({"mimeType":args["mime_type"].as_str().unwrap_or("application/pdf")});
-                format!("/files/{}/export", segment(args, "file_id")?)
-            }
-            ("google", "drive_upload") => {
-                service = "drive".into();
-                method = "POST".into();
-                let relative = args["source"]
-                    .as_str()
-                    .context("Workspace-relative source required")?;
-                let source = crate::database::workspace_path(workspace, relative, false)?;
-                let bytes = fenix_execution::fs::read(&source, 25 * 1024 * 1024)?;
-                let name = args["name"]
-                    .as_str()
-                    .or_else(|| source.file_name().and_then(|s| s.to_str()))
-                    .context("File name required")?;
-                ensure!(!name.is_empty() && name.len() <= 1000, "Invalid file name");
-                body = json!({"name":name});
-                if args.get("folder_id").is_some() {
-                    body["parents"] = json!([segment(args, "folder_id")?]);
-                }
-                let content_type = args["mime_type"]
-                    .as_str()
-                    .unwrap_or("application/octet-stream");
-                let _ = lettre::message::header::ContentType::parse(content_type)
-                    .context("Invalid MIME type")?;
-                ensure!(!content_type.contains(['\r', '\n']), "Invalid MIME type");
-                let boundary = format!("fenix_{}", uuid::Uuid::new_v4().simple());
-                let mut multipart = format!("--{boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n{}\r\n--{boundary}\r\nContent-Type: {content_type}\r\n\r\n", serde_json::to_string(&body)?).into_bytes();
-                multipart.extend_from_slice(&bytes);
-                multipart.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
-                upload = Some((boundary, multipart));
-                query = json!({"uploadType":"multipart","supportsAllDrives":true,"fields":"id,name,mimeType,size,webViewLink,parents"});
-                "/files".into()
             }
             ("google", "mail_list") => {
                 service = "gmail".into();
@@ -264,10 +207,8 @@ impl Connectors {
             preview || read || c.allow_write,
             "Enable write access for this connection first"
         );
+        #[allow(unused_mut)]
         let mut url = endpoint(&c.provider, &service, &path)?;
-        if upload.is_some() {
-            url = reqwest::Url::parse("https://www.googleapis.com/upload/drive/v3/files")?;
-        }
         ensure!(
             query.is_null() || query.is_object(),
             "Query must be an object"
@@ -314,14 +255,7 @@ impl Connectors {
         if c.provider == "github" {
             request = request.header("X-GitHub-Api-Version", "2022-11-28");
         }
-        if let Some((boundary, bytes)) = upload {
-            request = request
-                .header(
-                    "content-type",
-                    format!("multipart/related; boundary={boundary}"),
-                )
-                .body(bytes);
-        } else if !body.is_null() && method != "GET" {
+        if !body.is_null() && method != "GET" {
             request = request.json(&body);
         }
         let mut response = request.send().await.map_err(|_|anyhow::anyhow!("Provider connection failed; the result of a write may be unknown. Inspect before retrying."))?;
@@ -402,11 +336,13 @@ mod tests {
             "/x?token=a",
             "/x\\y",
         ] {
-            assert!(endpoint("google", "drive", path).is_err());
+            assert!(endpoint("google", "gmail", path).is_err());
         }
         assert_eq!(
-            endpoint("google", "drive", "/files").unwrap().host_str(),
-            Some("www.googleapis.com")
+            endpoint("google", "gmail", "/users/me/profile")
+                .unwrap()
+                .host_str(),
+            Some("gmail.googleapis.com")
         );
     }
     #[tokio::test]
@@ -424,9 +360,9 @@ mod tests {
         for (provider, operation, route, response) in [
             (
                 "google",
-                "drive_search",
-                "/drive/v3/files",
-                json!({"files":[{"id":"f1","name":"report"}]}),
+                "mail_list",
+                "/gmail/v1/users/me/messages",
+                json!({"messages":[{"id":"f1"}]}),
             ),
             (
                 "microsoft",
@@ -471,36 +407,6 @@ mod tests {
                     .unwrap(),
                 response
             );
-            if provider == "google" {
-                Mock::given(method("GET"))
-                    .and(path("/drive/v3/files/f1/export"))
-                    .respond_with(
-                        ResponseTemplate::new(200).set_body_bytes(b"%PDF-fixture".to_vec()),
-                    )
-                    .mount(&server)
-                    .await;
-                let args = json!({"file_id":"f1","destination":"reports/result.pdf"});
-                let downloaded = connectors
-                    .invoke(c["id"].as_str().unwrap(), "drive_export", &args, &workspace)
-                    .await
-                    .unwrap();
-                assert_eq!(downloaded["verified"], true);
-                assert_eq!(
-                    std::fs::read(workspace.join("reports/result.pdf")).unwrap(),
-                    b"%PDF-fixture"
-                );
-                assert!(
-                    connectors
-                        .invoke(
-                            c["id"].as_str().unwrap(),
-                            "drive_export",
-                            &json!({"file_id":"f1","destination":"../escape.pdf"}),
-                            &workspace
-                        )
-                        .await
-                        .is_err()
-                );
-            }
             if provider == "slack" {
                 assert!(
                     connectors

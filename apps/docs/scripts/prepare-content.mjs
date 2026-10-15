@@ -31,7 +31,7 @@ El interlocutor interpreta tus mensajes y comunica el progreso observable. El ag
 [Instala desde el código](/docs/instalacion/) o [explora las capacidades actuales](/docs/capacidades/). Instala la versión personal con un solo comando desde [la guía de instalación](/docs/instalacion/).
 
 ## Un proyecto en evolución
-La versión declarada es **0.3.0**. Tener una capacidad implementada no garantiza que resuelva cualquier tarea. Las guías, evaluaciones y limitaciones permiten distinguir lo disponible de lo que falta comprobar.`,
+La versión del árbol actual es **0.3.2 en desarrollo**; el instalador conserva la release publicada indicada en su guía. Tener una capacidad implementada no garantiza que resuelva cualquier tarea. Las guías, evaluaciones y limitaciones permiten distinguir lo disponible de lo que falta comprobar.`,
   "Conversación continua, herramientas y trabajo en segundo plano.",
 );
 add(
@@ -125,15 +125,18 @@ El backend utiliza **Rust y Axum**. El interlocutor de conversación, el ejecuto
 | \`fenix-storage\` | Persistencia, memoria y registros de tareas. |
 | \`fenix-agent\` | Ejecución, coordinación y herramientas. |
 | \`fenix-web\` | Búsqueda propia y lectura ligera. |
-| \`apps/server\` | Servidor, gateway y APIs. |
+| \`apps/server\` | Servidor personal, autenticación y APIs. |
 | \`apps/web\` | Aplicación Vite, React, TypeScript y Tailwind. |
 | \`apps/docs\` | Documentación Astro y Starlight, independiente de los modelos. |
+
+## Estudiar el motor
+Explora el [atlas interactivo](/atlas/): un mapa de procesos, recorridos por subsistema y un inventario generado desde el backend y sus scripts. Las explicaciones funcionales se distinguen de las dependencias extraídas de manifiestos.
 
 ## Trabajo concurrente
 Los subagentes reciben un propósito exacto y cargan skills bajo demanda. Solo hay un nivel de delegación. Los worktrees permiten modificaciones simultáneas, con integración controlada; no resuelven solos todos los conflictos.
 
 ## Contexto y aislamiento
-La ventana inicial del motor es de 200.000 tokens, con compactación a 160.000. Esto no aumenta la capacidad ni las cuotas del proveedor. Los permisos y los servicios aislados aplican las fronteras de acceso; una descripción en un prompt no sustituye al aislamiento.
+La ventana inicial del motor es de 200.000 tokens, con compactación a 160.000. Esto no aumenta la capacidad ni las cuotas del proveedor. La versión 0.3.2 ejecuta comandos localmente con los permisos del propietario y solicita aprobación textual ante señales de riesgo. No tiene sandbox de ejecución; una carpeta de trabajo no es una barrera de seguridad.
 
 ## Frontend independiente
 La aplicación y esta documentación se sirven como archivos estáticos. El backend mantiene la lógica y los datos. No se necesita un servidor Node para servir los archivos ya construidos.`,

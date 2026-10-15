@@ -1,0 +1,536 @@
+---
+import PhoenixMark from "../components/PhoenixMark.astro";
+import { areas, areaFor, guideFor } from "../data/atlas";
+import inventory from "../data/atlas-inventory.json";
+import "../styles/atlas.css";
+const grouped = areas.map((area) => ({
+  ...area,
+  files: inventory.files.filter((file) => areaFor(file).id === area.id),
+}));
+const routeNodes = [
+  {
+    id: "conversation",
+    title: "Tu mensaje",
+    label: "Conversación y canal",
+    x: 20,
+    y: 38,
+  },
+  {
+    id: "context",
+    title: "Preparar contexto",
+    label: "Proyecto y memoria",
+    x: 265,
+    y: 38,
+  },
+  {
+    id: "engine",
+    title: "Elegir la acción",
+    label: "Motor y proveedor",
+    x: 510,
+    y: 38,
+  },
+  {
+    id: "skills",
+    title: "Hacer el trabajo",
+    label: "Skills y herramientas",
+    x: 755,
+    y: 38,
+  },
+  {
+    id: "engine",
+    title: "Comprobar y responder",
+    label: "Evidencia y cierre",
+    x: 1000,
+    y: 38,
+  },
+  {
+    id: "planning",
+    title: "Delegar un objetivo",
+    label: "Planes y subagentes",
+    x: 510,
+    y: 205,
+  },
+  {
+    id: "browser",
+    title: "Interactuar con la web",
+    label: "Navegador y sesión",
+    x: 755,
+    y: 205,
+  },
+  {
+    id: "coding",
+    title: "Modificar un proyecto",
+    label: "Archivos y terminal",
+    x: 1000,
+    y: 205,
+  },
+];
+const productionCount = inventory.files.filter((f) => !f.test).length;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Atlas del motor — Fénix</title>
+    <meta
+      name="description"
+      content="Explora el funcionamiento de Fénix: procesos, módulos, relaciones y archivos del backend."
+    />
+    <link rel="icon" href="/docs-assets/favicon.svg" />
+  </head>
+  <body>
+    <a class="skip-link" href="#atlas-main">
+      Ir al atlas
+    </a>
+    <header class="atlas-header">
+      <a class="atlas-brand" href="/">
+        <PhoenixMark />
+        <span>
+          FÉNIX <small>ATLAS DEL MOTOR</small>
+        </span>
+      </a>
+      <nav aria-label="Navegación">
+        <a href="/docs/arquitectura/">Documentación</a>
+        <a href="https://github.com/CristhianRudolf7/fenix">Código ↗</a>
+      </nav>
+    </header>
+    <main id="atlas-main">
+      <section class="atlas-intro">
+        <div>
+          <p class="eyebrow">DEL SISTEMA A CADA PIEZA · 0.3.2 EN DESARROLLO</p>
+          <h1>
+            El código tiene
+            <br />
+            <em>un mapa.</em>
+          </h1>
+          <p class="intro-copy">
+            Sigue una idea desde la conversación hasta el resultado. Entra en
+            cada proceso y descubre las piezas que lo hacen posible.
+          </p>
+        </div>
+        <aside class="atlas-stamp">
+          <PhoenixMark />
+          <span>13 crates · 1 servidor</span>
+          <strong>{productionCount}</strong>
+          <span>archivos de implementación</span>
+          <small>
+            {inventory.files.length - productionCount} archivos de pruebas y
+            fixtures
+          </small>
+        </aside>
+      </section>
+      <div class="atlas-toolbar">
+        <div id="atlas-breadcrumb" aria-label="Ubicación">
+          <span>01</span> Vista general
+        </div>
+        <label class="atlas-search">
+          <span aria-hidden="true">⌕</span>
+          <input
+            id="atlas-search"
+            type="search"
+            placeholder="Buscar proceso, archivo o función…"
+            aria-label="Buscar en todo el backend"
+          />
+        </label>
+        <button id="atlas-reset" class="secondary" hidden>
+          ← Mapa general
+        </button>
+      </div>
+      <section id="atlas-overview" aria-label="Mapa de procesos">
+        <div class="diagram-heading">
+          <span>UNA TAREA, DE PRINCIPIO A FIN</span>
+          <div>
+            <button id="diagram-out" aria-label="Alejar diagrama">
+              −
+            </button>
+            <button id="diagram-in" aria-label="Acercar diagrama">
+              +
+            </button>
+            <button
+              id="diagram-fit"
+              aria-label="Restablecer tamaño del diagrama"
+            >
+              ↔
+            </button>
+          </div>
+        </div>
+        <div
+          class="system-diagram"
+          tabindex="0"
+          aria-label="Diagrama del recorrido de una tarea, desplazable horizontalmente"
+        >
+          <svg
+            id="route-diagram"
+            viewBox="0 0 1240 330"
+            role="group"
+            aria-labelledby="route-title"
+          >
+            <title id="route-title">Recorrido ilustrativo desde el mensaje hasta la respuesta; selecciona un proceso para profundizar.</title>
+            <defs>
+              <marker
+                id="route-arrow"
+                viewBox="0 0 10 10"
+                refX="9"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#c34c32" />
+              </marker>
+            </defs>
+            {[0, 1, 2, 3].map((i) => (
+              <path
+                class="route-edge"
+                d={`M ${235 + i * 245} 86 H ${260 + i * 245}`}
+                marker-end="url(#route-arrow)"
+              />
+            ))}
+            <path
+              class="route-edge branch"
+              d="M 620 136 V 197"
+              marker-end="url(#route-arrow)"
+            />
+            <path
+              class="route-edge branch"
+              d="M 865 136 V 197"
+              marker-end="url(#route-arrow)"
+            />
+            <path
+              class="route-edge branch"
+              d="M 865 166 H 1110 V 197"
+              marker-end="url(#route-arrow)"
+            />
+            <text x="625" y="177" class="branch-label">
+              si requiere delegación
+            </text>
+            {routeNodes.map((node) => (
+              <a
+                href={`#${node.id}`}
+                data-area={node.id}
+                aria-label={`Explorar ${node.title}`}
+              >
+                <g transform={`translate(${node.x},${node.y})`}>
+                  <rect width="215" height="98" rx="12" />
+                  <circle cx="20" cy="24" r="3" />
+                  <text x="18" y="50" class="route-title">
+                    {node.title}
+                  </text>
+                  <text x="18" y="73" class="route-label">
+                    {node.label}
+                  </text>
+                  <text x="187" y="26" class="route-open">
+                    ↗
+                  </text>
+                </g>
+              </a>
+            ))}
+          </svg>
+        </div>
+        <p class="map-caption">
+          Recorrido ilustrativo. La herramienta y las ramas dependen de la
+          tarea; el cierre vuelve al motor.
+        </p>
+        <h2 class="map-section-title">Explora todos los procesos</h2>
+        <div class="map-grid">
+          {grouped.map((area, index) => (
+            <button
+              class="map-node"
+              data-area={area.id}
+              aria-controls="atlas-detail"
+            >
+              <span class="node-number">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span class="node-content">
+                <strong>{area.title}</strong>
+                <small>{area.subtitle}</small>
+              </span>
+              <span class="node-footer">
+                {area.files.length} archivos <span>Explorar ↗</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <p class="map-caption">
+          Mapa funcional revisado: las posiciones explican responsabilidades, no
+          representan un grafo automático de llamadas.
+        </p>
+      </section>
+      <section
+        id="atlas-detail"
+        hidden
+        tabindex="-1"
+        aria-label="Detalle del proceso"
+      >
+        {grouped.map((area, index) => (
+          <article data-panel={area.id} hidden>
+            <div class="detail-heading">
+              <p class="eyebrow">
+                PROCESO {String(index + 1).padStart(2, "0")} /{" "}
+                {area.files.length} ARCHIVOS
+              </p>
+              <h2>{area.title}</h2>
+              <p>{area.summary}</p>
+            </div>
+            <h3 class="section-label">Recorrido del proceso</h3>
+            <ol class="process-flow">
+              {area.steps.map((step, i) => (
+                <li>
+                  <span>{String(i + 1).padStart(2, "0")}</span>
+                  <p>{step}</p>
+                </li>
+              ))}
+            </ol>
+            <div class="study-notes">
+              <div>
+                <h3>Preguntas para estudiarlo</h3>
+                <ul>
+                  {area.questions.map((q) => (
+                    <li>{q}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3>Alcance real</h3>
+                <p>
+                  {area.note ||
+                    "Explora los archivos y sus símbolos para seguir la implementación. El recorrido explica responsabilidades; no todas las tareas atraviesan todos los pasos."}
+                </p>
+              </div>
+            </div>
+            <h3 class="section-label">
+              Piezas de implementación{" "}
+              <small>Abre un archivo para ver sus símbolos</small>
+            </h3>
+            <div class="file-list">
+              {area.files.map((file) => (
+                <details class="source-file" data-file={file.path}>
+                  <summary>
+                    <span class="file-icon">{file.test ? "✓" : "{}"}</span>
+                    <span>
+                      <strong>{file.path.split("/").at(-1)}</strong>
+                      <small>{file.path}</small>
+                    </span>
+                    <span class="file-lines">
+                      {file.lines} líneas <b>+</b>
+                    </span>
+                  </summary>
+                  <div class="file-body">
+                    <p>{guideFor(file)}</p>
+                    <p>
+                      Huella del contenido: <code>{file.hash}</code> ·{" "}
+                      {file.test ? "Prueba o fixture" : "Implementación"}
+                    </p>
+                    <a
+                      href={`https://github.com/CristhianRudolf7/fenix/blob/main/${file.path}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Abrir el archivo en GitHub ↗
+                    </a>
+                    {file.symbols.length > 0 ? (
+                      <>
+                        <h4>Símbolos encontrados en el archivo</h4>
+                        <div class="symbols">
+                          {file.symbols.map((symbol) => (
+                            <code>{symbol}</code>
+                          ))}
+                        </div>
+                        <small>
+                          Índice léxico de funciones Rust; incluye helpers y
+                          pruebas internas. No es un grafo semántico de
+                          llamadas.
+                        </small>
+                      </>
+                    ) : (
+                      <p>
+                        Archivo auxiliar o de recursos. Consulta su contenido
+                        para estudiar su relación con el módulo.
+                      </p>
+                    )}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </article>
+        ))}
+      </section>
+      <section id="atlas-results" hidden aria-label="Resultados de búsqueda">
+        <h2>Encuentra una pieza</h2>
+        <p id="result-count" role="status"></p>
+        <div id="result-list"></div>
+      </section>
+      <section class="coverage">
+        <div>
+          <p class="eyebrow">UN INVENTARIO QUE SE RECONSTRUYE</p>
+          <h2>
+            Ningún módulo
+            <br />
+            fuera del mapa.
+          </h2>
+          <p>
+            En cada compilación se recorren los archivos del backend y las
+            pruebas. Cada archivo tiene una ubicación en el atlas. Las
+            explicaciones son documentación revisada, y deben actualizarse
+            cuando cambia el comportamiento.
+          </p>
+          <p class="coverage-limit">
+            Cobertura: <code>crates/*/src</code>, <code>crates/*/tests</code>,{" "}
+            <code>apps/server/src</code> y <code>apps/server/tests</code> y{" "}
+            <code>scripts</code>. El frontend y los paquetes de skills no forman
+            parte de este inventario del motor.
+          </p>
+        </div>
+        <div class="crate-list">
+          <h3>Dependencias locales declaradas</h3>
+          {inventory.crates.map((crate) => (
+            <details>
+              <summary>
+                {crate.name}
+                <span>↗</span>
+              </summary>
+              <p>
+                {crate.dependencies.length
+                  ? crate.dependencies.join(" → ")
+                  : "Sin dependencias directas de otros crates Fénix."}
+              </p>
+            </details>
+          ))}
+          <small>
+            Extraídas de Cargo.toml, incluidas las de desarrollo. La lista
+            indica dependencias declaradas; las flechas no describen un orden de
+            ejecución.
+          </small>
+        </div>
+      </section>
+      <footer class="atlas-footer">
+        <span>CREH LABS · FÉNIX EN ABIERTO</span>
+        <a href="/docs/arquitectura/">Continuar en la documentación ↗</a>
+      </footer>
+    </main>
+    <script>
+      import inventory from "../data/atlas-inventory.json";
+      import { areas, areaFor } from "../data/atlas";
+      const overview = document.getElementById("atlas-overview")!;
+      const detail = document.getElementById("atlas-detail")!;
+      const results = document.getElementById("atlas-results")!;
+      const search = document.querySelector<HTMLInputElement>("#atlas-search")!;
+      const reset = document.querySelector<HTMLButtonElement>("#atlas-reset")!;
+      const breadcrumb = document.getElementById("atlas-breadcrumb")!;
+      function selectArea(id: string, updateHash = true, focus = true) {
+        const area = areas.find((a) => a.id === id);
+        if (!area) return;
+        search.value = "";
+        results.hidden = true;
+        overview.hidden = true;
+        detail.hidden = false;
+        reset.hidden = false;
+        document
+          .querySelectorAll<HTMLElement>("[data-panel]")
+          .forEach((panel) => (panel.hidden = panel.dataset.panel !== id));
+        breadcrumb.textContent = `02 / ${area.title}`;
+        if (updateHash) history.replaceState(null, "", `#${id}`);
+        if (focus) {
+          detail.focus({ preventScroll: true });
+          document
+            .querySelector(".atlas-toolbar")
+            ?.scrollIntoView({
+              block: "start",
+              behavior: window.matchMedia("(prefers-reduced-motion: reduce)")
+                .matches
+                ? "instant"
+                : "smooth",
+            });
+        }
+      }
+      function showOverview() {
+        search.value = "";
+        overview.hidden = false;
+        detail.hidden = true;
+        results.hidden = true;
+        reset.hidden = true;
+        breadcrumb.textContent = "01 / Vista general";
+        history.replaceState(null, "", location.pathname);
+      }
+      document.querySelectorAll<HTMLElement>("[data-area]").forEach((button) =>
+        button.addEventListener("click", (event) => {
+          event.preventDefault();
+          selectArea(button.dataset.area!);
+        }),
+      );
+      let zoom = 1;
+      function updateZoom() {
+        document.getElementById("route-diagram")!.style.width =
+          `${zoom * 100}%`;
+      }
+      document.getElementById("diagram-in")!.addEventListener("click", () => {
+        zoom = Math.min(2.5, zoom + 0.25);
+        updateZoom();
+      });
+      document.getElementById("diagram-out")!.addEventListener("click", () => {
+        zoom = Math.max(1, zoom - 0.25);
+        updateZoom();
+      });
+      document.getElementById("diagram-fit")!.addEventListener("click", () => {
+        zoom = 1;
+        updateZoom();
+      });
+      reset.addEventListener("click", showOverview);
+      search.addEventListener("input", () => {
+        const query = search.value.trim().toLocaleLowerCase("es");
+        if (!query) {
+          showOverview();
+          return;
+        }
+        overview.hidden = true;
+        detail.hidden = true;
+        results.hidden = false;
+        reset.hidden = false;
+        breadcrumb.textContent = "Buscar en el motor";
+        const matches = inventory.files.filter((file) => {
+          const area = areaFor(file);
+          return `${file.path} ${file.symbols.join(" ")} ${area.title} ${area.subtitle}`
+            .toLocaleLowerCase("es")
+            .includes(query);
+        });
+        document.getElementById("result-count")!.textContent = matches.length
+          ? `${matches.length} archivos encontrados`
+          : "No hay coincidencias. Prueba con «browser», «memoria» o «build_context».";
+        const list = document.getElementById("result-list")!;
+        list.replaceChildren();
+        for (const file of matches) {
+          const area = areaFor(file);
+          const button = document.createElement("button");
+          button.className = "search-result";
+          const label = document.createElement("strong");
+          label.textContent = area.title;
+          const name = document.createElement("span");
+          name.textContent = file.path;
+          button.append(label, name);
+          button.addEventListener("click", () => {
+            selectArea(area.id);
+            const target = [
+              ...document.querySelectorAll<HTMLDetailsElement>("[data-file]"),
+            ].find((el) => el.dataset.file === file.path);
+            if (target) {
+              target.open = true;
+              target.scrollIntoView({ block: "center" });
+              target.querySelector("summary")?.focus();
+            }
+          });
+          list.append(button);
+        }
+      });
+      function fromHash() {
+        const id = decodeURIComponent(location.hash.slice(1));
+        if (areas.some((a) => a.id === id)) selectArea(id, false, false);
+        else showOverview();
+      }
+      window.addEventListener("hashchange", fromHash);
+      fromHash();
+    </script>
+  </body>
+</html>

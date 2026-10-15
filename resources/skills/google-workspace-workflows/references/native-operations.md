@@ -35,8 +35,6 @@ Google `page_all` reads at most `page_limit` pages (default 5, maximum 10), with
 
 - `mail_compose` accepts explicit `to`, optional `cc`/`bcc`, `subject`, plain `text` and optional attachment paths. It creates a **remote Gmail draft** by default, which requires write permission. `send=true` sends once; use only within the user's authorized scope. `dry_run=true` makes no Gmail call. The sender comes from the connected Gmail profile. HTML/alias selection is not exposed by this helper.
 - For a reply, pass `reply_to_message_id` and explicit recipients; omit `subject` to preserve the original. The helper loads original headers and preserves Message-ID, References and Gmail threadId. It never guesses reply-all recipients. Attachments must be existing workspace files (10 maximum, 5 MiB total); absolute paths, credential paths and symlinks are rejected.
-- `drive_upload`: `{"source":"reports/report.pdf","folder_id":"FOLDER_ID","mime_type":"application/pdf"}` creates a new file (25 MiB maximum); `name` is optional. Re-read the returned ID and metadata. This helper does not overwrite an existing file or convert formats automatically. After an uncertain failure, search the destination before another upload.
-- `drive_download` downloads ordinary files; `drive_export` exports native Google content. Both need a new relative `destination`, preserve existing files and return bytes/hash evidence.
 
 For durable recurrence, use Fénix's existing workflow/schedule tools with explicit steps and source references. Do not start a CLI watcher or create a Google event subscription as a side effect of a one-time read.
 

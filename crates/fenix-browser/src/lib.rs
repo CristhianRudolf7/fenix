@@ -4,6 +4,8 @@ mod cdp;
 mod downloads;
 mod frames;
 mod lifecycle;
+mod platform;
+use platform::memory_mib;
 #[cfg(test)]
 mod owner_view_tests;
 mod tools;
@@ -11,13 +13,10 @@ mod vault;
 mod whatsapp;
 use anyhow::{Context, Result, bail};
 use base64::{Engine, engine::general_purpose::STANDARD};
-use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
-    fs::{File, OpenOptions},
-    os::unix::fs::{OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     process::Stdio,
     sync::{
@@ -50,7 +49,7 @@ fn default_hibernate_seconds() -> u64 {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            executable: "/usr/bin/chromium".into(),
+            executable: "auto".into(),
             max_sessions: 2,
             max_tabs: 4,
             idle_seconds: 600,
@@ -66,11 +65,10 @@ struct Profile {
 }
 struct Session {
     child: Child,
-    _group: ProcessGroup,
-    execution: Option<fenix_execution::Lease>,
+    _group: fenix_process::ProcessTree,
     directory: PathBuf,
     cdp: cdp::Cdp,
-    _lock: File,
+    _lock: fenix_execution::fs::private::Lock,
     tabs: BTreeMap<String, String>,
     frame_sessions: Mutex<BTreeMap<String, String>>,
     active: String,
@@ -90,7 +88,6 @@ struct Session {
 pub struct Browser {
     root: PathBuf,
     config: Config,
-    executor: Option<fenix_execution::Executor>,
     sessions: Mutex<BTreeMap<String, Session>>,
     profiles: Mutex<BTreeMap<String, Profile>>,
     control_port: AtomicU16,
@@ -99,11 +96,24 @@ pub struct Browser {
     starting: Mutex<()>,
 }
 pub fn write_json(path: &Path, value: &Value) -> Result<()> {
-    fenix_execution::fs::write(path, &serde_json::to_vec_pretty(value)?)
+    let directory = fenix_execution::fs::private::PrivateDirectory::open(
+        path.parent()
+            .context("Private browser file requires a parent")?,
+    )?;
+    let name = Path::new(
+        path.file_name()
+            .context("Private browser file requires a name")?,
+    );
+    let bytes = serde_json::to_vec_pretty(value)?;
+    if path.try_exists()? {
+        directory.replace(name, &directory.read(name, 32 * 1024 * 1024)?, &bytes)?;
+    } else {
+        directory.create(name, &bytes, false)?;
+    }
+    fenix_execution::fs::private::secure(path)
 }
 fn private_dir(path: &Path) -> Result<()> {
-    std::fs::create_dir_all(path)?;
-    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o700))?;
+    fenix_execution::fs::private::create_private_dir(path)?;
     Ok(())
 }
 fn identifier(name: &str) -> Result<()> {
@@ -125,6 +135,8 @@ fn number(v: &Value, key: &str, default: f64) -> f64 {
 }
 impl Browser {
     pub fn open(data: &Path) -> Result<Arc<Self>> {
+        fenix_execution::validate_local_environment()?;
+        private_dir(data)?;
         let root = data.join("browser");
         private_dir(&root)?;
         private_dir(&root.join("profiles"))?;
@@ -132,13 +144,14 @@ impl Browser {
         private_dir(&root.join("artifacts"))?;
         private_dir(&root.join("hibernated"))?;
         let path = data.join("browser.json");
-        let config: Config = if path.exists() {
+        let mut config: Config = if path.exists() {
             serde_json::from_slice(&std::fs::read(&path)?)?
         } else {
             let c = Config::default();
             write_json(&path, &serde_json::to_value(&c)?)?;
             c
         };
+        config.executable = platform::executable(&config.executable)?;
         if !(1..=4).contains(&config.max_sessions)
             || !(1..=10).contains(&config.max_tabs)
             || !(60..=86400).contains(&config.idle_seconds)
@@ -155,7 +168,6 @@ impl Browser {
         Ok(Arc::new(Self {
             root,
             config,
-            executor: fenix_execution::Executor::from_environment()?,
             sessions: Mutex::new(BTreeMap::new()),
             profiles: Mutex::new(profiles),
             control_port: AtomicU16::new(4173),
@@ -202,7 +214,7 @@ impl Browser {
         let sessions = self.sessions.lock().await;
         Ok(
             json!({"available":Path::new(&self.config.executable).is_file(),"config":self.config,
-            "profiles":profiles.values().collect::<Vec<_>>(),"sessions":sessions.iter().map(|(name,s)|json!({"profile":name,"tab":s.active,"tabs":s.tabs.keys().collect::<Vec<_>>(),"temporary":s.temporary,"suspended":s.suspended,"width":s.width,"height":s.height,"dpr":s.dpr,"rss_sum_mib":if s.execution.is_none() {Some(memory_mib(s.child.id().unwrap_or(0)))} else {None}})).collect::<Vec<_>>(),"vault_exists":self.root.join("credentials.enc").exists()}),
+            "profiles":profiles.values().collect::<Vec<_>>(),"sessions":sessions.iter().map(|(name,s)|json!({"profile":name,"tab":s.active,"tabs":s.tabs.keys().collect::<Vec<_>>(),"temporary":s.temporary,"suspended":s.suspended,"width":s.width,"height":s.height,"dpr":s.dpr,"rss_sum_mib":memory_mib(s.child.id().unwrap_or(0))})).collect::<Vec<_>>(),"vault_exists":self.root.join("credentials.enc").exists()}),
         )
     }
     /// Open the owner's existing browser without navigating away from its page.
@@ -405,13 +417,6 @@ impl Browser {
                 }
             }
             if self.saved_path(profile).exists() {
-                let saved: Value = serde_json::from_slice(&fenix_execution::fs::read(
-                    &self.saved_path(profile),
-                    64 * 1024,
-                )?)?;
-                if let (Some(executor), Some(id)) = (&self.executor, saved["execution"].as_str()) {
-                    executor.cancel_browser(id).await?;
-                }
                 std::fs::remove_file(self.saved_path(profile))?;
             }
             return Ok(
@@ -429,7 +434,7 @@ impl Browser {
             }
             sessions.remove(profile);
         }
-        if !sessions.contains_key(profile) || sessions[profile].suspended {
+        if !sessions.contains_key(profile) {
             // Admission can wait for RAM. Existing sessions must remain available
             // for work and cleanup while another browser is waiting to start.
             drop(sessions);
@@ -446,30 +451,9 @@ impl Browser {
                     bail!("Browser session limit reached; close another session first");
                 }
                 drop(sessions);
-                let session = tokio::select! {biased; _ = cancel.cancelled()=>bail!("Browser startup cancelled"),s=async { if self.saved_path(profile).exists() { self.restore_saved(profile).await } else { self.launch(profile).await } }=>s?};
+                let session = tokio::select! {biased; _ = cancel.cancelled()=>bail!("Browser startup cancelled"),s=async { if self.saved_path(profile).exists() { bail!("Legacy remote browser checkpoint cannot be restored locally; explicitly close this profile before reopening it") } self.launch(profile).await }=>s?};
                 sessions = self.sessions.lock().await;
                 sessions.insert(profile.into(), session);
-            } else if sessions[profile].suspended {
-                if sessions.values().filter(|s| !s.suspended).count() >= self.config.max_sessions {
-                    bail!("Browser session limit reached; close another session first");
-                }
-                let id = sessions[profile]
-                    .execution
-                    .as_ref()
-                    .context("Missing saved execution")?
-                    .id
-                    .clone();
-                drop(sessions);
-                let executor = self
-                    .executor
-                    .as_ref()
-                    .context("Browser restore requires isolation")?;
-                let lease = tokio::select! {biased; _ = cancel.cancelled()=>bail!("Browser restore cancelled"), lease=executor.resume_browser(&id)=>lease?};
-                sessions = self.sessions.lock().await;
-                let session = sessions
-                    .get_mut(profile)
-                    .context("Browser was closed while waiting to resume")?;
-                self.resume_session(profile, session, lease).await?;
             }
         }
         let s = sessions.get_mut(profile).unwrap();
@@ -512,17 +496,14 @@ impl Browser {
         result
     }
     async fn launch(&self, profile: &str) -> Result<Session> {
+        anyhow::ensure!(
+            !self.config.executable.is_empty(),
+            "No Chromium-compatible browser found; install Chromium, Chrome or Edge, or set FENIX_BROWSER_EXECUTABLE"
+        );
         let directory = self.directory(profile);
         private_dir(&directory)?;
-        let lock = OpenOptions::new()
-            .create(true)
-            .truncate(false)
-            .read(true)
-            .write(true)
-            .mode(0o600)
-            .open(directory.join("fenix.lock"))?;
-        lock.try_lock_exclusive()
-            .context("This profile is already open in another Fenix process")?;
+        let lock = fenix_execution::fs::private::Lock::try_exclusive(&directory.join("fenix.lock"))
+            .context("This browser profile is already open in another Fenix process")?;
         private_dir(&directory.join("Default"))?;
         // Native Chromium password storage can silently fall back to plaintext on
         // Linux. Use our encrypted owner vault instead; never change cookie state.
@@ -558,44 +539,17 @@ impl Browser {
             format!("--user-data-dir={}", directory.display()),
             "about:blank".into(),
         ];
-        let execution = if let Some(executor) = &self.executor {
-            Some(
-                executor
-                    .create(fenix_execution::Specification::new(
-                        &format!("browser:{profile}"),
-                        "browser",
-                        argv.clone(),
-                        &directory,
-                        &directory,
-                        86400,
-                    ))
-                    .await?,
-            )
-        } else {
-            None
-        };
-        let mut command = if let Some(lease) = &execution {
-            lease.command()?
-        } else {
-            let mut command = Command::new(argv.remove(0));
-            command
-                .args(argv)
-                .env_clear()
-                .envs(fenix_execution::local_environment(&directory));
-            command
-        };
-        let child = command
+        let mut command = Command::new(argv.remove(0));
+        command
+            .args(argv)
+            .env_clear()
+            .envs(fenix_execution::local_environment(&directory));
+        command
             .stdin(Stdio::null())
             .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .kill_on_drop(true)
-            .process_group(0)
-            .spawn()
-            .context(
-                "Could not start isolated Chromium; verify its executable and sandbox support",
-            )?;
-        let group = ProcessGroup(child.id().context("Missing browser PID")?);
-        let mut child = child;
+            .stderr(Stdio::null());
+        let (mut child, group) = fenix_process::spawn_program(command)
+            .context("Could not start Chromium; verify its executable and sandbox support")?;
         let endpoint=tokio::time::timeout(Duration::from_secs(45),async {
             loop {
                 if child.try_wait()?.is_some(){bail!("Chromium exited at startup. Its sandbox must be supported; Fenix does not disable it.");}
@@ -609,14 +563,7 @@ impl Browser {
                 tokio::time::sleep(Duration::from_millis(50)).await;
             }
         }).await.context("Browser startup timed out")??;
-        let cdp = if let Some(lease) = &execution {
-            let port = url::Url::parse(&endpoint)?
-                .port()
-                .context("Missing browser port")?;
-            cdp::Cdp::connect_stream(&endpoint, lease.connect(port).await?).await?
-        } else {
-            cdp::Cdp::connect(&endpoint).await?
-        };
+        let cdp = cdp::Cdp::connect(&endpoint).await?;
         let targets = cdp.call(None, "Target.getTargets", json!({})).await?;
         let id = targets["targetInfos"]
             .as_array()
@@ -624,10 +571,10 @@ impl Browser {
             .and_then(|t| t["targetId"].as_str())
             .context("Browser has no page")?
             .to_owned();
+
         let mut s = Session {
             child,
             _group: group,
-            execution,
             directory: directory.clone(),
             cdp,
             _lock: lock,
@@ -915,7 +862,7 @@ impl Browser {
                 let mut safe_frames = frames;
                 strip_urls(&mut safe_frames);
                 Ok(
-                    json!({"frames":safe_frames,"layout":layout,"events":events,"profile":profile,"tab":tab,"downloads":downloads,"rss_sum_mib":if s.execution.is_none() {Some(memory_mib(s.child.id().unwrap_or(0)))} else {None},"warning":"Failure metadata omits sensitive payloads. RSS sums may double-count shared pages."}),
+                    json!({"frames":safe_frames,"layout":layout,"events":events,"profile":profile,"tab":tab,"downloads":downloads,"rss_sum_mib":memory_mib(s.child.id().unwrap_or(0)),"warning":"Failure metadata omits sensitive payloads. RSS sums may double-count shared pages."}),
                 )
             }
             "browser_act" => {
@@ -1249,12 +1196,6 @@ impl Browser {
 }
 impl Session {
     async fn close(&mut self) -> bool {
-        if self.suspended {
-            if let Some(lease) = &self.execution {
-                return lease.cancel().await.is_ok();
-            }
-            return false;
-        }
         let _ = self.cdp.call(None, "Browser.close", json!({})).await;
         if tokio::time::timeout(Duration::from_secs(5), self.child.wait())
             .await
@@ -1262,22 +1203,8 @@ impl Session {
         {
             let _ = self.child.kill().await;
         }
-        if let Some(lease) = &self.execution {
-            return lease.cancel().await.is_ok();
-        }
+        self.cdp.disconnect().await;
         true
-    }
-}
-struct ProcessGroup(u32);
-impl Drop for ProcessGroup {
-    fn drop(&mut self) {
-        if self.0 == 0 {
-            return;
-        }
-        let _ = nix::sys::signal::killpg(
-            nix::unistd::Pid::from_raw(self.0 as i32),
-            nix::sys::signal::Signal::SIGKILL,
-        );
     }
 }
 fn clean_url(value: &str) -> String {
@@ -1310,47 +1237,6 @@ fn strip_urls(v: &mut Value) {
         _ => {}
     }
 }
-fn memory_mib(root: u32) -> u64 {
-    if root == 0 {
-        return 0;
-    }
-    let mut rows = vec![];
-    if let Ok(entries) = std::fs::read_dir("/proc") {
-        for entry in entries.flatten() {
-            let Ok(pid) = entry.file_name().to_string_lossy().parse::<u32>() else {
-                continue;
-            };
-            let Ok(status) = std::fs::read_to_string(entry.path().join("status")) else {
-                continue;
-            };
-            let field = |name: &str| {
-                status
-                    .lines()
-                    .find_map(|l| l.strip_prefix(name))
-                    .and_then(|v| v.split_whitespace().next()?.parse::<u64>().ok())
-                    .unwrap_or(0)
-            };
-            rows.push((pid, field("PPid:") as u32, field("VmRSS:")));
-        }
-    }
-    let mut ids = vec![root];
-    for _ in 0..8 {
-        let more = rows
-            .iter()
-            .filter(|(pid, parent, _)| !ids.contains(pid) && ids.contains(parent))
-            .map(|(pid, _, _)| *pid)
-            .collect::<Vec<_>>();
-        if more.is_empty() {
-            break;
-        }
-        ids.extend(more);
-    }
-    rows.iter()
-        .filter(|(pid, _, _)| ids.contains(pid))
-        .map(|(_, _, rss)| rss)
-        .sum::<u64>()
-        / 1024
-}
 
 #[cfg(test)]
 mod tests {
@@ -1376,10 +1262,14 @@ mod tests {
             vault::load(&path, "correct-master-password").unwrap()[0].password,
             "very-secret-value"
         );
-        assert_eq!(
-            std::fs::metadata(&path).unwrap().permissions().mode() & 0o777,
-            0o600
-        );
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            assert_eq!(
+                std::fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+                0o600
+            );
+        }
     }
     #[tokio::test]
     async fn profile_authorization_and_url_boundaries() {

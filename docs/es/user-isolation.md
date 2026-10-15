@@ -1,4 +1,9 @@
+> Documento histórico: el gateway multiusuario y el registro/acceso con Google se retiraron. Para la versión personal actual, consulta [acceso remoto](remote-access.md).
+
 # Cuentas y entornos aislados por usuario
+
+> Documento histórico del despliegue compartido anterior a 0.3.2. El sandbox y sus scripts se retiraron de la distribución personal. Véase [ejecución local actual](local-execution.md); las políticas aquí descritas no están activas en 0.3.2.
+
 
 El gateway compartido autentica al usuario y selecciona su controlador desde un registro local protegido. El cliente no puede elegir otra cuenta mediante una ruta, cabecera, herramienta o respuesta del modelo. Cada cuenta conserva sus propias conversaciones, base de datos, proyectos, skills, Telegram y tareas programadas.
 

@@ -104,7 +104,7 @@ use a normal HTTPS endpoint or an existing loopback proxy.
 `settings` configures the intelligent role (master, workers and execution). The
 optional `fast` object uses the existing live-settings schema (`provider`, `model`,
 `base_url`, `reasoning_effort`) to configure the fast conversational role through
-the normal `configure_live` path, including its connection check before timing
+the normal `configure_fast_model` path, including its connection check before timing
 starts. It uses the same evaluation credential file and, with `proxy_upstream`,
 the same loopback tunnel; `{trial}` is replaced in both endpoints. The benchmark
 instruction still goes directly to the master, so chat routing is not exercised.

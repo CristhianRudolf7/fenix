@@ -1,7 +1,7 @@
 import { Loading } from "../components/loading";
 import { useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { api } from "../live/api";
+import { api } from "../lib/api";
 import { navigateTo } from "../components/routing";
 import { FlowView } from "./FlowView";
 import { type Flow, type Schedule, stateLabel, tr } from "./types";

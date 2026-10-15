@@ -1159,57 +1159,19 @@ dialog::backdrop {
     max-width: 15rem;
   }
 }
-.voice-panel,
-.voice-settings,
-.voice-notice {
+.dictation-notice {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  max-width: min(440px, calc(100vw - 20px));
+  z-index: 110;
+  padding: 14px;
+  border-radius: 12px;
   background: var(--bg);
   color: var(--fg);
   border: 1px solid var(--line);
 }
-.voice-panel {
-  width: min(430px, calc(100vw - 32px));
-  max-height: 80dvh;
-  overflow: auto;
-}
-.voice-caption {
-  max-height: 180px;
-  overflow: auto;
-  white-space: pre-wrap;
-  margin: 14px 0;
-}
-.voice-transcript {
-  font-style: italic;
-  min-height: 1.5em;
-}
-.voice-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 100;
-  background: #0007;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-}
-.voice-settings {
-  width: min(520px, 100%);
-  max-height: 90dvh;
-  overflow: auto;
-}
-.voice-settings label {
-  display: grid;
-  gap: 6px;
-  margin-top: 14px;
-}
-.voice-notice {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  max-width: 440px;
-  z-index: 110;
-  padding: 14px;
-  border-radius: 12px;
-}
-#voice-controls {
+#dictation-controls {
   display: flex;
   flex-wrap: wrap;
   align-items: center;

@@ -238,7 +238,7 @@ async fn model_file_reads_are_batched_and_receipts_keep_call_order() -> Result<(
                 assert_eq!(outputs[i]["call_id"],format!("read-{i}"));
                 assert!(outputs[i]["output"].as_str().unwrap().contains(word));
             }
-            return ResponseTemplate::new(200).set_body_json(answer.clone());
+            return ResponseTemplate::new(200).set_body_json(json!({"id":"finished","status":"completed","output":[{"type":"function_call","call_id":"finish","name":"task_finish","arguments":json!({"status":"completed","summary":"Read both files: alpha evidence and beta evidence.","evidence":"Successful file_read receipts for a.txt and b.txt."}).to_string()}]}));
         }
         let calls=["a.txt","b.txt"].into_iter().enumerate().map(|(i,file)|json!({"type":"function_call","call_id":format!("read-{i}"),"name":"file_read","arguments":json!({"path":file}).to_string()})).collect::<Vec<_>>();
         ResponseTemplate::new(200).set_body_json(json!({"id":"reads","status":"completed","output":calls}))

@@ -26,7 +26,7 @@ impl Store {
               AND COALESCE(json_extract(data,'$.cached'),0)=0
             UNION ALL SELECT created_at, json_extract(data,'$.result.usage') FROM events
             WHERE kind='memory_extraction' AND json_extract(data,'$.result.decision_provider') IS NULL
-            UNION ALL SELECT updated_at, json_extract(data,'$.usage') FROM records WHERE kind='live_usage'
+            UNION ALL SELECT updated_at, json_extract(data,'$.usage') FROM records WHERE kind IN ('fast_usage','model_health_usage')
             UNION ALL SELECT updated_at, json_object('input_tokens',json_extract(data,'$.tokens'),'output_tokens',0,'total_tokens',json_extract(data,'$.tokens'))
             FROM records WHERE kind='library_usage'
         ) SELECT date(at,'-5 hours'),
@@ -82,7 +82,7 @@ mod tests {
         )?;
         store.event(&task.id, "context_compacted", &json!({"usage":{}}))?;
         store.put(
-            "live_usage",
+            "fast_usage",
             "voice",
             &json!({"usage":{"input_tokens":10,"output_tokens":5}}),
         )?;

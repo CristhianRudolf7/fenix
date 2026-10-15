@@ -310,24 +310,12 @@ impl Runtime {
             }
             "connector" => {
                 let mut input = args.get("arguments").cloned().unwrap_or(json!({}));
-                if matches!(
-                    args["operation"].as_str(),
-                    Some("drive_export" | "drive_download" | "file_download")
-                ) && input.get("destination").is_none()
+                if matches!(args["operation"].as_str(), Some("file_download"))
+                    && input.get("destination").is_none()
                 {
                     input["destination"] = json!(format!(
                         "automations/{}/{}/{}.{}",
-                        run.workflow.id,
-                        run.id,
-                        node.id,
-                        if args["operation"] == "drive_export"
-                            && input["mime_type"].as_str().unwrap_or("application/pdf")
-                                == "application/pdf"
-                        {
-                            "pdf"
-                        } else {
-                            "bin"
-                        }
+                        run.workflow.id, run.id, node.id, "bin"
                     ));
                 }
                 self.workflow_tool(&run.task_id,"connector_call",&json!({"action":"invoke","connection":args["connection"],"operation":args["operation"],"arguments":input}),settings,cancel).await
@@ -388,7 +376,8 @@ impl Runtime {
             !denials.contains(&action),
             "This exact action was previously declined"
         );
-        if (name == "connector_call" && self.connector_requires_approval(settings, args))
+        if crate::command_safety::risk_reason(name, args).is_some()
+            || (name == "connector_call" && self.connector_requires_approval(settings, args))
             || (name != "connector_call" && effect && *policy == crate::config::ActionPolicy::Ask)
         {
             let mut grants = self

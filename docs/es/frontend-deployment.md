@@ -1,3 +1,5 @@
+> La versión en desarrollo usa un único propietario y login en el propio servidor. Configúralo antes del primer arranque siguiendo [acceso personal](remote-access.md).
+
 # Despliegue independiente del frontend y backend
 
 En producción hay dos servicios de usuario **systemd**:

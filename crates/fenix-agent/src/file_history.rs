@@ -8,7 +8,6 @@ use std::{
     collections::BTreeMap,
     fs,
     io::Write,
-    os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -38,7 +37,7 @@ fn current(path: &Path) -> Result<Option<Vec<u8>>> {
                 meta.is_file() && !meta.file_type().is_symlink(),
                 "History only supports regular files"
             );
-            Ok(Some(fenix_execution::fs::read(path, MAX_FILE)?))
+            Ok(Some(fenix_execution::fs::read_user_file(path, MAX_FILE)?))
         }
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(None),
         Err(e) => Err(e.into()),
@@ -48,8 +47,7 @@ impl Runtime {
     fn history_blob(&self, bytes: &[u8]) -> Result<String> {
         let id = hash(bytes);
         let root = self.data_dir.join("file-history");
-        fs::create_dir_all(&root)?;
-        fs::set_permissions(&root, fs::Permissions::from_mode(0o700))?;
+        fenix_files::private::create_private_dir(&root)?;
         let path = root.join(&id);
         if path.exists() {
             ensure!(
@@ -75,7 +73,7 @@ impl Runtime {
             Err(e) if e.error.kind() == std::io::ErrorKind::AlreadyExists => {}
             Err(e) => return Err(e.error.into()),
         };
-        fs::File::open(root)?.sync_all()?;
+        fenix_files::private::sync_directory(&root)?;
         Ok(id)
     }
     fn history_bytes(&self, id: &str) -> Result<Vec<u8>> {
@@ -112,7 +110,7 @@ impl Runtime {
                 after: None,
                 permissions: fs::symlink_metadata(&path)
                     .ok()
-                    .map(|m| m.permissions().mode()),
+                    .and_then(|m| fenix_files::private::permission_mode(&m)),
                 status: "pending".into(),
                 operation: operation.into(),
                 created_at: fenix_storage::now(),
@@ -323,9 +321,9 @@ impl Runtime {
                     ensure!(!cancel.is_cancelled(),"Restoration cancelled; inspect completed paths");
                     runtime.store.check_plan_worker(&task)?;
                     match (&now,&before) {
-                        (Some(now),Some(before))=>fenix_execution::fs::replace(&path,now,before)?,
-                        (Some(now),None)=>fenix_execution::fs::remove(&path,now)?,
-                        (None,Some(before))=>fenix_execution::fs::create_workspace(&path,before,permissions.map(fs::Permissions::from_mode))?,
+                        (Some(now),Some(before))=>fenix_execution::fs::replace_user_file(&path,now,before)?,
+                        (Some(now),None)=>fenix_execution::fs::remove_user_file(&path,now)?,
+                        (None,Some(before))=>fenix_execution::fs::create_workspace(&path,before,permissions.and_then(fenix_files::private::permissions_from_mode))?,
                         _=>{},
                     }
                     restored.push(path);

@@ -87,7 +87,22 @@ pub struct StoredMessage {
 
 impl Store {
     pub fn open(path: &Path) -> Result<Self> {
-        let mut connection = Connection::open(path)?;
+        let parent = fenix_files::private::create_private_dir(
+            path.parent()
+                .filter(|p| !p.as_os_str().is_empty())
+                .unwrap_or_else(|| Path::new(".")),
+        )?;
+        let directory = fenix_files::private::PrivateDirectory::open(&parent)?;
+        let name = Path::new(path.file_name().context("Database file name required")?);
+        if !directory.exists(name)? {
+            directory.create(name, &[], false)?;
+        }
+        drop(directory.open_file(name)?);
+        fenix_files::private::secure(&parent.join(name))?;
+        let mut connection = Connection::open_with_flags(
+            parent.join(name),
+            rusqlite::OpenFlags::default() | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW,
+        )?;
         connection.busy_timeout(Duration::from_secs(5))?;
         connection.pragma_update(None, "journal_mode", "WAL")?;
         connection.pragma_update(None, "foreign_keys", "ON")?;
@@ -485,6 +500,23 @@ impl Store {
         Ok(
             json!({"call_id":call_id,"offset":offset,"next_offset":next,"total_characters":text.chars().count(),"content":page}),
         )
+    }
+
+    /// Retire the voice-mode namespace without losing the shared fast role or usage history.
+    pub fn migrate_voice_model_records(&self) -> Result<()> {
+        let mut db = self.db()?;
+        let tx = db.transaction()?;
+        for (old_kind, old_id, new_kind, new_id) in [
+            ("live", "settings", "model_roles", "fast"),
+            ("credentials", "live", "credentials", "fast"),
+        ] {
+            tx.execute("INSERT INTO records(kind,id,data,updated_at) SELECT ?3,?4,data,updated_at FROM records WHERE kind=?1 AND id=?2 ON CONFLICT(kind,id) DO NOTHING", params![old_kind,old_id,new_kind,new_id])?;
+            tx.execute("DELETE FROM records WHERE kind=?1 AND id=?2", params![old_kind,old_id])?;
+        }
+        tx.execute("INSERT INTO records(kind,id,data,updated_at) SELECT 'fast_usage',id,data,updated_at FROM records WHERE kind='live_usage' ON CONFLICT(kind,id) DO NOTHING", [])?;
+        tx.execute("DELETE FROM records WHERE kind='live_usage'", [])?;
+        tx.commit()?;
+        Ok(())
     }
 
     pub fn get<T: DeserializeOwned>(&self, kind: &str, id: &str) -> Result<Option<T>> {

@@ -23,18 +23,14 @@ use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeSet, HashMap, HashSet},
-    fs::{self, OpenOptions},
-    io::{Read, Write},
-    os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt},
+    fs,
+    io::Read,
     path::{Path, PathBuf},
 };
 
 /// The shared manual skill library, independent of an installation's data directory.
 pub fn default_directory() -> Result<PathBuf> {
-    Ok(std::env::home_dir()
-        .filter(|home| home.is_absolute())
-        .context("Cannot resolve the home directory; configure --skills-dir explicitly")?
-        .join(".fenix/skills"))
+    fenix_files::layout::default_skills_dir()
 }
 
 fn migrate_legacy_skills(
@@ -94,15 +90,12 @@ fn migrate_legacy_skills(
         }
         if entry.file_type().is_dir() {
             match fs::create_dir(&target) {
-                Ok(()) => fs::set_permissions(&target, fs::Permissions::from_mode(0o700))?,
+                Ok(()) => fenix_files::private::secure(&target)?,
                 Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
                 Err(error) => return Err(error.into()),
             }
         } else if entry.file_type().is_file() {
-            let source_file = OpenOptions::new()
-                .read(true)
-                .custom_flags(nix::libc::O_NOFOLLOW | nix::libc::O_NONBLOCK)
-                .open(entry.path())?;
+            let source_file = fenix_files::open(entry.path())?;
             let metadata = source_file.metadata()?;
             if !metadata.is_file() {
                 continue;
@@ -122,20 +115,13 @@ fn migrate_legacy_skills(
                     "Legacy skill migration exceeds its byte limit; originals are unchanged. Use --skills-dir or copy the remaining resources manually"
                 );
             }
-            match OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .mode(0o600 | (metadata.permissions().mode() & 0o100))
-                .open(&target)
-            {
-                Ok(mut file) => {
-                    if let Err(error) = file.write_all(&bytes).and_then(|()| file.sync_all()) {
-                        let _ = fs::remove_file(&target);
-                        return Err(error.into());
-                    }
-                }
-                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
-                Err(error) => return Err(error.into()),
+            let executable = fenix_files::private::executable(&metadata);
+            let parent = fenix_files::private::PrivateDirectory::open(
+                target.parent().context("Resource parent required")?,
+            )?;
+            let name = Path::new(target.file_name().context("Resource name required")?);
+            if !parent.exists(name)? {
+                parent.create(name, &bytes, executable)?;
             }
         }
     }
@@ -183,35 +169,7 @@ fn words(text: &str) -> Vec<String> {
         .collect()
 }
 pub(crate) fn metadata(text: &str) -> Result<serde_yaml_ng::Value> {
-    if let Some(rest) = text
-        .strip_prefix("---\n")
-        .or_else(|| text.strip_prefix("---\r\n"))
-    {
-        let end = rest
-            .lines()
-            .scan(0, |offset, line| {
-                let start = *offset;
-                *offset += line.len()
-                    + if rest.as_bytes().get(start + line.len()) == Some(&b'\r') {
-                        2
-                    } else {
-                        1
-                    };
-                Some((start, line))
-            })
-            .find(|(_, line)| *line == "---")
-            .map(|(offset, _)| offset)
-            .context("Unclosed skill YAML frontmatter")?;
-        Ok(serde_yaml_ng::from_str(&rest[..end])?)
-    } else {
-        // Compatibility with early manually installed skills without frontmatter.
-        let header = text
-            .lines()
-            .take_while(|line| !line.trim().is_empty())
-            .collect::<Vec<_>>()
-            .join("\n");
-        Ok(serde_yaml_ng::from_str(&header).unwrap_or_default())
-    }
+    fenix_skills::metadata(text)
 }
 pub(crate) fn string_field(value: &serde_yaml_ng::Value, key: &str) -> Option<String> {
     let field = if value[key].is_null() {
@@ -251,6 +209,8 @@ include!(concat!(env!("OUT_DIR"), "/bundled_skills.rs"));
 
 impl Runtime {
     pub fn install_resources(&self) -> Result<()> {
+        let library = fenix_skills::Library::open(&self.skills_dir)?;
+        let _lock = library.lock()?;
         let removed: HashSet<String> = self
             .store
             .records::<String>("deleted_skills")?
@@ -319,30 +279,22 @@ impl Runtime {
                     Ok(_) => {}
                     Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
                         fs::create_dir(&parent)?;
-                        fs::set_permissions(&parent, fs::Permissions::from_mode(0o700))?;
+                        fenix_files::private::secure(&parent)?;
                     }
                     Err(error) => return Err(error.into()),
                 }
             }
             // Preserve customized references; creation never follows an existing link.
-            match OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .mode(0o600)
-                .open(&target)
-            {
-                Ok(mut file) => {
-                    if let Err(error) = file.write_all(content).and_then(|()| file.sync_all()) {
-                        let _ = fs::remove_file(&target);
-                        return Err(error.into());
-                    }
-                }
-                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
-                Err(error) => return Err(error.into()),
+            let directory = fenix_files::private::PrivateDirectory::open(
+                target.parent().context("Resource parent required")?,
+            )?;
+            let name = Path::new(target.file_name().context("Resource name required")?);
+            if !directory.exists(name)? {
+                directory.create(name, content, false)?;
             }
         }
         let dir = self.data_dir.join("instructions");
-        std::fs::create_dir_all(&dir)?;
+        fenix_files::private::create_private_dir(&dir)?;
         for (name, content) in [
             (
                 "AGENTS.md",
@@ -404,17 +356,35 @@ impl Runtime {
             }
             seen.insert(name.clone());
             let canonical = fs::canonicalize(&path)?;
-            let fingerprint = format!(
-                "{}:{}:{}:{}:{}:{}:{}:{}",
-                canonical.display(),
-                stat.dev(),
-                stat.ino(),
-                stat.len(),
-                stat.mtime(),
-                stat.mtime_nsec(),
-                stat.ctime(),
-                stat.ctime_nsec()
-            );
+            #[cfg(unix)]
+            let fingerprint = {
+                use std::os::unix::fs::MetadataExt;
+                let fingerprint = format!(
+                    "{}:{}:{}:{}:{}:{}:{}:{}",
+                    canonical.display(),
+                    stat.dev(),
+                    stat.ino(),
+                    stat.len(),
+                    stat.mtime(),
+                    stat.mtime_nsec(),
+                    stat.ctime(),
+                    stat.ctime_nsec()
+                );
+                fingerprint
+            };
+            #[cfg(windows)]
+            let fingerprint = {
+                use sha2::{Digest, Sha256};
+                let Ok(bytes) = fenix_files::read(&canonical, 32_000) else {
+                    continue;
+                };
+                format!(
+                    "{}:{}:{:x}",
+                    canonical.display(),
+                    stat.len(),
+                    Sha256::digest(bytes)
+                )
+            };
             let fingerprint = format!("v3:{taxonomy_hash}:{fingerprint}");
             if index
                 .entries
@@ -800,16 +770,12 @@ impl Runtime {
     }
 }
 fn valid_name(name: &str) -> bool {
-    !name.is_empty()
-        && name.len() <= 80
-        && name
-            .bytes()
-            .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+    fenix_skills::valid_name(name)
 }
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::os::unix::fs::symlink;
+    use std::os::unix::fs::{PermissionsExt, symlink};
 
     #[tokio::test]
     async fn pdf_helper_load_exposes_the_actual_resource_and_execution_boundary() -> Result<()> {

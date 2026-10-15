@@ -2,10 +2,7 @@
 use crate::Runtime;
 use anyhow::{Context, Result, ensure};
 use serde_json::{Value, json};
-use std::{
-    os::fd::AsRawFd,
-    path::{Component, Path, PathBuf},
-};
+use std::path::{Component, Path, PathBuf};
 impl Runtime {
     pub fn view_workspace(&self, project: Option<&str>) -> Result<PathBuf> {
         let settings = self.settings()?.context("Configure the agent first")?;
@@ -62,7 +59,7 @@ impl Runtime {
         let resolved = self.view_path(project, path)?;
         let directory = fenix_execution::fs::directory(&resolved)?;
         let mut entries = vec![];
-        for entry in std::fs::read_dir(format!("/proc/self/fd/{}", directory.as_raw_fd()))? {
+        for entry in fenix_execution::fs::entries(&directory)? {
             let entry = entry?;
             let name = entry.file_name().to_string_lossy().to_string();
             if name.starts_with('.') || !name.to_lowercase().contains(&query.to_lowercase()) {
@@ -300,10 +297,26 @@ mod tests {
                 &cancel
             )
             .await
-            .is_err()
+            .is_ok()
         );
         assert!(
             rt.workspace_open(&task.id, &json!({"kind":"file","path":"missing.md"}))
+                .is_err()
+        );
+        assert_eq!(
+            std::fs::read_to_string(dir.path().join("outside.md"))?,
+            "No"
+        );
+        assert_eq!(
+            rt.store
+                .recent_bus_events(20)?
+                .iter()
+                .filter(|e| e.topic == "workspace.open")
+                .count(),
+            1
+        );
+        assert!(
+            rt.workspace_open(&task.id, &json!({"kind":"file","path":"../outside.md"}))
                 .is_err()
         );
         let before = rt.store.recent_bus_events(1)?.pop().unwrap().seq;

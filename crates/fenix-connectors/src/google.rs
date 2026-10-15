@@ -14,15 +14,6 @@ struct Service {
 }
 const SERVICES: &[Service] = &[
     Service {
-        id: "drive",
-        label: "Drive",
-        version: "v3",
-        base: "https://www.googleapis.com/drive/v3",
-        discovery: "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
-        read: "drive.readonly",
-        write: "drive",
-    },
-    Service {
         id: "docs",
         label: "Docs",
         version: "v1",
@@ -133,7 +124,7 @@ pub(crate) fn service_options() -> Value {
 pub(crate) fn selected(settings: &Value) -> Result<Vec<String>> {
     // Old vaults retain their original service surface until explicitly reconfigured.
     let Some(services) = settings.get("services") else {
-        return Ok(["drive", "docs", "sheets", "slides", "gmail", "calendar"]
+        return Ok(["docs", "sheets", "slides", "gmail", "calendar"]
             .map(str::to_owned)
             .to_vec());
     };
@@ -149,18 +140,37 @@ pub(crate) fn selected(settings: &Value) -> Result<Vec<String>> {
         let id = value
             .as_str()
             .context("Google service IDs must be strings")?;
+        if id == "drive" {
+            continue; // Ignore the retired service in previously saved accounts.
+        }
         service(id)?;
         ensure!(!result.iter().any(|s| s == id), "Duplicate Google service");
         result.push(id.to_owned());
     }
+    ensure!(
+        !result.is_empty(),
+        "Select a supported Google service; Drive has been removed"
+    );
     Ok(result)
 }
 pub(crate) fn validate_settings(settings: &Value) -> Result<()> {
+    ensure!(
+        !settings["services"]
+            .as_array()
+            .is_some_and(|services| services.iter().any(|service| service == "drive")),
+        "Google Drive is not supported"
+    );
     selected(settings)?;
     if let Some(scopes) = settings.get("scopes") {
         let scopes = scopes
             .as_str()
             .context("Google scopes must be a space-separated string")?;
+        ensure!(
+            !scopes
+                .split_whitespace()
+                .any(|scope| scope.starts_with("https://www.googleapis.com/auth/drive")),
+            "Google Drive is not supported"
+        );
         ensure!(
             scopes.len() <= 8192
                 && scopes
@@ -178,6 +188,12 @@ pub(crate) fn scopes(c: &Connection) -> Result<String> {
         .as_str()
         .filter(|s| !s.trim().is_empty())
     {
+        ensure!(
+            !custom
+                .split_whitespace()
+                .any(|scope| scope.starts_with("https://www.googleapis.com/auth/drive")),
+            "Remove obsolete Drive scopes before reconnecting"
+        );
         return Ok(custom.to_owned());
     }
     let mut scopes = BTreeSet::from(["https://www.googleapis.com/auth/userinfo.email".to_owned()]);
@@ -335,7 +351,6 @@ impl Connectors {
         let deadline = tokio::time::Instant::now() + Duration::from_secs(60);
         for name in selected(&c.settings)? {
             let probe = match name.as_str() {
-                "drive" => Some(("/about", json!({"fields":"user(displayName,emailAddress)"}))),
                 "gmail" => Some(("/users/me/profile", json!({}))),
                 "calendar" => Some(("/users/me/calendarList", json!({"maxResults":1}))),
                 "tasks" => Some(("/users/@me/lists", json!({"maxResults":1}))),
@@ -396,10 +411,7 @@ impl Connectors {
         workspace: &Path,
     ) -> Result<Value> {
         ensure!(
-            matches!(
-                operation,
-                "request" | "drive_search" | "mail_list" | "calendar_list"
-            ),
+            matches!(operation, "request" | "mail_list" | "calendar_list"),
             "Pagination is only available for Google list reads"
         );
         ensure!(

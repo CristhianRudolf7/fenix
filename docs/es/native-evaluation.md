@@ -112,7 +112,7 @@ HTTP limitado a loopback y se cierra antes del verificador.
 `settings` configura el rol inteligente (maestro, trabajadores y ejecución). El
 objeto opcional `fast` usa el esquema existente de ajustes en vivo (`provider`,
 `model`, `base_url`, `reasoning_effort`) para configurar el rol conversacional
-rápido mediante la ruta normal `configure_live`, incluida su comprobación de
+rápido mediante la ruta normal `configure_fast_model`, incluida su comprobación de
 conexión antes de empezar a medir el tiempo. Usa el mismo archivo de credencial de
 evaluación y, con `proxy_upstream`, el mismo túnel local; `{trial}` se sustituye en
 ambos endpoints. La instrucción del benchmark sigue llegando directamente al

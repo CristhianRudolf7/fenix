@@ -14,7 +14,7 @@ metadata:
 
 ## Scope
 
-Use for operations spanning Google services, Google Tasks lists, Contacts and Meet records. Use the existing email, calendar, Drive, Docs, Sheets, Slides or forms skill for a task confined to that format. This skill coordinates the native connector; it does not install a CLI, record a meeting or grant permissions.
+Use for operations spanning Google services, Google Tasks lists, Contacts and Meet records. Use the existing email, calendar, Docs, Sheets, Slides or forms skill for a task confined to that format. This skill coordinates the native connector; it does not install a CLI, record a meeting or grant permissions.
 
 ## Inputs
 

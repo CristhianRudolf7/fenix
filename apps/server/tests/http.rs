@@ -502,3 +502,37 @@ async fn adaptive_memory_settings_history_and_entities_are_accessible_without_le
     let (status,_)=request_json(app,"POST","/api/memory/knowledge",json!({"action":"schema_save","schema":{"name":"supports","description":"supports a claim","status":"active","source_kinds":["paper"],"target_kinds":["hypothesis"]}})).await;
     assert_eq!(status, StatusCode::OK);
 }
+
+#[tokio::test]
+async fn voice_routes_are_removed_and_fast_model_settings_remain() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills"))).await.unwrap();
+    let app = fenix_server::router_with_public_origin(runtime, 4173, None).unwrap();
+    for (path, expected) in [
+        ("/api/live/settings", StatusCode::NOT_FOUND),
+        ("/api/live/start", StatusCode::NOT_FOUND),
+        ("/api/live/turn", StatusCode::NOT_FOUND),
+        ("/api/live/end", StatusCode::NOT_FOUND),
+        ("/api/model-roles/fast", StatusCode::OK),
+    ] {
+        let response = app.clone().oneshot(Request::builder().uri(path).header("host", "127.0.0.1:4173").body(Body::empty()).unwrap()).await.unwrap();
+        assert_eq!(response.status(), expected, "{path}");
+    }
+}
+
+#[tokio::test]
+async fn personal_skills_remain_without_marketplace_services() {
+    let dir = tempfile::tempdir().unwrap();
+    let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills"))).await.unwrap();
+    let app = fenix_server::router(runtime, 4173);
+    assert!(!dir.path().join("skill-exchange.sqlite").exists());
+    for (path, expected) in [
+        ("/api/skills", StatusCode::OK),
+        ("/api/skill-exchange/catalog", StatusCode::NOT_FOUND),
+        ("/api/skill-exchange/mine", StatusCode::NOT_FOUND),
+        ("/api/skill-exchange/publications", StatusCode::NOT_FOUND),
+    ] {
+        let response = app.clone().oneshot(Request::builder().uri(path).header("host", "127.0.0.1:4173").body(Body::empty()).unwrap()).await.unwrap();
+        assert_eq!(response.status(), expected, "{path}");
+    }
+}

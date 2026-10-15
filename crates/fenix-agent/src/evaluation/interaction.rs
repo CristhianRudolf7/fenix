@@ -9,7 +9,6 @@ use std::{
 };
 use tokio::{
     io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader},
-    net::{UnixStream, unix::OwnedWriteHalf},
     sync::mpsc,
 };
 
@@ -26,7 +25,7 @@ enum Incoming {
 }
 
 pub(super) struct Session {
-    writer: OwnedWriteHalf,
+    writer: tokio::io::WriteHalf<fenix_process::transport::LocalStream>,
     incoming: mpsc::Receiver<Result<Incoming>>,
     reader: tokio::task::JoinHandle<()>,
     prefix: String,
@@ -43,10 +42,17 @@ impl Drop for Session {
 }
 impl Session {
     pub async fn connect(path: &Path, prefix: &str) -> Result<Self> {
-        let stream = UnixStream::connect(path)
+        Self::connect_endpoint(
+            path.to_str().context("Benchmark endpoint must be UTF-8")?,
+            prefix,
+        )
+        .await
+    }
+    pub async fn connect_endpoint(endpoint: &str, prefix: &str) -> Result<Self> {
+        let stream = fenix_process::transport::connect(endpoint)
             .await
             .context("Cannot connect evaluation transport")?;
-        let (read, writer) = stream.into_split();
+        let (read, writer) = tokio::io::split(stream);
         let (send, incoming) = mpsc::channel(32);
         let reader = tokio::spawn(async move {
             let mut read = BufReader::new(read);
@@ -202,7 +208,7 @@ impl Session {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod tests {
     use super::*;
     use crate::{
@@ -238,6 +244,7 @@ mod tests {
             proxy_upstream: Some(*server.address()),
             decisions: None,
             interaction_socket: Some(socket),
+            interaction_endpoint: None,
             fast: None,
         };
         let output_copy = output.clone();
@@ -329,6 +336,40 @@ mod tests {
             rt.shutdown().await?;
             Ok::<_, anyhow::Error>(())
         }).await??;
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod portable_transport_tests {
+    use super::*;
+    #[tokio::test]
+    async fn loopback_ready_and_stop_use_the_same_benchmark_protocol() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let runtime = Runtime::open(dir.path(), Some(&dir.path().join("skills"))).await?;
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
+        let mut session = Session::connect_endpoint(
+            &format!("tcp://{}", listener.local_addr()?),
+            "Fixture instructions",
+        )
+        .await?;
+        let (stream, _) = listener.accept().await?;
+        let (read, mut write) = stream.into_split();
+        let mut read = BufReader::new(read).lines();
+        let ready: Value =
+            serde_json::from_str(&read.next_line().await?.context("Missing handshake")?)?;
+        assert_eq!(ready["type"], "ready");
+        write.write_all(b"{\"type\":\"stop\"}\n").await?;
+        tokio::time::timeout(std::time::Duration::from_secs(2), async {
+            loop {
+                if session.tick(&runtime).await? {
+                    break Ok::<_, anyhow::Error>(());
+                }
+                tokio::time::sleep(std::time::Duration::from_millis(5)).await;
+            }
+        })
+        .await??;
+        assert!(runtime.store.tasks(10)?.is_empty());
         Ok(())
     }
 }

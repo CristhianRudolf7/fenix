@@ -46,6 +46,13 @@ test("modal explorer, unified tabs, scoped automatic refresh and mobile preview"
     else if (u.pathname === "/api/status")
       body = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         session_id: "alice-session",
         event_cursor: 40,
         settings: { model: "test" },
@@ -54,7 +61,7 @@ test("modal explorer, unified tabs, scoped automatic refresh and mobile preview"
         active_tasks: [],
         subagents: [],
       };
-    else if (u.pathname === "/api/live/settings")
+    else if (u.pathname === "/api/model-roles/fast")
       body = { configured: false, settings: {} };
     else if (u.pathname === "/api/design/artifacts")
       body = { designs: [visual], next_offset: null };

@@ -169,7 +169,7 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
         <div className="sidebar-bottom">
           <div id="account-controls" />
           <div className="row">
-            <small className="grow sidebar-version">Fénix · v0.3.1</small>
+            <small className="grow sidebar-version">Fénix · v0.3.2</small>
           </div>
         </div>
       </aside>
@@ -294,6 +294,12 @@ export function renderChatLayout(language: Language, model: string) {
         <div className="composer-wrap">
           <div id="design-results" />
           <div className="activity-strip" id="activity-strip" role="status" />
+          <div
+            id="model-health-notice"
+            role="status"
+            aria-live="polite"
+            hidden
+          />
           <form id="chat-form" className="composer">
             <label className="muted" htmlFor="chat-input" hidden>
               {t("Message Fénix", "Escribe a Fénix")}
@@ -307,7 +313,7 @@ export function renderChatLayout(language: Language, model: string) {
               required
             />
             <div className="composer-footer">
-              <span id="voice-controls" />
+              <span id="dictation-controls" />
               <button
                 className="primary send"
                 type="submit"
@@ -317,7 +323,7 @@ export function renderChatLayout(language: Language, model: string) {
               </button>
             </div>
           </form>
-          <div id="voice-availability" />
+          <div id="dictation-availability" />
         </div>
       </div>
     </section>

@@ -3,6 +3,7 @@
 mod active_context;
 mod autonomy;
 mod coding;
+mod command_safety;
 mod completion_audits;
 mod completion_gate;
 pub mod config;
@@ -22,9 +23,10 @@ mod file_history;
 mod files;
 #[cfg(test)]
 mod harness_improvements_tests;
+pub mod interlocutor;
 pub mod library;
-pub mod live;
 pub mod memory;
+mod model_health;
 pub mod model_roles;
 mod operational_context;
 mod permissions;
@@ -35,7 +37,6 @@ pub mod progress;
 mod project_specs;
 mod project_tools;
 mod projects;
-pub mod read_only;
 pub mod redaction;
 mod restart_recovery;
 pub mod schedules;
@@ -55,21 +56,17 @@ pub mod workflows;
 mod workspace_view;
 mod worktrees;
 
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 use config::ModelConnection;
 use fenix_core::{Message, Role};
 use fenix_credentials::ApiKey;
 use fenix_storage::Store;
-use fs2::FileExt;
 use permissions::{ActiveTask, Pending};
 use processes::Processes;
 use redaction::Redactor;
 use serde_json::{Value, json};
 use std::{
     collections::BTreeMap,
-    fs::{File, OpenOptions},
-    io::Write,
-    os::unix::fs::{OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
     sync::Arc,
 };
@@ -77,6 +74,7 @@ use tokio::sync::{Mutex, Notify, RwLock};
 use tokio_util::sync::CancellationToken;
 
 pub struct Runtime {
+    pub(crate) health_check: Mutex<()>,
     pub(crate) decisions: decisions::Decisions,
     pub(crate) worktrees: worktrees::Worktrees,
     pub connectors: Arc<fenix_connectors::Connectors>,
@@ -91,10 +89,9 @@ pub struct Runtime {
     pub(crate) translation_notify: tokio::sync::Notify,
     pub(crate) skill_index: std::sync::Mutex<skills::SkillIndex>,
     pub tenant_root: Option<PathBuf>,
-    pub execution: Option<fenix_execution::Executor>,
     pub redactor: Arc<Redactor>,
     pub stop: CancellationToken,
-    pub(crate) live: live::Live,
+    pub(crate) interlocutor: interlocutor::Interlocutor,
     pub(crate) library_write: Mutex<()>,
     pub(crate) library_wake: Notify,
     pub(crate) model: RwLock<Option<Arc<ModelConnection>>>,
@@ -113,51 +110,35 @@ pub struct Runtime {
     pub(crate) processes: Processes,
     pub(crate) language_servers: coding::lsp::LanguageServers,
     pub(crate) progress: tokio::sync::watch::Sender<progress::Progress>,
-    _lock: File,
+    _lock: fenix_files::private::Lock,
 }
 
 impl Runtime {
     pub async fn open(data_dir: &Path, skills_dir: Option<&Path>) -> Result<Arc<Self>> {
-        std::fs::create_dir_all(data_dir)?;
-        std::fs::set_permissions(data_dir, std::fs::Permissions::from_mode(0o700))?;
-        let data_dir = std::fs::canonicalize(data_dir)?;
-        let lock = OpenOptions::new()
-            .read(true)
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .mode(0o600)
-            .open(data_dir.join("instance.lock"))?;
-        lock.try_lock_exclusive().map_err(|_| {
-            anyhow::anyhow!("Another Fenix process is already using this data directory")
-        })?;
+        let cwd = std::env::current_dir()?;
+        let selected = fenix_files::resolve(&cwd, data_dir, true)?;
+        let data_dir = fenix_files::private::create_private_dir(&selected)?;
+        let lock = fenix_files::private::Lock::try_exclusive(&data_dir.join("instance.lock"))
+            .context(
+                "Another Fenix process is using this directory, or its lock is inaccessible",
+            )?;
         let database = data_dir.join("fenix.sqlite3");
         let store = Arc::new(Store::open(&database)?);
-        std::fs::set_permissions(&database, std::fs::Permissions::from_mode(0o600))?;
+        store.migrate_voice_model_records()?;
         let skills_dir = match skills_dir {
             Some(path) => path.to_owned(),
+            None if cfg!(target_os = "ios") => data_dir.join("skills"),
             None => skills::default_directory()?,
         };
-        std::fs::create_dir_all(&skills_dir)?;
-        let skills_dir = std::fs::canonicalize(skills_dir)?;
-        let tenant_root = if std::env::var("FENIX_CONTAINER").as_deref() == Ok("1") {
-            let root = std::fs::canonicalize(std::env::var("FENIX_USER_ROOT")?)?;
-            anyhow::ensure!(
-                data_dir.starts_with(&root) && skills_dir.starts_with(&root),
-                "Runtime data and skills must belong to this user"
-            );
-            Some(root)
-        } else {
-            None
-        };
-        let execution = fenix_execution::Executor::from_environment()?;
-        if let Some(executor) = &execution {
-            executor.health().await?;
-        }
+        let selected = fenix_files::resolve(&cwd, &skills_dir, true)?;
+        let skills_dir = fenix_files::private::create_private_dir(&selected)?;
+        let tenant_root = None;
+        fenix_execution::validate_local_environment()?;
         let redactor = Arc::new(Redactor::default());
         let stop = CancellationToken::new();
         let processes = Processes::new(data_dir.join("processes"), redactor.clone(), stop.clone())?;
         let runtime = Arc::new(Self {
+            health_check: Mutex::new(()),
             worktrees: worktrees::Worktrees::default(),
             connectors: Arc::new(fenix_connectors::Connectors::open(&data_dir)?),
             workflow_lock: Mutex::new(()),
@@ -172,10 +153,9 @@ impl Runtime {
             translation_notify: tokio::sync::Notify::new(),
             skill_index: std::sync::Mutex::new(skills::SkillIndex::default()),
             tenant_root,
-            execution,
             redactor,
             stop,
-            live: live::Live::default(),
+            interlocutor: interlocutor::Interlocutor::default(),
             library_write: Mutex::new(()),
             library_wake: Notify::new(),
             model: RwLock::new(None),
@@ -269,6 +249,11 @@ impl Runtime {
             worker, scheduler, telegram, subagents, planner, events, browser, memory, library,
             workflows, learning, narrator,
         ]
+    }
+
+    pub fn start_model_health(self: &Arc<Self>) -> tokio::task::JoinHandle<()> {
+        let runtime = self.clone();
+        tokio::spawn(async move { runtime.model_health_worker().await })
     }
 
     /// Start public background crawling explicitly. Library callers and offline
@@ -386,29 +371,31 @@ impl Runtime {
 }
 
 pub fn write_new(path: &Path, content: &str) -> Result<()> {
-    match OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .mode(0o600)
-        .open(path)
-    {
-        Ok(mut file) => {
-            file.write_all(content.as_bytes())?;
-            file.sync_all()?;
+    let directory =
+        fenix_files::private::PrivateDirectory::open(path.parent().context("Parent required")?)?;
+    let name = Path::new(path.file_name().context("File name required")?);
+    match directory.create(name, content.as_bytes(), false) {
+        Ok(()) => Ok(()),
+        Err(error)
+            if error
+                .downcast_ref::<std::io::Error>()
+                .is_some_and(|e| e.kind() == std::io::ErrorKind::AlreadyExists) =>
+        {
             Ok(())
         }
-        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => Ok(()),
-        Err(error) => Err(error.into()),
+        Err(error) => Err(error),
     }
 }
 pub fn write_private(path: &Path, content: &str) -> Result<()> {
-    let temporary = path.with_extension(format!("{}.tmp", fenix_storage::id()));
-    write_new(&temporary, content)?;
-    std::fs::rename(&temporary, path)?;
-    if let Some(parent) = path.parent() {
-        File::open(parent)?.sync_all()?;
+    let directory =
+        fenix_files::private::PrivateDirectory::open(path.parent().context("Parent required")?)?;
+    let name = Path::new(path.file_name().context("File name required")?);
+    if directory.exists(name)? {
+        let before = directory.read(name, 128 * 1024 * 1024)?;
+        directory.replace(name, &before, content.as_bytes())
+    } else {
+        directory.create(name, content.as_bytes(), false)
     }
-    Ok(())
 }
 
 mod security;

@@ -2,6 +2,9 @@
 # Install for the current Linux user. No administrator privileges or keys needed.
 set -euo pipefail
 
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    exec bash "$(dirname -- "${BASH_SOURCE[0]}")/install-macos.sh" "$@"
+fi
 if [[ "$(uname -s)" != "Linux" ]]; then
     echo "Fenix currently supports Linux. / Fenix requiere Linux." >&2
     exit 1

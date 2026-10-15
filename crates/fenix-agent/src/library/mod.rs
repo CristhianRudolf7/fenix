@@ -39,7 +39,7 @@ pub struct Search {
 impl Runtime {
     pub fn library_settings(&self) -> Result<Value> {
         Ok(
-            json!({"model":embeddings::MODEL,"dimensions":embeddings::DIMENSIONS,"enabled":self.store.get::<bool>("library","enabled")?.unwrap_or(true),"configured":self.library_credentials().is_ok(),"execution_available":self.execution.is_some(),"pricing_usd_per_million_tokens":0.02}),
+            json!({"model":embeddings::MODEL,"dimensions":embeddings::DIMENSIONS,"enabled":self.store.get::<bool>("library","enabled")?.unwrap_or(true),"configured":self.library_credentials().is_ok(),"execution_available":fenix_process::external_processes_supported(),"pricing_usd_per_million_tokens":0.02}),
         )
     }
     pub fn library_configure(&self, enabled: bool, key: Option<String>) -> Result<Value> {

@@ -252,19 +252,6 @@ impl Browser {
                     {
                         bail!("Upload requires an authorized regular file of at most 100 MiB");
                     }
-                    let staged;
-                    let path = if s.execution.is_some() {
-                        let bytes = fenix_execution::fs::read(path, 100 * 1024 * 1024)?;
-                        staged = s
-                            .directory
-                            .join("uploads")
-                            .join(uuid::Uuid::new_v4().to_string())
-                            .join(path.file_name().context("Missing upload name")?);
-                        fenix_execution::fs::create(&staged, &bytes)?;
-                        staged.as_path()
-                    } else {
-                        path
-                    };
                     let world = self.world(s, session, frame).await?;
                     let object = s
                         .cdp

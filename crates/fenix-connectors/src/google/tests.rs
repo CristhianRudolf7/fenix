@@ -45,7 +45,7 @@ fn permissions_are_service_specific_and_legacy_connections_keep_their_surface() 
             && write.contains("/meetings.space.created")
     );
     assert!(!write.contains("gmail") && !write.contains("cloud-platform"));
-    assert_eq!(selected(&json!({})).unwrap().len(), 6);
+    assert_eq!(selected(&json!({})).unwrap().len(), 5);
     assert!(validate_settings(&json!({"services":[]})).is_err());
     assert!(validate_settings(&json!({"services":["gmail","gmail"]})).is_err());
     assert!(validate_settings(&json!({"services":["admin"]})).is_err());
@@ -102,7 +102,7 @@ async fn preview_never_authenticates_or_writes_and_service_gates_apply() {
 #[tokio::test]
 async fn discovery_is_anonymous_cached_and_scoped_to_known_services() {
     let (root, server, connectors) = setup().await;
-    let id = account(&connectors, &["drive"], false);
+    let id = account(&connectors, &["gmail"], false);
     Mock::given(method("GET")).and(path("/$discovery/rest")).and(query_param("version", "v1"))
         .respond_with(ResponseTemplate::new(200).set_body_json(json!({"name":"gmail","version":"v1","revision":"fixture","resources":{"users":{"resources":{"messages":{"methods":{"get":{"id":"gmail.users.messages.get","httpMethod":"GET","path":"gmail/v1/users/{userId}/messages/{id}","response":{"$ref":"Message"},"scopes":["gmail.readonly"]}}}}}},"schemas":{"Message":{"type":"object","properties":{"payload":{"$ref":"Part"}}},"Part":{"type":"object"}}})))
         .expect(1).mount(&server).await;
@@ -266,8 +266,8 @@ async fn pagination_stops_on_repeated_tokens_and_reports_partial_provider_failur
 #[tokio::test]
 async fn checks_do_not_claim_that_every_google_service_passed() {
     let (root, server, connectors) = setup().await;
-    let id = account(&connectors, &["drive", "gmail", "docs"], false);
-    Mock::given(path("/drive/v3/about"))
+    let id = account(&connectors, &["calendar", "gmail", "docs"], false);
+    Mock::given(path("/calendar/v3/users/me/calendarList"))
         .respond_with(
             ResponseTemplate::new(200)
                 .set_body_json(json!({"user":{"emailAddress":"user@example.test"}})),
@@ -280,7 +280,7 @@ async fn checks_do_not_claim_that_every_google_service_passed() {
         .await;
     let result = connectors.test(&id, root.path()).await.unwrap();
     assert_eq!(result["state"], "needs_attention");
-    assert_eq!(result["service_checks"]["drive"]["status"], "passed");
+    assert_eq!(result["service_checks"]["calendar"]["status"], "passed");
     assert_eq!(result["service_checks"]["gmail"]["status"], "failed");
     assert_eq!(result["service_checks"]["docs"]["status"], "not_checked");
     let docs = account(&connectors, &["docs"], false);
@@ -503,57 +503,6 @@ async fn oauth_uses_selected_scopes_and_editing_does_not_expand_services() {
 }
 
 #[tokio::test]
-async fn drive_upload_previews_locally_and_posts_a_single_multipart_request() {
-    let (root, server, connectors) = setup().await;
-    let id = account(&connectors, &["drive"], true);
-    std::fs::write(root.path().join("report.pdf"), b"%PDF-fixture").unwrap();
-    let mut args = json!({"source":"report.pdf","folder_id":"folder1","mime_type":"application/pdf","dry_run":true});
-    let preview = connectors
-        .invoke(&id, "drive_upload", &args, root.path())
-        .await
-        .unwrap();
-    assert_eq!(preview["executed"], false);
-    assert!(
-        preview["url"]
-            .as_str()
-            .unwrap()
-            .starts_with("https://www.googleapis.com/upload/drive/v3/files?")
-    );
-    assert!(server.received_requests().await.unwrap().is_empty());
-    Mock::given(method("POST"))
-        .and(path("/upload/drive/v3/files"))
-        .and(query_param("uploadType", "multipart"))
-        .respond_with(
-            ResponseTemplate::new(200).set_body_json(json!({"id":"uploaded1","name":"report.pdf"})),
-        )
-        .expect(1)
-        .mount(&server)
-        .await;
-    args["dry_run"] = json!(false);
-    assert_eq!(
-        connectors
-            .invoke(&id, "drive_upload", &args, root.path())
-            .await
-            .unwrap()["id"],
-        "uploaded1"
-    );
-    let requests = server.received_requests().await.unwrap();
-    let body = String::from_utf8_lossy(&requests[0].body);
-    assert!(
-        body.contains("%PDF-fixture")
-            && body.contains("folder1")
-            && body.contains("application/pdf")
-    );
-    args["source"] = json!("../other-user/report.pdf");
-    assert!(
-        connectors
-            .invoke(&id, "drive_upload", &args, root.path())
-            .await
-            .is_err()
-    );
-}
-
-#[tokio::test]
 async fn pagination_budget_retains_the_first_unreturned_page_token() {
     let (root, server, connectors) = setup().await;
     let id = account(&connectors, &["tasks"], false);
@@ -664,5 +613,56 @@ fn legacy_connected_records_do_not_masquerade_as_service_verified() {
     let c: Connection = serde_json::from_value(json!({"id":"old","provider":"google","name":"Legacy","credentials":{},"settings":{},"allow_write":false,"checked_at":null,"state":"connected"})).unwrap();
     assert_eq!(c.view()["state"], "authorized");
     assert!(c.view()["service_checks"].is_null());
-    assert_eq!(selected(&c.settings).unwrap().len(), 6);
+    assert_eq!(selected(&c.settings).unwrap().len(), 5);
+}
+
+#[tokio::test]
+async fn retired_drive_is_not_advertised_or_callable() {
+    let (root, server, connectors) = setup().await;
+    assert!(
+        !catalog()[0]["services"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("Drive"))
+    );
+    assert!(validate_settings(&json!({"services":["drive"]})).is_err());
+    assert!(
+        validate_settings(
+            &json!({"services":["gmail"],"scopes":"https://www.googleapis.com/auth/drive.readonly"})
+        )
+        .is_err()
+    );
+    let id = account(&connectors, &["gmail"], false);
+    for operation in [
+        "drive_search",
+        "drive_upload",
+        "drive_download",
+        "drive_export",
+    ] {
+        assert!(connectors.describe(&id, operation).is_err());
+        assert!(
+            connectors
+                .invoke(&id, operation, &json!({}), root.path())
+                .await
+                .is_err()
+        );
+    }
+    for operation in ["request", "workspace_schema"] {
+        assert!(
+            connectors
+                .invoke(
+                    &id,
+                    operation,
+                    &json!({"service":"drive", "path":"/files"}),
+                    root.path()
+                )
+                .await
+                .is_err()
+        );
+    }
+    assert!(server.received_requests().await.unwrap().is_empty());
+    assert_eq!(
+        selected(&json!({"services":["drive", "gmail"]})).unwrap(),
+        vec!["gmail"]
+    );
 }

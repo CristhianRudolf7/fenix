@@ -45,7 +45,12 @@ pub struct Coverage {
 
 impl Index {
     pub(crate) fn open(path: &Path, config: &Config) -> Result<Self> {
-        let mut connection = Connection::open(path)?;
+        let mut connection = Connection::open_with_flags(
+            path,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_WRITE
+                | rusqlite::OpenFlags::SQLITE_OPEN_CREATE
+                | rusqlite::OpenFlags::SQLITE_OPEN_NOFOLLOW,
+        )?;
         connection.busy_timeout(std::time::Duration::from_secs(3))?;
         connection.execute_batch("PRAGMA journal_mode=WAL;
             PRAGMA cache_size=-2048; PRAGMA mmap_size=0; PRAGMA temp_store=FILE;

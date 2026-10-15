@@ -5,6 +5,7 @@ use fenix_credentials::{ApiKey, Credential, CredentialStore};
 use fenix_providers::{ProviderClient, ProviderConfig, catalog::descriptor};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 use std::{path::PathBuf, sync::Arc};
 
 pub const DEFAULT_MODEL: &str = "gpt-5.6-luna";
@@ -27,7 +28,7 @@ pub struct Settings {
     #[serde(default)]
     pub flex_processing: bool,
     pub workspace: PathBuf,
-    #[serde(default = "default_approval")]
+    #[serde(default = "default_commands")]
     pub command_policy: ActionPolicy,
     #[serde(default = "default_approval")]
     pub file_write_policy: ActionPolicy,
@@ -131,6 +132,9 @@ pub enum ActionPolicy {
     Ask,
     Allow,
 }
+fn default_commands() -> ActionPolicy {
+    ActionPolicy::Allow
+}
 fn default_approval() -> ActionPolicy {
     ActionPolicy::Ask
 }
@@ -147,7 +151,7 @@ impl Settings {
             reasoning_effort: Some(ReasoningEffort::Low),
             flex_processing: false,
             workspace,
-            command_policy: ActionPolicy::Ask,
+            command_policy: ActionPolicy::Allow,
             file_write_policy: ActionPolicy::Ask,
             coding: CodingSettings::default(),
             execution: ExecutionSettings::default(),
@@ -177,6 +181,7 @@ impl Settings {
 }
 
 pub struct ModelConnection {
+    pub(crate) health_identity: String,
     pub settings: Settings,
     pub client: ProviderClient,
 }
@@ -187,6 +192,19 @@ impl Runtime {
     }
 
     pub fn model_connection(&self, settings: Settings, key: ApiKey) -> Result<ModelConnection> {
+        let health_identity = format!(
+            "{:x}",
+            Sha256::digest(serde_json::to_vec(&(
+                settings.provider_config(),
+                &settings.model,
+                settings.reasoning_effort,
+                settings.flex_processing,
+                &settings.provider_project,
+                &settings.organization,
+                &settings.project,
+                key.expose_secret(),
+            ))?)
+        );
         let mut credential = Credential::inline(key);
         credential.provider_project = settings.provider_project.clone();
         credential.organization = settings.organization.clone();
@@ -197,6 +215,7 @@ impl Runtime {
             store.set_default(settings.provider, credential);
         }
         Ok(ModelConnection {
+            health_identity,
             client: ProviderClient::with_options(
                 store,
                 fenix_providers::ClientOptions {
@@ -280,6 +299,7 @@ impl Runtime {
         // Signed replay data is protocol-specific. Preserve it on disk; only clear it
         // when building context for a different protocol (see context.rs).
         self.language_servers.shutdown().await;
+        self.record_model_health("intelligent", &connection, None)?;
         *self.model.write().await = Some(Arc::new(connection));
         Ok(json!({"connected":true,"model":settings.model,"usage":response.usage}))
     }
@@ -290,4 +310,21 @@ pub fn provider_catalog() -> Value {
         let d=descriptor(*id);
         json!({"id":id,"base_url":d.default_base_url,"requires_base_url":d.default_base_url.is_none(),"project_header":d.project_header,"organization_header":d.organization_header,"default_model":if *id==ProviderId::OpenAi {Some(DEFAULT_MODEL)} else {None}})
     }).collect::<Vec<_>>())
+}
+
+#[cfg(test)]
+mod local_command_defaults_tests {
+    use super::*;
+    #[test]
+    fn new_installations_use_risk_checks_and_existing_ask_preferences_survive() {
+        let settings = Settings::initial(PathBuf::from("/tmp/workspace"));
+        assert!(settings.command_policy == ActionPolicy::Allow);
+        let mut value = serde_json::to_value(settings).unwrap();
+        value.as_object_mut().unwrap().remove("command_policy");
+        let defaults: Settings = serde_json::from_value(value.clone()).unwrap();
+        assert!(defaults.command_policy == ActionPolicy::Allow);
+        value["command_policy"] = json!("ask");
+        let existing: Settings = serde_json::from_value(value).unwrap();
+        assert!(existing.command_policy == ActionPolicy::Ask);
+    }
 }

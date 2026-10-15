@@ -228,7 +228,7 @@ function Skills({ language }: { language: string }) {
         .includes(query.toLowerCase()),
   );
   return (
-    <div className="content skill-exchange">
+    <div className="content personal-skills">
       <header className="skills-hero">
         <h1>Skills</h1>
       </header>

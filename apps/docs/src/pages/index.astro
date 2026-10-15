@@ -1,152 +1,338 @@
 ---
-import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 import PhoenixMark from "../components/PhoenixMark.astro";
 import "../styles/home.css";
-const github = "https://github.com/CristhianRudolf7/fenix";
+import "../../../web/src/styles/phoenix.css";
+const command = "curl -fsSL https://fenix.crehlabs.com/install.sh | bash";
+const examples = [
+  {
+    id: "research",
+    label: "Investigar",
+    request: "Encuentra las ideas clave de estos documentos.",
+    status: "Conectando las fuentes",
+    titles: ["Tus documentos", "Ideas conectadas", "Una síntesis clara"],
+    heading: "Conocimiento en contexto",
+    lines: [
+      "Reunir las fuentes",
+      "Relacionar las ideas",
+      "Conservar las referencias",
+    ],
+  },
+  {
+    id: "create",
+    label: "Crear",
+    request: "Convierte mis notas en una presentación.",
+    status: "Organizando las ideas",
+    titles: ["Tus notas", "Ideas organizadas", "Presentación lista"],
+    heading: "Ideas en acción",
+    lines: [
+      "Una nueva idea para tu día a día",
+      "Productividad en tus propios términos",
+      "Abierto hoy, más posibilidades mañana",
+    ],
+  },
+  {
+    id: "code",
+    label: "Programar",
+    request: "Ayúdame a convertir esta idea en una aplicación.",
+    status: "Preparando los próximos pasos",
+    titles: ["Tu idea", "Un plan concreto", "Algo que puedes construir"],
+    heading: "De la idea al código",
+    lines: [
+      "Entender lo que necesitas",
+      "Trabajar paso a paso",
+      "Comprobar el resultado",
+    ],
+  },
+];
 ---
 
-<StarlightPage
-  frontmatter={{
-    title: "Conversa. Crea. Avanza.",
-    description:
-      "Documentación de Fénix: conversación continua, herramientas y trabajo en segundo plano.",
-    template: "splash",
-    tableOfContents: false,
-    editUrl: false,
-  }}
->
-  <div class="landing">
-    <section class="hero">
-      <div class="hero-copy reveal">
-        <div class="pill">
-          <span></span> ASISTENTE DE IA · CÓDIGO PÚBLICO
-        </div>
-        <h1>
-          Conversa.
-          <br />
-          Crea. <em>Avanza.</em>
-        </h1>
-        <p>
-          Un espacio para tus ideas, tus proyectos y el trabajo que quieres
-          resolver. Conoce cómo funciona Fénix y construye con él.
-        </p>
-        <div class="hero-actions">
-          <a class="button primary" href="/docs/inicio/">
-            Explorar documentación <span>↗</span>
-          </a>
-          <a class="button secondary" href={github}>
-            Ver en GitHub <span>→</span>
-          </a>
-        </div>
-        <div class="hero-detail">
-          <span>Rust en el motor</span>
-          <i></i>
-          <span>Tu contexto, conectado</span>
-          <i></i>
-          <span>Versión 0.3.0</span>
-        </div>
-      </div>
-      <div
-        class="hero-visual reveal"
-        aria-label="Conversación, planificación y documentos conectados"
-      >
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-        <div class="core">
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta
+      name="description"
+      content="Fénix: tu asistente personal, de la conversación a la acción. Instálalo y explora su documentación."
+    />
+    <title>Fénix — Menos pendientes. Más posibilidades.</title>
+    <link rel="icon" href="/docs-assets/favicon.svg" />
+  </head>
+  <body>
+    <a class="skip" href="#main">
+      Ir al contenido
+    </a>
+    <div class="page-loader boot" aria-hidden="true">
+      <span class="loading-emblem">
+        <PhoenixMark />
+      </span>
+    </div>
+    <div class="editorial">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="Fénix, inicio">
           <PhoenixMark />
           <span>FÉNIX</span>
-        </div>
-        <div class="float-card card-chat">
-          <div class="card-icon">↗</div>
-          <span>UNA CONVERSACIÓN</span>
-          <strong>De la idea a la acción</strong>
-          <div class="lines">
-            <b></b>
-            <b></b>
-          </div>
-        </div>
-        <div class="float-card card-plan">
-          <div class="card-icon green">✓</div>
-          <span>TRABAJO EN SEGUNDO PLANO</span>
-          <strong>Tu proyecto sigue avanzando</strong>
-          <div class="steps">
-            <i></i>
-            <i></i>
-            <i></i>
-            <i></i>
-          </div>
-        </div>
-        <div class="float-card card-doc">
-          <div class="card-icon">▤</div>
-          <span>TU ESPACIO</span>
-          <strong>Documentos y conocimiento</strong>
-          <div class="mini-tags">
-            <span>Archivos</span>
-            <span>Memoria</span>
-          </div>
-        </div>
-      </div>
-    </section>
-    <section class="start-section">
-      <div class="section-heading reveal">
-        <div>
-          <span class="eyebrow">EMPIEZA POR AQUÍ</span>
-          <h2>
-            Menos vueltas.
+        </a>
+        <nav aria-label="Principal">
+          <a href="/docs/inicio/">Documentación</a>
+          <a href="/atlas/">Atlas del motor</a>
+          <a href="https://github.com/CristhianRudolf7/fenix">GitHub</a>
+          <a href="#install">Instalar ↗</a>
+        </nav>
+      </header>
+      <main id="main">
+        <section class="masthead">
+          <span class="margin-note">
+            CONVERSA
             <br />
-            Más posibilidades.
-          </h2>
-        </div>
-        <p>Guías claras para instalar, entender y ampliar tu asistente.</p>
-      </div>
-      <div class="guide-cards">
-        <a class="guide-card reveal" href="/docs/instalacion/">
-          <span class="guide-number">01 / EMPEZAR</span>
-          <div class="guide-symbol">↳</div>
-          <h3>Hazlo tuyo</h3>
-          <p>Instalación actual, requisitos y configuración de tu entorno.</p>
-          <span class="guide-link">Instalar Fénix ↗</span>
+            ORGANIZA
+            <br />
+            CREA
+            <br />
+            AVANZA
+          </span>
+          <h1>
+            Menos pendientes.
+            <br />
+            Más <span>posibilidades.</span>
+          </h1>
+          <p>Tu asistente personal, de la conversación a la acción.</p>
+        </section>
+        <section
+          class="workbench"
+          aria-label="Ejemplos de lo que puedes hacer con Fénix"
+        >
+          <div class="bench-header">
+            <span>UNA IDEA, MUCHAS FORMAS DE AVANZAR</span>
+            <div role="tablist" aria-label="Ejemplos">
+              {examples.map((example) => (
+                <button
+                  role="tab"
+                  id={`tab-${example.id}`}
+                  aria-controls={`panel-${example.id}`}
+                  aria-selected={example.id === "create" ? "true" : "false"}
+                  tabindex={example.id === "create" ? 0 : -1}
+                  data-example={example.id}
+                >
+                  {example.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {examples.map((example) => (
+            <div
+              role="tabpanel"
+              id={`panel-${example.id}`}
+              aria-labelledby={`tab-${example.id}`}
+              hidden={example.id !== "create"}
+            >
+              <div class="request">
+                <PhoenixMark />
+                <p>{example.request}</p>
+                <span aria-hidden="true">↑</span>
+              </div>
+              <div class="connector" aria-hidden="true">
+                <i></i>
+                <b>↓</b>
+                <b>↓</b>
+                <b>↓</b>
+              </div>
+              <div class="artifacts">
+                <article>
+                  <h2>
+                    <small>01</small>
+                    {example.titles[0]}
+                  </h2>
+                  <div class="notebook paper">
+                    <span class="notebook-ring" aria-hidden="true"></span>
+                    <p class="handwritten">Proyecto Fénix</p>
+                    <ul>
+                      <li>De la conversación a la acción</li>
+                      <li>Mis ideas, en un solo lugar</li>
+                      <li>Documentos y proyectos</li>
+                      <li>Un paso cada vez</li>
+                      <li>Herramientas para crear</li>
+                    </ul>
+                    <p class="annotation">↳ {example.request}</p>
+                    <p class="handwritten bottom-note">
+                      Menos pendientes.
+                      <br />
+                      Más posibilidades.
+                    </p>
+                  </div>
+                </article>
+                <article>
+                  <h2>
+                    <small>02</small>
+                    {example.titles[1]}
+                  </h2>
+                  <div class="outline-paper paper">
+                    <h3>Estructura del proyecto</h3>
+                    <ol>
+                      {example.lines.map((line) => (
+                        <li>
+                          <strong>{line}</strong>
+                          <p>
+                            De la conversación a un resultado que puedes usar.
+                          </p>
+                        </li>
+                      ))}
+                    </ol>
+                    <p class="annotation">Listo para avanzar ↗</p>
+                  </div>
+                </article>
+                <article>
+                  <h2>
+                    <small>03</small>
+                    {example.titles[2]}
+                  </h2>
+                  <div class="cover paper">
+                    <div class="cover-top">
+                      <span>FÉNIX</span>
+                      <PhoenixMark />
+                    </div>
+                    <h3>{example.heading}</h3>
+                    <p>Un asistente de IA abierto para una vida más tuya.</p>
+                    <span class="cover-footer">CREH LABS</span>
+                    <div class="cover-shape" aria-hidden="true"></div>
+                  </div>
+                </article>
+              </div>
+              <div class="demo-status">
+                <span class="boot">
+                  <span class="loading-emblem">
+                    <PhoenixMark />
+                  </span>
+                </span>
+                <span>
+                  {example.status}…
+                  <small>
+                    Vista ilustrativa · Explora las capacidades en la
+                    documentación
+                  </small>
+                </span>
+              </div>
+            </div>
+          ))}
+        </section>
+        <section class="installation" id="install" aria-label="Instalación">
+          <h2>Hazlo tuyo.</h2>
+          <div class="command">
+            <code>{command}</code>
+            <button
+              id="copy-install"
+              aria-label="Copiar comando de instalación"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <rect x="8" y="8" width="12" height="12" rx="2" />
+                <path d="M16 8V4H4v12h4" />
+              </svg>
+            </button>
+          </div>
+          <a href="/docs/instalacion/">Linux · Un solo comando ↗</a>
+          <span id="copy-status" role="status"></span>
+        </section>
+        <section class="explore">
+          <div class="index-heading">
+            <span>EXPLORA FÉNIX</span>
+            <span>CONOCE · APRENDE · PARTICIPA · CONSTRUYE</span>
+          </div>
+          <div class="index-links">
+            {[
+              {
+                title: "Empezar",
+                text: "Instalación y configuración inicial.",
+                url: "instalacion",
+              },
+              {
+                title: "Qué puedes hacer",
+                text: "Conoce las capacidades actuales.",
+                url: "capacidades",
+              },
+              {
+                title: "Cómo funciona",
+                text: "Explora el motor y su arquitectura.",
+                url: "arquitectura",
+              },
+              {
+                title: "Construir en abierto",
+                text: "Lo siguiente también se documenta.",
+                url: "hoja-de-ruta",
+              },
+            ].map((item, index) => (
+              <a href={item.url === "arquitectura" ? "/atlas/" : `/docs/${item.url}/`}>
+                <small>0{index + 1}</small>
+                <div>
+                  <h2>
+                    {item.title}
+                    <span>↗</span>
+                  </h2>
+                  <p>{item.text}</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      </main>
+      <footer>
+        <span>
+          <strong>CREH LABS</strong> Tecnología abierta para personas reales.
+        </span>
+        <a href="https://github.com/CristhianRudolf7/fenix">
+          FÉNIX · CÓDIGO ABIERTO ↗
         </a>
-        <a class="guide-card reveal" href="/docs/capacidades/">
-          <span class="guide-number">02 / DESCUBRIR</span>
-          <div class="guide-symbol">✳</div>
-          <h3>Todo, conectado</h3>
-          <p>Conversación, subagentes, documentos, navegador y programación.</p>
-          <span class="guide-link">Explorar capacidades ↗</span>
-        </a>
-        <a class="guide-card reveal" href="/docs/arquitectura/">
-          <span class="guide-number">03 / CONSTRUIR</span>
-          <div class="guide-symbol">⌘</div>
-          <h3>Una base abierta</h3>
-          <p>Entiende el motor, los límites y cómo se organiza el proyecto.</p>
-          <span class="guide-link">Conocer la arquitectura ↗</span>
-        </a>
-      </div>
-    </section>
-    <section class="closing reveal">
-      <div>
-        <span class="eyebrow">CONSTRUIMOS EN ABIERTO</span>
-        <h2>
-          Lo siguiente empieza
-          <br />
-          con una buena idea.
-        </h2>
-        <p>
-          Explora las propuestas y validaciones pendientes. El futuro también se
-          documenta.
-        </p>
-      </div>
-      <a class="button secondary" href="/docs/hoja-de-ruta/">
-        Ver la hoja de ruta ↗
-      </a>
-    </section>
-    <footer class="site-footer">
-      <a class="brand" href="/">
-        <PhoenixMark />
-        <span>Fénix</span>
-      </a>
-      <span>Un proyecto de CREH Labs</span>
-      <a href={github}>Código en GitHub ↗</a>
-    </footer>
-  </div>
-</StarlightPage>
+      </footer>
+    </div>
+    <script>
+      const tabs = Array.from(
+        document.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+      );
+      function selectTab(tab: HTMLButtonElement) {
+        tabs.forEach((item) => {
+          const selected = item === tab;
+          item.setAttribute("aria-selected", String(selected));
+          item.tabIndex = selected ? 0 : -1;
+          const panel = document.getElementById(
+            item.getAttribute("aria-controls")!,
+          );
+          if (panel) panel.hidden = !selected;
+        });
+      }
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => selectTab(tab));
+        tab.addEventListener("keydown", (event) => {
+          let target: number | undefined;
+          if (event.key === "ArrowRight") target = (index + 1) % tabs.length;
+          if (event.key === "ArrowLeft")
+            target = (index + tabs.length - 1) % tabs.length;
+          if (event.key === "Home") target = 0;
+          if (event.key === "End") target = tabs.length - 1;
+          if (target !== undefined) {
+            event.preventDefault();
+            selectTab(tabs[target]);
+            tabs[target].focus();
+          }
+        });
+      });
+      document
+        .getElementById("copy-install")
+        ?.addEventListener("click", async () => {
+          const status = document.getElementById("copy-status")!;
+          try {
+            await navigator.clipboard.writeText(
+              "curl -fsSL https://fenix.crehlabs.com/install.sh | bash",
+            );
+            status.textContent = "Comando copiado";
+          } catch {
+            status.textContent = "Selecciona el comando para copiarlo";
+          }
+        });
+    </script>
+  </body>
+</html>

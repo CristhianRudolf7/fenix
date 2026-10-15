@@ -36,6 +36,13 @@ async function fixture(page, { empty = false, fail = false } = {}) {
     } else if (path.pathname === "/api/status")
       body = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         session_id: "test",
         settings: { model: "test" },
         pending_requests: [],
@@ -43,7 +50,7 @@ async function fixture(page, { empty = false, fail = false } = {}) {
         subagents: [],
         projects: [],
       };
-    else if (path.pathname === "/api/live/settings")
+    else if (path.pathname === "/api/model-roles/fast")
       body = { configured: false, settings: {} };
     else if (path.pathname === "/api/account/usage") {
       if (fail) {

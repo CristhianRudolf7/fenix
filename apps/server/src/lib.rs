@@ -20,16 +20,15 @@ use serde_json::{Value, json};
 use std::sync::Arc;
 use tokio_stream::wrappers::WatchStream;
 
-pub mod accounts;
 mod assets;
+pub mod auth;
 mod browser;
 mod connectors;
 mod design_choice;
 mod designs;
 mod documents;
 mod integrations;
-mod live;
-mod skill_guard;
+mod model_roles;
 mod skill_management;
 mod workflows;
 mod workspace;
@@ -56,11 +55,26 @@ impl IntoResponse for ApiError {
     }
 }
 
+/// The production single-owner server. Raw routers below are transport fixtures.
+pub fn personal_router(
+    runtime: Arc<Runtime>,
+    port: u16,
+    public_origin: Option<&str>,
+) -> anyhow::Result<Router> {
+    let app = router_with_public_origin(runtime.clone(), port, public_origin)?;
+    let origin = public_origin.map(str::to_owned);
+    Ok(
+        auth::protect(app, runtime, public_origin.is_some()).layer(middleware::from_fn(
+            move |request: Request, next: Next| local_guard(request, next, port, origin.clone()),
+        )),
+    )
+}
+
 pub fn router(runtime: Arc<Runtime>, port: u16) -> Router {
     router_with_public_origin(runtime, port, None).expect("Local router configuration is valid")
 }
 
-/// The optional public origin must be served through an authenticated reverse proxy.
+/// Transport router; production callers must use personal_router for owner authentication.
 pub fn router_with_public_origin(
     runtime: Arc<Runtime>,
     port: u16,
@@ -83,17 +97,15 @@ pub fn router_with_public_origin(
         })
         .transpose()?;
     runtime.browser.set_control_port(port);
-    let exchange = skill_guard::local_routes(&runtime)?;
     Ok(Router::new()
         .merge(browser::routes())
         .merge(integrations::routes())
         .merge(connectors::routes())
         .merge(workflows::routes())
-        .merge(live::routes())
+        .merge(model_roles::routes())
         .merge(designs::routes())
         .merge(documents::routes())
         .merge(workspace::routes())
-        .merge(skill_guard::tenant_routes())
         .route("/", get(assets::index))
         .route("/chat", get(assets::index))
         .route("/projects", get(assets::index))
@@ -153,7 +165,6 @@ pub fn router_with_public_origin(
             get(instruction).put(save_instruction),
         )
         .with_state(runtime)
-        .merge(exchange)
         .layer(DefaultBodyLimit::max(256 * 1024))
         .layer(middleware::from_fn(move |request: Request, next: Next| {
             local_guard(request, next, port, public_origin.clone())
@@ -230,7 +241,9 @@ async fn local_guard(
     response
 }
 async fn status(State(runtime): State<Arc<Runtime>>) -> ApiResult<Value> {
-    Ok(Json(runtime.status().await?))
+    let mut value = runtime.status().await?;
+    value["model_health"] = runtime.model_health_status().await?;
+    Ok(Json(value))
 }
 #[derive(Deserialize)]
 struct UsageQuery {
@@ -414,6 +427,10 @@ async fn message(
     State(runtime): State<Arc<Runtime>>,
     Json(input): Json<ChatInput>,
 ) -> ApiResult<Value> {
+    require(
+        runtime.model_health_status().await?["can_send"] == true,
+        "El modelo no está disponible. Comprueba la conexión antes de enviar mensajes.",
+    )?;
     require(input.document_ids.len() <= 20, "Select up to 20 documents")?;
     let mut text = input.text;
     if let Some(choice) = input.design_choice {

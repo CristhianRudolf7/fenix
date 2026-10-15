@@ -7,12 +7,12 @@ Revisión documental: 9 de octubre de 2026, hora de Perú. Esta hoja distingue a
 - Comprobar el firewall en la infraestructura real: destinos autorizados y bloqueados, restricciones DNS y cancelación cuando se pierde protección. Las pruebas locales no completan esta validación.
 - Evaluar tareas completas de programación, documentos, oficina y navegador con configuraciones reproducibles, informes de fallos y medidas de éxito, tiempo, tokens y costo por tarea resuelta.
 - Separar pruebas simuladas, escenarios sintéticos reales y evaluación de usuarios. No comparar arneses con modelos, tareas o permisos distintos como si fueran equivalentes.
-- Validar carga concurrente, aislamiento entre cuentas, consumo de RAM, recuperación de sesiones y capacidad de la biblioteca con documentos extensos.
-- Actualizar documentación e instalación para distinguir ejecución individual y servicio compartido. Mantener la licencia del proyecto y las guías de contribución/seguridad como decisiones pendientes si se abre la distribución.
+- Validar tareas concurrentes, consumo de RAM, recuperación de sesiones y capacidad de la biblioteca con documentos extensos.
+- Actualizar documentación e instalación para priorizar ejecución individual. Un eventual servicio compartido necesitaría otro diseño y validación de aislamiento. Mantener la licencia del proyecto y las guías de contribución/seguridad como decisiones pendientes si se abre la distribución.
 
 ## Instalación con un solo comando y configuración inicial
 
-Implementado en `scripts/install.sh`: instalador público para Linux x86_64 con glibc 2.39 o posterior y systemd de usuario. Descarga binario y frontend precompilados, verifica SHA-256, conserva datos y restaura la instalación anterior si falla el arranque. `scripts/package-release.sh` y `.github/workflows/release.yml` preparan la distribución. La release 0.3.1 incorpora esos paquetes. Pendiente ampliar arquitecturas y distribuciones compatibles; la interfaz individual permite configurar la conexión desde la bienvenida. El instalador individual no sustituye el despliegue multiusuario ni instala las dependencias opcionales de aislamiento y navegador.
+Implementado en `scripts/install.sh`: instalador público para Linux x86_64 con glibc 2.39 o posterior y systemd de usuario. Descarga binario y frontend precompilados, verifica SHA-256, conserva datos y restaura la instalación anterior si falla el arranque. `scripts/package-release.sh` y `.github/workflows/release.yml` preparan la distribución. La release 0.3.1 incorpora esos paquetes. Pendiente ampliar arquitecturas y distribuciones compatibles; la interfaz individual permite configurar la conexión desde la bienvenida. El instalador individual no sustituye el despliegue multiusuario ni instala las dependencias opcionales del navegador y documentos.
 
 - Separar archivos de aplicación, configuración, secretos y datos personales. Reinstalar o actualizar no debe borrar usuarios, archivos, memoria, sesiones ni credenciales existentes.
 - Abrir la bienvenida en el navegador local al finalizar; si no hay entorno gráfico, mostrar la dirección y explicar cómo acceder desde otro equipo mediante un canal autenticado.
@@ -20,7 +20,7 @@ Implementado en `scripts/install.sh`: instalador público para Linux x86_64 con 
 - Guardar las credenciales únicamente en el servidor, fuera de Git y del almacenamiento persistente del navegador. Limitar la configuración inicial al propietario; no dejar un asistente de instalación abierto públicamente sin autenticación.
 - Mantener Telegram y otras conexiones como pasos opcionales. Usar inicialmente la zona horaria de Perú, con posibilidad de cambiarla. Permitir retomar una configuración incompleta y volver a editarla después.
 - Distinguir instalación autogestionada, donde el propietario configura proveedores, del servicio alojado, donde las credenciales del operador no se muestran ni se piden a los usuarios finales.
-- Prever actualización, diagnóstico y desinstalación conservadora. Las dependencias opcionales del navegador, aislamiento u ofimática deben indicar su estado real y no presentarse como disponibles si faltan.
+- Prever actualización, diagnóstico y desinstalación conservadora. Las dependencias opcionales del navegador u ofimática deben indicar su estado real y no presentarse como disponibles si faltan.
 
 Referencias de configuración e instalación: [OpenClaw](https://docs.openclaw.ai/start/wizard), [instalador de OpenClaw](https://docs.openclaw.ai/install), [Hermes Agent](https://hermes-agent.nousresearch.com/docs/getting-started/installation) y [configuración de Hermes](https://hermes-agent.nousresearch.com/docs/user-guide/configuration). Son referencias de experiencia de uso, no dependencias que se incorporarán a Fénix.
 
@@ -92,7 +92,6 @@ El catálogo bajo demanda, edición localizada y aprendizaje selectivo ya existe
 - Calidad del aprendizaje automático, preservación de capacidades, regresiones, versiones y reversión. La aceptación semántica de un candidato no prueba su utilidad.
 - Autoconfiguración por conversación con versiones, validación y restauración de ajustes; evitar herramientas nuevas para cada campo de configuración.
 - Composición más amplia de herramientas y soporte MCP donde exista una necesidad real.
-- Revisión de seguridad de publicaciones con conjuntos etiquetados; no inferir precisión general de unas pocas pruebas del servicio Sentinel.
 - Aprovisionamiento automático de capacidad para registro con Google y operaciones multiusuario, antes de prometer crecimiento sin administración manual.
 
 ## Programación, búsqueda y navegador
@@ -105,7 +104,7 @@ Ya están implementados LSP configurable, parches, worktrees, búsqueda propia y
 - Evaluar cobertura de búsqueda web, frescura, variantes, fuentes especializadas y costo del rastreador. Conservar el requisito de independencia respecto de proveedores comerciales de búsqueda.
 - Visión para el navegador, cobertura de frames entre procesos, compatibilidad de sitios, pruebas físicas y entre motores y límites de memoria del sistema operativo.
 - Medir concurrencia, admisión global y restauración de checkpoints bajo carga; no extrapolar los ciclos sintéticos de hibernación a cualquier web.
-- Ampliar compatibilidad de gVisor/microVM con evidencia de instalación y escenarios adversariales. No debilitar el aislamiento para conseguir compatibilidad.
+- Retirado en 0.3.2: el sandbox multiusuario de gVisor/microVM deja de ser una modalidad del producto personal. Un eventual retorno a servicio compartido requerirá un diseño separado y validación real.
 
 ## Documentos, voz y experiencia de usuario
 
@@ -136,3 +135,59 @@ Referencias iniciales de memoria/contexto, que requieren revisar versión y meto
 - [Lost in the Middle](https://arxiv.org/abs/2307.03172).
 
 Los detalles implementados y sus límites se documentan en `docs/es/`; los informes históricos conservan sus resultados originales. Las conversaciones sobre un ERP empresarial adaptable siguen siendo ideas exploratorias, no funcionalidad ya programada ni compromiso de esta versión.
+
+## Distribución nativa Windows y macOS
+
+El motor de procesos, cierre, archivos, almacenamiento privado y skills incorpora adaptaciones Linux/macOS/Windows. Se retiró el transporte remoto heredado y se añadió detección de navegador, medición de memoria y selección Python. Ya existen instaladores desde código con inicio automático personal; quedan pendientes su ejecución real, las dependencias opcionales y los paquetes binarios firmados. Completar pruebas nativas antes de anunciar soporte completo. Véase [configuración de escritorio](docs/es/desktop-setup.md).
+
+### Continuación de la portabilidad
+
+- Ejecutar y verificar la matriz nativa de archivos y procesos en Windows y macOS; compilar de forma cruzada no basta.
+- El transporte remoto heredado ya está retirado. Completar la validación nativa de skills y su almacenamiento portable en Windows/macOS.
+- Ejecutar las pruebas nativas de ACL y almacenamiento privado en Windows; las implementaciones ya están incorporadas. Validar navegador, integraciones e instaladores desde código; publicar paquetes binarios cuando superen las pruebas nativas.
+
+## Aplicaciones móviles personales
+
+- Android e iOS: reutilizar el núcleo Rust y la interfaz, sin navegador autónomo.
+- iOS: crear host nativo, puente Rust, almacenamiento en el contenedor, Keychain, selector de documentos, dictado, notificaciones y recuperación tras suspensión.
+- Sustituir operaciones basadas en procesos externos por funciones dentro de la aplicación donde sea viable; no prometer terminal de escritorio ni ejecución permanente en segundo plano en iOS.
+- Validar compilación, firma e instalación con Xcode y pruebas reales antes de anunciar soporte completo.
+
+## Instalación ligera y catálogo de componentes opcionales
+
+- Distribuir un instalable pequeño con las funciones básicas necesarias para conversar y ejecutar el núcleo del agente.
+- Incorporar una interfaz tipo tienda de componentes, donde el usuario pueda descargar, actualizar o retirar únicamente las capacidades que necesite: navegador de escritorio, extracción/OCR, herramientas de documentos, conectores y recursos adicionales.
+- Diferenciar componentes ejecutables, modelos/recursos e instrucciones de skills. Mostrar tamaño de descarga, espacio instalado, dependencias, compatibilidad por sistema y permisos antes de instalar.
+- Verificar integridad y procedencia de paquetes, versiones compatibles, dependencias y restauración ante actualizaciones fallidas; desinstalar componentes sin borrar datos del usuario.
+- Diseñar la entrega móvil conforme a las restricciones de firma, distribución y ejecución de código de Android/iOS. No asumir que una tienda interna puede ejecutar binarios descargados libremente en iOS.
+- Esta tienda de componentes es una ampliación futura; no reintroduce el antiguo marketplace público de skills.
+
+## Validación del cierre completo del agente
+
+- Verificar que el cierre normal detenga y recoja todos los procesos que Fénix inició o supervisa: comandos, árboles de descendientes, terminales PTY, servidores LSP, Chromium y workers de extracción.
+- Comprobar también la finalización de tareas asíncronas, cierre de conexiones y liberación de bloqueos/puertos, preservando transacciones y registros de recuperación.
+- Probar cierre desde la interfaz/host, señales del sistema, detención del servicio y expiración de plazos en Linux, Windows y macOS; añadir los eventos de suspensión/terminación de los hosts móviles cuando existan.
+- Auditar específicamente procesos persistentes, workers que exceden el plazo de espera y descendientes que sobreviven a su padre. No cerrar procesos ajenos al agente.
+- Diferenciar cierre ordenado de terminación forzosa: ante una finalización sin aviso no se garantiza ejecutar limpieza; verificar qué puede recuperar el siguiente arranque sin duplicar acciones.
+
+## Hosts móviles y directorios nativos
+
+- Corregir el directorio de Android para que el host entregue `context.filesDir/fenix` y su carpeta de caché por separado; no depender de HOME/XDG ni fijar `/data/user/0/...`.
+- Completar en iOS la resolución del contenedor y Application Support con APIs nativas, pasando la ruta explícitamente a Rust. No fijar UUID ni asumir HOME de escritorio.
+- Crear hosts en `apps/android` y `apps/ios`, con comunicación directa al núcleo Rust mediante el contrato de `apps/mobile-bridge`: comandos tipados, resultados, eventos, cancelación y ciclo de vida. Estas carpetas son preparación documental; los hosts y bindings siguen pendientes.
+- Adaptar permisos, almacenamiento seguro y trabajo en segundo plano de cada sistema. La suspensión puede destruir el proceso: persistir lo necesario sin prometer ejecución continua.
+
+## Elevación de privilegios autorizada por sistema
+
+- Mantener el runtime sin privilegios elevados y solicitar elevación únicamente para operaciones concretas mediante un helper de alcance limitado.
+- Windows: consentimiento UAC mediante mecanismos nativos y credenciales administrativas cuando sean necesarias.
+- macOS: autorización nativa y helper privilegiado registrado apropiadamente; evitar ejecutar todo el asistente como root.
+- Linux: integrar sudo/Polkit de acuerdo con la política del sistema, sin guardar contraseñas administrativas en el chat ni confundir aprobación textual con elevación efectiva.
+- Android/iOS: solicitar permisos y acceso a recursos mediante APIs del sistema; no prometer root ni una salida del sandbox de la aplicación por consentimiento ordinario.
+- Vincular autorización, argumentos y resultado de cada operación; no conservar privilegios generales innecesarios.
+
+## Evolución de las búsquedas léxicas y vectoriales
+
+- Mejorar calidad, latencia y consumo de las búsquedas léxicas y vectoriales de memoria, documentos y resultados guardados.
+- Evaluar segmentación, normalización, sinónimos, filtros por ámbito, mezcla de puntuaciones y reranking con benchmarks reproducibles.
+- Determinar cuándo conviene vectorizar, actualizar o retirar embeddings; conservar fuentes, trazabilidad y compatibilidad con la búsqueda sin embeddings.

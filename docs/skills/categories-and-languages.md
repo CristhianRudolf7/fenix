@@ -55,7 +55,7 @@ The intelligent role is the existing main task model configured during setup.
 The fast role is the existing account-scoped conversation model (default: GPT-6 Luna with low reasoning),
 now also used for translations. `GET /api/model-roles` reports both roles without
 credentials; `GET/POST /api/model-roles/fast` configures the fast role. The legacy
-`/api/live/settings` endpoint is an alias to the same persisted settings and key,
+fast model settings endpoint is `/api/model-roles/fast`,
 so existing installations require no credential migration. Configure it from the
 chat's fast-model settings. Publication vulnerability reviews retain their separate
 operator-managed credential boundary; tenant users cannot replace that auditor.

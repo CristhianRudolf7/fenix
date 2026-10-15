@@ -1,15 +1,18 @@
 [workspace]
-members = ["crates/fenix-connectors", "crates/fenix-execution", "crates/fenix-documents", "crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers", "crates/fenix-storage", "crates/fenix-web", "crates/fenix-browser", "crates/fenix-agent", "apps/server"]
+members = ["crates/fenix-skills", "crates/fenix-files", "crates/fenix-process", "crates/fenix-connectors", "crates/fenix-execution", "crates/fenix-documents", "crates/fenix-core", "crates/fenix-credentials", "crates/fenix-providers", "crates/fenix-storage", "crates/fenix-web", "crates/fenix-browser", "crates/fenix-agent", "apps/server"]
 resolver = "2"
 
 [workspace.package]
-version = "0.3.1"
+version = "0.3.2"
 edition = "2024"
 rust-version = "1.98"
 publish = false
 repository = "https://github.com/CristhianRudolf7/fenix"
 
 [workspace.dependencies]
+fenix-skills = { path = "crates/fenix-skills" }
+fenix-files = { path = "crates/fenix-files" }
+fenix-process = { path = "crates/fenix-process" }
 fenix-connectors = { path = "crates/fenix-connectors" }
 fenix-execution = { path = "crates/fenix-execution" }
 fenix-documents = { path = "crates/fenix-documents" }

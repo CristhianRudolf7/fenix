@@ -421,3 +421,111 @@ async fn prompt_preserves_owner_text_once_and_keeps_distinct_routing_intents() -
     rt.shutdown().await?;
     Ok(())
 }
+
+#[tokio::test]
+async fn risky_local_workflow_commands_require_yes_or_no_even_when_allowed() -> Result<()> {
+    let (_dir, rt, settings, task) = fixture().await?;
+    let workspace = settings.workspace.clone();
+    for (file, reply, allowed) in [("keep.txt", "no", false), ("remove.txt", "sí", true)] {
+        std::fs::write(workspace.join(file), "temporary test artifact")?;
+        let args = json!({"command":format!("rm -f {file}"),"cwd":workspace,"yield_ms":1000});
+        let cloned = rt.clone();
+        let settings = settings.clone();
+        let id = task.id.clone();
+        let operation = tokio::spawn(async move {
+            cloned
+                .workflow_tool(
+                    &id,
+                    "command_run",
+                    &args,
+                    &settings,
+                    &CancellationToken::new(),
+                )
+                .await
+        });
+        tokio::time::timeout(std::time::Duration::from_secs(5), async {
+            loop {
+                if !rt.pending.lock().await.is_empty() {
+                    break;
+                }
+                tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+            }
+        })
+        .await?;
+        assert!(workspace.join(file).exists(), "command ran before approval");
+        {
+            let pending = rt.pending.lock().await;
+            let view = &pending.values().next().unwrap().view;
+            assert!(view.question.contains("borrar archivos"));
+        }
+        rt.handle_control(reply, "web").await?;
+        let result = operation.await?;
+        assert_eq!(result.is_ok(), allowed);
+        if allowed {
+            tokio::time::timeout(std::time::Duration::from_secs(5), async {
+                while workspace.join(file).exists() {
+                    tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+                }
+            })
+            .await?;
+        } else {
+            assert!(workspace.join(file).exists());
+        }
+    }
+    rt.shutdown().await?;
+    Ok(())
+}
+
+#[tokio::test]
+async fn history_preserves_personal_hard_links_without_treating_them_as_private_blobs() -> Result<()>
+{
+    let (_dir, rt, settings, task) = fixture().await?;
+    let original = settings.workspace.join("original.txt");
+    let alias = settings.workspace.join("alias.txt");
+    std::fs::write(&original, "before")?;
+    std::fs::hard_link(&original, &alias)?;
+    let cancel = CancellationToken::new();
+    let result = rt
+        .execute_tool(
+            &task.id,
+            "test",
+            &settings,
+            "file_edit",
+            &json!({"path":"alias.txt","expected":"before","replacement":"after"}),
+            &cancel,
+        )
+        .await?;
+    assert_eq!(result["verified"], true);
+    assert_eq!(std::fs::read_to_string(&original)?, "before");
+    assert_eq!(std::fs::read_to_string(&alias)?, "after");
+    rt.file_history(&task.id, &settings, &json!({"action":"restore"}), &cancel)
+        .await?;
+    assert_eq!(std::fs::read_to_string(&original)?, "before");
+    assert_eq!(std::fs::read_to_string(&alias)?, "before");
+    rt.shutdown().await?;
+    Ok(())
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn configured_directory_aliases_resolve_to_the_same_locked_private_storage() -> Result<()> {
+    let dir = tempfile::tempdir()?;
+    std::fs::create_dir(dir.path().join("data"))?;
+    std::fs::create_dir(dir.path().join("skills"))?;
+    std::os::unix::fs::symlink(dir.path().join("data"), dir.path().join("data-link"))?;
+    std::os::unix::fs::symlink(dir.path().join("skills"), dir.path().join("skills-link"))?;
+    let rt = Runtime::open(
+        &dir.path().join("data-link"),
+        Some(&dir.path().join("skills-link")),
+    )
+    .await?;
+    assert_eq!(rt.data_dir, dir.path().join("data").canonicalize()?);
+    assert_eq!(rt.skills_dir, dir.path().join("skills").canonicalize()?);
+    assert!(
+        Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills")))
+            .await
+            .is_err()
+    );
+    rt.shutdown().await?;
+    Ok(())
+}

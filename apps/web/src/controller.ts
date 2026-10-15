@@ -238,7 +238,8 @@ function modelForm(setup = false) {
     </form>`;
 }
 function policySelect(id, value) {
-  return `<select id="${id}" name="${id}"><option value="ask" ${value !== "allow" ? "selected" : ""}>${t("Ask in the conversation", "Preguntar en la conversación")}</option><option value="allow" ${value === "allow" ? "selected" : ""}>${t("Allow for this local installation", "Permitir en esta instalación local")}</option></select>`;
+  value ??= id === "command_policy" ? "allow" : "ask";
+  return `<select id="${id}" name="${id}"><option value="ask" ${value !== "allow" ? "selected" : ""}>${t("Ask in the conversation", "Preguntar en la conversación")}</option><option value="allow" ${value === "allow" ? "selected" : ""}>${id === "command_policy" ? t("Ask only for risky commands", "Preguntar solo por comandos de riesgo") : t("Allow for this local installation", "Permitir en esta instalación local")}</option></select>`;
 }
 function setupView() {
   renderSetupMarkup(
@@ -297,6 +298,7 @@ async function render() {
 }
 async function renderChat() {
   renderChatLayout(state.language, state.status.settings.model);
+  updateModelHealth();
   renderChatDesigns(state.language);
   renderChatLibrary(state.language);
   const layout = $(".chat-layout");
@@ -379,7 +381,18 @@ let sendingMessage = false;
 const optimisticMessages = new Map<string, { text: string; after: number }>();
 async function sendChatRequest(request: ChatRequest) {
   if (sendingMessage) return;
+  if (!state.status?.model_health?.can_send) {
+    updateModelHealth();
+    toast(
+      t(
+        "The model is unavailable. Check the connection first.",
+        "El modelo no está disponible. Comprueba la conexión primero.",
+      ),
+    );
+    return;
+  }
   sendingMessage = true;
+  updateModelHealth();
   window.dispatchEvent(new Event("fenix:stop-dictation"));
   const id = `pending-${crypto.randomUUID()}`;
   const after = Math.max(
@@ -431,6 +444,7 @@ async function sendChatRequest(request: ChatRequest) {
     throw error;
   } finally {
     sendingMessage = false;
+    updateModelHealth();
     drawLiveMessage();
   }
 }
@@ -1103,7 +1117,7 @@ document.addEventListener("keydown", (event: any) => {
   }
 });
 document.addEventListener("submit", async (event: any) => {
-  if (event.target.closest("#voice-root")) return;
+  if (event.target.closest("#dictation-root")) return;
   event.preventDefault();
   const form = event.target;
   const button = form.querySelector('[type="submit"]');
@@ -1159,6 +1173,20 @@ document.addEventListener("submit", async (event: any) => {
         `${t("Connection verified", "Conexión verificada")} · ${result.model}`,
       );
     }
+    if (form.id === "fast-model-form") {
+      await api("/model-roles/fast", {
+        method: "POST",
+        body: {
+          provider: $("#fast-provider").value,
+          model: $("#fast-model").value,
+          base_url: $("#fast-url").value || null,
+          api_key: $("#fast-key").value || null,
+        },
+      });
+      state.status = await api("/status");
+      updateModelHealth();
+      toast(t("Connection verified", "Conexión verificada"));
+    }
     if (form.id === "chat-form") {
       const request = chatRequest();
       if (!request.text) return;
@@ -1193,6 +1221,7 @@ document.addEventListener("submit", async (event: any) => {
     if (button?.isConnected) {
       button.disabled = false;
     }
+    if (form.id === "chat-form") updateModelHealth();
   }
 });
 
@@ -1203,6 +1232,7 @@ async function poll() {
     const before = state.status?.ready;
     const [status, tasks] = await Promise.all([api("/status"), api("/tasks")]);
     state.status = status;
+    updateModelHealth();
     state.tasks = tasks;
     const projectsChanged =
       status.projects &&
@@ -1236,6 +1266,9 @@ async function poll() {
   } catch {
     if ($("#connection-state"))
       $("#connection-state").dataset.state = "disconnected";
+    if (state.status)
+      state.status.model_health = { can_send: false, roles: {} };
+    updateModelHealth();
     if ($("#connection-state"))
       $("#connection-state").textContent = t(
         "Service disconnected",
@@ -1348,3 +1381,109 @@ window.addEventListener("fenix:design-choose", async (event) => {
     );
   }
 });
+
+function updateModelHealth() {
+  const health = state.status?.model_health;
+  const send = document.querySelector<HTMLButtonElement>(
+    '#chat-form button[type="submit"]',
+  );
+  if (send) send.disabled = sendingMessage || health?.can_send !== true;
+  const notice = document.getElementById("model-health-notice");
+  if (!notice) return;
+  notice.hidden = health?.can_send === true;
+  if (notice.hidden) {
+    delete notice.dataset.healthSignature;
+    notice.replaceChildren();
+    return;
+  }
+  const roles = Object.values(health?.roles || {}) as {
+    status: string;
+    reason?: string;
+  }[];
+  const signature = JSON.stringify([
+    state.language,
+    roles.map((role) => [role.status, role.reason]),
+  ]);
+  if (notice.dataset.healthSignature === signature) return;
+  notice.dataset.healthSignature = signature;
+  const checking = roles.some((role) =>
+    ["unchecked", "checking"].includes(role.status),
+  );
+  const missing = roles.some((role) => role.status === "unconfigured");
+  const reason = roles.find((role) => role.status === "unavailable")?.reason;
+  const reasons: Record<string, string> = {
+    authentication: t(
+      "The connection needs authorization. Review your settings.",
+      "La conexión necesita autorización. Revisa la configuración.",
+    ),
+    quota: t(
+      "The model provider has no available balance or quota.",
+      "El proveedor del modelo no tiene saldo o cuota disponible.",
+    ),
+    rate_limit: t(
+      "The model is temporarily busy. Please wait before retrying.",
+      "El modelo está ocupado temporalmente. Espera antes de volver a comprobar.",
+    ),
+    configuration: t(
+      "The selected model is unavailable. Review your settings.",
+      "El modelo seleccionado no está disponible. Revisa la configuración.",
+    ),
+    connection: t(
+      "Could not connect to the model. Check your internet connection.",
+      "No pude conectar con el modelo. Revisa tu conexión a internet.",
+    ),
+  };
+  const text = document.createElement("span");
+  text.textContent = checking
+    ? t("Checking the model connection…", "Comprobando la conexión del modelo…")
+    : missing
+      ? t(
+          "Complete your model settings to send messages.",
+          "Completa la configuración de los modelos para enviar mensajes.",
+        )
+      : reasons[reason || ""] ||
+        t(
+          "The model is unavailable. Check the connection to continue.",
+          "El modelo no está disponible. Comprueba la conexión para continuar.",
+        );
+  const retry = document.createElement("button");
+  retry.type = "button";
+  retry.className = "secondary";
+  retry.textContent = t("Check connection", "Comprobar conexión");
+  retry.disabled = checking;
+  retry.addEventListener("click", async () => {
+    retry.disabled = true;
+    try {
+      const value = await api("/model-health", { method: "POST", body: {} });
+      state.status.model_health = value;
+    } catch (error) {
+      toast(errorMessage(error));
+    } finally {
+      delete notice.dataset.healthSignature;
+      updateModelHealth();
+    }
+  });
+  const settings = document.createElement("button");
+  settings.type = "button";
+  settings.className = "secondary";
+  settings.textContent = t("Settings", "Configuración");
+  settings.addEventListener("click", async () => {
+    try {
+      const fast = await api("/model-roles/fast");
+      const config = fast.settings || {};
+      showDetail(
+        t("Model connections", "Conexiones de modelos"),
+        modelForm(false) +
+          `<form id="fast-model-form" class="card"><h2>${t("Conversation model", "Modelo de conversación")}</h2>
+        ${field(`<label for="fast-provider">${t("Provider", "Proveedor")}</label>`, `<select id="fast-provider" name="provider">${state.providers.map((p) => `<option value="${p.id}" ${p.id === config.provider ? "selected" : ""}>${escape(providerNames[p.id] || p.id)}</option>`).join("")}</select>`)}
+        ${input("fast-model", t("Model", "Modelo"), config.model || "", "required")}
+        ${input("fast-key", t("API key (leave blank to keep it)", "Clave de API (vacía para conservarla)"), "", 'type="password" autocomplete="off"')}
+        ${input("fast-url", t("Custom endpoint (optional)", "Dirección personalizada (opcional)"), config.base_url || "", 'type="url"')}
+        <button class="primary" type="submit">${t("Verify and save", "Verificar y guardar")}</button><p class="form-status" role="status"></p></form>`,
+      );
+    } catch (error) {
+      toast(errorMessage(error));
+    }
+  });
+  notice.replaceChildren(text, retry, settings);
+}

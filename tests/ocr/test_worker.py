@@ -97,6 +97,16 @@ class WorkerTests(unittest.TestCase):
         with self.assertRaises(worker.ExtractionError): self.run_worker(req)
         other.unlink(); other.symlink_to(self.path); req["path"] = str(other)
         with self.assertRaises(OSError): self.run_worker(req)
+    def test_snapshot_without_posix_open_flags(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        portable_os = SimpleNamespace(O_RDONLY=os.O_RDONLY, lstat=os.lstat,
+                                      open=os.open, fdopen=os.fdopen, fstat=os.fstat)
+        self.request()
+        expected = self.path.read_bytes()
+        with patch.object(worker, "os", portable_os):
+            self.assertEqual(worker.snapshot(self.path, hashlib.sha256(expected).hexdigest()), expected)
+
     def test_invalid_parameters_and_url(self):
         for key, value in [("page_count", 21), ("start_page", 0), ("dpi", 301), ("dpi", True), ("path", "https://example.com/a.pdf"), ("sha256", "bad")]:
             req = self.request(); req[key] = value

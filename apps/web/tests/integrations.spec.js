@@ -37,6 +37,13 @@ async function fixture(page) {
     else if (path === "/api/status")
       data = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         settings: { model: "test" },
         projects: [],
         pending: [],
@@ -303,11 +310,9 @@ test("Google setup failures explain that the administrator must finish configura
       },
     }),
   );
-  const card = page
-    .locator(".connector-card")
-    .filter({
-      has: page.getByRole("heading", { name: "Google Workspace", exact: true }),
-    });
+  const card = page.locator(".connector-card").filter({
+    has: page.getByRole("heading", { name: "Google Workspace", exact: true }),
+  });
   await card.getByRole("button", { name: /Conectar/ }).click();
   await page
     .getByRole("dialog")

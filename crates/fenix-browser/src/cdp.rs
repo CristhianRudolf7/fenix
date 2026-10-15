@@ -38,17 +38,6 @@ impl Cdp {
                 .context("Could not connect to the local browser")?;
         Self::from_socket(socket)
     }
-    pub async fn connect_stream<S>(endpoint: &str, stream: S) -> Result<Self>
-    where
-        S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send + 'static,
-    {
-        let config = tokio_tungstenite::tungstenite::protocol::WebSocketConfig::default()
-            .max_message_size(Some(16 * 1024 * 1024))
-            .max_frame_size(Some(16 * 1024 * 1024));
-        let (socket, _) =
-            tokio_tungstenite::client_async_with_config(endpoint, stream, Some(config)).await?;
-        Self::from_socket(socket)
-    }
     fn from_socket<S>(socket: tokio_tungstenite::WebSocketStream<S>) -> Result<Self>
     where
         S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send + 'static,

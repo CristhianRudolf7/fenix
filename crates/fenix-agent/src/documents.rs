@@ -25,10 +25,6 @@ impl Runtime {
         args: &Value,
         cancel: &tokio_util::sync::CancellationToken,
     ) -> Result<Value> {
-        ensure!(
-            self.execution.is_some(),
-            "Document extraction requires the isolated execution service and OCR image; no host fallback"
-        );
         let settings = self.settings()?.context("Agent settings required")?;
         let workspace = self.task_workspace(task, &settings.workspace)?;
         let path = self.file_path(
@@ -211,7 +207,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn extraction_without_service_never_parses_on_controller() -> Result<()> {
+    async fn local_extraction_requires_settings_before_starting_a_worker() -> Result<()> {
         let dir = tempfile::tempdir()?;
         let rt = Runtime::open(&dir.path().join("data"), Some(&dir.path().join("skills"))).await?;
         let error = rt
@@ -222,11 +218,17 @@ mod tests {
             )
             .await
             .unwrap_err();
-        assert!(error.to_string().contains("no host fallback"));
+        assert!(error.to_string().contains("Agent settings required"));
+        assert!(
+            !dir.path()
+                .join("data/processes/local-ocr-worker.py")
+                .exists()
+        );
+        rt.shutdown().await?;
         Ok(())
     }
     #[tokio::test]
-    async fn native_documents_obey_workspace_and_never_overwrite_on_create() -> Result<()> {
+    async fn native_documents_allow_external_paths_and_never_overwrite_on_create() -> Result<()> {
         let dir = tempfile::tempdir()?;
         let workspace = dir.path().join("workspace");
         std::fs::create_dir(&workspace)?;
@@ -258,16 +260,62 @@ mod tests {
                 "document_read",
                 &json!({"path":"../workspace/report.docx"})
             )
-            .is_err()
+            .is_ok()
         );
         std::os::unix::fs::symlink(dir.path(), workspace.join("escape"))?;
         let mut escape = create.clone();
         escape["path"] = json!("escape/out.docx");
         assert!(
             rt.documents_execute(&workspace, "document_create", &escape)
-                .is_err()
+                .is_ok()
         );
-        assert!(!dir.path().join("out.docx").exists());
+        assert!(dir.path().join("out.docx").exists());
+        Ok(())
+    }
+}
+
+/// Run the bundled extractor locally. Dependencies are installed by the owner,
+/// never downloaded by the document worker itself.
+pub(crate) fn local_extraction_command(
+    directory: &Path,
+    request: &Value,
+) -> Result<tokio::process::Command> {
+    let worker = directory.join("local-ocr-worker.py");
+    let source = include_bytes!("../../../scripts/ocr/worker.py");
+    std::fs::create_dir_all(directory)?;
+    if std::fs::read(&worker).ok().as_deref() != Some(source.as_slice()) {
+        fenix_execution::fs::write(&worker, source)?;
+    }
+    let interpreter = match std::env::var_os("FENIX_OCR_PYTHON") {
+        Some(value) => value,
+        None => ["python3", "python"].into_iter().find_map(|name| fenix_process::resolve_program(Path::new(name)))
+            .context("Python 3 is required for local PDF/OCR extraction; install it or set FENIX_OCR_PYTHON")?.into_os_string(),
+    };
+    let mut command = tokio::process::Command::new(interpreter);
+    command
+        .arg("-I")
+        .arg("-u")
+        .arg(worker)
+        .arg(serde_json::to_string(request)?);
+    command
+        .env_clear()
+        .envs(fenix_execution::local_environment(directory));
+    Ok(command)
+}
+
+#[cfg(test)]
+mod local_worker_tests {
+    use super::*;
+    #[tokio::test]
+    async fn bundled_extractor_runs_without_an_execution_service() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let output = local_extraction_command(dir.path(), &json!({"invalid":true}))?
+            .output()
+            .await?;
+        assert_eq!(output.status.code(), Some(2));
+        let event: Value = serde_json::from_slice(&output.stdout)?;
+        assert_eq!(event["event"], "error");
+        assert_eq!(event["message"], "Invalid extraction request");
         Ok(())
     }
 }

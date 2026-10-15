@@ -33,11 +33,13 @@ pub struct EvaluationConfig {
     /// The benchmark owns grading and sends only user-visible notifications here.
     #[serde(default)]
     pub interaction_socket: Option<PathBuf>,
-    /// Optional fast (conversational) role, configured through the normal live
+    #[serde(default)]
+    pub interaction_endpoint: Option<String>,
+    /// Optional fast (conversational) role, configured through the normal fast-model
     /// settings path with the same evaluation credential and tunnel. It is only
     /// called by existing fast-role features; its absence keeps the master alone.
     #[serde(default)]
-    pub fast: Option<crate::live::LiveSettings>,
+    pub fast: Option<crate::interlocutor::FastModelSettings>,
 }
 fn waiting_seconds() -> u64 {
     15
@@ -192,8 +194,9 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
     rt.configure(config.settings.clone(), Some(key.trim().into()))
         .await?;
     if let Some(fast) = config.fast.clone() {
-        // Normal live configuration, including its connection check, before timing starts.
-        rt.configure_live(fast, Some(key.trim().into())).await?;
+        // Normal fast-model configuration, including its connection check, before timing starts.
+        rt.configure_fast_model(fast, Some(key.trim().into()))
+            .await?;
     }
     if let Some(decisions) = config.decisions.clone() {
         let mut relay = reqwest::Url::parse(
@@ -211,7 +214,7 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
         rt.configure_decisions(decisions, Some(key.trim().into()))?;
     }
     let started = Instant::now();
-    let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
+    let mut shutdown = fenix_process::shutdown::Shutdown::listen()?;
     // Freeze auxiliary learning before starting any worker. Evaluation measures
     // this task, not an asynchronously learned procedure or cross-trial adaptation.
     rt.store
@@ -222,9 +225,11 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
         if config.instruction.trim().is_empty() || config.instruction.len() > 32_000 { bail!("Evaluation instruction must contain 1–32000 bytes"); }
         // Benchmark instructions are new tasks, not textual chat-control commands
         // such as "reply" or "cancel". All subsequent execution uses the normal worker.
-        let mut interaction = match &config.interaction_socket {
-            Some(path) => Some(interaction::Session::connect(path, &config.instruction).await?),
-            None => None,
+        anyhow::ensure!(config.interaction_endpoint.is_none() || config.interaction_socket.is_none(), "Choose one benchmark interaction transport");
+        let mut interaction = match (&config.interaction_endpoint, &config.interaction_socket) {
+            (Some(endpoint), _) => Some(interaction::Session::connect_endpoint(endpoint, &config.instruction).await?),
+            (_, Some(path)) => Some(interaction::Session::connect(path, &config.instruction).await?),
+            _ => None,
         };
         rt.store.put("evaluation", "noninteractive", &interaction.is_none())?;
         if interaction.is_none() {
@@ -282,8 +287,7 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
                 }
             }
             tokio::select! {
-                _ = terminate.recv() => break Ok("cancelled".into()),
-                _ = tokio::signal::ctrl_c() => break Ok("cancelled".into()),
+                _ = shutdown.wait() => break Ok("cancelled".into()),
                 _ = tokio::time::sleep(Duration::from_millis(500)) => {},
             }
         }
@@ -319,7 +323,7 @@ pub async fn run(mut config: EvaluationConfig, output: &Path, keep_services: boo
     .await?;
     crate::write_private(&output.join("ready.json"), &json!({"stop_reason":reason,"services_preserved":preserve,"report":"report.json","reward":null}).to_string())?;
     if preserve {
-        tokio::select! { _ = tokio::signal::ctrl_c() => {}, _ = terminate.recv() => {} }
+        shutdown.wait().await;
         rt.shutdown().await?;
     }
     execution.map(|_| ())
@@ -378,7 +382,7 @@ async fn export(
         }
         traces.push(json!({"task":task,"events":events}));
     }
-    for record in rt.store.records::<Value>("live_usage")? {
+    for record in rt.store.records::<Value>("fast_usage")? {
         metrics.observe_fast(&record);
     }
     let roles = json!({"intelligent":config.settings.model,
@@ -450,6 +454,7 @@ mod tests {
             proxy_upstream: Some(*server.address()),
             decisions: None,
             interaction_socket: None,
+            interaction_endpoint: None,
             fast: None,
         };
         run(config(), &output, false).await.unwrap();
@@ -498,8 +503,9 @@ mod tests {
                 proxy_upstream: Some(*server.address()),
                 decisions: None,
                 interaction_socket: None,
+                interaction_endpoint: None,
                 // Port 9 is only reachable through the tunnel rewrite.
-                fast: Some(crate::live::LiveSettings {
+                fast: Some(crate::interlocutor::FastModelSettings {
                     provider: fenix_core::ProviderId::OpenRouter,
                     model: "fast-fixture".into(),
                     base_url: Some("http://127.0.0.1:9/v1".into()),

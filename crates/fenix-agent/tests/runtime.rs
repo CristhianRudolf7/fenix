@@ -500,8 +500,8 @@ async fn telegram_pairs_only_with_local_code_and_accepts_only_owner_text() {
         .mount(&conversation)
         .await;
     runtime
-        .configure_live(
-            fenix_agent::live::LiveSettings {
+        .configure_fast_model(
+            fenix_agent::interlocutor::FastModelSettings {
                 reasoning_effort: None,
                 provider: fenix_core::ProviderId::OpenAi,
                 model: "conversation-test".into(),

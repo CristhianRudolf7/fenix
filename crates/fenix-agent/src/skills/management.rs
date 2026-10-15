@@ -1,43 +1,12 @@
-//! Account-local manual editing with atomic writes and optimistic concurrency.
+//! Account-local manual editing with portable locks and optimistic concurrency.
 use anyhow::{Result, ensure};
-use fs2::FileExt;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use std::{
-    fs::{self, File, OpenOptions},
-    io::{Read, Write},
-    os::{
-        fd::AsRawFd,
-        unix::fs::{MetadataExt, OpenOptionsExt},
-    },
-    path::{Path, PathBuf},
-};
-
-fn pinned(file: &File) -> PathBuf {
-    PathBuf::from(format!("/proc/self/fd/{}", file.as_raw_fd()))
-}
-fn read(dir: &Path) -> Result<(String, String)> {
-    let file = OpenOptions::new()
-        .read(true)
-        .custom_flags(nix::libc::O_NOFOLLOW | nix::libc::O_NONBLOCK)
-        .open(dir.join("SKILL.md"))?;
-    let meta = file.metadata()?;
-    ensure!(
-        meta.is_file() && meta.nlink() == 1 && meta.len() <= 32_000,
-        "Invalid skill file"
-    );
-    let mut content = String::new();
-    file.take(32_001).read_to_string(&mut content)?;
-    ensure!(content.len() <= 32_000, "Skill source is too large");
-    let revision = format!("{:x}", Sha256::digest(content.as_bytes()));
-    Ok((content, revision))
-}
 impl crate::Runtime {
     pub fn editable_skill(&self, name: &str) -> Result<Value> {
         ensure!(super::valid_name(name), "Invalid skill name");
-        let root = super::bundle::directory(&self.skills_dir)?;
-        let dir = super::bundle::directory(&pinned(&root).join(name))?;
-        let (content, revision) = read(&pinned(&dir))?;
+        let (content, revision) =
+            fenix_skills::Library::open(&self.skills_dir)?.read_skill(name)?;
         Ok(json!({"content":content,"revision":revision,"language":"en"}))
     }
     /// UI revisions cover both languages, including manual Spanish corrections.
@@ -119,14 +88,13 @@ impl crate::Runtime {
             english.len() <= 32_000,
             "Translated skill is too large; changes were not saved"
         );
-        let root = super::bundle::directory(&self.skills_dir)?;
-        root.lock_exclusive()?;
+        let library = fenix_skills::Library::open(&self.skills_dir)?;
+        let _lock = library.lock()?;
         ensure!(
             self.editable_skill_language(name, language)?["revision"] == expected,
             "This skill changed elsewhere. Reopen it before saving your changes."
         );
-        let dir = super::bundle::directory(&pinned(&root).join(name))?;
-        let path = pinned(&dir);
+
         let display = self.display_path(english)?;
         let mut meta = serde_yaml_ng::Value::Mapping(
             super::metadata(spanish)?
@@ -150,11 +118,8 @@ impl crate::Runtime {
         );
         // Publish the translation first; readers discover it only through the canonical hash.
         crate::write_private(&display, &spanish)?;
-        let mut temporary = tempfile::NamedTempFile::new_in(&path)?;
-        temporary.write_all(english.as_bytes())?;
-        temporary.as_file().sync_all()?;
-        temporary.persist(path.join("SKILL.md"))?;
-        dir.sync_all()?;
+        let (_, current) = library.read_skill(name)?;
+        library.replace_skill(name, &current, english)?;
         let revision = self.editable_skill_language(name, language)?["revision"].clone();
         Ok(json!({"revision":revision,"language":language,"saved":true}))
     }
@@ -165,21 +130,16 @@ impl crate::Runtime {
             "Skill must contain between 1 and 32000 bytes"
         );
         super::metadata(content)?;
-        let root = super::bundle::directory(&self.skills_dir)?;
-        root.lock_exclusive()?;
-        let dir = super::bundle::directory(&pinned(&root).join(name))?;
-        let path = pinned(&dir);
-        let (_, current) = read(&path)?;
+        let library = fenix_skills::Library::open(&self.skills_dir)?;
+        let _lock = library.lock()?;
+
+        let (_, current) = library.read_skill(name)?;
         ensure!(
             current == expected,
             "This skill changed elsewhere. Reopen it before saving your changes."
         );
         if format!("{:x}", Sha256::digest(content.as_bytes())) != current {
-            let mut temporary = tempfile::NamedTempFile::new_in(&path)?;
-            temporary.write_all(content.as_bytes())?;
-            temporary.as_file().sync_all()?;
-            temporary.persist(path.join("SKILL.md"))?;
-            dir.sync_all()?;
+            library.replace_skill(name, expected, content)?;
             self.translation_notify.notify_one();
         }
         let revision = format!("{:x}", Sha256::digest(content.as_bytes()));
@@ -189,26 +149,22 @@ impl crate::Runtime {
     }
     pub fn delete_private_skill(&self, name: &str, expected: &str) -> Result<()> {
         ensure!(super::valid_name(name), "Invalid skill name");
-        let root = super::bundle::directory(&self.skills_dir)?;
-        root.lock_exclusive()?;
-        let root_path = pinned(&root);
-        let dir = super::bundle::directory(&root_path.join(name))?;
-        let (_, current) = read(&pinned(&dir))?;
+        let library = fenix_skills::Library::open(&self.skills_dir)?;
+        let _lock = library.lock()?;
+        let (_, current) = library.read_skill(name)?;
         ensure!(
             current == expected,
             "This skill changed elsewhere. Reopen it before deleting it."
         );
-        // Keep default installation/migration from recreating a deleted skill.
-        let removed = tempfile::Builder::new()
-            .prefix(".deleted-")
-            .tempdir_in(&root_path)?;
         self.store.put("deleted_skills", name, &name)?;
-        if let Err(error) = fs::rename(root_path.join(name), removed.path()) {
-            self.store.delete("deleted_skills", name)?;
-            return Err(error.into());
-        }
-        root.sync_all()?;
-        removed.close()?;
+        let removed = match library.detach(name, expected) {
+            Ok(removed) => removed,
+            Err(error) => {
+                self.store.delete("deleted_skills", name)?;
+                return Err(error);
+            }
+        };
+        library.remove_detached(&removed)?;
         Ok(())
     }
 }

@@ -7,7 +7,7 @@ fn endpoints(provider: &str) -> Result<(&'static str, &'static str, &'static str
         "google" => (
             "https://accounts.google.com/o/oauth2/v2/auth",
             "https://oauth2.googleapis.com/token",
-            "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/userinfo.email",
         ),
         "microsoft" => (
             "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
@@ -78,10 +78,10 @@ impl Connectors {
         let mut url = reqwest::Url::parse(authorize)?;
         let scopes = match (c.provider.as_str(), c.allow_write) {
             ("google", true) => {
-                "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email"
+                "https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email"
             }
             ("google", false) => {
-                "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email"
+                "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/userinfo.email"
             }
             ("microsoft", true) => {
                 "offline_access User.Read Files.ReadWrite Mail.ReadWrite Mail.Send Calendars.ReadWrite"

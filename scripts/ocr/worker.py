@@ -1,4 +1,4 @@
-"""Offline, bounded PDF/image extraction. Invoked only by the execution broker.
+"""Offline, bounded PDF/image extraction. Invoked by a local supervised Fenix process.
 
 stdout is NDJSON; third-party diagnostics go to stderr. No LLM, URLs, shell,
 workspace writes, external OCR fallback, or automatic runtime model downloads.
@@ -6,6 +6,7 @@ workspace writes, external OCR fallback, or automatic runtime model downloads.
 from __future__ import annotations
 
 import contextlib
+import errno
 import hashlib
 import io
 import json
@@ -44,9 +45,15 @@ def validate(request):
 
 
 def snapshot(path, expected):
-    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    before = os.lstat(path)
+    if stat.S_ISLNK(before.st_mode) or getattr(before, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0):
+        raise OSError(errno.ELOOP, "Input cannot be a symbolic link or reparse point", path)
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0) | getattr(os, "O_BINARY", 0)
+    fd = os.open(path, flags)
     with os.fdopen(fd, "rb") as stream:
         meta = os.fstat(stream.fileno())
+        if (meta.st_dev, meta.st_ino) != (before.st_dev, before.st_ino):
+            raise ExtractionError("Document changed while opening")
         if not stat.S_ISREG(meta.st_mode) or meta.st_nlink != 1 or meta.st_size > MAX_BYTES:
             raise ExtractionError("Input must be a regular unlinked file up to 64 MiB")
         data = stream.read(MAX_BYTES + 1)

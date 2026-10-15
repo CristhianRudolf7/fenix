@@ -20,3 +20,5 @@ __pycache__/
 
 /apps/docs/public/install.sh
 /release-assets/
+
+/apps/docs/src/data/atlas-inventory.json

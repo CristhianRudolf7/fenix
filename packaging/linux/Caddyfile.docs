@@ -5,7 +5,7 @@
 :{$FENIX_WEB_PORT:4173} {
 	bind 127.0.0.1
 	encode gzip
-	@documentation path / /install.sh /docs /docs/* /docs-assets/* /robots.txt /sitemap.xml /sitemap-index.xml /sitemap-*.xml /_astro/* /pagefind/*
+	@documentation path / /atlas /atlas/* /install.sh /docs /docs/* /docs-assets/* /robots.txt /sitemap.xml /sitemap-index.xml /sitemap-*.xml /_astro/* /pagefind/*
 	handle @documentation {
 		root * {$FENIX_DOCS_ROOT:/home/Rudy/.local/share/fenix-docs/current}
 		header X-Content-Type-Options nosniff

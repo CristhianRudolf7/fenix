@@ -1,3 +1,5 @@
+> Historical document: the multi-account gateway and Google account registration/sign-in have been removed. See [personal access](remote-access.md) for the current development version.
+
 # Execution isolation and account security
 
 Implementation: 2026-09-19. [Español](../es/execution-isolation.md) · [Original assessment](sandbox-security-review.md) · [Acceptance plan](user-isolation-plan.md).

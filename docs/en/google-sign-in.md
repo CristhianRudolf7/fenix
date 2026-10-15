@@ -1,3 +1,5 @@
+> Historical document: the multi-account gateway and Google account registration/sign-in have been removed. See [personal access](remote-access.md) for the current development version.
+
 # Google sign-in and account registration
 
 Fénix supports Google authentication at the host gateway, separately from Google

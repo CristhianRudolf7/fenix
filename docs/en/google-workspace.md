@@ -1,14 +1,16 @@
+> Google Drive has been removed from the connector. Other Google services remain available.
+
 # Native Google Workspace improvements
 
 Fénix extends its own per-owner connector rather than installing Google Workspace CLI or sharing a terminal login. The implementation uses existing Rust dependencies and the existing encrypted account vault. No gws binary, new hosted service or paid integration subscription is introduced. Google account/API availability, quota and Workspace licensing still apply.
 
 ## Account setup and actual readiness
 
-Integrations lets the owner select Drive, Docs, Sheets, Slides, Gmail, Calendar, Tasks, Contacts, Forms, Chat and Meet. A new account defaults to read-only Drive. OAuth presets are constructed from selected services; custom scopes remain an explicit advanced override. The native transport also enforces the selected services and read/write switch. Existing vault records without service selection keep the original six-service surface; editing a modern connection without a services field preserves its previous selection. Selecting a service does not automatically grant permissions or revoke historical Google grants.
+Integrations lets the owner select Docs, Sheets, Slides, Gmail, Calendar, Tasks, Contacts, Forms, Chat and Meet. A new account defaults to read-only Drive. OAuth presets are constructed from selected services; custom scopes remain an explicit advanced override. The native transport also enforces the selected services and read/write switch. Existing vault records without service selection keep the original six-service surface; editing a modern connection without a services field preserves its previous selection. Selecting a service does not automatically grant permissions or revoke historical Google grants.
 
 Google OAuth retains PKCE, one-use expiring state and refresh support. Reconnecting clears any old-account refresh token before applying new tokens; actual scope strings returned by Google are exposed separately from requested configuration. Consent completion now produces `authorized`, not a successful service check. Legacy Google records labeled connected without per-service evidence are also displayed as authorized. If Google omits scope information, Fénix leaves it unknown instead of reporting requested scopes as verified.
 
-Checks perform harmless reads independently for Drive, Gmail, Calendar, Tasks, Contacts, Chat and Meet, with a 60-second overall deadline. Docs, Sheets, Slides and Forms require a specific resource ID and remain `not_checked` at this stage. Mixed outcomes are visible per service in Integrations. A connection with no completed read probe remains unverified. A successful read probe establishes only that request, never general write access. `partially_checked` is not an error when document-specific verification remains outstanding.
+Checks perform harmless reads independently for Gmail, Calendar, Tasks, Contacts, Chat and Meet, with a 60-second overall deadline. Docs, Sheets, Slides and Forms require a specific resource ID and remain `not_checked` at this stage. Mixed outcomes are visible per service in Integrations. A connection with no completed read probe remains unverified. A successful read probe establishes only that request, never general write access. `partially_checked` is not an error when document-specific verification remains outstanding.
 
 ## Agent operations
 
@@ -16,14 +18,13 @@ Checks perform harmless reads independently for Drive, Gmail, Calendar, Tasks, C
 - `request` retains fixed service-relative routes. New native roots cover Tasks, People/Contacts, Forms, Chat and Meet. Query arrays become repeated parameters. `dry_run=true` returns the intended URL/method/body without obtaining a token or making a Google request. It validates local transport shape, not every provider schema rule or resource permission. Conservatively, POST read methods still require write-enabled connections.
 - Google GET/list pagination follows only `nextPageToken` and returns page envelopes, completeness, stop reason and continuation. Default five, maximum ten pages, 3 MiB aggregate payload and 60 seconds; repeated tokens and errors stop the run. Writes are never automatically paginated or retried. Custom field projections must retain the continuation token.
 - `mail_read` supports metadata/full Gmail payloads without marking messages read. `mail_compose` builds MIME with explicit To/CC/BCC, connected-profile sender, plain text and up to ten confined workspace attachments totaling 5 MiB. Default behavior creates a remote draft; only `send=true` sends. Replies load and preserve original Subject, Message-ID, References and Gmail threadId. It does not infer reply-all recipients, choose aliases or expose HTML composition. Local preview performs no Gmail reads or writes.
-- `drive_upload` creates a new binary file using multipart upload, with optional folder/name/MIME type and a 25 MiB source limit. Local preview never uploads. Existing download/export operations retain path confinement and byte/hash receipts. Uploads do not silently overwrite, retry or convert documents.
 - `calendar_list` supports explicit calendar, start/end range, bounded limit and page continuation. It expands recurring instances and orders by start time; omitting the window does not imply today's agenda.
 
 Use `connector_call action=list`, then `describe`, then `invoke` with a selected account. Token management remains in Integrations. Inspect write receipts and re-read changed resources before claiming success. Previewing a proposed send is not authorization to send it.
 
 ## Skills and preservation
 
-One original skill, `google-workspace-workflows`, coordinates cross-service work and Tasks, Contacts and existing Meet records. Ten existing skills now explain native operations: Drive, Docs, Sheets, Slides, email, calendar, meeting notes, forms, team messaging and personal organization. Their recognized stock hashes support upgrades without overwriting customized instructions or changing disabled state. The catalog contains 187 skills.
+One original skill, `google-workspace-workflows`, coordinates cross-service work and Tasks, Contacts and existing Meet records. Ten existing skills now explain native operations: Docs, Sheets, Slides, email, calendar, meeting notes, forms, team messaging and personal organization. Their recognized stock hashes support upgrades without overwriting customized instructions or changing disabled state. The catalog contains 187 skills.
 
 Meet support retrieves existing conference records, transcripts and entries subject to actual access. It does not join meetings, record calls, generate missing transcripts or bypass Workspace restrictions. Administrative APIs, persistent event subscriptions and an always-running inbox watcher are not part of this change.
 

@@ -1,6 +1,6 @@
 import { Loading } from "../components/loading";
 import { useEffect, useState, type ReactNode } from "react";
-import { api } from "../live/api";
+import { api } from "../lib/api";
 import { tr } from "../workflows/types";
 import "../workflows/workflows.css";
 import { ProviderIcon } from "./ProviderIcon";
@@ -100,7 +100,7 @@ export function ConnectorCatalog({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Google Drive, GitHub, PDF…"
+          placeholder="Gmail, GitHub, Outlook…"
         />
       </label>
       {error && (
@@ -325,10 +325,10 @@ function ConnectDialog({
     [mode] = useState(provider.auth.startsWith("oauth") ? "oauth" : "token");
   const [savedId, setSavedId] = useState(connection?.id);
   const [services, setServices] = useState<string[]>(
-    connection?.settings?.services ||
+    connection?.settings?.services?.filter((service) => service !== "drive") ||
       (connection
-        ? ["drive", "docs", "sheets", "slides", "gmail", "calendar"]
-        : ["drive"]),
+        ? ["docs", "sheets", "slides", "gmail", "calendar"]
+        : ["gmail"]),
   );
   const [mailUser, setMailUser] = useState(""),
     [mailPassword, setMailPassword] = useState(""),
@@ -338,7 +338,6 @@ function ConnectDialog({
       connection?.settings?.smtp_starttls || false,
     );
   const [path, setPath] = useState(connection?.settings?.path || ""),
-    [database, setDatabase] = useState(""),
     [write, setWrite] = useState(connection?.allow_write || false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -355,7 +354,6 @@ function ConnectDialog({
     try {
       const credentials: Record<string, string> = {},
         settings: Record<string, unknown> = {};
-      if (database) credentials.url = database;
       if (provider.id === "google") settings.services = services;
       if (path) settings.path = path;
       if (mailUser) credentials.username = mailUser;
@@ -441,7 +439,6 @@ function ConnectDialog({
               <div>
                 {(
                   provider.service_options || [
-                    { id: "drive", name: "Drive" },
                     { id: "docs", name: "Docs" },
                     { id: "sheets", name: "Sheets" },
                     { id: "slides", name: "Slides" },
@@ -556,24 +553,6 @@ function ConnectDialog({
                 {t(
                   "Choose an existing database belonging to this account.",
                   "Elige una base existente que pertenezca a esta cuenta.",
-                )}
-              </small>
-            </label>
-          ) : provider.id === "postgresql" ? (
-            <label>
-              {t("PostgreSQL connection URL", "URL de conexión de PostgreSQL")}
-              <input
-                type="password"
-                autoComplete="off"
-                required={!connection}
-                placeholder="postgresql://user:password@host/database"
-                value={database}
-                onChange={(e) => setDatabase(e.target.value)}
-              />
-              <small>
-                {t(
-                  "Verified TLS is required. Passwords stay out of chat and workflow diagrams.",
-                  "Se requiere TLS verificado. Las contraseñas no se incluyen en el chat ni en los diagramas.",
                 )}
               </small>
             </label>

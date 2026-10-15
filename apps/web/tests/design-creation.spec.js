@@ -85,6 +85,13 @@ async function fixture(
     else if (path.pathname === "/api/status")
       body = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         session_id: "creation-test",
         event_cursor: 40,
         focus_project_id: "atlas",
@@ -96,7 +103,7 @@ async function fixture(
       };
     else if (path.pathname === "/api/projects")
       body = [{ id: "atlas", name: "Atlas" }];
-    else if (path.pathname === "/api/live/settings")
+    else if (path.pathname === "/api/model-roles/fast")
       body = { configured: false, settings: {} };
     else if (path.pathname === "/api/design/artifacts")
       body = { designs: [], next_offset: null };

@@ -37,11 +37,6 @@ jobs:
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Run unit and HTTP integration tests
         run: cargo test --workspace --all-targets --locked
-      - name: Check execution ownership and policy contracts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends python3-cryptography fonts-dejavu-core
-          /usr/bin/python3 -m unittest discover -s tests/isolation -v
       - name: Check documentation examples
         run: cargo test --workspace --doc --locked
       - name: Check PDF extraction and OCR routing contracts
@@ -85,3 +80,63 @@ jobs:
         run: |
           pnpm --dir apps/docs install --frozen-lockfile
           pnpm --dir apps/docs build
+
+  native-process-engine:
+    name: Native files, skills, storage and processes (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the pinned Rust toolchain
+        run: rustup show
+      - name: Test real files, processes and terminals
+        run: cargo test -p fenix-process -p fenix-execution -p fenix-files -p fenix-skills -p fenix-storage --locked
+
+  ios-portable-base:
+    name: Compile portable storage and process policy for iOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the pinned toolchain and iOS target
+        run: |
+          rustup show
+          rustup target add aarch64-apple-ios
+      - name: Check core modules without claiming application or device validation
+        run: cargo check -p fenix-files -p fenix-process -p fenix-execution --target aarch64-apple-ios --locked
+
+  desktop-application:
+    name: Check desktop backend and native browser platform helpers
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install the pinned Rust toolchain
+        run: rustup show
+      - name: Compile the backend and tests
+        run: cargo check -p fenix-server --tests --locked
+      - name: Verify native browser discovery and memory
+        run: cargo test -p fenix-browser --lib platform::tests --locked
+      - name: Validate PowerShell installers
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          foreach ($file in @('scripts/install-windows.ps1', 'packaging/windows/start-fenix.ps1')) {
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$null, [ref]$parseErrors) | Out-Null
+            if ($parseErrors.Count) { throw ($parseErrors | Out-String) }
+          }
+      - name: Validate macOS installer syntax
+        if: runner.os == 'macOS'
+        run: bash -n scripts/install-macos.sh

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "../live/api";
+import { api } from "../lib/api";
 import { Markdown } from "../components/markdown";
 import { Icon } from "../components/icons";
 import { navigateTo } from "../components/routing";

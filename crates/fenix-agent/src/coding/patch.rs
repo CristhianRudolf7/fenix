@@ -231,7 +231,7 @@ impl Runtime {
                     if edit.before.is_none() || edit.destination != edit.path {
                         let permissions = if edit.before.is_some() {
                             Some(
-                                fenix_execution::fs::open(&edit.path)?
+                                fenix_execution::fs::open_user_file(&edit.path)?
                                     .metadata()?
                                     .permissions(),
                             )
@@ -244,7 +244,7 @@ impl Runtime {
                             permissions,
                         )?;
                     } else {
-                        fenix_execution::fs::replace(
+                        fenix_execution::fs::replace_user_file(
                             &edit.destination,
                             edit.before
                                 .as_ref()
@@ -260,7 +260,7 @@ impl Runtime {
                     bail!("Patched file did not match the prepared content");
                 }
                 if edit.after.is_none() || edit.destination != edit.path {
-                    fenix_execution::fs::remove(
+                    fenix_execution::fs::remove_user_file(
                         &edit.path,
                         edit.before
                             .as_ref()
@@ -350,7 +350,8 @@ mod tests {
                 &ws,
                 &json!({"patch":"*** Begin Patch\n*** Add File: ../escape\n+x\n*** End Patch"})
             )
-            .is_err()
+            .is_ok()
         );
+        assert_eq!(read_text(&dir.path().join("escape")).unwrap(), "x\n");
     }
 }

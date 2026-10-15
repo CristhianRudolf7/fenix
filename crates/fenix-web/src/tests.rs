@@ -1,4 +1,5 @@
 use super::*;
+use std::io::Write;
 use std::net::IpAddr;
 use wiremock::{
     Mock, MockServer, ResponseTemplate,
@@ -2328,4 +2329,46 @@ async fn live_docs_audit_code_indentation_and_unknown_publication_dates() {
     eprintln!(
         "Controlled docs: HTML code indentation is preserved; the newly fetched page is excluded by days=30 because publication metadata is absent."
     );
+}
+
+#[tokio::test]
+async fn private_configuration_and_index_reopen_without_losing_settings() {
+    let directory = tempfile::tempdir().unwrap();
+    let mut config = Config::default();
+    config.enabled = false;
+    std::fs::write(
+        directory.path().join("web-search.json"),
+        serde_json::to_vec(&config).unwrap(),
+    )
+    .unwrap();
+    let web = Web::open(directory.path()).await.unwrap();
+    assert!(!web.status().await.unwrap().enabled);
+    drop(web);
+    let web = Web::open(directory.path()).await.unwrap();
+    assert!(!web.status().await.unwrap().enabled);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        for path in [
+            directory.path().join("web-search.json"),
+            directory.path().join("web/index.sqlite3"),
+        ] {
+            assert_eq!(
+                std::fs::metadata(path).unwrap().permissions().mode() & 0o777,
+                0o600
+            );
+        }
+    }
+}
+#[cfg(unix)]
+#[tokio::test]
+async fn private_index_refuses_a_symlink_without_changing_its_target() {
+    let directory = tempfile::tempdir().unwrap();
+    let outside = tempfile::tempdir().unwrap();
+    let target = outside.path().join("important");
+    std::fs::write(&target, "keep").unwrap();
+    std::fs::create_dir(directory.path().join("web")).unwrap();
+    std::os::unix::fs::symlink(&target, directory.path().join("web/index.sqlite3")).unwrap();
+    assert!(Web::open(directory.path()).await.is_err());
+    assert_eq!(std::fs::read_to_string(target).unwrap(), "keep");
 }

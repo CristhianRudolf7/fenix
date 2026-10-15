@@ -65,6 +65,7 @@ export default defineConfig({
           items: [
             { label: "Capacidades actuales", slug: "docs/capacidades" },
             { label: "Arquitectura", slug: "docs/arquitectura" },
+            { label: "Atlas interactivo del motor", link: "/atlas/" },
             { label: "Despliegue", slug: "docs/despliegue" },
             { label: "Hoja de ruta", slug: "docs/hoja-de-ruta" },
             { label: "Cambios y versiones", slug: "docs/versiones" },

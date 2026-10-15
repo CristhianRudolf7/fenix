@@ -1,5 +1,8 @@
 # Protección de secretos, destinos e instrucciones
 
+> Documento histórico del despliegue compartido anterior a 0.3.2. El sandbox y sus scripts se retiraron de la distribución personal. Véase [ejecución local actual](local-execution.md); las políticas aquí descritas no están activas en 0.3.2.
+
+
 Estas protecciones se ejecutan en el motor y en el servicio de ejecución, sin llamadas
 adicionales al modelo. Complementan el aislamiento por usuario y las aprobaciones.
 La especificación completa está en [inglés](../en/security-boundaries.md).

@@ -682,32 +682,18 @@ body > .account-signout {
   font-size: 10px;
   margin-top: 13px;
 }
-.voice-actions {
+.dictation-actions {
   gap: 6px;
 }
-.voice-actions button {
+.dictation-actions button {
   min-height: 39px;
   padding: 9px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
-.voice-actions .live-button {
-  border-radius: 24px;
-  padding-inline: 15px;
-  gap: 7px;
-  font-size: 12px;
-}
-.voice-actions .voice-settings-button {
-  width: 32px;
-  min-height: 32px;
-  padding: 6px;
-}
-.voice-settings-button .ui-icon {
-  width: 17px;
-  height: 17px;
-}
-.voice-availability-note {
+
+.dictation-availability-note {
   display: block;
   text-align: center;
   font-size: 11px;
@@ -828,27 +814,7 @@ body > .account-signout {
 dialog {
   border-radius: 18px;
 }
-.voice-panel {
-  background: var(--bg);
-  border-color: var(--line);
-  box-shadow: 0 18px 70px #18252626;
-}
-.voice-panel header h2 {
-  font-family: var(--editorial);
-  font-size: 24px;
-  margin: 0;
-}
-.voice-panel .dot {
-  background: var(--accent);
-}
-.voice-caption {
-  border-radius: 12px;
-  background: var(--soft);
-  padding: 14px;
-}
-.voice-transcript {
-  font-style: italic;
-}
+
 .design-panel .design-panel-head {
   background: var(--canvas);
 }
@@ -1156,11 +1122,7 @@ dialog {
     padding: 21px;
     border-radius: 14px;
   }
-  .voice-panel {
-    max-width: calc(100vw - 24px);
-    right: 12px;
-    bottom: 12px;
-  }
+
   .row,
   .record .actions {
     flex-wrap: wrap;
@@ -1569,10 +1531,10 @@ body > .account-menu {
   padding: 0;
   gap: 4px;
 }
-.composer .voice-actions {
+.composer .dictation-actions {
   gap: 4px;
 }
-.composer .voice-actions button,
+.composer .dictation-actions button,
 .composer .upload-document-button {
   width: 40px;
   height: 40px;
@@ -1583,17 +1545,11 @@ body > .account-menu {
   background: transparent;
   color: var(--fg);
 }
-.composer .voice-actions .live-button {
-  background: var(--fg);
-  color: var(--bg);
-}
+
 .composer:has(#chat-input:placeholder-shown) .send {
   display: none;
 }
-.composer:has(#chat-input:not(:placeholder-shown))
-  .live-button:not([aria-pressed="true"]) {
-  display: none;
-}
+
 .composer:focus-within,
 .composer:has(#chat-input:not(:placeholder-shown)) {
   grid-template-areas: "attachments attachments attachments" "input input input" "upload actions actions";

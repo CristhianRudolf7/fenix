@@ -1,3 +1,5 @@
+> The development version authenticates one owner directly in the server. Configure it before first startup as described in [personal access](remote-access.md).
+
 # Local operation
 
 [Interactive execution, updated limits and on-demand tools](execution-harness.md)
@@ -8,7 +10,7 @@
 
 First install Node 22.12+ and pnpm 10.34.5, then build the frontend with
 `pnpm --dir apps/web install --frozen-lockfile` and `pnpm --dir apps/web build`.
-See [browser voice and Live](live.md) for development and voice configuration.
+See [dictation and text conversation](dictation.md) for the browser microphone and fast-model configuration.
 
 From the clone, run `cargo run --locked -p fenix-server --bin fenix` and open
 http://127.0.0.1:4173. The default data directory is `.fenix/` relative to the

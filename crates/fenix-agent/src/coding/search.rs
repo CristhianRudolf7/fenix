@@ -40,7 +40,7 @@ impl Runtime {
         } else {
             None
         };
-        let mut builder = ignore::WalkBuilder::new(workspace);
+        let mut builder = ignore::WalkBuilder::new(&root);
         builder
             .follow_links(false)
             .hidden(false)
@@ -50,17 +50,6 @@ impl Runtime {
             .max_depth(Some(32))
             .max_filesize(Some(MAX_FILE_BYTES))
             .sort_by_file_path(|a, b| a.cmp(b));
-        // Keep private/generated directories excluded even when ignore files negate them.
-        let private = self.data_dir.clone();
-        let search_root = root.clone();
-        builder.filter_entry(move |e| {
-            (e.path().starts_with(&search_root) || search_root.starts_with(e.path()))
-                && !e.path().starts_with(&private)
-                && !matches!(
-                    e.file_name().to_str(),
-                    Some(".git" | "node_modules" | "target" | ".fenix" | "credentials" | "secrets")
-                )
-        });
         let mut matches = Vec::new();
         let mut scanned = 0;
         let mut visited = 0;
@@ -129,7 +118,7 @@ impl Runtime {
 mod tests {
     use super::*;
     #[tokio::test]
-    async fn regex_globs_ignore_files_and_private_paths() {
+    async fn regex_globs_respect_ignore_files_and_allow_external_roots() {
         let dir = tempfile::tempdir().unwrap();
         let ws = dir.path().join("ws");
         std::fs::create_dir_all(ws.join("src")).unwrap();
@@ -172,7 +161,7 @@ mod tests {
         );
         assert!(
             rt.search_files(&ws, "files_glob", &json!({"path":"../","glob":"**/*"}))
-                .is_err()
+                .is_ok()
         );
     }
 }

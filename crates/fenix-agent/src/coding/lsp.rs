@@ -80,9 +80,13 @@ impl LanguageServers {
         let config=configs.iter().find(|c|c.extensions.iter().any(|e|e==extension)).context("No configured language server for this file extension. Configure an installed stdio server in Settings > Coding; nothing was installed or started.")?;
         config.validate()?;
         let workspace = std::fs::canonicalize(workspace)?;
-        if !path.starts_with(&workspace) {
-            bail!("Language query path is outside its workspace");
-        }
+        let workspace = if path.starts_with(&workspace) {
+            workspace
+        } else {
+            path.parent()
+                .context("Language query requires a parent directory")?
+                .to_owned()
+        };
         let key = format!("{}:{}", workspace.display(), serde_json::to_string(config)?);
         // The pool lock only manages slots. Each workspace/server has its own
         // transport lock; unrelated worktrees can query concurrently.
@@ -167,6 +171,7 @@ impl LanguageServers {
 }
 struct Session {
     child: Child,
+    _tree: fenix_process::ProcessTree,
     writer: ChildStdin,
     inbox: mpsc::Receiver<Result<Value>>,
     reader_task: tokio::task::JoinHandle<()>,
@@ -176,57 +181,27 @@ struct Session {
     diagnostics: HashMap<String, Value>,
     symbols: HashMap<String, Value>,
     workspace: PathBuf,
-    _execution: Option<fenix_execution::Lease>,
 }
 impl Drop for Session {
     fn drop(&mut self) {
         self.reader_task.abort();
-        if let Some(id) = self.child.id() {
-            let _ = nix::sys::signal::killpg(
-                nix::unistd::Pid::from_raw(id as i32),
-                nix::sys::signal::Signal::SIGKILL,
-            );
-        }
         let _ = self.child.start_kill();
     }
 }
 impl Session {
     async fn start(config: &ServerConfig, workspace: &Path) -> Result<Self> {
-        let execution = if let Some(executor) = fenix_execution::Executor::from_environment()? {
-            Some(
-                executor
-                    .create(fenix_execution::Specification::new(
-                        "language-server",
-                        "language_server",
-                        config.command.clone(),
-                        workspace,
-                        workspace,
-                        3600,
-                    ))
-                    .await?,
-            )
-        } else {
-            None
-        };
-        let mut command = if let Some(lease) = &execution {
-            lease.command()?
-        } else {
-            let mut command = Command::new(&config.command[0]);
-            command
-                .args(&config.command[1..])
-                .env_clear()
-                .envs(fenix_execution::local_environment(workspace));
-            command
-        };
+        let mut command = Command::new(&config.command[0]);
+        command
+            .args(&config.command[1..])
+            .env_clear()
+            .envs(fenix_execution::local_environment(workspace));
         command
             .current_dir(workspace)
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::null())
-            .kill_on_drop(true)
-            .process_group(0);
-        let mut child = command
-            .spawn()
+            .kill_on_drop(true);
+        let (mut child, tree) = fenix_process::spawn_program(command)
             .context("Could not start configured language server")?;
         let writer = child.stdin.take().context("Missing LSP stdin")?;
         let mut reader = BufReader::new(child.stdout.take().context("Missing LSP stdout")?);
@@ -242,6 +217,7 @@ impl Session {
         });
         let mut session = Self {
             child,
+            _tree: tree,
             writer,
             inbox,
             reader_task,
@@ -251,7 +227,6 @@ impl Session {
             diagnostics: HashMap::new(),
             symbols: HashMap::new(),
             workspace: workspace.into(),
-            _execution: execution,
         };
         let uri = file_uri(workspace)?;
         let result=session.request("initialize",json!({"processId":std::process::id(),"rootUri":uri,"workspaceFolders":[{"uri":uri,"name":workspace.file_name().unwrap_or_default().to_string_lossy()}],"capabilities":{"general":{"positionEncodings":["utf-16"]},"textDocument":{"documentSymbol":{"hierarchicalDocumentSymbolSupport":true},"publishDiagnostics":{"versionSupport":true},"diagnostic":{},"synchronization":{"didSave":true}},"workspace":{"configuration":true,"applyEdit":false}},"initializationOptions":config.initialization_options})).await?;

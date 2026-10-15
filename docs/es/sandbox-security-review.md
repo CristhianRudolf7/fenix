@@ -1,5 +1,8 @@
 # Revisión de los siete repositorios sandbox y la seguridad de Fénix
 
+> Documento histórico del despliegue compartido anterior a 0.3.2. El sandbox y sus scripts se retiraron de la distribución personal. Véase [ejecución local actual](local-execution.md); las políticas aquí descritas no están activas en 0.3.2.
+
+
 Fecha: 19 de septiembre de 2026. Estado: **investigación y propuesta; esta revisión no implementa cambios de seguridad**. [English](../en/sandbox-security-review.md) · [Plan de implementación](user-isolation-plan.md) · [Evidencias](../research/sandbox-security-2026-09-19.json).
 
 La mejora principal para Fénix consiste en conservar el gateway autenticado y los entornos privados por cuenta, reforzar su aprovisionamiento y separar la ejecución de tareas del estado y las credenciales del agente. Los siete proyectos aportan ideas útiles, pero ninguno garantiza por sí solo que un usuario de Fénix solo acceda a lo suyo. Las skills pueden explicar las reglas; el servidor, el sistema operativo y las pruebas deben hacerlas cumplir.

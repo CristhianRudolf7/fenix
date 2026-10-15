@@ -1296,7 +1296,7 @@ impl Runtime {
                 let config = model.settings.provider_config();
                 tokio::select! {
                     _ = cancel.cancelled() => bail!("Task cancelled"),
-                    response = model.client.complete(&config, model.settings.project.as_deref(), &request) => response?,
+                    response = model.client.complete(&config, model.settings.project.as_deref(), &request) => match response {Ok(response)=>{self.record_model_health("intelligent", model, None)?;response},Err(error)=>{self.record_model_health("intelligent", model, Some(&error))?;return Err(error.into())}},
                 }
             } else {
                 self.infer_with_retry(task, model, &request, cancel).await?
@@ -1646,6 +1646,7 @@ impl Runtime {
                         if !rules.is_empty() { return Ok(json!({"executed":false,"repository_instructions":rules,"instruction":"Read this guidance before retrying; no mutation or approval consumption occurred."})); }
                     }
                     let requires=((matches!(name.as_str(),"command_run"|"command_input") || name == "integration_call" && args["action"] != "list") && model.settings.command_policy==ActionPolicy::Ask) || ((matches!(name.as_str(),"library_export" | "document_create"|"document_edit"|"file_write"|"file_edit"|"file_patch") || name == "file_history" && args["action"] == "restore" || name == "workspace_checkpoint" && args["action"] != "list" || name == "worktree_manage" && args["action"] == "integrate") && model.settings.file_write_policy==ActionPolicy::Ask);
+                    let requires = requires || crate::command_safety::risk_reason(&name, &args).is_some();
                     let requires = requires || name == "connector_call" && self.connector_requires_approval(&model.settings, &args);
                     if requires {
                         if let Some(index)=grants.iter().position(|g|g==&action) {grants.remove(index);self.store.put("task_grants", &task.id, &grants)?;}
@@ -1798,7 +1799,10 @@ impl Runtime {
                 ) => result,
             };
             match result {
-                Ok(response) => return Ok(response),
+                Ok(response) => {
+                    self.record_model_health("intelligent", model, None)?;
+                    return Ok(response);
+                }
                 Err(error) if error.is_retryable() && attempt < 2 && !saw_delta => {
                     self.report_progress(&task.id, Phase::Retrying, None);
                     self.store.event(
@@ -1814,7 +1818,10 @@ impl Runtime {
                     };
                     tokio::select! {_=cancel.cancelled()=>bail!("Task cancelled"),_=tokio::time::sleep(delay)=>{}}
                 }
-                Err(error) => return Err(error.into()),
+                Err(error) => {
+                    self.record_model_health("intelligent", model, Some(&error))?;
+                    return Err(error.into());
+                }
             }
         }
         unreachable!("bounded retry loop always returns")

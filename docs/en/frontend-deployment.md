@@ -1,3 +1,5 @@
+> The development version authenticates one owner directly in the server. Configure it before first startup as described in [personal access](remote-access.md).
+
 # Independent frontend and backend deployment
 
 Production runs the frontend and API as separate **systemd user services**:
@@ -30,7 +32,7 @@ release. HTML is revalidated, missing assets return 404, and `/api` never falls
 back to HTML. Responses in streaming are forwarded without proxy buffering.
 
 Templates are `packaging/linux/Caddyfile`, `packaging/linux/fenix-web.service`
-and `packaging/linux/fenix-gateway.service` (installed as `fenix.service`).
+and `packaging/linux/fenix.service` (installed as `fenix.service`).
 Install them under `~/.config/fenix/` and `~/.config/systemd/user/` respectively.
 Set `FENIX_GATEWAY_PORT=4174` and `FENIX_WEB_DIST=` in the gateway environment,
 then run `systemctl --user daemon-reload` and enable/start `fenix-web.service`.

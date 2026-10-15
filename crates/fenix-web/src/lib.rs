@@ -18,9 +18,6 @@ use reqwest::{Url, header};
 pub use search::SearchRequest;
 use serde::Serialize;
 use std::{
-    fs::{self, OpenOptions},
-    io::Write,
-    os::unix::fs::{OpenOptionsExt, PermissionsExt},
     path::Path,
     sync::{
         Arc, Mutex,
@@ -124,35 +121,34 @@ impl Web {
     /// The executable explicitly starts run() so library callers control crawling.
     pub async fn open(data_dir: &Path) -> Result<Arc<Self>> {
         let directory = data_dir.join("web");
-        fs::create_dir_all(&directory)?;
-        fs::set_permissions(&directory, fs::Permissions::from_mode(0o700))?;
+        let directory = fenix_files::private::create_private_dir(&directory)?;
+        let root = fenix_files::private::create_private_dir(data_dir)?;
+        let private = fenix_files::private::PrivateDirectory::open(&root)?;
         let config_path = data_dir.join("web-search.json");
-        let config = if config_path.exists() {
-            if fs::metadata(&config_path)?.len() > 64 * 1024 {
-                bail!("web-search.json exceeds 64 KiB");
-            }
-            serde_json::from_slice::<Config>(&fs::read(&config_path)?)
-                .context("Invalid web-search.json")?
+        let config = if config_path.try_exists()? {
+            let _checked = private.open_file(Path::new("web-search.json"))?;
+            fenix_files::private::secure(&config_path)?;
+            serde_json::from_slice::<Config>(
+                &private.read(Path::new("web-search.json"), 64 * 1024)?,
+            )
+            .context("Invalid web-search.json")?
         } else {
             let config = Config::default();
-            let mut file = OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .mode(0o600)
-                .open(&config_path)?;
-            file.write_all(serde_json::to_string_pretty(&config)?.as_bytes())?;
+            private.create(
+                Path::new("web-search.json"),
+                &serde_json::to_vec_pretty(&config)?,
+                false,
+            )?;
             config
         };
         config.validate()?;
         let database = directory.join("index.sqlite3");
-        // Create privately before SQLite opens it; WAL files inherit permissions.
-        OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(false)
-            .mode(0o600)
-            .open(&database)?;
-        fs::set_permissions(&database, fs::Permissions::from_mode(0o600))?;
+        let files = fenix_files::private::PrivateDirectory::open(&directory)?;
+        if !database.try_exists()? {
+            files.create(Path::new("index.sqlite3"), &[], false)?;
+        }
+        let _checked = files.open_file(Path::new("index.sqlite3"))?;
+        fenix_files::private::secure(&database)?;
         let index = Index::open(&database, &config)?;
         let seeds = config
             .seeds

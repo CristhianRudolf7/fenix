@@ -49,6 +49,13 @@ test("tasks distinguish execution from verification and show evidence provenance
     else if (path === "/api/status")
       body = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         settings: { model: "fixture" },
         projects: [],
         pending_requests: [],

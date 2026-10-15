@@ -29,6 +29,13 @@ test("chat groups local days and offers quiet copy controls with a compact compo
     if (path === "/api/status")
       body = {
         ready: true,
+        model_health: {
+          can_send: true,
+          roles: {
+            intelligent: { status: "available" },
+            fast: { status: "available" },
+          },
+        },
         session_id: "test",
         settings: { model: "test" },
         pending_requests: [],
@@ -36,7 +43,7 @@ test("chat groups local days and offers quiet copy controls with a compact compo
         subagents: [],
         projects: [],
       };
-    if (path === "/api/live/settings")
+    if (path === "/api/model-roles/fast")
       body = { configured: false, settings: {} };
     if (path === "/api/messages")
       body = [
@@ -68,6 +75,13 @@ test("chat groups local days and offers quiet copy controls with a compact compo
     });
   });
   await page.goto(url + "chat");
+  await expect(page.locator("#dictation-controls")).toBeVisible();
+  await expect(
+    page.locator("#voice-root, .live-button, .voice-panel"),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Iniciar Live", exact: true }),
+  ).toHaveCount(0);
   await expect(page.locator(".message-day")).toHaveCount(2);
   await expect(page.locator(".message-day").first()).toContainText(
     "27 de septiembre",
