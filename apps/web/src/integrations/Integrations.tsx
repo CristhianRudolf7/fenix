@@ -322,8 +322,8 @@ function Integrations({ language }: { language: string }) {
             </div>
             <p>
               {t(
-                "Scan the QR with your phone. Your login is saved in your Fénix browser, so you can reopen it later.",
-                "Escanea el QR con tu teléfono. Tu inicio de sesión se guarda en tu navegador de Fénix para que puedas volver a abrirlo después.",
+                "Scan the QR with your phone. Fénix saves your session for future connections.",
+                "Escanea el QR con tu teléfono. Fénix guarda tu sesión para futuras conexiones.",
               )}
             </p>
             {(busy || state === "loading" || state === "syncing") && !error && (
@@ -412,8 +412,8 @@ function Integrations({ language }: { language: string }) {
               connection && (
                 <p className="muted">
                   {t(
-                    "If this takes too long or WhatsApp asks for another step, continue in Browser, then return here to enable agent access.",
-                    "Si tarda demasiado o WhatsApp pide otro paso, continúa en Navegador y vuelve aquí para habilitar el acceso del agente.",
+                    "If this takes too long, ask Fénix in the chat to review the WhatsApp connection.",
+                    "Si tarda demasiado, pídele a Fénix desde el chat que revise la conexión de WhatsApp.",
                   )}
                 </p>
               )}
@@ -459,9 +459,6 @@ function Integrations({ language }: { language: string }) {
                 >
                   {t("Forget session", "Olvidar sesión")}
                 </button>
-              )}
-              {connection?.profile && (
-                <a href="/browser">{t("Open Browser", "Abrir Navegador")}</a>
               )}
             </div>
             <p className="integration-footnote muted">

@@ -34,6 +34,10 @@ test("personal login has only email and password, with no registration", async (
   await expect(
     page.getByRole("button", { name: /Google|Crear cuenta/ }),
   ).toHaveCount(0);
+  await page.screenshot({
+    path: "/tmp/fenix-polish-login-mobile.png",
+    fullPage: true,
+  });
   await page.getByLabel("Correo", { exact: true }).fill("owner@example.test");
   await page.getByLabel("Contraseña", { exact: true }).fill("fixture-password");
   await page.getByRole("button", { name: "Ingresar", exact: true }).click();

@@ -215,6 +215,34 @@ impl ProviderClient {
         if !status.is_success() {
             // Never echo arbitrary provider error bodies: they may contain keys,
             // prompts, or internal diagnostics. Callers receive classified errors.
+            // A 429 can mean exhausted credits, not a temporary rate limit.
+            // Read only a bounded body and retain no provider diagnostics.
+            if status.as_u16() == 429 {
+                let mut bytes = Vec::new();
+                while let Some(chunk) = response.chunk().await.map_err(transport_error)? {
+                    if bytes.len() + chunk.len() > 8192 {
+                        break;
+                    }
+                    bytes.extend_from_slice(&chunk);
+                }
+                if let Ok(body) = serde_json::from_slice::<serde_json::Value>(&bytes) {
+                    let error = &body["error"];
+                    if [error["code"].as_str(), error["type"].as_str()]
+                        .into_iter()
+                        .flatten()
+                        .any(|code| {
+                            matches!(
+                                code,
+                                "insufficient_quota"
+                                    | "credit_balance_exhausted"
+                                    | "billing_hard_limit_reached"
+                            )
+                        })
+                    {
+                        return Err(ProviderError::Http { status: 402 });
+                    }
+                }
+            }
             return Err(match status.as_u16() {
                 401 | 403 => ProviderError::Authentication {
                     status: status.as_u16(),

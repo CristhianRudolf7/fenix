@@ -1,3 +1,7 @@
+import { motion, MotionConfig } from "motion/react";
+import { Button } from "./ui/button";
+import { Tooltip } from "./ui/tooltip";
+import { ConnectionStatus } from "./connection-status";
 import { ApplicationRouter, NavLink } from "./routing";
 import { createRoot, type Root } from "react-dom/client";
 import { flushSync } from "react-dom";
@@ -24,31 +28,44 @@ function Preferences({
   language: Language;
   theme: string;
 }) {
+  const languageLabel = translate(
+    language,
+    "Change language",
+    "Cambiar idioma",
+  );
+  const themeLabel = translate(
+    language,
+    "Toggle light and dark mode",
+    "Cambiar modo claro y oscuro",
+  );
   return (
     <>
-      <button
-        type="button"
-        data-action="language"
-        className="subtle"
-        aria-label={translate(language, "Change language", "Cambiar idioma")}
-      >
-        {language === "es" ? "EN" : "ES"}
-      </button>
-      <button
-        type="button"
-        data-action="theme"
-        className="subtle"
-        aria-label={translate(
-          language,
-          "Toggle light and dark mode",
-          "Cambiar modo claro y oscuro",
-        )}
-      >
-        <Icon name={theme === "dark" ? "sun" : "moon"} />
-      </button>
+      <Tooltip label={languageLabel}>
+        <Button
+          type="button"
+          data-action="language"
+          variant="ghost"
+          size="icon"
+          aria-label={languageLabel}
+        >
+          {language === "es" ? "EN" : "ES"}
+        </Button>
+      </Tooltip>
+      <Tooltip label={themeLabel}>
+        <Button
+          type="button"
+          data-action="theme"
+          variant="ghost"
+          size="icon"
+          aria-label={themeLabel}
+        >
+          <Icon name={theme === "dark" ? "sun" : "moon"} />
+        </Button>
+      </Tooltip>
     </>
   );
 }
+
 function Shell({ page, language, theme, model, labels }: ShellProps) {
   const t = (en: string, es: string) => translate(language, en, es);
   const [collapsed, setCollapsed] = useState(
@@ -220,7 +237,13 @@ function Shell({ page, language, theme, model, labels }: ShellProps) {
             </button>
           </div>
         </header>
-        <div id="page" key={page} />
+        <motion.div
+          id="page"
+          key={page}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.18 }}
+        />
       </main>
     </div>
   );
@@ -231,9 +254,11 @@ export function renderShell(props: ShellProps) {
   pageRoot = undefined;
   flushSync(() =>
     root.render(
-      <ApplicationRouter>
-        <Shell {...props} />
-      </ApplicationRouter>,
+      <MotionConfig reducedMotion="user">
+        <ApplicationRouter>
+          <Shell {...props} />
+        </ApplicationRouter>
+      </MotionConfig>,
     ),
   );
   placeAccountControl();
@@ -245,9 +270,11 @@ export function renderSetupMarkup(html: string) {
   pageRoot = undefined;
   flushSync(() =>
     root.render(
-      <ApplicationRouter>
-        <div dangerouslySetInnerHTML={{ __html: html }} />
-      </ApplicationRouter>,
+      <MotionConfig reducedMotion="user">
+        <ApplicationRouter>
+          <div dangerouslySetInnerHTML={{ __html: html }} />
+        </ApplicationRouter>
+      </MotionConfig>,
     ),
   );
   placeAccountControl();
@@ -294,19 +321,17 @@ export function renderChatLayout(language: Language, model: string) {
         <div className="composer-wrap">
           <div id="design-results" />
           <div className="activity-strip" id="activity-strip" role="status" />
-          <div
-            id="model-health-notice"
-            role="status"
-            aria-live="polite"
-            hidden
-          />
-          <form id="chat-form" className="composer">
+          <ConnectionStatus />
+          <form id="chat-form" className="composer model-blocked" inert>
             <label className="muted" htmlFor="chat-input" hidden>
               {t("Message Fénix", "Escribe a Fénix")}
             </label>
             <span id="document-upload-control" />
             <textarea
               id="chat-input"
+              disabled
+              readOnly
+              aria-disabled="true"
               placeholder={t("Message Fénix…", "Escribe a Fénix…")}
               maxLength={32000}
               rows={1}

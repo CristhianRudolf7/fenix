@@ -1,5 +1,15 @@
 # Historial de cambios
 
+## Interfaz de navegador retirada
+
+- Eliminada la sección de navegador, su componente, estilos y enlaces del frontend. La URL anterior vuelve al chat. Las herramientas y servicios de navegador del agente se conservan.
+
+## Renovación visual de la aplicación web
+
+- Sistema visual compartido con superficies cálidas, navegación, formularios, tarjetas, modales y modo oscuro.
+- Componentes locales de interfaz con Tailwind, primitivas Radix y transiciones Motion respetando movimiento reducido.
+- Aviso de conexión integrado al chat, sin controles manuales; conserva borradores y recupera el envío automáticamente.
+
 ## Cambios pendientes: integraciones
 
 - Retirada la integración opcional con PostgreSQL del backend y de la interfaz; SQLite continúa como almacenamiento interno. Las conexiones PostgreSQL previamente guardadas ya no se muestran ni se ejecutan.

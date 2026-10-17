@@ -1,3 +1,4 @@
+import { setConnectionNotice } from "./components/connection-status";
 import { serviceError } from "./components/service-error";
 import { ensureWorkspace } from "./workspace/Workspace";
 import { configureWorkspace, openTarget } from "./workspace/store";
@@ -14,7 +15,6 @@ import {
   renderIntegrations,
   stopIntegrations,
 } from "./integrations/Integrations";
-import { renderBrowser, stopBrowser } from "./browser/Browser";
 import { renderSkillsPage, stopSkills } from "./skills/Skills";
 import { renderProfile, stopProfile } from "./profile/Profile";
 const errorMessage = (error: unknown): string =>
@@ -93,7 +93,6 @@ const names = () => ({
   chat: t("Conversation", "Conversación"),
   skills: "Skills",
   documents: t("Library", "Biblioteca"),
-  browser: t("Browser", "Navegador"),
   integrations: t("Integrations", "Integraciones"),
   schedules: t("Schedules", "Programaciones"),
   activity: t("Tasks", "Tareas"),
@@ -252,7 +251,6 @@ async function render() {
   stopLibrary();
   stopDesignViews();
   stopSkills();
-  stopBrowser();
   stopIntegrations();
   stopSchedules();
   stopProfile();
@@ -284,7 +282,6 @@ async function render() {
     chat: renderChat,
     documents: () => renderLibrary(state.language),
     skills: renderSkills,
-    browser: () => renderBrowser(state.language),
     integrations: () => renderIntegrations(state.language),
     schedules: () => renderSchedulesPage(state.language),
     activity: renderActivity,
@@ -1388,28 +1385,32 @@ function updateModelHealth() {
     '#chat-form button[type="submit"]',
   );
   if (send) send.disabled = sendingMessage || health?.can_send !== true;
-  const notice = document.getElementById("model-health-notice");
-  if (!notice) return;
-  notice.hidden = health?.can_send === true;
-  if (notice.hidden) {
-    delete notice.dataset.healthSignature;
-    notice.replaceChildren();
-    return;
+  const input = document.querySelector<HTMLTextAreaElement>("#chat-input");
+  const blocked = health?.can_send !== true;
+  const form = document.getElementById("chat-form");
+  if (form) {
+    if (blocked && form.contains(document.activeElement)) {
+      (document.activeElement as HTMLElement)?.blur();
+    }
+    form.inert = blocked;
+    form.classList.toggle("model-blocked", blocked);
+  }
+  if (input && (input.readOnly !== blocked || input.disabled !== blocked)) {
+    input.readOnly = blocked;
+    input.disabled = blocked;
+    input.setAttribute("aria-disabled", String(blocked));
+    window.dispatchEvent(new Event("fenix:model-availability"));
   }
   const roles = Object.values(health?.roles || {}) as {
     status: string;
     reason?: string;
   }[];
-  const signature = JSON.stringify([
-    state.language,
-    roles.map((role) => [role.status, role.reason]),
-  ]);
-  if (notice.dataset.healthSignature === signature) return;
-  notice.dataset.healthSignature = signature;
-  const checking = roles.some((role) =>
-    ["unchecked", "checking"].includes(role.status),
+  const unavailable = roles.some((role) =>
+    ["unavailable", "unconfigured"].includes(role.status),
   );
-  const missing = roles.some((role) => role.status === "unconfigured");
+  document
+    .getElementById("chat-form")
+    ?.classList.toggle("model-unavailable", unavailable);
   const reason = roles.find((role) => role.status === "unavailable")?.reason;
   const reasons: Record<string, string> = {
     authentication: t(
@@ -1421,8 +1422,8 @@ function updateModelHealth() {
       "El proveedor del modelo no tiene saldo o cuota disponible.",
     ),
     rate_limit: t(
-      "The model is temporarily busy. Please wait before retrying.",
-      "El modelo está ocupado temporalmente. Espera antes de volver a comprobar.",
+      "The connection is temporarily busy. We’ll reconnect automatically.",
+      "La conexión está ocupada por un momento. Se restablecerá automáticamente.",
     ),
     configuration: t(
       "The selected model is unavailable. Review your settings.",
@@ -1433,57 +1434,16 @@ function updateModelHealth() {
       "No pude conectar con el modelo. Revisa tu conexión a internet.",
     ),
   };
-  const text = document.createElement("span");
-  text.textContent = checking
-    ? t("Checking the model connection…", "Comprobando la conexión del modelo…")
-    : missing
+  const text =
+    reasons[reason || ""] ||
+    (roles.some((role) => role.status === "unconfigured")
       ? t(
-          "Complete your model settings to send messages.",
-          "Completa la configuración de los modelos para enviar mensajes.",
+          "The assistant is not configured yet.",
+          "El asistente aún no está configurado.",
         )
-      : reasons[reason || ""] ||
-        t(
-          "The model is unavailable. Check the connection to continue.",
-          "El modelo no está disponible. Comprueba la conexión para continuar.",
-        );
-  const retry = document.createElement("button");
-  retry.type = "button";
-  retry.className = "secondary";
-  retry.textContent = t("Check connection", "Comprobar conexión");
-  retry.disabled = checking;
-  retry.addEventListener("click", async () => {
-    retry.disabled = true;
-    try {
-      const value = await api("/model-health", { method: "POST", body: {} });
-      state.status.model_health = value;
-    } catch (error) {
-      toast(errorMessage(error));
-    } finally {
-      delete notice.dataset.healthSignature;
-      updateModelHealth();
-    }
-  });
-  const settings = document.createElement("button");
-  settings.type = "button";
-  settings.className = "secondary";
-  settings.textContent = t("Settings", "Configuración");
-  settings.addEventListener("click", async () => {
-    try {
-      const fast = await api("/model-roles/fast");
-      const config = fast.settings || {};
-      showDetail(
-        t("Model connections", "Conexiones de modelos"),
-        modelForm(false) +
-          `<form id="fast-model-form" class="card"><h2>${t("Conversation model", "Modelo de conversación")}</h2>
-        ${field(`<label for="fast-provider">${t("Provider", "Proveedor")}</label>`, `<select id="fast-provider" name="provider">${state.providers.map((p) => `<option value="${p.id}" ${p.id === config.provider ? "selected" : ""}>${escape(providerNames[p.id] || p.id)}</option>`).join("")}</select>`)}
-        ${input("fast-model", t("Model", "Modelo"), config.model || "", "required")}
-        ${input("fast-key", t("API key (leave blank to keep it)", "Clave de API (vacía para conservarla)"), "", 'type="password" autocomplete="off"')}
-        ${input("fast-url", t("Custom endpoint (optional)", "Dirección personalizada (opcional)"), config.base_url || "", 'type="url"')}
-        <button class="primary" type="submit">${t("Verify and save", "Verificar y guardar")}</button><p class="form-status" role="status"></p></form>`,
-      );
-    } catch (error) {
-      toast(errorMessage(error));
-    }
-  });
-  notice.replaceChildren(text, retry, settings);
+      : t(
+          "The connection was interrupted. We’ll reconnect automatically.",
+          "Se interrumpió la conexión. Intentaremos restablecerla automáticamente.",
+        ));
+  setConnectionNotice({ unavailable, text });
 }

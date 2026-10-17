@@ -11,7 +11,6 @@ export const pages = [
   "chat",
   "skills",
   "documents",
-  "browser",
   "integrations",
   "schedules",
   "activity",

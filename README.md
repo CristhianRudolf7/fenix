@@ -12,7 +12,7 @@
 - Herramientas de archivos y terminal interactiva, procesos persistentes, búsqueda regex/glob, parches, LSP configurable y worktrees de Git.
 - Memoria por ámbito con procedencia, entidades, relaciones, revisiones y recuperación; compactación con checkpoints y búsqueda de resultados conservados.
 - Catálogo de skills bajo demanda, edición personal con guardado explícito, traducciones persistidas y aprendizaje selectivo con revisiones recuperables. El backend conserva publicación de skills; la interfaz actual muestra el catálogo personal.
-- Navegador Chromium con perfiles, sesiones, control del propietario y gestión de inactividad/capacidad. Hibernación en disco cuando el ejecutor compatible está configurado.
+- Herramientas de navegador Chromium con perfiles persistentes y gestión de inactividad/capacidad. No hay una sección de navegador en la interfaz web. La hibernación completa de formularios en disco no está disponible en el motor nativo.
 - Búsqueda propia con índice local, rastreador y lectura ligera; no ofrece cobertura ilimitada de internet.
 - Biblioteca privada, extracción, fragmentos, citas y búsqueda híbrida con embeddings opcionales. Herramientas nativas para DOCX, XLSX y PPTX; PDF/OCR mediante componentes separados.
 - Propuestas visuales en carrusel del chat, modales y panel de resultados con diagramas, documentos y multimedia. Explorador de archivos limitado a la cuenta.
@@ -59,8 +59,13 @@ Instala el Rust fijado en `rust-toolchain.toml`, Node compatible con Vite y pnpm
 ```sh
 pnpm --dir apps/web install --frozen-lockfile
 pnpm --dir apps/web build
+cargo run --locked -p fenix-server --bin fenix owner tu@correo.com --password-stdin
 cargo run --locked -p fenix-server --bin fenix
 ```
+
+El comando de propietario recibe la contraseña por la entrada estándar: escribe una contraseña de al menos ocho bytes y termina la entrada (Ctrl+D en una terminal Unix). Se ejecuta antes de arrancar el servidor. Configura ambos roles de modelo con tus propias credenciales; las claves y los datos de una instalación no se distribuyen en GitHub.
+
+La interfaz utiliza componentes locales con Tailwind, Radix y Motion; las versiones resueltas están fijadas en el lockfile de pnpm.
 
 El servidor individual escucha por defecto en `127.0.0.1:4173`. Las instalaciones nuevas guardan los datos en la carpeta de datos de aplicaciones de cada sistema; una `.fenix/` local existente se conserva. Admite `--data-dir`, `--skills-dir` y `--port`. La configuración de proveedores y del interlocutor pertenece a esa instalación. El valor inicial del código no confirma acceso real al proveedor.
 

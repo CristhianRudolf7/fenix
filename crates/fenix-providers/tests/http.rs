@@ -1061,3 +1061,20 @@ async fn local_ollama_can_omit_credentials_but_explicit_projects_must_have_a_key
     assert_eq!(requests.len(), 1);
     assert!(!requests[0].headers.contains_key("authorization"));
 }
+
+#[tokio::test]
+async fn exhausted_credit_429_is_not_a_retryable_rate_limit() {
+    let server = MockServer::start().await;
+    Mock::given(method("POST"))
+        .respond_with(ResponseTemplate::new(429).set_body_json(serde_json::json!({
+            "error": {"code": "credit_balance_exhausted", "type": "insufficient_quota", "message": DEFAULT_KEY}
+        })))
+        .expect(1).mount(&server).await;
+    let error = client(ProviderId::OpenAi)
+        .complete(&config(ProviderId::OpenAi, &server), None, &request())
+        .await
+        .unwrap_err();
+    assert!(matches!(error, ProviderError::Http { status: 402 }));
+    assert!(!error.is_retryable());
+    assert!(!format!("{error:?}").contains(DEFAULT_KEY));
+}

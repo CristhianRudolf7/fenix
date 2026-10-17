@@ -1,24 +1,49 @@
-#model-health-notice:not([hidden]) {
+/* Connection feedback stays part of the composer, never a separate control panel. */
+#model-health-notice {
+  min-width: 0;
+}
+.connection-notice {
+  overflow: hidden;
+}
+.connection-notice-inner {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 10px;
-  padding: 12px 16px;
-  margin: 10px 0;
-  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  margin: 0 2px 10px;
+  padding: 11px 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: 14px;
-  background: color-mix(in srgb, #c34c32 7%, transparent);
-  font-size: 13px;
-}
-#model-health-notice > span {
-  flex: 1 1 230px;
-  line-height: 1.5;
-}
-#model-health-notice button {
+  background: color-mix(in srgb, var(--accent) 6%, var(--canvas));
+  color: var(--fg);
   font-size: 12px;
-  min-height: 36px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.connection-notice-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.connection-notice-icon > span {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+#chat-form.model-unavailable {
+  background: color-mix(in srgb, var(--bg) 93%, var(--muted) 7%);
+  border-color: color-mix(in srgb, var(--muted) 25%, transparent);
+  box-shadow: 0 3px 16px #25211d04;
+}
+#chat-form.model-unavailable #chat-input {
+  opacity: 0.55;
 }
 #chat-form button.send:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }

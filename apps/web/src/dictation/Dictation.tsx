@@ -9,6 +9,7 @@ export function Dictation() {
   );
   const [slot, setSlot] = useState<HTMLElement | null>(null);
   const [dictating, setDictating] = useState(false);
+  const [blocked, setBlocked] = useState(true);
   const [error, setError] = useState("");
   const recognition = useRef<ReturnType<typeof recognizer> | undefined>(
     undefined,
@@ -21,11 +22,19 @@ export function Dictation() {
       recognition.current = undefined;
       setDictating(false);
     };
+    const availability = () => {
+      const unavailable =
+        document.querySelector<HTMLTextAreaElement>("#chat-input")?.readOnly !==
+        false;
+      setBlocked(unavailable);
+      if (unavailable) stop();
+    };
     const view = () => {
       stop();
       setError("");
       setSlot(document.getElementById("dictation-controls"));
       setLanguage(document.documentElement.lang || "es");
+      availability();
     };
     const submit = (event: Event) => {
       if ((event.target as HTMLElement)?.id === "chat-form") stop();
@@ -34,6 +43,7 @@ export function Dictation() {
       if (event.isTrusted && (event.target as HTMLElement)?.id === "chat-input")
         stop();
     };
+    window.addEventListener("fenix:model-availability", availability);
     window.addEventListener("fenix:view", view);
     window.addEventListener("fenix:stop-dictation", stop);
     window.addEventListener("pagehide", stop);
@@ -41,6 +51,7 @@ export function Dictation() {
     document.addEventListener("input", edit);
     view();
     return () => {
+      window.removeEventListener("fenix:model-availability", availability);
       window.removeEventListener("fenix:view", view);
       window.removeEventListener("fenix:stop-dictation", stop);
       window.removeEventListener("pagehide", stop);
@@ -59,7 +70,7 @@ export function Dictation() {
       return;
     }
     const input = document.querySelector<HTMLTextAreaElement>("#chat-input");
-    if (!input) return;
+    if (!input || input.readOnly) return;
     setError("");
     const prefix = input.value.trimEnd();
     let failed = false;
@@ -89,7 +100,7 @@ export function Dictation() {
           restart: false,
           onStopped: () => setDictating(false),
           onTranscript: (value) => {
-            if (!input.isConnected) return;
+            if (!input.isConnected || input.readOnly) return;
             input.value = [prefix, value].filter(Boolean).join(" ");
             input.dispatchEvent(new Event("input", { bubbles: true }));
           },
@@ -111,7 +122,7 @@ export function Dictation() {
               <button
                 type="button"
                 onClick={dictate}
-                disabled={!supported}
+                disabled={!supported || blocked}
                 aria-pressed={dictating}
                 aria-label={t("Dictate message", "Dictar mensaje")}
                 title={t("Dictate, review, then send", "Dicta, revisa y envía")}

@@ -1,0 +1,405 @@
+/* Shared surface system. Layout and feature behavior remain owned by their modules. */
+:root {
+  --canvas: #faf9f6;
+  --bg: #ffffff;
+  --soft: #f2f0eb;
+  --hover: #eeeae3;
+  --fg: #292c2b;
+  --muted: #777972;
+  --line: #e7e5df;
+  --accent: #b9563d;
+  --accent-ink: #a24631;
+  --accent-soft: #f8ece5;
+  --button: #ae4b34;
+  --on-button: #fffaf7;
+  --surface-raised: #ffffff;
+  --shadow: 0 2px 4px #30271e03, 0 12px 32px #30271e06;
+}
+:root[data-theme="dark"] {
+  --canvas: #171c1b;
+  --bg: #202624;
+  --soft: #262d29;
+  --hover: #303833;
+  --fg: #edece5;
+  --muted: #a4aaa1;
+  --line: #343d36;
+  --accent: #e3a087;
+  --accent-ink: #f0b49d;
+  --accent-soft: #392e28;
+  --button: #d99276;
+  --on-button: #211b17;
+  --surface-raised: #252c28;
+  --shadow: 0 2px 6px #0001, 0 12px 32px #0002;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+.card,
+.suggestion,
+.nav [data-page],
+.composer {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+button.primary:not(.send) {
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--button) 16%, transparent);
+}
+.sidebar {
+  background: var(--soft);
+  border-right: 1px solid var(--line);
+}
+.sidebar-top {
+  padding-bottom: 6px;
+}
+.sidebar .brand .flame-wrap {
+  filter: drop-shadow(0 3px 6px #b9563d20);
+}
+.nav [data-page] {
+  position: relative;
+  border: 1px solid transparent;
+}
+.nav [data-page]:hover {
+  background: color-mix(in srgb, var(--bg) 65%, transparent);
+  color: var(--fg);
+}
+.nav [data-page].active {
+  background: var(--bg);
+  border-color: var(--line);
+  box-shadow:
+    0 2px 4px #30271e04,
+    0 5px 14px #30271e03;
+  color: var(--accent-ink);
+}
+.nav [data-page].active::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.is-collapsed .nav [data-page].active::after {
+  display: none;
+}
+.topbar {
+  background: color-mix(in srgb, var(--canvas) 92%, var(--bg));
+  border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent);
+}
+.desktop-preferences {
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+}
+.desktop-preferences button {
+  border-radius: 8px;
+}
+.breadcrumb-divider {
+  color: var(--line);
+}
+.content {
+  padding-top: 34px;
+}
+.intro h1,
+.section-title h1 {
+  letter-spacing: -0.055em;
+}
+.card {
+  border-radius: 18px;
+  border-color: var(--line);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+.card:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.card button,
+.card input,
+.card select {
+  max-width: 100%;
+}
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  border-color: var(--line);
+  background-color: var(--bg);
+}
+input:focus,
+select:focus {
+  border-color: color-mix(in srgb, var(--accent) 65%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+select {
+  cursor: pointer;
+  min-height: 40px;
+}
+.badge {
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--soft) 65%, transparent);
+}
+.chat-layout,
+.composer-area {
+  background: var(--canvas);
+}
+.chat-welcome h1 {
+  max-width: 620px;
+}
+.welcome-mark {
+  border-radius: 22px;
+  background: linear-gradient(
+    145deg,
+    var(--accent-soft),
+    color-mix(in srgb, var(--bg) 60%, var(--accent-soft))
+  );
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.suggestion {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 18px;
+}
+.suggestion:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  box-shadow: 0 10px 26px #30271e0b;
+}
+.suggestion-icon {
+  border-radius: 11px;
+  background: var(--accent-soft);
+}
+.message.assistant .avatar {
+  border: 1px solid color-mix(in srgb, var(--accent) 9%, transparent);
+  box-shadow: 0 2px 6px #30271e04;
+}
+.message.user .message-text {
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 7%, transparent);
+  border-radius: 20px 6px 20px 20px;
+}
+.message-text {
+  letter-spacing: -0.008em;
+}
+.message-text pre {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--soft);
+}
+.message-actions button:hover {
+  background: var(--soft);
+  color: var(--accent-ink);
+}
+.composer {
+  border: 1px solid color-mix(in srgb, var(--line) 85%, var(--muted));
+  background: var(--bg);
+  box-shadow:
+    0 2px 4px #30271e03,
+    0 8px 28px #30271e08;
+}
+.composer:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 6%, transparent),
+    0 8px 28px #30271e06;
+}
+.composer textarea {
+  background: transparent;
+}
+.composer .send:not(:disabled) {
+  color: var(--on-button);
+  background: var(--button);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--button) 20%, transparent);
+}
+.composer .send:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.composer .send:active:not(:disabled) {
+  transform: translateY(0);
+}
+dialog {
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  box-shadow:
+    0 24px 100px #171c1b30,
+    0 2px 12px #171c1b12;
+}
+dialog[open] {
+  animation: fenix-dialog-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+dialog::backdrop {
+  background: #17201b65;
+  backdrop-filter: blur(6px);
+  animation: fenix-fade-in 0.18s ease both;
+}
+#toast {
+  border-radius: 16px;
+  background: var(--fg);
+  color: var(--bg);
+  box-shadow: 0 10px 32px #17201b22;
+  padding: 14px 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.fenix-tooltip {
+  z-index: 1000;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 7px 10px;
+  border-radius: 9px;
+  font-size: 11px;
+  line-height: 1.4;
+  max-width: min(260px, calc(100vw - 24px));
+  box-shadow: var(--shadow);
+  animation: fenix-fade-in 0.15s ease both;
+}
+.fenix-tooltip-arrow {
+  fill: var(--fg);
+}
+.login-entry {
+  background: var(--canvas);
+}
+.login-card {
+  padding: clamp(22px, 3vw, 36px);
+  width: min(100%, 460px);
+  border: 1px solid var(--line);
+  background: var(--surface-raised);
+  border-radius: 26px;
+  box-shadow: 0 8px 40px #30271e08;
+  animation: fenix-dialog-in 0.45s ease both;
+}
+.login-card input {
+  min-height: 48px;
+  border-radius: 12px;
+}
+.login-heading h2 {
+  font-size: clamp(32px, 3vw, 44px);
+}
+.login-submit {
+  border-radius: 12px;
+}
+@keyframes fenix-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fenix-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 620px) {
+  .content {
+    padding: 24px 16px;
+  }
+  .card {
+    border-radius: 15px;
+    padding: 18px;
+  }
+  .topbar {
+    padding-inline: 16px;
+  }
+  .connection-notice-inner {
+    font-size: 11px;
+    padding: 9px 11px;
+    border-radius: 12px;
+  }
+  .login-entry {
+    padding: 78px 20px 30px;
+  }
+  .login-card {
+    padding: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .suggestion:hover {
+    transform: none;
+  }
+}
+
+/* A blocked composer must not expand, focus, or look like an editable control. */
+#chat-form.composer.model-blocked {
+  grid-template-areas: "attachments attachments attachments" "upload input actions";
+  border-radius: 30px;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--bg) 92%, var(--soft));
+  box-shadow: none;
+  transition: none;
+  cursor: not-allowed;
+}
+#chat-form.model-blocked #chat-input {
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  field-sizing: fixed;
+  overflow: hidden;
+  cursor: not-allowed;
+  -webkit-text-fill-color: var(--muted);
+}
+#chat-form.model-blocked .composer-footer {
+  justify-content: flex-end;
+  opacity: 0.5;
+}
+#chat-form.model-blocked #document-upload-control {
+  opacity: 0.4;
+}
+.connection-notice-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.connection-notice-copy strong {
+  font-weight: 600;
+  font-size: 12px;
+}
+.connection-notice-copy > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.connection-notice-icon > span {
+  animation: fenix-connection-pulse 2.6s ease-in-out 3;
+}
+@keyframes fenix-connection-pulse {
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 4%, transparent);
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .connection-notice-icon > span {
+    animation: none;
+  }
+}

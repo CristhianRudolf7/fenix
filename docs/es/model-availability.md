@@ -22,7 +22,7 @@ Las respuestas reales del maestro y del interlocutor actualizan la disponibilida
 
 `GET /api/model-health` consulta el estado sin inferencia. `POST /api/model-health` solicita una comprobación con cooldown. `/api/status` incluye el estado para aprovechar el sondeo existente de la interfaz.
 
-El chat muestra un aviso persistente y desactiva enviar mientras no pueda utilizarse el modelo. Conserva el borrador y permite comprobar la conexión o revisar la configuración. El servidor también rechaza nuevos mensajes web cuando falta disponibilidad, de modo que pulsar Enter o invocar el endpoint no evita el control. No se cancelan automáticamente trabajos previos por mostrar un aviso.
+El chat muestra un aviso persistente y desactiva enviar mientras no pueda utilizarse el modelo. Conserva el borrador sin permitir escritura, dictado ni envío hasta recuperar la disponibilidad. La comprobación es automática; el aviso del chat no tiene controles manuales. El servidor también rechaza nuevos mensajes web cuando falta disponibilidad, de modo que pulsar Enter o invocar el endpoint no evita el control. No se cancelan automáticamente trabajos previos por mostrar un aviso.
 
 ## Alcance de validación
 

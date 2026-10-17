@@ -12,7 +12,7 @@
 - File tools, interactive terminals, persistent processes, regex/glob search, multi-file patches, configurable LSP, and Git worktrees.
 - Scoped memory with provenance, entities, relations, revisions, retrieval, durable context checkpoints, and saved-result search.
 - On-demand skill discovery, private explicit-save editing, persisted translations, and selective reviewed learning with recoverable revisions. Publication remains in the backend; the current UI exposes personal skills.
-- Chromium profiles, sessions, owner control, idle shutdown, capacity admission, and disk hibernation when a compatible execution service is configured.
+- Chromium browser tools with persistent profiles and idle/capacity management. There is no browser section in the web UI. Full disk hibernation of unfinished forms is not available in the native engine.
 - Independent web search using a local index and crawler, plus lightweight HTTP reading; coverage depends on the indexed corpus.
 - Private document versions, extraction, chunks, citations, and hybrid search with optional embeddings. Native DOCX/XLSX/PPTX tools and separately provisioned PDF/OCR components.
 - Inline design suggestions, modal previews, a right-hand results panel, diagrams, documents, multimedia, and a user-scoped file explorer.
@@ -47,8 +47,13 @@ Install the Rust toolchain pinned in `rust-toolchain.toml`, a Vite-compatible No
 ```sh
 pnpm --dir apps/web install --frozen-lockfile
 pnpm --dir apps/web build
+cargo run --locked -p fenix-server --bin fenix owner you@example.com --password-stdin
 cargo run --locked -p fenix-server --bin fenix
 ```
+
+The owner command reads its password from standard input: enter a password of at least eight bytes, then end input (Ctrl+D in a Unix terminal). Run it before starting the server. Configure both model roles with your own credentials; installation keys and personal data are not distributed through GitHub.
+
+The interface uses local components with Tailwind, Radix and Motion; resolved versions are pinned in the pnpm lockfile.
 
 The individual server defaults to `127.0.0.1:4173`, with new runtime data in the platform application-data directory. An existing local `.fenix/` remains in use. It accepts `--data-dir`, `--skills-dir`, and `--port`. Provider and conversational role configuration belongs to the installation; source defaults do not imply provider access or dictate shared-service configuration.
 
